@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 public class MainMenuController : MonoBehaviour {
     public void OnPlayButtonClicked()
     {
-        // Load the LoadingScene, which will then load MainScene
         SceneTransitionManager.Instance.LoadSceneWithLoading("MainScene");
     }
 

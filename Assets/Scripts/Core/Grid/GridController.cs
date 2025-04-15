@@ -6,29 +6,38 @@ public class GridController : MonoBehaviour
     [SerializeField] private GameObject terrainSource;
     [SerializeField] private Material gridOverlayMaterial;
     [SerializeField] private GameObject ghostPrefab;
-    [SerializeField] private GameObject itemPrefab;
+    [SerializeField] private GameObject[] itemPrefabs;  // Array of item prefabs
+    private int currentPrefabIndex = 0;  // Index of the current prefab
+    private GameObject currentItemPrefab => itemPrefabs[currentPrefabIndex];
 
     private GameObject ghostInstance;
     private Vector2Int currentHoveredCell;
     private GameObject gridOverlayInstance;
+    private GhostPlacer ghostPlacer;
 
     [Header("Grid System References")]
     [SerializeField] private GridDataGenerator gridDataGenerator;
 
     [Header("Grid Settings")]
     [SerializeField] private float cellSize = 1f;
-    [SerializeField] private Color gridLineColor = new Color(0, 1, 0, 0.5f);
-    [SerializeField] private Color highlightColor = new Color(1, 1, 0, 1);
-    [SerializeField] private float gridLineOpacity = 0.5f;
     [SerializeField] private float lineWidth = 0.02f;
-    [SerializeField] private float highlightIntensity = 0.7f;
+    [SerializeField] private GridColors gridColors;
+    [SerializeField] private Color highlightColor = new Color(1, 1, 0, 1);
+    [SerializeField] private Color gridLineColor = new Color(0, 1, 0, 0.5f);
+    [SerializeField] private float gridLineOpacity = 0.5f;
+    // [SerializeField] private float highlightIntensity = 0.7f;
+
 
     private Material targetMaterial;
     private MeshRenderer targetRenderer;
     private TextureGenerator textureGenerator;
 
-    [Header("Grid Colors")]
-    [SerializeField] private GridColors gridColors;
+    [Header("Ghost Settings")]
+    [SerializeField] private Material ghostMaterial;
+
+    private GameObject currentGhost;
+    private bool hasGhost = false;
+    private Quaternion currentRotation = Quaternion.identity;
 
     void Start()
     {
@@ -43,13 +52,21 @@ public class GridController : MonoBehaviour
             return;
         }
 
+        ghostPlacer = FindObjectOfType<GhostPlacer>();
+        if (ghostPlacer == null)
+        {
+            Debug.LogWarning("GhostPlacer not found. Ghost visual feedback will not be shown.");
+        }
+
         SetUpGridOverlay();
         ApplySettings();
     }
 
     void Update()
     {
+        HandlePrefabSelectionInput();
         ProcessInput();
+        UpdateGhostInstance();
     }
 
     void SetUpGridOverlay()
@@ -97,14 +114,86 @@ public class GridController : MonoBehaviour
 
         if (targetMaterial != null)
         {
-            targetMaterial.SetColor("_Color", gridLineColor);
-            targetMaterial.SetColor("_HighlightColor", highlightColor);
             targetMaterial.SetFloat("_GridLineOpacity", gridLineOpacity);
+            targetMaterial.SetColor("_HighlightColor", highlightColor);
             targetMaterial.SetFloat("_LineWidth", lineWidth);
-            targetMaterial.SetFloat("_HighlightIntensity", highlightIntensity);
+            targetMaterial.SetColor("_Color", gridLineColor);
+            // targetMaterial.SetFloat("_HighlightIntensity", highlightIntensity);
         }
 
         textureGenerator.GenerateGridTexture();
+    }
+
+    void HandlePrefabSelectionInput()
+    {
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            currentPrefabIndex = (currentPrefabIndex + 1) % itemPrefabs.Length;
+            ReplaceGhost();
+        }
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            currentPrefabIndex = (currentPrefabIndex - 1 + itemPrefabs.Length) % itemPrefabs.Length;
+            ReplaceGhost();
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            currentRotation *= Quaternion.Euler(0, 90, 0);
+            if (ghostInstance != null)
+                ghostInstance.transform.rotation = currentRotation;
+        }
+    }
+
+    void ReplaceGhost()
+    {
+        if (ghostInstance != null)
+            Destroy(ghostInstance);
+
+        ghostInstance = Instantiate(currentItemPrefab);  // Instantiate the selected prefab
+        ApplyGhostMaterial(ghostInstance);
+        ghostInstance.transform.rotation = currentRotation;
+    }
+
+    void UpdateGhostInstance()
+    {
+        if (ghostInstance == null)
+        {
+            ReplaceGhost();
+        }
+
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+        {
+            Vector3 hitPos = hit.point;
+            Vector2Int gridCoords = WorldToGridCoords(hitPos);
+            Vector3 center = GetCellCenterFromTexture(gridCoords.x, gridCoords.y);
+
+            ghostInstance.transform.position = center;
+        }
+    }
+
+    void ApplyGhostMaterial(GameObject obj)
+    {
+        foreach (var renderer in obj.GetComponentsInChildren<Renderer>())
+        {
+            renderer.material = ghostMaterial;
+        }
+    }
+
+    Vector2Int WorldToGridCoords(Vector3 worldPos)
+    {
+        Vector4 origin = gridDataGenerator.GetGridOrigin();
+        Vector4 worldSize = gridDataGenerator.GetGridWorldSize();
+        int gridW = gridDataGenerator.GetGridWidth();
+        int gridH = gridDataGenerator.GetGridHeight();
+
+        float u = Mathf.InverseLerp(origin.x, origin.x + worldSize.x, worldPos.x);
+        float v = Mathf.InverseLerp(origin.y, origin.y + worldSize.y, worldPos.z);
+        int cellX = Mathf.FloorToInt(u * gridW);
+        int cellY = Mathf.FloorToInt(v * gridH);
+
+        return new Vector2Int(cellX, cellY);
     }
 
     void ProcessInput()
@@ -122,7 +211,20 @@ public class GridController : MonoBehaviour
             int cellX = Mathf.FloorToInt(u * gridW);
             int cellY = Mathf.FloorToInt(v * gridH);
 
+            currentHoveredCell = new Vector2Int(cellX, cellY);
+
             targetMaterial.SetVector("_HoverCell", new Vector4(cellX, cellY, 0, 0));
+
+            if (!hasGhost)
+            {
+                ReplaceGhost();
+            }
+
+            if (currentGhost != null)
+            {
+                Vector3 ghostPos = GetCellCenterFromTexture(cellX, cellY);
+                currentGhost.transform.position = ghostPos;
+            }
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -135,6 +237,10 @@ public class GridController : MonoBehaviour
                 textureGenerator.UpdateTexture();
             }
         }
+        else
+        {
+            ghostPlacer?.UpdateGhostAtCell(-1, -1); // Hide ghost if not hovering
+        }
     }
 
     void PlaceItem(int x, int y)
@@ -144,39 +250,33 @@ public class GridController : MonoBehaviour
         GridCell cell = gridDataGenerator.GetCell(x, y);
         if (!cell.flags.isOwned || cell.flags.isOccupied) return;
 
-        // Calculate the center of the cell using the texture map
         Vector3 cellCenter = GetCellCenterFromTexture(x, y);
 
-        // Log the calculated position for debugging
-        Debug.Log($"Placing item at cell ({x}, {y}) with calculated position: {cellCenter}");
-
-        // Place the item at the calculated position
-        GameObject item = Instantiate(itemPrefab, cellCenter, Quaternion.identity);
+        GameObject item = Instantiate(currentItemPrefab, cellCenter, currentRotation);  // Instantiate with rotation
         item.name = $"Item_{x}_{y}";
 
         cell.flags.isOccupied = true;
         gridDataGenerator.grid[x, y] = cell;
+
+        Destroy(currentGhost);
+        hasGhost = false;
     }
 
     Vector3 GetCellCenterFromTexture(int x, int y)
     {
-        // Get grid dimensions and origin
         int gridWidth = gridDataGenerator.GetGridWidth();
         int gridHeight = gridDataGenerator.GetGridHeight();
         Vector4 gridOrigin = gridDataGenerator.GetGridOrigin();
         float cellSize = gridDataGenerator.cellSize;
 
-        // Calculate the center of the cell in texture space
         float textureCellWidth = 1f / gridWidth;
         float textureCellHeight = 1f / gridHeight;
         float textureCenterX = (x + 0.5f) * textureCellWidth;
         float textureCenterY = (y + 0.5f) * textureCellHeight;
 
-        // Map texture space to world space
         float worldX = gridOrigin.x + textureCenterX * gridDataGenerator.GetGridWorldSize().x;
         float worldZ = gridOrigin.y + textureCenterY * gridDataGenerator.GetGridWorldSize().y;
 
-        // Use the cell's Y position for height
         float worldY = gridDataGenerator.GetCell(x, y).worldPosition.y;
 
         return new Vector3(worldX, worldY, worldZ);
@@ -201,4 +301,5 @@ public class GridController : MonoBehaviour
     {
         return x >= 0 && x < gridDataGenerator.GetGridWidth() && y >= 0 && y < gridDataGenerator.GetGridHeight();
     }
+
 }

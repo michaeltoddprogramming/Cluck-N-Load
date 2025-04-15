@@ -6,9 +6,14 @@ public class GridCell
 {
     public int x;
     public int y;
+    public float height;
     public Vector3 worldPosition;
 
     public GridCellFlags flags;
+
+    public GameObject placedObject; // e.g., building or item prefab instance
+    public string itemID; // optional, for referencing items by type
+
 
     // Color getter for this cell (based on flags)
     public Color GetDebugColor() => flags.GetColor();

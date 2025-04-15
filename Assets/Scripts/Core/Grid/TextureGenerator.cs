@@ -90,7 +90,6 @@ public class TextureGenerator : MonoBehaviour
             {
                 GridCell cell = gridData.grid[x, y];
                 Color col = cell.flags.GetColor(); // Use the color resolver based on flags.
-                Debug.Log($"Cell ({x}, {y}) Color: {col}"); // Log the color, including alpha
                 gridTexture.SetPixel(x, y, col);
             }
         }

@@ -48,19 +48,36 @@ public class GridDataGenerator : MonoBehaviour
         {
             for (int y = 0; y < gridHeight; y++)
             {
-                float cx = b.min.x + x * cellSize + cellSize / 2f;
-                float cz = b.min.z + y * cellSize + cellSize / 2f;
-                Vector3 center = new Vector3(cx, b.min.y, cz);
+                float cx = b.min.x + (x + 0.5f) * cellSize; // Center the cell along X
+                float cz = b.min.z + (y + 0.5f) * cellSize; // Center the cell along Z
+                Vector3 center = new Vector3(cx, 0, cz);
 
+                // Dynamically calculate the height (Y position) at the center of each grid cell
+                float height = GetTerrainHeightAtPosition(center);
+
+                // Create and populate the grid cell
                 grid[x, y] = new GridCell
                 {
                     x = x,
                     y = y,
-                    worldPosition = center,
-                    flags = new GridCellFlags { isOwned = false, isOccupied = false, isObstacle = false }
+                    worldPosition = new Vector3(center.x, height, center.z),  // Use calculated height
+                    height = height,  // Store the height for reference
+                    flags = new GridCellFlags { isOwned = true, isOccupied = false, isObstacle = false }
                 };
             }
         }
+    }
+
+    private float GetTerrainHeightAtPosition(Vector3 position)
+    {
+        // Use a raycast to determine the terrain height at the given position
+        if (Physics.Raycast(new Vector3(position.x, targetMeshRenderer.bounds.max.y + 1f, position.z), Vector3.down, out RaycastHit hit))
+        {
+            return hit.point.y; // Return the Y position of the terrain
+        }
+
+        // Fallback to the minimum Y bound if no terrain is hit
+        return targetMeshRenderer.bounds.min.y;
     }
 
     // Getters for external access:

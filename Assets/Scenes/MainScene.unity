@@ -618,14 +618,14 @@ MonoBehaviour:
   terrainSource: {fileID: 875688422}
   gridOverlayMaterial: {fileID: 2100000, guid: fff316301dde6ee4091e5ad162fb1f9e, type: 2}
   ghostPrefab: {fileID: 0}
-  itemPrefab: {fileID: 0}
+  itemPrefabs:
+  - {fileID: 919132149155446097, guid: 32be7b37853205f4cb4acee12b3e4281, type: 3}
+  - {fileID: 919132149155446097, guid: 356377780ab12c646b44a3a5aa13c8cf, type: 3}
+  - {fileID: 919132149155446097, guid: c57246eb7d80a9946a2448f6769b1f25, type: 3}
+  - {fileID: 919132149155446097, guid: c10db0eefd688774ea0e3b45f9bd991b, type: 3}
   gridDataGenerator: {fileID: 527660422}
   cellSize: 1
-  gridLineColor: {r: 0, g: 1, b: 0, a: 1}
-  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0.54509807}
-  gridLineOpacity: 0.6
   lineWidth: 0.02
-  highlightIntensity: 0.5
   gridColors:
     notOwned: {r: 0, g: 0.3679245, b: 0, a: 0.43137255}
     owned: {r: 0, g: 0.6415094, b: 0, a: 0.3}
@@ -633,6 +633,10 @@ MonoBehaviour:
     ownedObstacle: {r: 0.07021819, g: 0, b: 0.6886792, a: 0.3}
     notOwnedObstacle: {r: 0, g: 0.2, b: 0, a: 0.3}
     unavailable: {r: 0.5, g: 0, b: 0.5, a: 0.3}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0.54509807}
+  gridLineColor: {r: 0, g: 1, b: 0, a: 0.5}
+  gridLineOpacity: 0.6
+  ghostMaterial: {fileID: 2100000, guid: 63c0360517167154bad02130899a3243, type: 2}
 --- !u!4 &714645336 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3084022898177485634, guid: 829f720d23a22e943b47aa597cba44bc, type: 3}

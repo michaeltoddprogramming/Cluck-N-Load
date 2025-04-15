@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class GridController : MonoBehaviour
 {
@@ -181,6 +183,42 @@ public class GridController : MonoBehaviour
         }
     }
 
+    private List<Vector2Int> GetOccupiedCellsFromBounds(GameObject obj)
+    {
+        List<Vector2Int> occupiedCells = new List<Vector2Int>();
+
+        // Get the object's bounds in world space
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return occupiedCells;
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+
+        // Define the corners of the bounds
+        Vector3 min = bounds.min;
+        Vector3 max = bounds.max;
+
+        // Loop through every cell that intersects with the bounds
+        Vector2Int bottomLeft = WorldToGridCoords(min);
+        Vector2Int topRight = WorldToGridCoords(max);
+
+        for (int x = bottomLeft.x; x <= topRight.x; x++)
+        {
+            for (int y = bottomLeft.y; y <= topRight.y; y++)
+            {
+                if (IsValidCell(x, y))
+                {
+                    occupiedCells.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        return occupiedCells;
+    }
+
     Vector2Int WorldToGridCoords(Vector3 worldPos)
     {
         Vector4 origin = gridDataGenerator.GetGridOrigin();
@@ -252,15 +290,39 @@ public class GridController : MonoBehaviour
 
         Vector3 cellCenter = GetCellCenterFromTexture(x, y);
 
-        GameObject item = Instantiate(currentItemPrefab, cellCenter, currentRotation);  // Instantiate with rotation
-        item.name = $"Item_{x}_{y}";
+        // Create a temporary ghost item just to calculate bounds
+        GameObject tempItem = Instantiate(currentItemPrefab, cellCenter, currentRotation);
+        List<Vector2Int> cellsToOccupy = GetOccupiedCellsFromBounds(tempItem);
 
-        cell.flags.isOccupied = true;
-        gridDataGenerator.grid[x, y] = cell;
+        // Check if any of the cells are already occupied
+        foreach (var pos in cellsToOccupy)
+        {
+            if (!IsValidCell(pos.x, pos.y)) {
+                Destroy(tempItem);
+                return; // Out of bounds, cancel placement
+            }
+
+            GridCell targetCell = gridDataGenerator.GetCell(pos.x, pos.y);
+            if (targetCell.flags.isOccupied) {
+                Destroy(tempItem);
+                return; // Collision with another structure, cancel placement
+            }
+        }
+
+        // No collision — we're clear to place!
+        tempItem.name = $"Item_{x}_{y}";
+
+        foreach (var pos in cellsToOccupy)
+        {
+            GridCell targetCell = gridDataGenerator.GetCell(pos.x, pos.y);
+            targetCell.flags.isOccupied = true;
+            gridDataGenerator.grid[pos.x, pos.y] = targetCell;
+        }
 
         Destroy(currentGhost);
         hasGhost = false;
     }
+
 
     Vector3 GetCellCenterFromTexture(int x, int y)
     {
@@ -291,10 +353,21 @@ public class GridController : MonoBehaviour
 
         string itemName = $"Item_{x}_{y}";
         GameObject placedItem = GameObject.Find(itemName);
-        if (placedItem != null) Destroy(placedItem);
+        if (placedItem != null)
+        {
+            List<Vector2Int> occupiedCells = GetOccupiedCellsFromBounds(placedItem);
 
-        cell.flags.isOccupied = false;
-        gridDataGenerator.grid[x, y] = cell;
+            foreach (var pos in occupiedCells)
+            {
+                if (!IsValidCell(pos.x, pos.y)) continue;
+
+                GridCell affectedCell = gridDataGenerator.GetCell(pos.x, pos.y);
+                affectedCell.flags.isOccupied = false;
+                gridDataGenerator.grid[pos.x, pos.y] = affectedCell;
+            }
+
+            Destroy(placedItem);
+        }
     }
 
     bool IsValidCell(int x, int y)

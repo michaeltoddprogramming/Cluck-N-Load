@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public class GridController : MonoBehaviour
 {
     [Header("Terrain & Overlay Settings")]
@@ -20,19 +21,24 @@ public class GridController : MonoBehaviour
     [Header("Grid Settings")]
     [SerializeField] private float cellSize = 1f;
     [SerializeField] private Color gridLineColor = new Color(0, 1, 0, 0.5f);
-    [SerializeField] private Color occupiedColor = Color.red;
-    [SerializeField] private Color ownedColor = Color.green;
-    [SerializeField] private Color highlightColor = Color.yellow;
+    [SerializeField] private Color highlightColor = new Color(1, 1, 0, 1); // Ensure alpha is 1
     [SerializeField] private float gridLineOpacity = 0.5f;
     [SerializeField] private float lineWidth = 0.02f;
+    [SerializeField] private float highlightIntensity = 0.7f; // Highlight intensity for the shader
 
     private Material targetMaterial; // Material on the grid overlay
     private MeshRenderer targetRenderer; // MeshRenderer of the grid overlay
 
     private TextureGenerator textureGenerator; // This will be dynamically added to the overlay.
 
+    [Header("Grid Colors")]
+    [SerializeField] private GridColors gridColors; // Reference to GridCellColorResolver.Colors
+
     void Start()
     {
+        // Assign the Inspector-modified GridColors to the static resolver
+        GridCellColorResolver.Colors = gridColors;
+
         // Auto-find GridDataGenerator if not assigned
         if (gridDataGenerator == null)
             gridDataGenerator = FindObjectOfType<GridDataGenerator>();
@@ -48,7 +54,6 @@ public class GridController : MonoBehaviour
 
         // Apply initial grid settings: update grid data, update shader properties, generate texture.
         ApplySettings();
-        
     }
 
     void Update()
@@ -111,11 +116,6 @@ public class GridController : MonoBehaviour
         gridDataGenerator.cellSize = cellSize;
         gridDataGenerator.GenerateGridData();
 
-        // Update color settings in TextureGenerator.
-        textureGenerator.defaultColor = gridLineColor;
-        textureGenerator.occupiedColor = occupiedColor;
-        textureGenerator.ownedColor = ownedColor;
-
         // Update shader properties on the grid overlay material.
         if (targetMaterial != null)
         {
@@ -123,6 +123,7 @@ public class GridController : MonoBehaviour
             targetMaterial.SetColor("_HighlightColor", highlightColor);
             targetMaterial.SetFloat("_GridLineOpacity", gridLineOpacity);
             targetMaterial.SetFloat("_LineWidth", lineWidth);
+            targetMaterial.SetFloat("_HighlightIntensity", highlightIntensity);
         }
 
         // Generate the grid texture based on the current grid data.
@@ -164,22 +165,21 @@ public class GridController : MonoBehaviour
             return;
 
         GridCell cell = gridDataGenerator.GetCell(x, y);
-        // Cycle through states: Empty -> Owned -> Occupied -> Empty.
-        switch (cell.state)
+
+        // Toggle the flags for the cell.
+        if (!cell.flags.isOwned)
         {
-            case CellState.Empty:
-                cell.state = CellState.Owned;
-                break;
-            case CellState.Owned:
-                cell.state = CellState.Occupied;
-                break;
-            case CellState.Occupied:
-                cell.state = CellState.Empty;
-                break;
-            default:
-                cell.state = CellState.Empty;
-                break;
+            cell.flags.Set(true, false, false); // Set to owned.
         }
+        else if (!cell.flags.isOccupied)
+        {
+            cell.flags.Set(true, true, false); // Set to owned and occupied.
+        }
+        else
+        {
+            cell.flags.Set(false, false, false); // Reset to default.
+        }
+
         gridDataGenerator.grid[x, y] = cell;
     }
 }

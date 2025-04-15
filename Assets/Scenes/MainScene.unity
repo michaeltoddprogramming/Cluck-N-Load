@@ -621,12 +621,18 @@ MonoBehaviour:
   itemPrefab: {fileID: 0}
   gridDataGenerator: {fileID: 527660422}
   cellSize: 1
-  gridLineColor: {r: 0, g: 1, b: 0, a: 0.5}
-  occupiedColor: {r: 1, g: 0, b: 0, a: 1}
-  ownedColor: {r: 0, g: 0.38469362, b: 1, a: 1}
-  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  gridLineOpacity: 0.5
+  gridLineColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0.54509807}
+  gridLineOpacity: 0.6
   lineWidth: 0.02
+  highlightIntensity: 0.5
+  gridColors:
+    notOwned: {r: 0, g: 0.3679245, b: 0, a: 0.43137255}
+    owned: {r: 0, g: 0.6415094, b: 0, a: 0.3}
+    ownedOccupied: {r: 0.6320754, g: 0.6320754, b: 0, a: 0.3}
+    ownedObstacle: {r: 0.07021819, g: 0, b: 0.6886792, a: 0.3}
+    notOwnedObstacle: {r: 0, g: 0.2, b: 0, a: 0.3}
+    unavailable: {r: 0.5, g: 0, b: 0.5, a: 0.3}
 --- !u!4 &714645336 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3084022898177485634, guid: 829f720d23a22e943b47aa597cba44bc, type: 3}

@@ -9,6 +9,7 @@ Shader "Custom/DynamicGridShader"
         _GridWorldSize ("Grid World Size", Vector) = (10,10,0,0)
         _MainTex ("Grid Texture", 2D) = "white" {}
         _HighlightColor ("Highlight Color", Color) = (1,1,0,1)
+        _HighlightIntensity ("Highlight Intensity", Range(0, 1)) = 1.0
         _GridLineOpacity ("Grid Line Opacity", Range(0,1)) = 0.5
         _LineWidth ("Line Width", Range(0.01,0.1)) = 0.02
     }
@@ -34,6 +35,7 @@ Shader "Custom/DynamicGridShader"
             float4 _GridOrigin;
             float4 _GridWorldSize;
             float4 _HighlightColor;
+            float _HighlightIntensity;;
             float _GridLineOpacity;
             float _LineWidth;
 
@@ -66,13 +68,17 @@ Shader "Custom/DynamicGridShader"
                 // Base grid color
                 fixed4 gridColor = _Color;
 
-                // Hover highlight
+                // Hover highlight blending
                 float isX = abs(cellIndices.x - _HoverCell.x) < 0.5 ? 1.0 : 0.0;
                 float isY = abs(cellIndices.y - _HoverCell.y) < 0.5 ? 1.0 : 0.0;
                 float hoverMatch = isX * isY;
+
+                // Blend highlight color with grid color
                 if (hoverMatch > 0.5)
                 {
-                    gridColor = _HighlightColor; // Use highlight color
+                    float blendFactor = 0.5; // Adjust this to control blending strength
+                    gridColor.rgb = lerp(gridColor.rgb, _HighlightColor.rgb, blendFactor);
+                    gridColor.a = max(gridColor.a, _HighlightColor.a); // Preserve highlight alpha
                 }
 
                 // Draw grid lines
@@ -88,10 +94,9 @@ Shader "Custom/DynamicGridShader"
                 fixed4 texColor = tex2D(_MainTex, texUV);
 
                 // Blend texture colors (R, G, B) with grid lines
-                fixed4 blendedColor = texColor * (1.0 - gridLine) + gridColor * gridLine;
-
-                // Ensure alpha is preserved for transparency
-                blendedColor.a = max(gridLine, gridColor.a);
+                fixed4 blendedColor = lerp(texColor, gridColor, gridLine);
+                blendedColor = lerp(blendedColor, _HighlightColor, hoverMatch * _HighlightIntensity); // Prioritize highlight
+                blendedColor.a = max(texColor.a, gridColor.a); // Ensure alpha is preserved
 
                 return saturate(blendedColor);
             }

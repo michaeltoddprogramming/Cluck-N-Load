@@ -14,9 +14,7 @@ public class GridDataGenerator : MonoBehaviour
     public bool IsInitialized { get; private set; } = false;
 
     // Computed from the target mesh’s bounds.
-    // We store the lower‑left corner (using X and Z) in _GridOrigin.xy
     private Vector4 gridOrigin;    // (b.min.x, b.min.z, 0, 0)
-    // And store the overall width and depth (using b.size.x and b.size.z) in _GridWorldSize.xy
     private Vector4 gridWorldSize; // (b.size.x, b.size.z, 0, 0)
 
     void Start()
@@ -45,7 +43,7 @@ public class GridDataGenerator : MonoBehaviour
 
         grid = new GridCell[gridWidth, gridHeight];
 
-        // Initialize each grid cell with its center position.
+        // Initialize each grid cell with its center position and default flags.
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -58,8 +56,8 @@ public class GridDataGenerator : MonoBehaviour
                 {
                     x = x,
                     y = y,
-                    state = CellState.Empty,
-                    worldPosition = center
+                    worldPosition = center,
+                    flags = new GridCellFlags { isOwned = false, isOccupied = false, isObstacle = false }
                 };
             }
         }
@@ -72,22 +70,4 @@ public class GridDataGenerator : MonoBehaviour
     public MeshRenderer GetTargetMeshRenderer() => targetMeshRenderer;
     public Vector4 GetGridOrigin() => gridOrigin;
     public Vector4 GetGridWorldSize() => gridWorldSize;
-}
-  
-[Serializable]
-public struct GridCell
-{
-    public int x;
-    public int y;
-    public CellState state;
-    public Vector3 worldPosition;
-}
-
-public enum CellState
-{
-    Empty,
-    Owned,
-    Occupied,
-    Unavailable,
-    Unknown
 }

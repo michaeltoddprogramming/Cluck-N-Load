@@ -8,9 +8,14 @@ public class GridController : MonoBehaviour
     [SerializeField] private GameObject terrainSource;
     [SerializeField] private Material gridOverlayMaterial;
     [SerializeField] private GameObject ghostPrefab;
+    
+    // (The array of itemPrefabs is still here if you want to use keyboard-based cycling)
     [SerializeField] private GameObject[] itemPrefabs;  // Array of item prefabs
     private int currentPrefabIndex = 0;  // Index of the current prefab
     private GameObject currentItemPrefab => itemPrefabs[currentPrefabIndex];
+
+    // NEW: Build target selected from the UI
+    private GameObject currentBuildTargetPrefab;
 
     private GameObject ghostInstance;
     private Vector2Int currentHoveredCell;
@@ -28,7 +33,6 @@ public class GridController : MonoBehaviour
     [SerializeField] private Color gridLineColor = new Color(0, 1, 0, 0.5f);
     [SerializeField] private float gridLineOpacity = 0.5f;
     // [SerializeField] private float highlightIntensity = 0.7f;
-
 
     private Material targetMaterial;
     private MeshRenderer targetRenderer;
@@ -62,6 +66,13 @@ public class GridController : MonoBehaviour
 
         SetUpGridOverlay();
         ApplySettings();
+
+        // OPTIONAL: if no build target is set by the UI, you may want to default to one 
+        if (itemPrefabs.Length > 0)
+        {
+            currentBuildTargetPrefab = currentItemPrefab;
+            ReplaceGhostWithPrefab(currentBuildTargetPrefab);
+        }
     }
 
     void Update()
@@ -128,16 +139,20 @@ public class GridController : MonoBehaviour
 
     void HandlePrefabSelectionInput()
     {
+        // Existing keyboard input code for cycling if needed:
         if (Input.GetKeyDown(KeyCode.N))
         {
             currentPrefabIndex = (currentPrefabIndex + 1) % itemPrefabs.Length;
-            ReplaceGhost();
+            // When cycling with keys, update the build target too.
+            currentBuildTargetPrefab = currentItemPrefab;
+            ReplaceGhostWithPrefab(currentBuildTargetPrefab);
         }
 
         if (Input.GetKeyDown(KeyCode.P))
         {
             currentPrefabIndex = (currentPrefabIndex - 1 + itemPrefabs.Length) % itemPrefabs.Length;
-            ReplaceGhost();
+            currentBuildTargetPrefab = currentItemPrefab;
+            ReplaceGhostWithPrefab(currentBuildTargetPrefab);
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -148,21 +163,24 @@ public class GridController : MonoBehaviour
         }
     }
 
-    void ReplaceGhost()
+    // NEW: Replaces ghost using the provided prefab
+    void ReplaceGhostWithPrefab(GameObject prefab)
     {
         if (ghostInstance != null)
             Destroy(ghostInstance);
 
-        ghostInstance = Instantiate(currentItemPrefab);  // Instantiate the selected prefab
+        ghostInstance = Instantiate(prefab);
         ApplyGhostMaterial(ghostInstance);
         ghostInstance.transform.rotation = currentRotation;
+        hasGhost = true;
     }
 
     void UpdateGhostInstance()
     {
         if (ghostInstance == null)
         {
-            ReplaceGhost();
+            if (currentBuildTargetPrefab != null)
+                ReplaceGhostWithPrefab(currentBuildTargetPrefab);
         }
 
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
@@ -182,6 +200,20 @@ public class GridController : MonoBehaviour
             renderer.material = ghostMaterial;
         }
     }
+
+    // NEW: This method now accepts a StructureData and uses its prefab as the build target.
+    public void SetBuildTarget(StructureData data)
+    {
+        if (data == null || data.prefab == null)
+        {
+            Debug.LogError("Invalid StructureData or prefab is null.");
+            return;
+        }
+
+        Debug.Log($"Setting build target to: {data.structureName}");
+        currentBuildTargetPrefab = data.prefab;
+        ReplaceGhostWithPrefab(currentBuildTargetPrefab);
+    }   
 
     private List<Vector2Int> GetOccupiedCellsFromBounds(GameObject obj)
     {
@@ -255,7 +287,8 @@ public class GridController : MonoBehaviour
 
             if (!hasGhost)
             {
-                ReplaceGhost();
+                if (currentBuildTargetPrefab != null)
+                    ReplaceGhostWithPrefab(currentBuildTargetPrefab);
             }
 
             if (currentGhost != null)
@@ -290,11 +323,11 @@ public class GridController : MonoBehaviour
 
         Vector3 cellCenter = GetCellCenterFromTexture(x, y);
 
-        // Create a temporary ghost item just to calculate bounds
-        GameObject tempItem = Instantiate(currentItemPrefab, cellCenter, currentRotation);
+        // Create a temporary build item to calculate occupied cells
+        GameObject tempItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
         List<Vector2Int> cellsToOccupy = GetOccupiedCellsFromBounds(tempItem);
 
-        // Check if any of the cells are already occupied
+        // Validate that all cells in footprint are free
         foreach (var pos in cellsToOccupy)
         {
             if (!IsValidCell(pos.x, pos.y)) {
@@ -309,7 +342,7 @@ public class GridController : MonoBehaviour
             }
         }
 
-        // No collision — we're clear to place!
+        // No collision — placement is valid!
         tempItem.name = $"Item_{x}_{y}";
 
         foreach (var pos in cellsToOccupy)
@@ -322,7 +355,6 @@ public class GridController : MonoBehaviour
         Destroy(currentGhost);
         hasGhost = false;
     }
-
 
     Vector3 GetCellCenterFromTexture(int x, int y)
     {
@@ -356,16 +388,13 @@ public class GridController : MonoBehaviour
         if (placedItem != null)
         {
             List<Vector2Int> occupiedCells = GetOccupiedCellsFromBounds(placedItem);
-
             foreach (var pos in occupiedCells)
             {
                 if (!IsValidCell(pos.x, pos.y)) continue;
-
                 GridCell affectedCell = gridDataGenerator.GetCell(pos.x, pos.y);
                 affectedCell.flags.isOccupied = false;
                 gridDataGenerator.grid[pos.x, pos.y] = affectedCell;
             }
-
             Destroy(placedItem);
         }
     }
@@ -374,5 +403,4 @@ public class GridController : MonoBehaviour
     {
         return x >= 0 && x < gridDataGenerator.GetGridWidth() && y >= 0 && y < gridDataGenerator.GetGridHeight();
     }
-
 }

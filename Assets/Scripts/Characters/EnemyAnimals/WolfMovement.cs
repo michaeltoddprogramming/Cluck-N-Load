@@ -45,10 +45,14 @@ public class WolfMovement : MonoBehaviour
 {
     [Header("Setup")]
     [SerializeField] private GameObject wolfPrefab;
-    [SerializeField] private float spawnHeight = 1f;
+    [SerializeField] private float spawnHeight = 0.25f;
     [SerializeField] private float speed = 10f;
 
     private GridDataGenerator grid;
+    public ChickenMovement chicken;
+    GameObject wolf;
+
+    
 
     public void SpawnAndMoveWolf()
     {
@@ -60,13 +64,13 @@ public class WolfMovement : MonoBehaviour
         spawnPos.y += spawnHeight;
 
         // Center of grid
-        int centerX = grid.GetGridWidth() / 2;
-        int centerY = grid.GetGridHeight() / 2;
+        int centerX = grid.GetGridWidth() / 2 - 2;
+        int centerY = grid.GetGridHeight() / 2 + 1;
         Vector3 targetPos = grid.GetCell(centerX, centerY).worldPosition;
         targetPos.y += spawnHeight;
 
         // Spawn wolf
-        GameObject wolf = Instantiate(wolfPrefab, spawnPos, Quaternion.Euler(0f, 135f, 0f));
+        wolf = Instantiate(wolfPrefab, spawnPos, Quaternion.Euler(0f, 135f, 0f));
         Animator animator = wolf.GetComponent<Animator>();
         animator.SetBool("isRunning", false);
 
@@ -82,6 +86,19 @@ public class WolfMovement : MonoBehaviour
             yield return null;
         }
 
+        chicken.shoot();
+
+        // Destroy(wolf, 0.5f);
+        
+
+
+
         animator.SetBool("isRunning", true);
+    }
+
+    public void despawnWolf()
+    {
+        GetComponent<AudioSource>().Play();
+        Destroy(wolf);
     }
 }

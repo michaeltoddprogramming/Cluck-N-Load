@@ -1011,13 +1011,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0.25829396, y: -0.21332483, z: 0.14655992, w: 0.9307508}
+  m_LocalPosition: {x: 0, y: 5.61, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1.1036}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 32.912, y: -22.509, z: 11.169}
 --- !u!114 &410087042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3396,7 +3396,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startNightButton: {fileID: 1847462730}
   sceneLight: {fileID: 410087040}
-  color: {r: 0, g: 0, b: 0, a: 0}
+  color: {r: 0.6666667, g: 0.73333335, b: 0.8666667, a: 0}
   dayToNightGradient:
     serializedVersion: 2
     key0: {r: 1, g: 0.95, b: 0.8, a: 1}

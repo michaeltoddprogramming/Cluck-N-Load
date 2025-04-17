@@ -8,7 +8,7 @@ public class NightManager : MonoBehaviour
 {
     [SerializeField] private Button startNightButton;
     [SerializeField] private Light sceneLight;
-    [SerializeField] private Color color;
+[SerializeField] private Color color = new Color32(0xAA, 0xBB, 0xDD, 0xFF);
     [SerializeField] private Gradient dayToNightGradient;
     [SerializeField] private Gradient nightToDayGradient;
     [SerializeField] private WolfMovement wolfMovement;

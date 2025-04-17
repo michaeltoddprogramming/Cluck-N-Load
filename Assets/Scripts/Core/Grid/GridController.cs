@@ -45,32 +45,32 @@ public class GridController : MonoBehaviour
     private bool hasGhost = false;
     private Quaternion currentRotation = Quaternion.identity;
 
-    void Start()
+        void Start()
     {
         GridCellColorResolver.Colors = gridColors;
-
+    
         if (gridDataGenerator == null)
             gridDataGenerator = FindObjectOfType<GridDataGenerator>();
-
+    
         if (gridDataGenerator == null)
         {
             Debug.LogError("GridDataGenerator not found in scene.");
             return;
         }
-
+    
         ghostPlacer = FindObjectOfType<GhostPlacer>();
         if (ghostPlacer == null)
         {
             Debug.LogWarning("GhostPlacer not found. Ghost visual feedback will not be shown.");
         }
-
+    
         SetUpGridOverlay();
         ApplySettings();
-
-        // OPTIONAL: if no build target is set by the UI, you may want to default to one 
+    
+        // Set a default build target if none is selected
         if (itemPrefabs.Length > 0)
         {
-            currentBuildTargetPrefab = currentItemPrefab;
+            currentBuildTargetPrefab = itemPrefabs[0];
             ReplaceGhostWithPrefab(currentBuildTargetPrefab);
         }
     }
@@ -175,24 +175,39 @@ public class GridController : MonoBehaviour
         hasGhost = true;
     }
 
-    void UpdateGhostInstance()
-    {
-        if (ghostInstance == null)
+               void UpdateGhostInstance()
         {
-            if (currentBuildTargetPrefab != null)
+            // Get reference to ShopUIManager instead of ShopPanelUI
+            ShopUIManager shopManager = ShopUIManager.Instance;
+            
+            // Hide the ghost if the shop is closed or no build target is set
+            if (shopManager == null || !shopManager.IsShopOpen() || currentBuildTargetPrefab == null)
+            {
+                if (ghostInstance != null)
+                {
+                    Destroy(ghostInstance);
+                    ghostInstance = null;
+                    hasGhost = false;
+                }
+                return;
+            }
+            
+            // Create the ghost if it doesn't exist
+            if (ghostInstance == null)
+            {
                 ReplaceGhostWithPrefab(currentBuildTargetPrefab);
+            }
+        
+            // Update ghost position based on mouse hover
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+            {
+                Vector3 hitPos = hit.point;
+                Vector2Int gridCoords = WorldToGridCoords(hitPos);
+                Vector3 center = GetCellCenterFromTexture(gridCoords.x, gridCoords.y);
+                
+                ghostInstance.transform.position = center;
+            }
         }
-
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
-        {
-            Vector3 hitPos = hit.point;
-            Vector2Int gridCoords = WorldToGridCoords(hitPos);
-            Vector3 center = GetCellCenterFromTexture(gridCoords.x, gridCoords.y);
-
-            ghostInstance.transform.position = center;
-        }
-    }
-
     void ApplyGhostMaterial(GameObject obj)
     {
         foreach (var renderer in obj.GetComponentsInChildren<Renderer>())
@@ -314,47 +329,69 @@ public class GridController : MonoBehaviour
         }
     }
 
-    void PlaceItem(int x, int y)
+               void PlaceItem(int x, int y)
+        {
+            // Check if the shop is open using ShopUIManager
+    if (ShopUIManager.Instance == null || !ShopUIManager.Instance.IsShopOpen())
     {
-        if (!IsValidCell(x, y)) return;
-
-        GridCell cell = gridDataGenerator.GetCell(x, y);
-        if (!cell.flags.isOwned || cell.flags.isOccupied) return;
-
-        Vector3 cellCenter = GetCellCenterFromTexture(x, y);
-
-        // Create a temporary build item to calculate occupied cells
-        GameObject tempItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
-        List<Vector2Int> cellsToOccupy = GetOccupiedCellsFromBounds(tempItem);
-
-        // Validate that all cells in footprint are free
-        foreach (var pos in cellsToOccupy)
-        {
-            if (!IsValidCell(pos.x, pos.y)) {
-                Destroy(tempItem);
-                return; // Out of bounds, cancel placement
-            }
-
-            GridCell targetCell = gridDataGenerator.GetCell(pos.x, pos.y);
-            if (targetCell.flags.isOccupied) {
-                Destroy(tempItem);
-                return; // Collision with another structure, cancel placement
-            }
-        }
-
-        // No collision — placement is valid!
-        tempItem.name = $"Item_{x}_{y}";
-
-        foreach (var pos in cellsToOccupy)
-        {
-            GridCell targetCell = gridDataGenerator.GetCell(pos.x, pos.y);
-            targetCell.flags.isOccupied = true;
-            gridDataGenerator.grid[pos.x, pos.y] = targetCell;
-        }
-
-        Destroy(currentGhost);
-        hasGhost = false;
+        Debug.LogWarning("Cannot place structures while the shop is closed!");
+        return;
     }
+            // Check if the shop is open
+            if (!ShopPanelUI.Instance.IsShopOpen())
+            {
+                Debug.LogWarning("Cannot place structures while the shop is closed!");
+                return;
+            }
+        
+            // Check if a build target is set
+            if (currentBuildTargetPrefab == null)
+            {
+                Debug.LogWarning("No build target is set!");
+                return;
+            }
+        
+            if (!IsValidCell(x, y)) return;
+        
+            GridCell cell = gridDataGenerator.GetCell(x, y);
+            if (!cell.flags.isOwned || cell.flags.isOccupied) return;
+        
+            Vector3 cellCenter = GetCellCenterFromTexture(x, y);
+        
+            // Create a temporary build item to calculate occupied cells
+            GameObject tempItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
+            List<Vector2Int> cellsToOccupy = GetOccupiedCellsFromBounds(tempItem);
+        
+            // Validate that all cells in footprint are free
+            foreach (var pos in cellsToOccupy)
+            {
+                if (!IsValidCell(pos.x, pos.y))
+                {
+                    Destroy(tempItem);
+                    return; // Out of bounds, cancel placement
+                }
+        
+                GridCell targetCell = gridDataGenerator.GetCell(pos.x, pos.y);
+                if (targetCell.flags.isOccupied)
+                {
+                    Destroy(tempItem);
+                    return; // Collision with another structure, cancel placement
+                }
+            }
+        
+            // No collision — placement is valid!
+            tempItem.name = $"Item_{x}_{y}";
+        
+            foreach (var pos in cellsToOccupy)
+            {
+                GridCell targetCell = gridDataGenerator.GetCell(pos.x, pos.y);
+                targetCell.flags.isOccupied = true;
+                gridDataGenerator.grid[pos.x, pos.y] = targetCell;
+            }
+        
+            Destroy(currentGhost);
+            hasGhost = false;
+        }
 
     Vector3 GetCellCenterFromTexture(int x, int y)
     {

@@ -4,13 +4,50 @@ using System.Collections.Generic;
 
 public class ShopPanelUI : MonoBehaviour
 {
+    public static ShopPanelUI Instance { get; private set; } // Singleton instance
+
     public GameObject itemPrefab; // Your StructureItem prefab
     public Transform contentParent; // The "StructureList" object
     public StructureDatabase database; // Your ScriptableObject
+    [SerializeField] private Button closeButton; // Reference to the close button
+
+    private bool isShopOpen = false; // Tracks whether the shop is open
+
+    private void Awake()
+    {
+        // Ensure only one instance of ShopPanelUI exists
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogError("Multiple instances of ShopPanelUI detected! Destroying duplicate.");
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
 
     void Start()
     {
         PopulateShop();
+
+        // Link the close button to the ShopUIManager's CloseShop method
+        if (closeButton != null)
+        {
+            closeButton.onClick.AddListener(() => {
+                if (ShopUIManager.Instance != null)
+                {
+                    ShopUIManager.Instance.CloseShop();
+                }
+                else
+                {
+                    CloseShop(); // Fallback if ShopUIManager isn't available
+                }
+            });
+        }
+        else
+        {
+            Debug.LogWarning("Close button is not assigned in the inspector!");
+        }
     }
 
     void PopulateShop()
@@ -59,4 +96,21 @@ public class ShopPanelUI : MonoBehaviour
         Debug.Log("🎉 Shop population complete!");
     }
 
+    public void OpenShop()
+    {
+        isShopOpen = true;
+        gameObject.SetActive(true);
+    }
+
+    public void CloseShop()
+    {
+        isShopOpen = false;
+        Debug.Log("CloseShop method called!");
+        gameObject.SetActive(false);
+    }
+
+    public bool IsShopOpen()
+    {
+        return isShopOpen;
+    }
 }

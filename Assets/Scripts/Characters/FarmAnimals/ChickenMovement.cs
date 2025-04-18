@@ -1,52 +1,3 @@
-// using UnityEngine;
-
-// public class ChickenMovement : MonoBehaviour
-// {
-//     [Header("Setup")]
-//     [SerializeField] private GameObject chickenPrefab;
-//     [SerializeField] private float spawnHeight = 1f;
-//     [SerializeField] private float speed = 10f;
-
-//     private GridDataGenerator grid;
-
-//     public void SpawnAndMove()
-//     {
-//         if (grid == null)
-//             grid = FindObjectOfType<GridDataGenerator>();
-
-//         // Top-left corner
-//         Vector3 spawnPos = grid.GetCell(0, grid.GetGridHeight() - 1).worldPosition;
-//         spawnPos.y += spawnHeight;
-
-//         // Center of grid
-//         int centerX = grid.GetGridWidth() / 2;
-//         int centerY = grid.GetGridHeight() / 2;
-//         Vector3 targetPos = grid.GetCell(centerX, centerY).worldPosition;
-//         targetPos.y += spawnHeight;
-
-//         // Spawn chicken
-//         GameObject chicken = Instantiate(chickenPrefab, spawnPos, Quaternion.Euler(0f, 135f, 0f));
-//         Animator animator = chicken.GetComponent<Animator>();
-//         animator.SetBool("isWalking", false);
-
-//         // Start movement coroutine
-//         StartCoroutine(MoveChicken(chicken, targetPos, animator));
-//     }
-
-//     private System.Collections.IEnumerator MoveChicken(GameObject chicken, Vector3 targetPos, Animator animator)
-//     {
-//         while (Vector3.Distance(chicken.transform.position, targetPos) > 0.1f)
-//         {
-//             chicken.transform.position = Vector3.MoveTowards(chicken.transform.position, targetPos, speed * Time.deltaTime);
-//             yield return null;
-//         }
-
-//         animator.SetBool("isRunning", true);
-//     }
-// }
-
-
-
 using UnityEngine;
 
 public class ChickenMovement : MonoBehaviour
@@ -68,11 +19,11 @@ public class ChickenMovement : MonoBehaviour
     GameObject chicken;
 
     public WolfMovement wolf;
-
  
 
     void Update()
     {
+        
     }
 
     public void SpawnAndMove()
@@ -119,7 +70,7 @@ public class ChickenMovement : MonoBehaviour
         yield return new WaitForSeconds(seconds);
         StartCoroutine(ShootnMove(chicken, targetPos, animator));
         animator.SetBool("isWalking", false);
-        wolf.despawnWolf();
+        wolf.kill();
     }
 
     private System.Collections.IEnumerator ShootnMove(GameObject chicken, Vector3 targetPos, Animator animator)
@@ -133,5 +84,10 @@ public class ChickenMovement : MonoBehaviour
         }
 
         animator.SetBool("isWalking", true);
+    }
+
+    public void despawn()
+    {
+        Destroy(chicken);
     }
 }

@@ -45,32 +45,32 @@ public class GridController : MonoBehaviour
     private bool hasGhost = false;
     private Quaternion currentRotation = Quaternion.identity;
 
-    void Start()
+        void Start()
     {
         GridCellColorResolver.Colors = gridColors;
-
+    
         if (gridDataGenerator == null)
             gridDataGenerator = FindObjectOfType<GridDataGenerator>();
-
+    
         if (gridDataGenerator == null)
         {
             Debug.LogError("GridDataGenerator not found in scene.");
             return;
         }
-
+    
         ghostPlacer = FindObjectOfType<GhostPlacer>();
         if (ghostPlacer == null)
         {
             Debug.LogWarning("GhostPlacer not found. Ghost visual feedback will not be shown.");
         }
-
+    
         SetUpGridOverlay();
         ApplySettings();
-
-        // OPTIONAL: if no build target is set by the UI, you may want to default to one 
+    
+        // Set a default build target if none is selected
         if (itemPrefabs.Length > 0)
         {
-            currentBuildTargetPrefab = currentItemPrefab;
+            currentBuildTargetPrefab = itemPrefabs[0];
             ReplaceGhostWithPrefab(currentBuildTargetPrefab);
         }
     }
@@ -175,24 +175,39 @@ public class GridController : MonoBehaviour
         hasGhost = true;
     }
 
-    void UpdateGhostInstance()
-    {
-        if (ghostInstance == null)
+               void UpdateGhostInstance()
         {
-            if (currentBuildTargetPrefab != null)
+            // Get reference to ShopUIManager instead of ShopPanelUI
+            ShopUIManager shopManager = ShopUIManager.Instance;
+            
+            // Hide the ghost if the shop is closed or no build target is set
+            if (shopManager == null || !shopManager.IsShopOpen() || currentBuildTargetPrefab == null)
+            {
+                if (ghostInstance != null)
+                {
+                    Destroy(ghostInstance);
+                    ghostInstance = null;
+                    hasGhost = false;
+                }
+                return;
+            }
+            
+            // Create the ghost if it doesn't exist
+            if (ghostInstance == null)
+            {
                 ReplaceGhostWithPrefab(currentBuildTargetPrefab);
+            }
+        
+            // Update ghost position based on mouse hover
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+            {
+                Vector3 hitPos = hit.point;
+                Vector2Int gridCoords = WorldToGridCoords(hitPos);
+                Vector3 center = GetCellCenterFromTexture(gridCoords.x, gridCoords.y);
+                
+                ghostInstance.transform.position = center;
+            }
         }
-
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
-        {
-            Vector3 hitPos = hit.point;
-            Vector2Int gridCoords = WorldToGridCoords(hitPos);
-            Vector3 center = GetCellCenterFromTexture(gridCoords.x, gridCoords.y);
-
-            ghostInstance.transform.position = center;
-        }
-    }
-
     void ApplyGhostMaterial(GameObject obj)
     {
         foreach (var renderer in obj.GetComponentsInChildren<Renderer>())
@@ -355,6 +370,21 @@ public class GridController : MonoBehaviour
 
     void PlaceItem(int x, int y)
     {
+        if (ShopUIManager.Instance == null || !ShopUIManager.Instance.IsShopOpen())
+        {
+            Debug.LogWarning("Cannot place structures while the shop is closed!");
+            return;
+        }
+        if (!ShopPanelUI.Instance.IsShopOpen())
+        {
+            Debug.LogWarning("Cannot place structures while the shop is closed!");
+            return;
+        }
+        if (currentBuildTargetPrefab == null)
+            {
+                Debug.LogWarning("No build target is set!");
+                return;
+            }
         if (!IsValidCell(x, y)) return;
 
         GridCell cell = gridDataGenerator.GetCell(x, y);

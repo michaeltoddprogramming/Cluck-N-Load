@@ -251,6 +251,45 @@ public class GridController : MonoBehaviour
         return occupiedCells;
     }
 
+    private List<Vector2Int> GetOccupiedCellsFromMeshBounds(GameObject obj)
+    {
+        var occupiedCells = new List<Vector2Int>();
+        
+        // Get renderer (which properly accounts for rotation)
+        var renderer = obj.GetComponentInChildren<Renderer>();
+        if (renderer == null) return occupiedCells;
+        
+        // Get bounds in world space (already handles rotation correctly)
+        Bounds bounds = renderer.bounds;
+        
+        // Shrink bounds slightly to prevent edge-case cells from being occupied
+        bounds.Expand(-0.1f);
+        
+        // Debug visualization
+        Debug.DrawLine(bounds.min, bounds.max, Color.red, 2.0f);
+        
+        // Convert to grid coordinates
+        Vector2Int bottomLeft = WorldToGridCoords(bounds.min);
+        Vector2Int topRight = WorldToGridCoords(bounds.max);
+        
+        // Loop through all cells
+        for (int x = bottomLeft.x; x <= topRight.x; x++) {
+            for (int y = bottomLeft.y; y <= topRight.y; y++) {
+                if (IsValidCell(x, y)) {
+                    // Get cell center in world space
+                    Vector3 cellCenter = GetCellCenterFromTexture(x, y);
+                    
+                    // Add a more precise check - only occupy if cell center is within the bounds
+                    if (bounds.Contains(new Vector3(cellCenter.x, bounds.center.y, cellCenter.z))) {
+                        occupiedCells.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+        }
+        
+        return occupiedCells;
+    }
+
     Vector2Int WorldToGridCoords(Vector3 worldPos)
     {
         Vector4 origin = gridDataGenerator.GetGridOrigin();
@@ -325,7 +364,7 @@ public class GridController : MonoBehaviour
 
         // Create a temporary build item to calculate occupied cells
         GameObject tempItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
-        List<Vector2Int> cellsToOccupy = GetOccupiedCellsFromBounds(tempItem);
+        List<Vector2Int> cellsToOccupy = GetOccupiedCellsFromMeshBounds(tempItem);
 
         // Validate that all cells in footprint are free
         foreach (var pos in cellsToOccupy)
@@ -387,7 +426,7 @@ public class GridController : MonoBehaviour
         GameObject placedItem = GameObject.Find(itemName);
         if (placedItem != null)
         {
-            List<Vector2Int> occupiedCells = GetOccupiedCellsFromBounds(placedItem);
+            List<Vector2Int> occupiedCells = GetOccupiedCellsFromMeshBounds(placedItem);
             foreach (var pos in occupiedCells)
             {
                 if (!IsValidCell(pos.x, pos.y)) continue;

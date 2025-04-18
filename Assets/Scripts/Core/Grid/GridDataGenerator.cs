@@ -36,8 +36,8 @@ public class GridDataGenerator : MonoBehaviour
         gridWorldSize = new Vector4(b.size.x, b.size.z, 0, 0); // Use size.x and size.z.
 
         // Compute how many cells fit along X and Z based on cellSize:
-        gridWidth = Mathf.FloorToInt(b.size.x / cellSize);
-        gridHeight = Mathf.FloorToInt(b.size.z / cellSize);
+        gridWidth = Mathf.RoundToInt(b.size.x / cellSize); // Use RoundToInt for better alignment
+        gridHeight = Mathf.RoundToInt(b.size.z / cellSize);
 
         Debug.Log($"Grid size: {gridWidth} x {gridHeight}");
 
@@ -76,8 +76,8 @@ public class GridDataGenerator : MonoBehaviour
             return hit.point.y; // Return the Y position of the terrain
         }
 
-        // Fallback to the minimum Y bound if no terrain is hit
-        return targetMeshRenderer.bounds.min.y;
+        // Fallback to the average Y bound if no terrain is hit
+        return (targetMeshRenderer.bounds.min.y + targetMeshRenderer.bounds.max.y) / 2f;
     }
 
     // Getters for external access:

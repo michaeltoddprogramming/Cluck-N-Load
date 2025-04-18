@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using System.Collections.Generic;
 
 public class ShopPanelUI : MonoBehaviour
@@ -10,6 +11,10 @@ public class ShopPanelUI : MonoBehaviour
     public Transform contentParent; // The "StructureList" object
     public StructureDatabase database; // Your ScriptableObject
     [SerializeField] private Button closeButton; // Reference to the close button
+
+    // Events for opening/closing shop
+    public UnityEvent OnShopOpened = new UnityEvent();
+    public UnityEvent OnShopClosed = new UnityEvent();
 
     private bool isShopOpen = false; // Tracks whether the shop is open
 
@@ -100,6 +105,20 @@ public class ShopPanelUI : MonoBehaviour
     {
         isShopOpen = true;
         gameObject.SetActive(true);
+        Debug.Log("Shop Panel: OnShopOpened event firing");
+        OnShopOpened.Invoke();
+        
+        // Directly find and call BuildController as a fallback
+        BuildController buildController = FindObjectOfType<BuildController>();
+        if (buildController != null)
+        {
+            Debug.Log("Shop Panel: Direct call to BuildController.HandleShopOpened");
+            buildController.HandleShopOpened();
+        }
+        else
+        {
+            Debug.LogWarning("Shop Panel: BuildController not found in scene!");
+        }
     }
 
     public void CloseShop()
@@ -107,6 +126,7 @@ public class ShopPanelUI : MonoBehaviour
         isShopOpen = false;
         Debug.Log("CloseShop method called!");
         gameObject.SetActive(false);
+        OnShopClosed.Invoke();
     }
 
     public bool IsShopOpen()

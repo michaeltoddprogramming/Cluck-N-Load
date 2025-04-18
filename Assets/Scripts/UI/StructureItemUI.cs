@@ -45,15 +45,15 @@ public class StructureItemUI : MonoBehaviour
         if (data != null)
         {
             Debug.Log($"Selected structure: {data.structureName}");
-            // Pass the StructureData to the GridController
-            GridController controller = FindObjectOfType<GridController>();
+            // Pass the StructureData to the BuildController
+            BuildController controller = FindObjectOfType<BuildController>();
             if (controller != null)
             {
                 controller.SetBuildTarget(data);
             }
             else
             {
-                Debug.LogError("GridController not found in scene!");
+                Debug.LogError("BuildController not found in scene!");
             }
         }
         else

@@ -68,22 +68,29 @@ public class ChickenMovement : MonoBehaviour
     private System.Collections.IEnumerator delay(float seconds)
     {
         yield return new WaitForSeconds(seconds);
-        StartCoroutine(ShootnMove(chicken, targetPos, animator));
-        animator.SetBool("isWalking", false);
-        wolf.kill();
+
+        if(chicken != null)
+        {
+            StartCoroutine(ShootnMove(chicken, targetPos, animator));
+            animator.SetBool("isWalking", false);
+            wolf.kill();
+        }
     }
 
     private System.Collections.IEnumerator ShootnMove(GameObject chicken, Vector3 targetPos, Animator animator)
     // private IEnumerator ShootnMove(GameObject chicken, Vector3 targetPos, Animator animator)
     {
         // animator.SetBool("isWalking", false);
-        while (Vector3.Distance(chicken.transform.position, targetPos) > 0.1f)
+        while (chicken != null && Vector3.Distance(chicken.transform.position, targetPos) > 0.1f)
         {
             chicken.transform.position = Vector3.MoveTowards(chicken.transform.position, targetPos, speed * Time.deltaTime);
             yield return null;
         }
 
-        animator.SetBool("isWalking", true);
+        if(chicken != null)
+        {
+            animator.SetBool("isWalking", true);
+        }
     }
 
     public void despawn()

@@ -39,20 +39,24 @@ public class WolfMovement : MonoBehaviour
 
     private System.Collections.IEnumerator MoveWolf(GameObject wolf, Vector3 targetPos, Animator animator)
     {
-        while (Vector3.Distance(wolf.transform.position, targetPos) > 0.1f)
+        if(wolf == null)
+        {
+            yield break;
+        }
+
+
+        while (wolf != null && Vector3.Distance(wolf.transform.position, targetPos) > 0.1f)
         {
             wolf.transform.position = Vector3.MoveTowards(wolf.transform.position, targetPos, speed * Time.deltaTime);
             yield return null;
         }
 
-        chicken.shoot();
-
+        if(wolf != null)
+        {
+            chicken.shoot();
+            animator.SetBool("isRunning", true);
+        }
         // Destroy(wolf, 0.5f);
-        
-
-
-
-        animator.SetBool("isRunning", true);
     }
 
     public void kill()

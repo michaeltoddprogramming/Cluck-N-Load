@@ -36,6 +36,14 @@ public class TextureGenerator : MonoBehaviour
         meshRenderer = newMeshRenderer;
     }
 
+    // private void LateUpdate() 
+    // {
+    //     if (gridTexture != null && !updatedOnce) {
+    //         UpdateTexture();
+    //         updatedOnce = true;
+    //     }
+    // }
+
     public void GenerateGridTexture()
     {
         if (gridData.grid == null || meshRenderer == null)

@@ -229,7 +229,8 @@ public class OwnershipController : MonoBehaviour
         RefreshGridTexture();
     }
     
-    // Buy a single cell at a position
+    // Update the BuyLandAtPosition method to check visibility
+
     public void BuyLandAtPosition(Vector3 worldPosition)
     {
         if (gridDataGenerator == null || !gridDataGenerator.IsInitialized) return;
@@ -247,6 +248,21 @@ public class OwnershipController : MonoBehaviour
             GridCell cell = gridDataGenerator.GetCell(cellCoords.x, cellCoords.y);
             if (cell == null) return;
             
+            // IMPORTANT: Only allow buying visible cells that aren't already owned
+            if (!cell.flags.isVisible)
+            {
+                if (logDebugInfo)
+                    Debug.Log($"Cannot buy invisible land at grid position: ({cellCoords.x}, {cellCoords.y})");
+                return;
+            }
+            
+            if (cell.flags.isOwned)
+            {
+                if (logDebugInfo)
+                    Debug.Log($"Cell at ({cellCoords.x}, {cellCoords.y}) is already owned");
+                return;
+            }
+            
             // Set cell as owned and mark it as manually purchased
             cell.flags.isOwned = true;
             manuallyOwnedCells[cellCoords.x, cellCoords.y] = true;
@@ -254,7 +270,7 @@ public class OwnershipController : MonoBehaviour
             if (logDebugInfo)
                 Debug.Log($"Bought land at grid position: ({cellCoords.x}, {cellCoords.y})");
             
-            // After buying land, update visibility since the owned area has changed
+            // Update visibility after buying to expand the visible area
             UpdateCellVisibility();
             
             // Update the grid texture

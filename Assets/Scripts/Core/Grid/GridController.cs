@@ -58,16 +58,22 @@ public class GridController : MonoBehaviour
         }
     }
 
+    // Improve the UpdateHoveredCell method
     void UpdateHoveredCell()
     {
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
         {
             Vector2Int gridCoords = WorldToGridCoords(hit.point);
-            currentHoveredCell = gridCoords;
             
-            if (targetMaterial != null)
+            // Only update the hover cell if it's within valid bounds
+            if (IsValidCell(gridCoords.x, gridCoords.y))
             {
-                targetMaterial.SetVector("_HoverCell", new Vector4(gridCoords.x, gridCoords.y, 0, 0));
+                currentHoveredCell = gridCoords;
+                
+                if (targetMaterial != null)
+                {
+                    targetMaterial.SetVector("_HoverCell", new Vector4(gridCoords.x, gridCoords.y, 0, 0));
+                }
             }
         }
     }
@@ -166,8 +172,16 @@ public class GridController : MonoBehaviour
         return new Vector2Int(cellX, cellY);
     }
 
+    // Modify the GetCellCenterFromTexture method with proper bounds checking
     public Vector3 GetCellCenterFromTexture(int x, int y)
     {
+        // Safety check to prevent out of bounds errors
+        if (!IsValidCell(x, y))
+        {
+            Debug.LogWarning($"GetCellCenterFromTexture: Attempted to access invalid cell ({x}, {y})");
+            return Vector3.zero; // Return a default value
+        }
+
         int gridWidth = gridDataGenerator.GetGridWidth();
         int gridHeight = gridDataGenerator.GetGridHeight();
         Vector4 gridOrigin = gridDataGenerator.GetGridOrigin();
@@ -181,7 +195,13 @@ public class GridController : MonoBehaviour
         float worldX = gridOrigin.x + textureCenterX * gridDataGenerator.GetGridWorldSize().x;
         float worldZ = gridOrigin.y + textureCenterY * gridDataGenerator.GetGridWorldSize().y;
 
-        float worldY = gridDataGenerator.GetCell(x, y).worldPosition.y;
+        // Get the cell and safely access its height
+        GridCell cell = gridDataGenerator.GetCell(x, y);
+        float worldY = 0f;
+        if (cell != null)
+        {
+            worldY = cell.worldPosition.y;
+        }
 
         return new Vector3(worldX, worldY, worldZ);
     }

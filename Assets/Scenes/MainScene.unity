@@ -2994,8 +2994,8 @@ MonoBehaviour:
   maxX: 15
   minZ: -15
   maxZ: 15
-  minZoom: 30
-  maxZoom: 45
+  minZoom: 10
+  maxZoom: 65
   fixedPitch: 0
 --- !u!1 &1309907073
 GameObject:

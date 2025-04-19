@@ -8,6 +8,7 @@ public class NightManager : MonoBehaviour
 {
     [SerializeField] private Button startNightButton;
     [SerializeField] private TextMeshProUGUI buttonText;
+    [SerializeField] private Button shopButton;
     [SerializeField] private Light sceneLight;
     [SerializeField] private Color color = new Color32(0xAA, 0xBB, 0xDD, 0xFF);
     [SerializeField] private float intensity = 0.3f;
@@ -26,6 +27,17 @@ public class NightManager : MonoBehaviour
     private AudioSource source2;
 
     private bool isDay = true;
+
+    private Color dayShop = Color.white;
+    private Color nightShop = Color.grey * 0.9f;
+    public Image shopIcon;
+
+    // private int minutes;
+    // private int hours;
+    // private int days;
+
+    // private float tempSecond;
+
 
     private void Start()
     {
@@ -66,13 +78,6 @@ public class NightManager : MonoBehaviour
 
     }
 
-
-
-
-
-
-
-
     private void SetInitialLight()
     {
         if (isDay)
@@ -109,6 +114,11 @@ public class NightManager : MonoBehaviour
 
     private void StartNight()
     {
+        //disable button during night and make grey
+        shopButton.interactable = false;
+        shopIcon.color = nightShop;
+
+
         isDay = false;
         buttonText.text = "End Night";
         // SetListeners();
@@ -132,6 +142,10 @@ public class NightManager : MonoBehaviour
 
     private void StartDay()
     {
+        //enable button during day and colour
+        shopButton.interactable = true;
+        shopIcon.color = dayShop;
+        
         isDay = true;
         buttonText.text = "Start Night";
         // SetListeners();

@@ -1536,6 +1536,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4097010695429157329, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2d14e1262dde4b847b64a544f2e0c875, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1730,6 +1734,7 @@ GameObject:
   - component: {fileID: 527660423}
   - component: {fileID: 527660422}
   - component: {fileID: 527660424}
+  - component: {fileID: 527660425}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -1796,6 +1801,27 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0.54509807}
   gridLineColor: {r: 0, g: 1, b: 0, a: 0.5}
   gridLineOpacity: 0.6
+--- !u!114 &527660425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 527660421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 491009c5eeebd0f4692430dcab0e5f1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridController: {fileID: 527660424}
+  gridDataGenerator: {fileID: 527660422}
+  centerBuilding: {fileID: 0}
+  centerPosition: {x: 0, y: 0, z: 0}
+  ownershipRadius: 8
+  shapeBlend: 1
+  visualizeInEditor: 0
+  gizmoColor: {r: 1, g: 0.9813726, b: 0, a: 1}
+  logDebugInfo: 1
 --- !u!1 &539507485
 GameObject:
   m_ObjectHideFlags: 0
@@ -3586,8 +3612,9 @@ MonoBehaviour:
   maxX: 15
   minZ: -15
   maxZ: 15
-  minZoom: 30
-  maxZoom: 45
+  minZoom: 10
+  maxZoom: 65
+  fixedPitch: 0
 --- !u!1 &1309907073
 GameObject:
   m_ObjectHideFlags: 0
@@ -4750,6 +4777,9 @@ MonoBehaviour:
   removeModifierKey: 306
   itemDeleteIcon: {fileID: 2119073778}
   cursorOffset: {x: 50, y: -60}
+  ownershipController: {fileID: 0}
+  enableLandBuying: 1
+  buyLandKey: 304
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

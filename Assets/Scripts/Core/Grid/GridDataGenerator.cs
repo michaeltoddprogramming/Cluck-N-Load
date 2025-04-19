@@ -62,7 +62,12 @@ public class GridDataGenerator : MonoBehaviour
                     y = y,
                     worldPosition = new Vector3(center.x, height, center.z),  // Use calculated height
                     height = height,  // Store the height for reference
-                    flags = new GridCellFlags { isOwned = true, isOccupied = false, isObstacle = false }
+                    flags = new GridCellFlags { 
+                        isOwned = false, 
+                        isOccupied = false, 
+                        isObstacle = false,
+                        isVisible = false  // Start with all cells invisible
+                    }
                 };
             }
         }

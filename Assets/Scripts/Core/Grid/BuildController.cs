@@ -24,6 +24,12 @@ public class BuildController : MonoBehaviour
     [Tooltip("Position offset from the cursor where the delete icon will appear")]
     [SerializeField] private Vector2 cursorOffset = new Vector2(15f, 15f); // Now exposed in Inspector
     
+    [Header("Land Ownership")]
+    [SerializeField] private OwnershipController ownershipController;
+    [SerializeField] private bool enableLandBuying = true;
+    [SerializeField] private KeyCode buyLandKey = KeyCode.LeftShift; // Hold shift to buy land
+    private bool isInLandBuyMode = false;
+    
     // Add this property for programmatic access
     public Vector2 DeleteIconOffset
     {
@@ -82,6 +88,10 @@ public class BuildController : MonoBehaviour
         {
             itemDeleteIcon.GetComponent<Graphic>().raycastTarget = false;
         }
+        
+        // Find ownership controller if not assigned
+        if (ownershipController == null)
+            ownershipController = FindObjectOfType<OwnershipController>();
         
         Debug.Log($"BuildController started. Grid controller reference: {(gridController != null ? "Valid" : "NULL")}");
         Debug.Log($"Available prefabs: {buildablePrefabs.Length}");
@@ -244,6 +254,28 @@ public class BuildController : MonoBehaviour
         // Skip input handling if ghost is temporarily hidden (hovering over UI)
         if (isGhostTemporarilyHidden) return;
         
+        // We're in land buying mode if no building is selected
+        isInLandBuyMode = enableLandBuying && currentBuildTargetPrefab == null;
+        
+        // Right-click to cancel selected building
+        if (Input.GetMouseButtonDown(1))
+        {
+            // Don't process if clicking on UI elements
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return;
+                
+            // Cancel the current building selection
+            if (currentGhost != null)
+            {
+                Destroy(currentGhost);
+                currentGhost = null;
+                currentBuildTargetPrefab = null;
+                
+                Debug.Log("Cancelled building selection");
+                return;
+            }
+        }
+        
         // Rotation
         if (Input.GetKeyDown(rotateKey))
         {
@@ -269,15 +301,13 @@ public class BuildController : MonoBehaviour
             CreateGhost(currentBuildTargetPrefab);
         }
         
-        // Left click - check if it's for placement or removal
+        // Left-click for placement or land buying
         if (Input.GetMouseButtonDown(0))
         {
             // Don't process if clicking on UI elements
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-            {
                 return;
-            }
-            
+                
             // Check if modifier key is pressed for removal
             if (Input.GetKey(removeModifierKey))
             {
@@ -292,9 +322,22 @@ public class BuildController : MonoBehaviour
                 Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
                 RemoveItem(hoveredCell.x, hoveredCell.y);
             }
-            else
+            else if (currentBuildTargetPrefab == null || isInLandBuyMode)
             {
-                // Normal placement with Left Click
+                // Buy land at the clicked position when no building is selected
+                if (ownershipController != null)
+                {
+                    // Get the position under the mouse
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    if (Physics.Raycast(ray, out RaycastHit hit))
+                    {
+                        ownershipController.BuyLandAtPosition(hit.point);
+                    }
+                }
+            }
+            else if (currentBuildTargetPrefab != null)
+            {
+                // Normal placement with Left Click when a building is selected
                 Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
                 PlaceItem(hoveredCell.x, hoveredCell.y);
             }
@@ -318,7 +361,27 @@ public class BuildController : MonoBehaviour
     {
         if (currentGhost == null) return;
         
+        // Hide ghost if in land buying mode
+        if (isInLandBuyMode)
+        {
+            currentGhost.SetActive(false);
+            return;
+        }
+        else if (!currentGhost.activeSelf && !isGhostTemporarilyHidden && !isDeleteModeActive)
+        {
+            currentGhost.SetActive(true);
+        }
+        
         Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+        
+        // Add bounds checking before getting the cell center
+        if (!gridController.IsValidCell(hoveredCell.x, hoveredCell.y))
+        {
+            // Optional: Hide ghost when mouse is outside valid grid area
+            currentGhost.SetActive(false);
+            return;
+        }
+        
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(hoveredCell.x, hoveredCell.y);
         
         currentGhost.transform.position = cellCenter;
@@ -665,5 +728,17 @@ public class BuildController : MonoBehaviour
         {
             graphic.raycastTarget = false;
         }
+    }
+    
+    // Add this method to provide a public way to cancel the current building
+    public void CancelCurrentBuilding()
+    {
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+        }
+        
+        currentBuildTargetPrefab = null;
     }
 }

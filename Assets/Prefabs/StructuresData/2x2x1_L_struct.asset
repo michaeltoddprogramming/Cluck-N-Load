@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd30dbfbb90813b48a35331b61b644e0, type: 3}
-  m_Name: 3x1x1_struct
+  m_Name: 2x2x1_L_struct
   m_EditorClassIdentifier: 
-  structureName: 3x1x1_house
-  prefab: {fileID: 919132149155446097, guid: c10db0eefd688774ea0e3b45f9bd991b, type: 3}
+  structureName: L House
+  prefab: {fileID: 6474609555777841612, guid: 93672a4b96bbb504e9fbea56b5142b8a, type: 3}
   icon: {fileID: 0}
   type: 0

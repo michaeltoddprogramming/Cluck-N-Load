@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class BuildController : MonoBehaviour
 {
@@ -14,6 +15,21 @@ public class BuildController : MonoBehaviour
     [SerializeField] private KeyCode rotateKey = KeyCode.R;
     [SerializeField] private KeyCode nextItemKey = KeyCode.N;
     [SerializeField] private KeyCode previousItemKey = KeyCode.P;
+    [SerializeField] private KeyCode removeModifierKey = KeyCode.LeftControl; // New: Key to hold for removal
+    
+    [Header("UI References")]
+    [SerializeField] private RectTransform itemDeleteIcon; // Reference to your red cross UI element
+    
+    [Header("Delete Mode Settings")]
+    [Tooltip("Position offset from the cursor where the delete icon will appear")]
+    [SerializeField] private Vector2 cursorOffset = new Vector2(15f, 15f); // Now exposed in Inspector
+    
+    // Add this property for programmatic access
+    public Vector2 DeleteIconOffset
+    {
+        get { return cursorOffset; }
+        set { cursorOffset = value; }
+    }
     
     private GameObject currentGhost;
     private GameObject currentBuildTargetPrefab;
@@ -25,6 +41,7 @@ public class BuildController : MonoBehaviour
     private ShopPanelUI shopPanelUI;
     
     private bool isGhostTemporarilyHidden = false;
+    private bool isDeleteModeActive = false;
     
     void Start()
     {
@@ -60,6 +77,12 @@ public class BuildController : MonoBehaviour
             currentBuildTargetPrefab = buildablePrefabs[0];
         }
         
+        // Make sure the delete icon doesn't block raycasts
+        if (itemDeleteIcon != null && itemDeleteIcon.GetComponent<Graphic>() != null)
+        {
+            itemDeleteIcon.GetComponent<Graphic>().raycastTarget = false;
+        }
+        
         Debug.Log($"BuildController started. Grid controller reference: {(gridController != null ? "Valid" : "NULL")}");
         Debug.Log($"Available prefabs: {buildablePrefabs.Length}");
     }
@@ -92,8 +115,58 @@ public class BuildController : MonoBehaviour
     {
         if (!isBuildModeActive) return;
         
+        // Check for delete mode toggle (Ctrl key)
+        bool deleteKeyPressed = Input.GetKey(removeModifierKey);
+        
+        // If delete mode state has changed
+        if (deleteKeyPressed != isDeleteModeActive)
+        {
+            isDeleteModeActive = deleteKeyPressed;
+            
+            // Toggle visibility of ghost and delete icon
+            if (isDeleteModeActive)
+            {
+                // Entering delete mode
+                if (currentGhost != null)
+                {
+                    currentGhost.SetActive(false);
+                }
+                
+                // Show delete icon
+                if (itemDeleteIcon != null)
+                {
+                    itemDeleteIcon.gameObject.SetActive(true);
+                }
+            }
+            else
+            {
+                // Exiting delete mode
+                if (currentGhost != null && !isGhostTemporarilyHidden)
+                {
+                    currentGhost.SetActive(true);
+                }
+                
+                // Hide delete icon
+                if (itemDeleteIcon != null)
+                {
+                    itemDeleteIcon.gameObject.SetActive(false);
+                }
+            }
+        }
+        
+        // Update delete icon position if active
+        if (isDeleteModeActive && itemDeleteIcon != null && itemDeleteIcon.gameObject.activeSelf)
+        {
+            UpdateDeleteIconPosition();
+        }
+        
         HandleBuildInput();
-        UpdateGhostPosition();
+        
+        // Only update ghost position if not in delete mode
+        if (!isDeleteModeActive && currentGhost != null)
+        {
+            UpdateGhostPosition();
+        }
     }
     
     public void EnableBuildMode()
@@ -140,15 +213,29 @@ public class BuildController : MonoBehaviour
             isGhostTemporarilyHidden = true;
             currentGhost.SetActive(false);
         }
+        
+        // Also hide delete icon if visible
+        if (itemDeleteIcon != null && isDeleteModeActive)
+        {
+            itemDeleteIcon.gameObject.SetActive(false);
+        }
     }
     
     // Called from ShopPanelUI when pointer exits the UI
     public void RestoreGhost()
     {
-        if (currentGhost != null && isGhostTemporarilyHidden)
+        isGhostTemporarilyHidden = false;
+        
+        // Only show ghost if we're not in delete mode
+        if (currentGhost != null && !isDeleteModeActive)
         {
             currentGhost.SetActive(true);
-            isGhostTemporarilyHidden = false;
+        }
+        
+        // Restore delete icon if in delete mode
+        if (itemDeleteIcon != null && isDeleteModeActive && !isGhostTemporarilyHidden)
+        {
+            itemDeleteIcon.gameObject.SetActive(true);
         }
     }
     
@@ -182,29 +269,49 @@ public class BuildController : MonoBehaviour
             CreateGhost(currentBuildTargetPrefab);
         }
         
-        // Place and Remove objects - CHECK FOR UI INTERACTION FIRST
+        // Left click - check if it's for placement or removal
         if (Input.GetMouseButtonDown(0))
         {
-            // Don't place items if clicking on UI elements
-            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-            {
-                return; // Skip building when clicking UI
-            }
-            
-            Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-            PlaceItem(hoveredCell.x, hoveredCell.y);
-        }
-        else if (Input.GetMouseButtonDown(1))
-        {
-            // Also prevent right-click removal when clicking UI
+            // Don't process if clicking on UI elements
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
                 return;
             }
             
-            Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-            RemoveItem(hoveredCell.x, hoveredCell.y);
+            // Check if modifier key is pressed for removal
+            if (Input.GetKey(removeModifierKey))
+            {
+                // Try to remove structure by direct click
+                if (TryRemoveStructureByRaycast())
+                {
+                    // Successfully removed structure by direct click
+                    return;
+                }
+                
+                // Fallback to grid-based removal if no structure was hit
+                Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+                RemoveItem(hoveredCell.x, hoveredCell.y);
+            }
+            else
+            {
+                // Normal placement with Left Click
+                Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+                PlaceItem(hoveredCell.x, hoveredCell.y);
+            }
         }
+    }
+    
+    // Public method to change the removal modifier key at runtime
+    public void SetRemovalModifierKey(KeyCode newKey)
+    {
+        removeModifierKey = newKey;
+        Debug.Log($"Removal modifier key changed to: {newKey}");
+    }
+    
+    // Get the current removal modifier key
+    public KeyCode GetRemovalModifierKey()
+    {
+        return removeModifierKey;
     }
     
     void UpdateGhostPosition()
@@ -425,6 +532,138 @@ public class BuildController : MonoBehaviour
             
             // Update grid texture
             gridController.UpdateGridTexture();
+        }
+    }
+    
+    // Enhanced method to check if mouse is directly over a placed structure
+    private bool TryRemoveStructureByRaycast()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        
+        // Skip this object if it's the ghost to avoid raycast issues
+        int layerMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast"));
+        
+        if (Physics.Raycast(ray, out hit, 1000f, layerMask))
+        {
+            // Skip if we hit the ghost
+            if (hit.transform.name == "BuildGhost") return false;
+            
+            // Debug.Log($"Raycast hit: {hit.transform.name} at distance {hit.distance}");
+            
+            // Search upward in hierarchy to find the parent structure
+            Transform hitTransform = hit.transform;
+            while (hitTransform != null)
+            {
+                // Check if this transform or any parent is a placed structure
+                if (hitTransform.name.StartsWith("Item_"))
+                {
+                    GameObject placedItem = hitTransform.gameObject;
+                    // Debug.Log($"Found structure to remove: {placedItem.name}");
+                    
+                    // Get footprint before destroying
+                    List<Vector2Int> footprint = GetStructureFootprint(placedItem);
+                    
+                    if (footprint.Count == 0)
+                    {
+                        Debug.LogWarning("Structure has empty footprint, trying alternate method");
+                        footprint = GetExtendedStructureFootprint(placedItem);
+                    }
+                    
+                    // Find the grid position - parse from the object name (Item_X_Y)
+                    string[] parts = placedItem.name.Split('_');
+                    if (parts.Length >= 3 && int.TryParse(parts[1], out int gridX) && int.TryParse(parts[2], out int gridY))
+                    {
+                        // Make sure to update the grid for all cells occupied by this structure
+                        foreach (Vector2Int pos in footprint)
+                        {
+                            if (gridController.IsValidCell(pos.x, pos.y))
+                            {
+                                gridController.SetCellOccupied(pos.x, pos.y, false);
+                            }
+                        }
+                        
+                        // Destroy the object
+                        Destroy(placedItem);
+                        
+                        // Update grid texture
+                        gridController.UpdateGridTexture();
+                        
+                        return true; // Successfully removed
+                    }
+                }
+                
+                // Move up the hierarchy
+                hitTransform = hitTransform.parent;
+            }
+        }
+        
+        return false; // Nothing found to remove
+    }
+    
+    // Alternative method to get structure footprint that's more thorough
+    private List<Vector2Int> GetExtendedStructureFootprint(GameObject obj)
+    {
+        List<Vector2Int> occupiedCells = new List<Vector2Int>();
+        
+        // Get all renderers (in case there are multiple parts)
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return occupiedCells;
+        
+        // Create a combined bounds
+        Bounds combinedBounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            combinedBounds.Encapsulate(renderers[i].bounds);
+        }
+        
+        // Add a small margin to ensure we catch all cells
+        combinedBounds.Expand(0.1f);
+        
+        // Convert to grid coordinates
+        Vector2Int bottomLeft = gridController.WorldToGridCoords(combinedBounds.min);
+        Vector2Int topRight = gridController.WorldToGridCoords(combinedBounds.max);
+        
+        // Debug info
+        Debug.Log($"Structure bounds: min={combinedBounds.min}, max={combinedBounds.max}");
+        Debug.Log($"Grid coords: bottomLeft={bottomLeft}, topRight={topRight}");
+        
+        // Loop through all potentially affected cells
+        for (int x = bottomLeft.x - 1; x <= topRight.x + 1; x++)
+        {
+            for (int y = bottomLeft.y - 1; y <= topRight.y + 1; y++)
+            {
+                if (gridController.IsValidCell(x, y))
+                {
+                    // Check if cell is occupied
+                    GridCell cell = gridController.GetCell(x, y);
+                    if (cell != null && cell.flags.isOccupied)
+                    {
+                        occupiedCells.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+        }
+        
+        Debug.Log($"Found {occupiedCells.Count} occupied cells in extended footprint");
+        return occupiedCells;
+    }
+    
+    private void UpdateDeleteIconPosition()
+    {
+        // Get current mouse position
+        Vector2 mousePosition = Input.mousePosition;
+        
+        // Apply offset so icon doesn't cover what we're pointing at
+        mousePosition += cursorOffset;
+        
+        // Set the position of the delete icon to follow cursor
+        itemDeleteIcon.position = mousePosition;
+        
+        // Make sure all graphics in the delete icon hierarchy don't block raycasts
+        foreach (Graphic graphic in itemDeleteIcon.GetComponentsInChildren<Graphic>())
+        {
+            graphic.raycastTarget = false;
         }
     }
 }

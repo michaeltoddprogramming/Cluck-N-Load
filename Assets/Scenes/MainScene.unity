@@ -1550,7 +1550,7 @@ MonoBehaviour:
   centerPosition: {x: 0, y: 0, z: 0}
   ownershipRadius: 8
   shapeBlend: 1
-  visualizeInEditor: 1
+  visualizeInEditor: 0
   gizmoColor: {r: 1, g: 0.9813726, b: 0, a: 1}
   logDebugInfo: 1
 --- !u!1 &539507485

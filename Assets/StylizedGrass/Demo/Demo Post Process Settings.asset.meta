@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b820f18c88d8da64c9a52f9c9591f9db
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 184975
+  packageName: SMM - Stylized Grass
+  packageVersion: 1.0
+  assetPath: Assets/StylizedGrass/Demo/Demo Post Process Settings.asset
+  uploadId: 465531

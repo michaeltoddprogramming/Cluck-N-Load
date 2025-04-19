@@ -24,7 +24,7 @@ public class CameraController : MonoBehaviour
     public float maxZ = 50f;
     public float minZoom = 50f;
     public float maxZoom = 100f;
-    [SerializeField] private float fixedPitch = 45f; 
+   [SerializeField] private float fixedPitch = 45f; 
     
     // Target positions that the camera will move toward
     private Vector3 newPosition;
@@ -47,17 +47,17 @@ public class CameraController : MonoBehaviour
     void Start()
     {
         // Initialize target positions with current transform values
-        newPosition = transform.position;
-        
-        // Set initial rotation with the fixed pitch
-        Vector3 startEuler = transform.rotation.eulerAngles;
-        newRotation = Quaternion.Euler(fixedPitch, startEuler.y, 0);
-        
-        newZoom = cameraTransform.localPosition;
-        currentSpeed = normalSpeed;
-        
-        // Set camera boundaries based on terrain size
-        SetCameraBoundaries();
+    newPosition = transform.position;
+    
+    // Set initial rotation with the fixed pitch
+    Vector3 startEuler = transform.rotation.eulerAngles;
+    newRotation = Quaternion.Euler(fixedPitch, startEuler.y, 0);
+    
+    newZoom = cameraTransform.localPosition;
+    currentSpeed = normalSpeed;
+    
+    // Set camera boundaries based on terrain size
+    SetCameraBoundaries();
     }
     
     // Set camera boundaries based on terrain
@@ -83,41 +83,24 @@ public class CameraController : MonoBehaviour
         // Reset movement flag
         isMoving = false;
         
-        // Always handle keyboard input, regardless of UI hovering
+        // Handle various inputs
         HandleKeyboardMovement();
+        HandleMouseMovement();
         
-        // Only handle mouse input if mouse controls are not disabled
-        if (!mouseControlsDisabled)
+        // Lock rotation during movement if enabled
+        if (!isMoving || !lockRotationDuringMovement)
         {
-            HandleMouseMovement();
-            
-            // Lock rotation during movement if enabled
-            if (!isMoving || !lockRotationDuringMovement)
-            {
-                HandleRotation();
-            }
-            
-            // Always handle zoom (doesn't count as changing angle)
-            HandleZoom();
+            HandleRotation();
         }
+        
+        // Always handle zoom (doesn't count as changing angle)
+        HandleZoom();
         
         // Ensure the camera stays within boundaries
         EnforceBoundaries();
         
-        // Always apply the movement interpolation to maintain inertia
+        // Apply all changes with smooth transitions
         ApplySmoothTransition();
-    }
-    
-    // New method for selectively disabling only mouse controls
-    public void TemporarilyDisableMouseControls(bool disable)
-    {
-        mouseControlsDisabled = disable;
-    }
-    
-    // Keep original method for backward compatibility, but make it just affect mouse
-    public void TemporarilyDisableControls(bool disable)
-    {
-        mouseControlsDisabled = disable;
     }
     
     // Apply smooth transitions to camera transforms
@@ -148,31 +131,9 @@ public class CameraController : MonoBehaviour
             newPosition += direction.normalized * currentSpeed * Time.deltaTime;
             isMoving = true;
         }
-        
-        // Keyboard zoom controls are always available
-        if (Input.GetKey(KeyCode.Alpha1))
-        {
-            newZoom += zoomAmount * 0.2f;
-        }
-        
-        if (Input.GetKey(KeyCode.Alpha2))
-        {
-            newZoom -= zoomAmount * 0.2f;
-        }
-        
-        // Keyboard rotation is always available
-        if (Input.GetKey(KeyCode.Q))
-        {
-            newRotation *= Quaternion.Euler(Vector3.up * rotationAmount);
-        }
-        
-        if (Input.GetKey(KeyCode.E))
-        {
-            newRotation *= Quaternion.Euler(Vector3.up * -rotationAmount);
-        }
     }
     
-    // Handle edge-of-screen movement and right-click drag
+    // Handle edge-of-screen movement
     void HandleMouseMovement()
     {
         // Only applies in built game, not editor
@@ -243,6 +204,17 @@ public class CameraController : MonoBehaviour
     // Handle rotation inputs
     void HandleRotation()
     {
+        // Keyboard rotation
+        if (Input.GetKey(KeyCode.Q))
+        {
+            newRotation *= Quaternion.Euler(Vector3.up * rotationAmount);
+        }
+        
+        if (Input.GetKey(KeyCode.E))
+        {
+            newRotation *= Quaternion.Euler(Vector3.up * -rotationAmount);
+        }
+        
         // Middle mouse button rotation
         if (Input.GetMouseButtonDown(2))
         {
@@ -268,26 +240,37 @@ public class CameraController : MonoBehaviour
         {
             newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
         }
+        
+        // Keyboard zoom
+        if (Input.GetKey(KeyCode.Alpha1))
+        {
+            newZoom += zoomAmount * 0.2f;
+        }
+        
+        if (Input.GetKey(KeyCode.Alpha2))
+        {
+            newZoom -= zoomAmount * 0.2f;
+        }
     }
     
     // Enforce camera boundaries and restrictions
     void EnforceBoundaries()
-    {
-        // Restrict position within terrain bounds
-        newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-        newPosition.z = Mathf.Clamp(newPosition.z, minZ, maxZ);
-        
-        // IMPORTANT: Always force the fixed pitch - this ensures pitch never changes
-        Vector3 currentEuler = newRotation.eulerAngles;
-        newRotation = Quaternion.Euler(fixedPitch, currentEuler.y, 0);
-        
-        // Keep zoom within limits
-        float distance = Mathf.Sqrt(newZoom.y * newZoom.y + newZoom.z * newZoom.z);
-        distance = Mathf.Clamp(distance, minZoom, maxZoom);
-        
-        // Maintain the camera angle while adjusting zoom distance
-        float currentAngle = Mathf.Atan2(newZoom.y, newZoom.z);
-        newZoom.y = distance * Mathf.Sin(currentAngle);
-        newZoom.z = distance * Mathf.Cos(currentAngle);
-    }
+{
+    // Restrict position within terrain bounds
+    newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
+    newPosition.z = Mathf.Clamp(newPosition.z, minZ, maxZ);
+    
+    // IMPORTANT: Always force the fixed pitch - this ensures pitch never changes
+    Vector3 currentEuler = newRotation.eulerAngles;
+    newRotation = Quaternion.Euler(fixedPitch, currentEuler.y, 0);
+    
+    // Keep zoom within limits
+    float distance = Mathf.Sqrt(newZoom.y * newZoom.y + newZoom.z * newZoom.z);
+    distance = Mathf.Clamp(distance, minZoom, maxZoom);
+    
+    // Maintain the camera angle while adjusting zoom distance
+    float currentAngle = Mathf.Atan2(newZoom.y, newZoom.z);
+    newZoom.y = distance * Mathf.Sin(currentAngle);
+    newZoom.z = distance * Mathf.Cos(currentAngle);
+}
 }

@@ -7,6 +7,9 @@ public class BuildController : MonoBehaviour
     [Header("References")]
     [SerializeField] private GridController gridController;
     
+    [Header("Pathfinding")]
+    [SerializeField] private FlowFieldGenerator flowFieldGenerator;
+    
     [Header("Build Settings")]
     [SerializeField] private Material ghostMaterial;
     [SerializeField] private GameObject[] buildablePrefabs;
@@ -61,6 +64,10 @@ public class BuildController : MonoBehaviour
                 return;
             }
         }
+        
+        // Find flow field generator if not assigned
+        if (flowFieldGenerator == null)
+            flowFieldGenerator = FindObjectOfType<FlowFieldGenerator>();
         
         // Find shop UI component - including inactive objects
         shopPanelUI = FindObjectOfType<ShopPanelUI>(true); // Include inactive objects
@@ -199,6 +206,13 @@ public class BuildController : MonoBehaviour
         {
             Destroy(currentGhost);
             currentGhost = null;
+        }
+        
+        // Regenerate flow field when building is complete
+        if (flowFieldGenerator != null)
+        {
+            Debug.Log("Build mode deactivated - regenerating flow field to account for new structures");
+            flowFieldGenerator.GenerateFlowFieldManually();
         }
     }
     
@@ -651,6 +665,13 @@ public class BuildController : MonoBehaviour
                         
                         // Update grid texture
                         gridController.UpdateGridTexture();
+                        
+                        // Optionally update flow field when a structure is removed
+                        if (flowFieldGenerator != null && !isBuildModeActive)
+                        {
+                            Debug.Log("Structure removed - updating flow field");
+                            flowFieldGenerator.GenerateFlowFieldManually();
+                        }
                         
                         return true; // Successfully removed
                     }

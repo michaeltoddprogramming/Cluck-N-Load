@@ -3549,6 +3549,7 @@ GameObject:
   - component: {fileID: 1632256035}
   - component: {fileID: 1632256034}
   - component: {fileID: 1632256036}
+  - component: {fileID: 1632256037}
   - component: {fileID: 1632256033}
   - component: {fileID: 1632256032}
   m_Layer: 0
@@ -3875,6 +3876,26 @@ MonoBehaviour:
   ownershipController: {fileID: 0}
   enableLandBuying: 1
   buyLandKey: 304
+--- !u!114 &1632256037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c0520bf7c502364aa6040648afe1c08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridController: {fileID: 527660424}
+  gridDataGenerator: {fileID: 527660422}
+  targetTransform: {fileID: 0}
+  manualTargetCoord: {x: 0, y: 0}
+  useManualTarget: 0
+  visualizeFlowField: 0
+  arrowScale: 0.5
+  arrowColor: {r: 0, g: 0, b: 1, a: 1}
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

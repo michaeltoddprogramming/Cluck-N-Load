@@ -24,6 +24,8 @@ public class BuildController : MonoBehaviour
     // References to shop UI component
     private ShopPanelUI shopPanelUI;
     
+    private bool isGhostTemporarilyHidden = false;
+    
     void Start()
     {
         if (gridController == null)
@@ -130,8 +132,31 @@ public class BuildController : MonoBehaviour
         return isBuildModeActive;
     }
     
+    // Called from ShopPanelUI when pointer enters the UI
+    public void HideGhostTemporarily()
+    {
+        if (currentGhost != null && currentGhost.activeSelf)
+        {
+            isGhostTemporarilyHidden = true;
+            currentGhost.SetActive(false);
+        }
+    }
+    
+    // Called from ShopPanelUI when pointer exits the UI
+    public void RestoreGhost()
+    {
+        if (currentGhost != null && isGhostTemporarilyHidden)
+        {
+            currentGhost.SetActive(true);
+            isGhostTemporarilyHidden = false;
+        }
+    }
+    
     void HandleBuildInput()
     {
+        // Skip input handling if ghost is temporarily hidden (hovering over UI)
+        if (isGhostTemporarilyHidden) return;
+        
         // Rotation
         if (Input.GetKeyDown(rotateKey))
         {
@@ -157,14 +182,26 @@ public class BuildController : MonoBehaviour
             CreateGhost(currentBuildTargetPrefab);
         }
         
-        // Place and Remove objects
+        // Place and Remove objects - CHECK FOR UI INTERACTION FIRST
         if (Input.GetMouseButtonDown(0))
         {
+            // Don't place items if clicking on UI elements
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return; // Skip building when clicking UI
+            }
+            
             Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
             PlaceItem(hoveredCell.x, hoveredCell.y);
         }
         else if (Input.GetMouseButtonDown(1))
         {
+            // Also prevent right-click removal when clicking UI
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+            
             Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
             RemoveItem(hoveredCell.x, hoveredCell.y);
         }
@@ -313,18 +350,8 @@ public class BuildController : MonoBehaviour
         if (!gridController.IsValidCell(x, y)) return false;
         if (currentBuildTargetPrefab == null) return false;
         
-        // Check shop status
-        bool shopOpen = true; // Default to true for testing
-        
-        if (shopPanelUI != null)
-        {
-            shopOpen = shopPanelUI.IsShopOpen();
-            Debug.Log($"Shop open status: {shopOpen}");
-        }
-        
-        // Comment this out if ShopUIManager isn't implemented yet
-        // if (ShopUIManager.Instance != null && !ShopUIManager.Instance.IsShopOpen())
-        //    return false;
+        // Check if shop is actually visible/active in the scene
+        bool shopOpen = (shopPanelUI != null && shopPanelUI.gameObject.activeSelf);
         
         if (!shopOpen) return false;
         

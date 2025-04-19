@@ -884,6 +884,12 @@ MonoBehaviour:
   contentParent: {fileID: 1683679576}
   database: {fileID: 11400000, guid: df965a1a809d224408dc6de5b5fedb97, type: 2}
   closeButton: {fileID: 836310654}
+  OnShopOpened:
+    m_PersistentCalls:
+      m_Calls: []
+  OnShopClosed:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1097,6 +1103,18 @@ PrefabInstance:
       value: Terrain
       objectReference: {fileID: 0}
     - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -1135,6 +1153,10 @@ PrefabInstance:
     - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1382,12 +1404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainSource: {fileID: 465760066}
   gridOverlayMaterial: {fileID: 2100000, guid: fff316301dde6ee4091e5ad162fb1f9e, type: 2}
-  ghostPrefab: {fileID: 0}
-  itemPrefabs:
-  - {fileID: 919132149155446097, guid: 32be7b37853205f4cb4acee12b3e4281, type: 3}
-  - {fileID: 919132149155446097, guid: 356377780ab12c646b44a3a5aa13c8cf, type: 3}
-  - {fileID: 919132149155446097, guid: c57246eb7d80a9946a2448f6769b1f25, type: 3}
-  - {fileID: 919132149155446097, guid: c10db0eefd688774ea0e3b45f9bd991b, type: 3}
+  alwaysShowGrid: 0
   gridDataGenerator: {fileID: 527660422}
   cellSize: 1
   lineWidth: 0.02
@@ -1396,12 +1413,11 @@ MonoBehaviour:
     owned: {r: 0, g: 0.6415094, b: 0, a: 0.3}
     ownedOccupied: {r: 0.6320754, g: 0.6320754, b: 0, a: 0.3}
     ownedObstacle: {r: 0.07021819, g: 0, b: 0.6886792, a: 0.3}
-    notOwnedObstacle: {r: 0, g: 0.2, b: 0, a: 0.3}
+    notOwnedObstacle: {r: 0.5566038, g: 0.107645065, b: 0.107645065, a: 0.3}
     unavailable: {r: 0.5, g: 0, b: 0.5, a: 0.3}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0.54509807}
   gridLineColor: {r: 0, g: 1, b: 0, a: 0.5}
   gridLineOpacity: 0.6
-  ghostMaterial: {fileID: 2100000, guid: 63c0360517167154bad02130899a3243, type: 2}
 --- !u!1 &539507485
 GameObject:
   m_ObjectHideFlags: 0
@@ -2477,11 +2493,11 @@ MonoBehaviour:
   m_Content: {fileID: 1683679576}
   m_Horizontal: 1
   m_Vertical: 1
-  m_MovementType: 1
+  m_MovementType: 2
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 17
   m_Viewport: {fileID: 1975118391}
   m_HorizontalScrollbar: {fileID: 1309907075}
   m_VerticalScrollbar: {fileID: 1442833297}
@@ -3294,6 +3310,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1632256035}
   - component: {fileID: 1632256034}
+  - component: {fileID: 1632256036}
   - component: {fileID: 1632256033}
   - component: {fileID: 1632256032}
   m_Layer: 0
@@ -3596,6 +3613,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1632256036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6756246e1f0d9645933f44dc96cdf99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridController: {fileID: 527660424}
+  ghostMaterial: {fileID: 2100000, guid: 63c0360517167154bad02130899a3243, type: 2}
+  buildablePrefabs: []
+  rotateKey: 114
+  nextItemKey: 110
+  previousItemKey: 112
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

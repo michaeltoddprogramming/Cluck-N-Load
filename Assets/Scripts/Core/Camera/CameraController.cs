@@ -18,6 +18,10 @@ public class CameraController : MonoBehaviour
     public Vector3 dragCurrentPosition;
     public Vector3 rotateStartPosition;
     public Vector3 rotateCurrentPosition;
+
+    private bool controlsTemporarilyDisabled = false;
+    private bool mouseControlsDisabled = false;
+
     void Start()
     {
         newPosition = transform.position;
@@ -30,12 +34,43 @@ public class CameraController : MonoBehaviour
         
     }
 
-    void LateUpdate() {
+    void LateUpdate() 
+    {
+        // Always handle keyboard input, regardless of UI hovering
         HandleMovementInput();
-        HandleMouseInput();
+        
+        // Only handle mouse input if mouse controls are not disabled
+        if (!mouseControlsDisabled)
+        {
+            HandleMouseInput();
+        }
+        
+        // Always apply the movement interpolation to maintain inertia
+        ApplyCameraTransforms();
+    }
+    
+    // New method to apply transforms - this will run even when input is disabled
+    void ApplyCameraTransforms()
+    {
+        // Apply the smooth transition/inertia regardless of input state
+        transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * movementTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * movementTime);
+        cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, newZoom, Time.deltaTime * movementTime);
     }
 
-        void HandleMouseInput() {
+    // New method for selectively disabling only mouse controls
+    public void TemporarilyDisableMouseControls(bool disable)
+    {
+        mouseControlsDisabled = disable;
+    }
+    
+    // Keep original method for backward compatibility, but make it just affect mouse
+    public void TemporarilyDisableControls(bool disable)
+    {
+        mouseControlsDisabled = disable;
+    }
+
+    void HandleMouseInput() {
         // Adjust mouse scroll zoom sensitivity
         if (Input.mouseScrollDelta.y != 0) {
             newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f; // Reduce sensitivity by scaling down
@@ -126,9 +161,7 @@ public class CameraController : MonoBehaviour
         if (Input.GetKey(KeyCode.Alpha2)) {
             newZoom -= zoomAmount * 0.2f; // Reduce sensitivity by scaling down
         }
-    
-        transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * movementTime);
-        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * movementTime);
-        cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, newZoom, Time.deltaTime * movementTime);
+        
+        // Remove the transform application from here since it's now in ApplyCameraTransforms
     }
 }

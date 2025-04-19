@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
-public class ShopPanelUI : MonoBehaviour
+public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public static ShopPanelUI Instance { get; private set; } // Singleton instance
 
@@ -11,7 +13,14 @@ public class ShopPanelUI : MonoBehaviour
     public StructureDatabase database; // Your ScriptableObject
     [SerializeField] private Button closeButton; // Reference to the close button
 
+    // Events for opening/closing shop
+    public UnityEvent OnShopOpened = new UnityEvent();
+    public UnityEvent OnShopClosed = new UnityEvent();
+
     private bool isShopOpen = false; // Tracks whether the shop is open
+    private BuildController buildController;
+    private CameraController cameraController;
+    private bool wasGhostActiveBeforeHover = false;
 
     private void Awake()
     {
@@ -48,6 +57,10 @@ public class ShopPanelUI : MonoBehaviour
         {
             Debug.LogWarning("Close button is not assigned in the inspector!");
         }
+
+        // Cache controller references
+        buildController = FindObjectOfType<BuildController>();
+        cameraController = FindObjectOfType<CameraController>();
     }
 
     void PopulateShop()
@@ -100,17 +113,86 @@ public class ShopPanelUI : MonoBehaviour
     {
         isShopOpen = true;
         gameObject.SetActive(true);
+        Debug.Log("Shop Panel: OnShopOpened event firing");
+        OnShopOpened.Invoke();
+        
+        // Directly find and call BuildController as a fallback
+        BuildController buildController = FindObjectOfType<BuildController>();
+        if (buildController != null)
+        {
+            Debug.Log("Shop Panel: Direct call to BuildController.HandleShopOpened");
+            buildController.HandleShopOpened();
+        }
+        else
+        {
+            Debug.LogWarning("Shop Panel: BuildController not found in scene!");
+        }
     }
 
     public void CloseShop()
     {
         isShopOpen = false;
-        Debug.Log("CloseShop method called!");
+        
+        // Make sure to re-enable controls before deactivating the panel
+        // This ensures controls are restored even if OnPointerExit doesn't trigger
+        if (cameraController != null)
+        {
+            cameraController.TemporarilyDisableMouseControls(false);
+        }
+        
+        // Re-enable ghost if it was active before
+        if (buildController != null && wasGhostActiveBeforeHover)
+        {
+            buildController.RestoreGhost();
+            wasGhostActiveBeforeHover = false;
+        }
+        
         gameObject.SetActive(false);
+        OnShopClosed.Invoke();
     }
 
     public bool IsShopOpen()
     {
-        return isShopOpen;
+        return gameObject.activeSelf;
+    }
+
+    // Called when pointer enters the UI element
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        // Only react if the shop panel is actually visible in the scene
+        if (!gameObject.activeSelf) return;
+        
+        // Temporarily disable build ghost and placement
+        if (buildController != null && buildController.IsBuildModeActive())
+        {
+            wasGhostActiveBeforeHover = true;
+            buildController.HideGhostTemporarily();
+        }
+        
+        // Temporarily disable only mouse camera controls
+        if (cameraController != null)
+        {
+            cameraController.TemporarilyDisableMouseControls(true);
+        }
+    }
+
+    // Called when pointer exits the UI element
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        // Only react if the shop panel is actually visible in the scene
+        if (!gameObject.activeSelf) return;
+        
+        // Re-enable build ghost and placement if it was active before
+        if (buildController != null && wasGhostActiveBeforeHover)
+        {
+            buildController.RestoreGhost();
+            wasGhostActiveBeforeHover = false;
+        }
+        
+        // Re-enable mouse camera controls
+        if (cameraController != null)
+        {
+            cameraController.TemporarilyDisableMouseControls(false);
+        }
     }
 }

@@ -25,17 +25,19 @@ public struct GridCellFlags
     public bool isOwned;
     public bool isOccupied;
     public bool isObstacle;
+    public bool isVisible; // New visibility flag
 
     public Color GetColor()
     {
         return GridCellColorResolver.Resolve(this);
     }
 
-    public void Set(bool owned, bool occupied, bool obstacle)
+    public void Set(bool owned, bool occupied, bool obstacle, bool visible = true)
     {
         isOwned = owned;
         isOccupied = occupied;
         isObstacle = obstacle;
+        isVisible = visible;
     }
 }
 
@@ -45,6 +47,10 @@ public static class GridCellColorResolver
 
     public static Color Resolve(GridCellFlags flags)
     {
+        // Invisible cells get a fully transparent color (highest priority)
+        if (!flags.isVisible)
+            return new Color(0, 0, 0, 0);
+            
         if (!flags.isOwned)
         {
             if (flags.isObstacle) return Colors.notOwnedObstacle;

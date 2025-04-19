@@ -71,6 +71,9 @@ public class OwnershipController : MonoBehaviour
         
         // Wait for one frame to ensure grid is initialized
         Invoke("ApplyOwnership", 0.1f);
+
+        // Initial visibility calculation should happen after applying ownership
+        Invoke("UpdateCellVisibility", 0.2f);
     }
     
     private void InitializeManualOwnership()
@@ -219,6 +222,9 @@ public class OwnershipController : MonoBehaviour
         if (logDebugInfo)
             Debug.Log($"Changed ownership for {cellsChanged} cells");
 
+        // After ownership is applied, update visibility
+        UpdateCellVisibility();
+        
         // Update the grid texture
         RefreshGridTexture();
     }
@@ -247,6 +253,9 @@ public class OwnershipController : MonoBehaviour
             
             if (logDebugInfo)
                 Debug.Log($"Bought land at grid position: ({cellCoords.x}, {cellCoords.y})");
+            
+            // After buying land, update visibility since the owned area has changed
+            UpdateCellVisibility();
             
             // Update the grid texture
             RefreshGridTexture();
@@ -345,5 +354,54 @@ public class OwnershipController : MonoBehaviour
         }
 
         RefreshGridTexture();
+    }
+
+    // Add this method to calculate cell visibility
+    private void UpdateCellVisibility()
+    {
+        if (gridDataGenerator == null || !gridDataGenerator.IsInitialized) return;
+        
+        int gridWidth = gridDataGenerator.GetGridWidth();
+        int gridHeight = gridDataGenerator.GetGridHeight();
+        
+        // First pass: Set all cells to invisible
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GridCell cell = gridDataGenerator.GetCell(x, y);
+                if (cell != null)
+                {
+                    cell.flags.isVisible = false;
+                }
+            }
+        }
+        
+        // Second pass: Mark owned cells as visible
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GridCell cell = gridDataGenerator.GetCell(x, y);
+                if (cell != null && cell.flags.isOwned)
+                {
+                    // Mark this cell as visible
+                    cell.flags.isVisible = true;
+                    
+                    // Mark all neighboring cells as visible
+                    for (int nx = Mathf.Max(0, x-1); nx <= Mathf.Min(gridWidth-1, x+1); nx++)
+                    {
+                        for (int ny = Mathf.Max(0, y-1); ny <= Mathf.Min(gridHeight-1, y+1); ny++)
+                        {
+                            GridCell neighbor = gridDataGenerator.GetCell(nx, ny);
+                            if (neighbor != null)
+                            {
+                                neighbor.flags.isVisible = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

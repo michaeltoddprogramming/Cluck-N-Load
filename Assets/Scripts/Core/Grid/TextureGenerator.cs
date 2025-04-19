@@ -84,6 +84,7 @@ public class TextureGenerator : MonoBehaviour
         Debug.Log("Texture Generated: " + gridTexture.width + "x" + gridTexture.height);
     }
 
+    // In the UpdateTexture method, ensure invisible cells are transparent
     public void UpdateTexture()
     {
         if (gridTexture == null) return;
@@ -96,7 +97,8 @@ public class TextureGenerator : MonoBehaviour
             for (int y = 0; y < h; y++)
             {
                 GridCell cell = gridData.grid[x, y];
-                Color col = cell.flags.GetColor(); // Use the color resolver based on flags.
+                // Get color based on cell flags (including visibility)
+                Color col = cell.flags.GetColor();
                 gridTexture.SetPixel(x, y, col);
             }
         }

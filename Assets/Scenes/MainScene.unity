@@ -1461,6 +1461,7 @@ GameObject:
   - component: {fileID: 527660423}
   - component: {fileID: 527660422}
   - component: {fileID: 527660424}
+  - component: {fileID: 527660425}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -1527,6 +1528,27 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0.54509807}
   gridLineColor: {r: 0, g: 1, b: 0, a: 0.5}
   gridLineOpacity: 0.6
+--- !u!114 &527660425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 527660421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 491009c5eeebd0f4692430dcab0e5f1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridController: {fileID: 527660424}
+  gridDataGenerator: {fileID: 527660422}
+  centerBuilding: {fileID: 0}
+  centerPosition: {x: 0, y: 0, z: 0}
+  ownershipRadius: 8
+  shapeBlend: 1
+  visualizeInEditor: 1
+  gizmoColor: {r: 1, g: 0.9813726, b: 0, a: 1}
+  logDebugInfo: 1
 --- !u!1 &539507485
 GameObject:
   m_ObjectHideFlags: 0
@@ -3846,6 +3868,9 @@ MonoBehaviour:
   removeModifierKey: 306
   itemDeleteIcon: {fileID: 2119073778}
   cursorOffset: {x: 50, y: -60}
+  ownershipController: {fileID: 0}
+  enableLandBuying: 1
+  buyLandKey: 304
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

@@ -35,7 +35,7 @@ Shader "Custom/DynamicGridShader"
             float4 _GridOrigin;
             float4 _GridWorldSize;
             float4 _HighlightColor;
-            float _HighlightIntensity;;
+            float _HighlightIntensity;
             float _GridLineOpacity;
             float _LineWidth;
 
@@ -65,6 +65,14 @@ Shader "Custom/DynamicGridShader"
                 float2 cellIndices = floor(gridIndex);
                 float2 fracInCell = frac(gridIndex);
 
+                // Sample texture first to check for visibility
+                float2 texUV = float2((cellIndices.x + 0.5) / _GridDivisions.x, (cellIndices.y + 0.5) / _GridDivisions.y);
+                fixed4 texColor = tex2D(_MainTex, texUV);
+                
+                // Early out for invisible cells (completely transparent texture)
+                if (texColor.a < 0.01)
+                    return fixed4(0, 0, 0, 0);
+
                 // Base grid color
                 fixed4 gridColor = _Color;
 
@@ -73,13 +81,8 @@ Shader "Custom/DynamicGridShader"
                 float isY = abs(cellIndices.y - _HoverCell.y) < 0.5 ? 1.0 : 0.0;
                 float hoverMatch = isX * isY;
 
-                // Blend highlight color with grid color
-                if (hoverMatch > 0.5)
-                {
-                    float blendFactor = 0.5; // Adjust this to control blending strength
-                    gridColor.rgb = lerp(gridColor.rgb, _HighlightColor.rgb, blendFactor);
-                    gridColor.a = max(gridColor.a, _HighlightColor.a); // Preserve highlight alpha
-                }
+                // Only apply hover effect to visible cells
+                hoverMatch *= (texColor.a > 0.01 ? 1.0 : 0.0);
 
                 // Draw grid lines
                 float lineX = smoothstep(0.0, _LineWidth, fracInCell.x) * smoothstep(0.0, _LineWidth, 1.0 - fracInCell.x);
@@ -89,15 +92,10 @@ Shader "Custom/DynamicGridShader"
                 // Apply grid line opacity
                 gridColor.a *= _GridLineOpacity;
 
-                // Sample texture
-                float2 texUV = float2((cellIndices.x + 0.5) / _GridDivisions.x, (cellIndices.y + 0.5) / _GridDivisions.y);
-                fixed4 texColor = tex2D(_MainTex, texUV);
-
-                // Blend texture colors (R, G, B) with grid lines
+                // Blend texture colors with grid lines
                 fixed4 blendedColor = lerp(texColor, gridColor, gridLine);
-                blendedColor = lerp(blendedColor, _HighlightColor, hoverMatch * _HighlightIntensity); // Prioritize highlight
-                blendedColor.a = max(texColor.a, gridColor.a); // Ensure alpha is preserved
-
+                blendedColor = lerp(blendedColor, _HighlightColor, hoverMatch * _HighlightIntensity);
+                
                 return saturate(blendedColor);
             }
 

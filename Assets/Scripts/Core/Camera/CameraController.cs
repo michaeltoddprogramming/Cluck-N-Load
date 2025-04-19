@@ -59,6 +59,13 @@ public class CameraController : MonoBehaviour
     // Set camera boundaries based on terrain size
     SetCameraBoundaries();
     }
+
+
+    // Allow other scripts to temporarily disable mouse controls
+    public void TemporarilyDisableMouseControls(bool disable)
+    {
+        mouseControlsDisabled = disable;
+    }
     
     // Set camera boundaries based on terrain
     void SetCameraBoundaries()
@@ -136,6 +143,12 @@ public class CameraController : MonoBehaviour
     // Handle edge-of-screen movement
     void HandleMouseMovement()
     {
+        // Skip if mouse controls are disabled
+        if (mouseControlsDisabled) return;
+        
+        // Only applies in built game, not editor
+        if (Application.isEditor) return;
+
         // Only applies in built game, not editor
         if (Application.isEditor) return;
         
@@ -204,6 +217,12 @@ public class CameraController : MonoBehaviour
     // Handle rotation inputs
     void HandleRotation()
     {
+        
+        // Keyboard rotation
+        if (Input.GetKey(KeyCode.Q))
+        {
+            newRotation *= Quaternion.Euler(Vector3.up * rotationAmount);
+        }
         // Keyboard rotation
         if (Input.GetKey(KeyCode.Q))
         {
@@ -235,11 +254,17 @@ public class CameraController : MonoBehaviour
     // Handle zoom inputs
     void HandleZoom()
     {
-        // Mouse wheel zoom
-        if (Input.mouseScrollDelta.y != 0)
+
+        // Skip mouse wheel zoom if controls are disabled
+        if (!mouseControlsDisabled)
         {
-            newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
+            // Mouse wheel zoom
+            if (Input.mouseScrollDelta.y != 0)
+            {
+                newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
+            }
         }
+    
         
         // Keyboard zoom
         if (Input.GetKey(KeyCode.Alpha1))

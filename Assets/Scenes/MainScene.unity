@@ -14,10 +14,10 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_Fog: 1
+  m_FogColor: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.01
+  m_FogDensity: 0.003
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -446,7 +446,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 876.4, y: -915.7}
+  m_AnchoredPosition: {x: 877.8, y: -946.4}
   m_SizeDelta: {x: 165.1, y: 331.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &122739290
@@ -1238,7 +1238,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 11
   m_Type: 1
-  m_Color: {r: 1, g: 0.9490196, b: 0.8, a: 1}
+  m_Color: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
@@ -1442,7 +1442,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 883, y: -310}
+  m_AnchoredPosition: {x: 880.9, y: -310}
   m_SizeDelta: {x: 60, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &441202427
@@ -1464,19 +1464,19 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 2
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 1, g: 1, b: 1, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
+    m_HighlightedSprite: {fileID: 21300000, guid: e51423debdf245d4b9f03d33e67028cb, type: 3}
+    m_PressedSprite: {fileID: 21300000, guid: 15fc52bc53f33c64e98d1f65c98c39ea, type: 3}
+    m_SelectedSprite: {fileID: 21300000, guid: 4a7c7f51517acdb408e0c70d61952e0d, type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
@@ -2771,7 +2771,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 881.5, y: -395}
+  m_AnchoredPosition: {x: 885.7, y: -395.8}
   m_SizeDelta: {x: 22.8, y: 24.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &902858522
@@ -2793,7 +2793,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 2
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -2803,9 +2803,9 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
+    m_HighlightedSprite: {fileID: 21300000, guid: 0ac88c5d2ef7b7d4fa78250673f3a553, type: 3}
+    m_PressedSprite: {fileID: 21300000, guid: 4a2e3509b5607c246919800e5c195f91, type: 3}
+    m_SelectedSprite: {fileID: 21300000, guid: 7731c20069807e147901206b75913f4c, type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
@@ -3270,7 +3270,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 885.2, y: -484.1}
+  m_AnchoredPosition: {x: 884.5, y: -484.1}
   m_SizeDelta: {x: 39.4, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1139224269
@@ -3292,7 +3292,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 2
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -3302,9 +3302,9 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
+    m_HighlightedSprite: {fileID: 21300000, guid: 8ac7e1a903d22a54f92236ac8b3b6c39, type: 3}
+    m_PressedSprite: {fileID: 21300000, guid: f579afdc61e47164fa772a87ba86feab, type: 3}
+    m_SelectedSprite: {fileID: 21300000, guid: 59c9d1f96bba07946a45f57457c6b45e, type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
@@ -3681,6 +3681,7 @@ MonoBehaviour:
   fastSpeed: 40
   movementTime: 5
   rotationAmount: 1
+  mouseSensitivity: 100
   lockRotationDuringMovement: 1
   zoomAmount: {x: 0, y: -3, z: 3}
   minX: -15
@@ -3689,7 +3690,6 @@ MonoBehaviour:
   maxZ: 15
   minZoom: 10
   maxZoom: 65
-  fixedPitch: 0
 --- !u!1 &1309907073
 GameObject:
   m_ObjectHideFlags: 0
@@ -4379,7 +4379,7 @@ GameObject:
   - component: {fileID: 1626714170}
   - component: {fileID: 1626714169}
   m_Layer: 5
-  m_Name: Season Notification
+  m_Name: Notification
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4501,7 +4501,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 5, y: 355}
-  m_SizeDelta: {x: 330, y: 83.1}
+  m_SizeDelta: {x: 820.16, y: 83.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1632256031
 GameObject:
@@ -4513,6 +4513,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1632256035}
   - component: {fileID: 1632256034}
+  - component: {fileID: 1632256037}
   - component: {fileID: 1632256036}
   - component: {fileID: 1632256033}
   - component: {fileID: 1632256032}
@@ -4734,19 +4735,19 @@ MonoBehaviour:
   sceneLight: {fileID: 410087040}
   color: {r: 0.6666667, g: 0.73333335, b: 0.8666667, a: 0}
   intensity: 0.3
-  dayToNightGradient:
+  morningToDayGradient:
     serializedVersion: 2
-    key0: {r: 1, g: 0.95, b: 0.8, a: 1}
-    key1: {r: 1, g: 0.6, b: 0.3, a: 1}
-    key2: {r: 0.05, g: 0.1, b: 0.15, a: 0}
+    key0: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
+    key1: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
     key5: {r: 0, g: 0, b: 0, a: 0}
     key6: {r: 0, g: 0, b: 0, a: 0}
     key7: {r: 0, g: 0, b: 0, a: 0}
     ctime0: 0
-    ctime1: 31997
-    ctime2: 65535
+    ctime1: 65535
+    ctime2: 0
     ctime3: 0
     ctime4: 0
     ctime5: 0
@@ -4762,21 +4763,21 @@ MonoBehaviour:
     atime7: 0
     m_Mode: 0
     m_ColorSpace: -1
-    m_NumColorKeys: 3
+    m_NumColorKeys: 2
     m_NumAlphaKeys: 2
-  nightToDayGradient:
+  DayToAfternoonGradient:
     serializedVersion: 2
-    key0: {r: 0.05, g: 0.1, b: 0.15, a: 1}
-    key1: {r: 0.1, g: 0.6, b: 0.3, a: 1}
-    key2: {r: 1, g: 0.95, b: 0.8, a: 0}
+    key0: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+    key1: {r: 0.990566, g: 0.4363431, b: 0.2569865, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
     key5: {r: 0, g: 0, b: 0, a: 0}
     key6: {r: 0, g: 0, b: 0, a: 0}
     key7: {r: 0, g: 0, b: 0, a: 0}
     ctime0: 0
-    ctime1: 32768
-    ctime2: 65535
+    ctime1: 65535
+    ctime2: 0
     ctime3: 0
     ctime4: 0
     ctime5: 0
@@ -4792,7 +4793,67 @@ MonoBehaviour:
     atime7: 0
     m_Mode: 0
     m_ColorSpace: -1
-    m_NumColorKeys: 3
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  AfternoonToNightGradient:
+    serializedVersion: 2
+    key0: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
+    key1: {r: 0.19607843, g: 0.27450982, b: 0.39215687, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  nightToMorningGradient:
+    serializedVersion: 2
+    key0: {r: 0.19607843, g: 0.27450982, b: 0.39215687, a: 1}
+    key1: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   skyboxMorning: {fileID: 2800000, guid: c15e36d3819e8d14ab21ab119e3fd4a7, type: 3}
   skyboxDay: {fileID: 2800000, guid: 0a08e110b5185334f8652754a6cf06e5, type: 3}
@@ -4805,6 +4866,7 @@ MonoBehaviour:
   nightIcon: {fileID: 21300000, guid: 17e76cb4ea164da46b202d95baf46863, type: 3}
   shopButton: {fileID: 760890653}
   shopIcon: {fileID: 760890654}
+  shopManager: {fileID: 539507488}
   seasonNotification: {fileID: 1626714169}
   timeText: {fileID: 398921168}
   minutes: 0
@@ -4812,10 +4874,15 @@ MonoBehaviour:
   days: 0
   years: 0
   seasonIcon: {fileID: 1870965670}
-  summer: {fileID: 21300000, guid: 90a289bcd5ee48b49b29e659a4856f0a, type: 3}
+  summer: {fileID: 21300000, guid: 6652e75c3dd201f4da8cb08de8f91547, type: 3}
   winter: {fileID: 21300000, guid: bc71adc3e371c2a43ad6be7d1a8146f1, type: 3}
   spring: {fileID: 21300000, guid: dbb38151deed1084499aa8366dabde97, type: 3}
   fall: {fileID: 21300000, guid: d73f9e868ed6f314286ed9a568ea133f, type: 3}
+  morningFog: 0.005
+  dayFog: 0.003
+  nightFog: 0.009
+  nightIntensity: 0.03
+  dayIntensity: 2
 --- !u!4 &1632256035
 Transform:
   m_ObjectHideFlags: 0
@@ -4855,6 +4922,21 @@ MonoBehaviour:
   ownershipController: {fileID: 0}
   enableLandBuying: 1
   buyLandKey: 304
+--- !u!114 &1632256037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d58d0a566fe124a84f7071f73b5ea9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  standardCursor: {fileID: 2800000, guid: 77fc84eab99dc6d4ea631387294b963d, type: 3}
+  zoomInCursor: {fileID: 2800000, guid: 5ac4f4d9347665f48a3346a29ab41bc1, type: 3}
+  zoomOutCursor: {fileID: 2800000, guid: e8b92c0e2ebff684fb10ea83c994e7a5, type: 3}
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

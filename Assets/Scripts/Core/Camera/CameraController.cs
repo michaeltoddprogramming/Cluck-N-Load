@@ -121,9 +121,9 @@ public class CameraController : MonoBehaviour
     // Apply smooth transitions to camera transforms
     void ApplySmoothTransition()
     {
-        transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * movementTime);
-        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * movementTime);
-        cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, newZoom, Time.deltaTime * movementTime);
+        transform.position = Vector3.Lerp(transform.position, newPosition, Time.unscaledDeltaTime * movementTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.unscaledDeltaTime * movementTime);
+        cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, newZoom, Time.unscaledDeltaTime * movementTime);
     }
     
     // Handle keyboard movement (WASD)
@@ -143,7 +143,7 @@ public class CameraController : MonoBehaviour
         // Apply movement if there's any direction input
         if (direction.magnitude > 0)
         {
-            newPosition += direction.normalized * currentSpeed * Time.deltaTime;
+            newPosition += direction.normalized * currentSpeed * Time.unscaledDeltaTime;
             isMoving = true;
         }
     }
@@ -191,7 +191,7 @@ public class CameraController : MonoBehaviour
         // Apply movement
         if (direction.magnitude > 0)
         {
-            newPosition += direction.normalized * currentSpeed * Time.deltaTime;
+            newPosition += direction.normalized * currentSpeed * Time.unscaledDeltaTime;
         }
         
         // Right mouse drag movement
@@ -267,30 +267,30 @@ public class CameraController : MonoBehaviour
         if (!mouseControlsDisabled)
         {
             // Mouse wheel zoom
-            // if (Input.mouseScrollDelta.y != 0)
-            // {                
-            //     newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
-            // }
+            if (Input.mouseScrollDelta.y != 0)
+            {                
+                newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
+            }
 
 
             // Mouse wheel zoom
-            float scroll = Input.mouseScrollDelta.y;
+            // float scroll = Input.mouseScrollDelta.y;
 
-            if (scroll != 0)
-            {
-                if (scroll > 0)
-                {
-                    //zooming int
-                    cursor.zoom(true);
-                }
-                else if (scroll < 0)
-                {
-                    // Zooming out
-                    cursor.zoom(false);
-                }
+            // if (scroll != 0)
+            // {
+            //     if (scroll > 0)
+            //     {
+            //         //zooming int
+            //         cursor.zoom(true);
+            //     }
+            //     else if (scroll < 0)
+            //     {
+            //         // Zooming out
+            //         cursor.zoom(false);
+            //     }
 
-                newZoom += scroll * zoomAmount * 0.2f;
-            }
+            //     newZoom += scroll * zoomAmount * 0.2f;
+            // }
         }    
         
         // Keyboard zoom
@@ -334,6 +334,12 @@ public class CameraController : MonoBehaviour
     newZoom.z = distance * Mathf.Cos(currentAngle);
 }
 }
+
+
+
+
+
+
 
 // using UnityEngine;
 

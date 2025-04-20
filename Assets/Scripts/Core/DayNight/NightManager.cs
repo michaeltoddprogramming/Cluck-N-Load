@@ -15,8 +15,10 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Light sceneLight;
     [SerializeField] private Color color = new Color32(0xAA, 0xBB, 0xDD, 0xFF);
     [SerializeField] private float intensity = 0.3f;
-    [SerializeField] private Gradient dayToNightGradient;
-    [SerializeField] private Gradient nightToDayGradient;
+    [SerializeField] private Gradient morningToDayGradient;
+    [SerializeField] private Gradient DayToAfternoonGradient;
+    [SerializeField] private Gradient AfternoonToNightGradient;
+    [SerializeField] private Gradient nightToMorningGradient;
 
     //skyboxes
     [SerializeField] private Texture2D skyboxMorning;
@@ -46,6 +48,7 @@ public class NightManager : MonoBehaviour
     private Color dayShop = Color.white;
     private Color nightShop = Color.grey * 0.9f;
     public Image shopIcon;
+    [SerializeField] private ShopUIManager shopManager;
 
     //time management
     //season notification
@@ -96,18 +99,35 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Sprite spring;
     [SerializeField] private Sprite fall;
 
+    //fog density
+    [SerializeField] private float morningFog = 0.005f;
+    [SerializeField] private float dayFog = 0.003f;
+    [SerializeField] private float nightFog = 0.009f;
+
+    //light intensity
+    [SerializeField] private float nightIntensity = 0.03f;
+    [SerializeField] private float dayIntensity = 2f;
+
+    //pause game manager
+    [SerializeField] private PauseManager pauseManager;
+
+
+
+
 
 
     private void Start()
     {
         // SetListeners();
-        SetInitialLight();
+        // SetInitialLight();
 
         Hours = 7;
         Years = 1;
         seasonNotification.gameObject.SetActive(false);
 
         // StartDay(0);
+        setSeason(1);
+
 
         AudioSource[] sources = GetComponents<AudioSource>();
         if (sources.Length >= 2)
@@ -153,49 +173,49 @@ public class NightManager : MonoBehaviour
         speedUp = 3f;
     }
 
-    public void buttonClicked()
-    {
-        if (isDay)
-        {
-            Debug.Log("Gonna start night now");
-            color = new Color32(50, 70, 100, 255);
-            intensity = 0.3f;
-            buttonText.text = "Start Night";
+    // public void buttonClicked()
+    // {
+    //     if (isDay)
+    //     {
+    //         Debug.Log("Gonna start night now");
+    //         color = new Color32(50, 70, 100, 255);
+    //         intensity = 0.3f;
+    //         buttonText.text = "Start Night";
 
-            changeLightColor();
-            StartNight(1);
-        }
-        else
-        {
-            Debug.Log("Gonna start the day now");
-            color = new Color32(255, 244, 214, 255);
-            intensity = 2f;
-            buttonText.text = "End Night";
-            changeLightColor();
-            StartDay(1);
-        }
+    //         changeLightColor();
+    //         StartNight(1);
+    //     }
+    //     else
+    //     {
+    //         Debug.Log("Gonna start the day now");
+    //         color = new Color32(255, 244, 214, 255);
+    //         intensity = 2f;
+    //         buttonText.text = "End Night";
+    //         changeLightColor();
+    //         StartDay(1);
+    //     }
 
-    }
+    // }
 
-    private void SetInitialLight()
-    {
-        if (isDay)
-        {
-            Debug.Log("Daytime setup");
-            // color = new Color32(255, 244, 214, 255);
-            color = new Color32(255, 244, 214, 255);
-            intensity = 2f;
-            buttonText.text = "Start Night";
-        }
-        else
-        {
-            Debug.Log("Nighttime setup");
-            color = new Color32(50, 70, 100, 255);
-            intensity = 0.3f;
-            buttonText.text = "End Night";
-        }
-        changeLightColor();
-    }
+    // private void SetInitialLight()
+    // {
+    //     if (isDay)
+    //     {
+    //         Debug.Log("Daytime setup");
+    //         // color = new Color32(255, 244, 214, 255);
+    //         color = new Color32(255, 244, 214, 255);
+    //         intensity = 2f;
+    //         buttonText.text = "Start Night";
+    //     }
+    //     else
+    //     {
+    //         Debug.Log("Nighttime setup");
+    //         color = new Color32(50, 70, 100, 255);
+    //         intensity = 0.3f;
+    //         buttonText.text = "End Night";
+    //     }
+    //     changeLightColor();
+    // }
 
     // private void SetListeners()
     // {
@@ -213,6 +233,9 @@ public class NightManager : MonoBehaviour
 
     private void StartNight(int flag)
     {
+        //force close shop
+        shopManager.CloseShop();
+
         //if night is triggered by user (button is clicked)
         if(flag == 1)
         {
@@ -231,9 +254,14 @@ public class NightManager : MonoBehaviour
             if (source1 != null) source1.Play();
             if (source2 != null) source2.Stop();
 
-            // color = new Color32(255, 246, 225, 255);
+            // color = new Col`or32(255, 246, 225, 255);
+            // changeLightColor();
+
+            //set light intencity
             // intensity = 0.3f;
-            changeLightColor();
+
+            sceneLight.intensity = nightIntensity;
+            RenderSettings.fogDensity = nightFog;
 
             //change icon from day to night
             timeOfDayIcon.sprite = nightIcon;
@@ -259,8 +287,10 @@ public class NightManager : MonoBehaviour
             if (source2 != null) source2.Stop();
 
             // color = new Color32(255, 246, 225, 255);
-            // intensity = 0.3f;
-            changeLightColor();
+            // sceneLight.intensity = 0f;
+            sceneLight.intensity = nightIntensity;
+            RenderSettings.fogDensity = nightFog;
+            // changeLightColor();
 
             //change icon from day to night
             timeOfDayIcon.sprite = nightIcon;
@@ -290,8 +320,9 @@ public class NightManager : MonoBehaviour
             if (source2 != null) source2.Play();
 
             // color = new Color32(214, 239, 255, 255);
-            // intensity = 1f;
-            changeLightColor();
+            sceneLight.intensity = dayIntensity;
+            RenderSettings.fogDensity = dayFog;
+            // changeLightColor();
 
             //change icon from day to night
             timeOfDayIcon.sprite = dayIcon;
@@ -316,8 +347,9 @@ public class NightManager : MonoBehaviour
             if (source2 != null) source2.Play();
 
             // color = new Color32(214, 239, 255, 255);
-            // intensity = 1f;
-            changeLightColor();
+            sceneLight.intensity = dayIntensity;
+            RenderSettings.fogDensity = dayFog;
+            // changeLightColor();
 
             //change icon from day to night
             timeOfDayIcon.sprite = dayIcon;
@@ -343,8 +375,9 @@ public class NightManager : MonoBehaviour
             if (source2 != null) source2.Play();
 
             // color = new Color32(214, 239, 255, 255);
-            // intensity = 1f;
-            changeLightColor();
+            sceneLight.intensity = dayIntensity;
+            // RenderSettings.fogDensity = dayFog;
+            // changeLightColor();
 
             //change icon from day to night
             timeOfDayIcon.sprite = dayIcon;
@@ -359,20 +392,27 @@ public class NightManager : MonoBehaviour
         for (float k = 0; k < time; k += Time.deltaTime)
         {
             sceneLight.color = lightGradient.Evaluate(k / time);
+            RenderSettings.fogColor = sceneLight.color;
             yield return null;
         }
     }
 
-    private void changeLightColor()
-    {
-        sceneLight.color = color;
-        sceneLight.intensity = intensity;
-    }
+    // private void changeLightColor()
+    // {
+    //     sceneLight.color = color;
+    //     sceneLight.intensity = intensity;
+    // }
 
 
 
     private void OnMinutesChange(int value)
     {
+        //make shadows move with time of day
+        // sceneLight.transform.Rotate(Vector3.up, (100f / 1440f) * 360f, Space.World);
+        sceneLight.transform.Rotate(Vector3.up, (4f / 1440f) * 360f, Space.World);
+        // sceneLight.transform.Rotate(Vector3.up, (360f / 1440f), Space.World);
+
+
         // Debug.Log("OnMinuteChange1");
 
         if(value >= 1)
@@ -403,19 +443,32 @@ public class NightManager : MonoBehaviour
         if(value == 5)
         {
             StartDay(2);
+
+            RenderSettings.fogDensity = morningFog;
             
-            Debug.Log("morning-----------------");
+            Debug.Log("morning----------------- fog is:" + RenderSettings.fogDensity);
             StartCoroutine(Skybox(skyboxNight, skyboxMorning, 2f));
+            StartCoroutine(LightingChanges(nightToMorningGradient, 2f));
         }
         else if(value == 7)
         {
-            Debug.Log("day-----------------");
+            RenderSettings.fogDensity = dayFog;
+
+
+            Debug.Log("day----------------- fog is: " + RenderSettings.fogDensity);
             StartCoroutine(Skybox(skyboxMorning, skyboxDay, 2f));
+            StartCoroutine(LightingChanges(morningToDayGradient, 2f));
         }
         else if(value == 16)
         {
             Debug.Log("afternoon-----------------");
+
+            StartCoroutine(showText("Night starting soon!!", 5f));
+
+
+
             StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
+            StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
         }
         else if(value == 20)
         {
@@ -423,30 +476,40 @@ public class NightManager : MonoBehaviour
 
             Debug.Log("evening-----------------");
             StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
+            StartCoroutine(LightingChanges(AfternoonToNightGradient, 2f));
         }        
     }
 
     private void OnDayChange(int value)
     {
-        if(value == 1)
+        if(value == 0)
         {
             setSeason(1);
         }
-        else if(value == 2)
+        else if(value == 1)
         {
             setSeason(2);
         }
-        else if(value == 3)
+        else if(value == 2)
         {
             setSeason(3);
         }
-        else if(value == 4)
+        else if(value == 3)
         {
             setSeason(4);
         }
-        else if(value == 5)
+        else if(value == 4)
         {
             setSeason(5);
+
+            Debug.Log("Resetting the full time loop!");
+            years ++;
+            days = 0;
+            hours = 7;
+            minutes = 0;
+
+            StartDay(0); // force reset to day state
+            setSeason(1); // reset season if needed
         }
         else if(value == 5)
         {
@@ -459,6 +522,7 @@ public class NightManager : MonoBehaviour
             StartDay(0); // force reset to day state
             setSeason(1); // reset season if needed
         }
+        
         // if(value == 1)
         // {
         //     setSeason(1);

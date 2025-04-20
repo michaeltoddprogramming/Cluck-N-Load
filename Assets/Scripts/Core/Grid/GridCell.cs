@@ -15,7 +15,9 @@ public class GridCell
     public string itemID; // optional, for referencing items by type
 
     public int integrationCost = int.MaxValue; // Start at max
-    public Vector2Int flowDirection = Vector2Int.zero;
+    
+    // Change this from Vector2Int to Vector2 for continuous direction
+    public Vector2 flowDirection = Vector2.zero;
 
     // Color getter for this cell (based on flags)
     public Color GetDebugColor() => flags.GetColor();

@@ -12,6 +12,18 @@ public class FlowFieldGenerator : MonoBehaviour
     public Vector2Int manualTargetCoord; // Manual target coordinates
     public bool useManualTarget = false; // Toggle between transform and manual target
 
+    [Header("Flow Field Settings")]
+    [Tooltip("Whether to use diagonal directions for movement")]
+    public bool useDiagonalDirections = true;
+    [Tooltip("Amount of randomness to add to flow directions (0 = none, 1 = max)")]
+    [Range(0f, 1f)]
+    public float directionRandomness = 0.1f;
+    [Tooltip("Maximum angle for random direction variation in degrees")]
+    [Range(0f, 180f)]
+    public float maxRandomAngle = 45f; // Increased from the default 30 degrees
+    [Tooltip("Whether to use weighted diagonal paths (1.4x cost)")]
+    public bool useWeightedDiagonals = true;
+
     [Header("Debug Visualization")]
     public bool visualizeFlowField = false;
     [Tooltip("Whether to draw the target center point")]
@@ -24,9 +36,13 @@ public class FlowFieldGenerator : MonoBehaviour
     private Vector2Int currentTargetCoord;
     private bool initialized = false;
     private bool manualTargetChanged = false;
+    private System.Random random;
 
     private void Start()
     {
+        // Initialize random number generator with a seed based on time
+        random = new System.Random(System.DateTime.Now.Millisecond);
+        
         // Find references if not assigned
         if (gridController == null)
             gridController = FindObjectOfType<GridController>();
@@ -141,17 +157,21 @@ public class FlowFieldGenerator : MonoBehaviour
         targetCell.integrationCost = 0;
         queue.Enqueue(targetCell);
 
-        // 3. Dijkstra propagation - IMPORTANT: Now works on ALL cells, but treats occupied cells as obstacles
+        // 3. Dijkstra propagation - Now with optional diagonal movement
         while (queue.Count > 0)
         {
             GridCell current = queue.Dequeue();
 
-            foreach (var neighbor in GetNeighbors(current))
+            foreach (var neighborInfo in GetNeighborsWithCost(current))
             {
+                GridCell neighbor = neighborInfo.cell;
+                float moveCost = neighborInfo.cost;
+                
                 // Check for both obstacles AND occupied cells, and avoid them in pathfinding
                 if (neighbor != null && !neighbor.flags.isObstacle && !neighbor.flags.isOccupied)
                 {
-                    int newCost = current.integrationCost + 1;
+                    // Add the movement cost - more expensive for diagonals if weighted
+                    int newCost = current.integrationCost + Mathf.RoundToInt(moveCost);
                     if (newCost < neighbor.integrationCost)
                     {
                         neighbor.integrationCost = newCost;
@@ -161,7 +181,7 @@ public class FlowFieldGenerator : MonoBehaviour
             }
         }
 
-        // 4. Compute flow direction
+        // 4. Compute flow direction with randomness
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -172,37 +192,115 @@ public class FlowFieldGenerator : MonoBehaviour
                 
                 GridCell lowest = cell;
 
-                foreach (var neighbor in GetNeighbors(cell))
+                foreach (var neighborInfo in GetNeighborsWithCost(cell))
                 {
+                    GridCell neighbor = neighborInfo.cell;
                     if (neighbor != null && neighbor.integrationCost < lowest.integrationCost)
                         lowest = neighbor;
                 }
 
                 if (lowest != cell)
-                    cell.flowDirection = new Vector2Int(lowest.x - cell.x, lowest.y - cell.y);
+                {
+                    // Basic flow direction based on lowest cost neighbor - now using Vector2 (float)
+                    Vector2 baseDirection = new Vector2(lowest.x - cell.x, lowest.y - cell.y);
+                    baseDirection.Normalize(); // Normalize for consistent magnitude
+                    
+                    // Add randomness if desired
+                    if (directionRandomness > 0)
+                    {
+                        cell.flowDirection = AddRandomnessToDirection(baseDirection);
+                    }
+                    else
+                    {
+                        cell.flowDirection = baseDirection;
+                    }
+                }
             }
         }
         
         Debug.Log($"Flow field generated with target: {goal}");
     }
 
-    // Get neighboring cells for a given cell
-    private List<GridCell> GetNeighbors(GridCell cell)
+    // Helper method to add randomness to direction using continuous Vector2
+    private Vector2 AddRandomnessToDirection(Vector2 baseDirection)
     {
-        List<GridCell> neighbors = new List<GridCell>();
+        // No randomness for zero direction
+        if (baseDirection == Vector2.zero)
+            return Vector2.zero;
+        
+        // Calculate a random angle based on randomness factor
+        float randomAngle = ((float)random.NextDouble() * 2f - 1f) * maxRandomAngle * directionRandomness;
+        
+        // Rotate the vector by the random angle
+        float cos = Mathf.Cos(randomAngle * Mathf.Deg2Rad);
+        float sin = Mathf.Sin(randomAngle * Mathf.Deg2Rad);
+        Vector2 rotated = new Vector2(
+            baseDirection.x * cos - baseDirection.y * sin,
+            baseDirection.x * sin + baseDirection.y * cos
+        );
+        
+        // Normalize to maintain consistent magnitude
+        rotated.Normalize();
+        
+        return rotated;
+    }
 
-        Vector2Int[] directions = new Vector2Int[]
+    // New struct to represent a neighbor cell and its movement cost
+    private struct NeighborInfo
+    {
+        public GridCell cell;
+        public float cost;
+        
+        public NeighborInfo(GridCell cell, float cost)
+        {
+            this.cell = cell;
+            this.cost = cost;
+        }
+    }
+
+    // Get neighboring cells for a given cell with cost info
+    private List<NeighborInfo> GetNeighborsWithCost(GridCell cell)
+    {
+        List<NeighborInfo> neighbors = new List<NeighborInfo>();
+
+        // Basic cardinal directions
+        Vector2Int[] cardinalDirections = new Vector2Int[]
         {
             Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
         };
 
-        foreach (var dir in directions)
+        // Diagonal directions
+        Vector2Int[] diagonalDirections = new Vector2Int[]
+        {
+            new Vector2Int(1, 1), new Vector2Int(1, -1), 
+            new Vector2Int(-1, 1), new Vector2Int(-1, -1)
+        };
+
+        // Add cardinal neighbors
+        foreach (var dir in cardinalDirections)
         {
             int nx = cell.x + dir.x;
             int ny = cell.y + dir.y;
 
             if (gridController.IsValidCell(nx, ny))
-                neighbors.Add(gridDataGenerator.GetCell(nx, ny));
+                neighbors.Add(new NeighborInfo(gridDataGenerator.GetCell(nx, ny), 1f));
+        }
+
+        // Add diagonal neighbors if enabled
+        if (useDiagonalDirections)
+        {
+            foreach (var dir in diagonalDirections)
+            {
+                int nx = cell.x + dir.x;
+                int ny = cell.y + dir.y;
+
+                if (gridController.IsValidCell(nx, ny))
+                {
+                    // Diagonal movement cost can be weighted (typically √2 ≈ 1.414)
+                    float cost = useWeightedDiagonals ? 1.4f : 1f;
+                    neighbors.Add(new NeighborInfo(gridDataGenerator.GetCell(nx, ny), cost));
+                }
+            }
         }
 
         return neighbors;
@@ -222,6 +320,95 @@ public class FlowFieldGenerator : MonoBehaviour
         else
         {
             Debug.LogWarning("Invalid target for flow field generation");
+        }
+    }
+
+    // Called when inspector values change
+    private void OnValidate()
+    {
+        // Trigger an update when manual target is changed in inspector
+        if (Application.isPlaying && initialized)
+        {
+            manualTargetChanged = true;
+        }
+    }
+
+    // Improved visualization of the flow field
+    private void OnDrawGizmos()
+    {
+        if (!Application.isPlaying || gridDataGenerator == null || !gridDataGenerator.IsInitialized)
+            return;
+
+        int gridWidth = gridDataGenerator.GetGridWidth();
+        int gridHeight = gridDataGenerator.GetGridHeight();
+
+        // Draw current target position if enabled
+        if (visualizeTargetPoint)
+        {
+            Vector2Int target = GetTargetCoordinates();
+            if (IsValidTarget(target))
+            {
+                GridCell targetCell = gridDataGenerator.GetCell(target.x, target.y);
+                if (targetCell != null)
+                {
+                    Gizmos.color = targetPointColor;
+                    Gizmos.DrawSphere(targetCell.worldPosition, arrowScale * 0.7f);
+                    Gizmos.DrawWireCube(targetCell.worldPosition, new Vector3(1.2f, 0.1f, 1.2f));
+                }
+            }
+        }
+
+        // Only draw flow directions if flow field visualization is enabled
+        if (!visualizeFlowField)
+            return;
+
+        // Visualization to highlight the randomness
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GridCell cell = gridDataGenerator.GetCell(x, y);
+                if (cell == null) continue;
+                
+                if (cell.flowDirection != Vector2.zero && cell.integrationCost != int.MaxValue)
+                {
+                    Vector3 start = cell.worldPosition;
+                    
+                    // Now the direction is already a continuous Vector2
+                    Vector3 direction = new Vector3(cell.flowDirection.x, 0, cell.flowDirection.y);
+                    Vector3 end = start + direction * arrowScale;
+                    
+                    // Color based on direction randomness intensity
+                    Color arrowColoring = arrowColor;
+                    
+                    // Change color based on the angle of the direction
+                    float angle = Mathf.Atan2(cell.flowDirection.y, cell.flowDirection.x) * Mathf.Rad2Deg;
+                    // Normalize angle to 0-360
+                    angle = (angle + 360) % 360;
+                    
+                    if (directionRandomness > 0.0f)
+                    {
+                        // Create a gradient of colors based on the angle
+                        float hue = angle / 360f;
+                        arrowColoring = Color.HSVToRGB(hue, 0.7f, 0.8f);
+                    }
+                    
+                    Gizmos.color = arrowColoring;
+                    Gizmos.DrawLine(start, end);
+                    
+                    // Draw arrow head
+                    Vector3 right = Quaternion.Euler(0, 30, 0) * -direction * arrowScale * 0.4f;
+                    Vector3 left = Quaternion.Euler(0, -30, 0) * -direction * arrowScale * 0.4f;
+                    Gizmos.DrawLine(end, end + right);
+                    Gizmos.DrawLine(end, end + left);
+                    
+                    // Draw small circle at base for better visibility of high randomness cells
+                    if (directionRandomness > 0.5f)
+                    {
+                        Gizmos.DrawWireSphere(start, 0.1f);
+                    }
+                }
+            }
         }
     }
 
@@ -246,72 +433,6 @@ public class FlowFieldGenerator : MonoBehaviour
     {
         useManualTarget = useManual;
         manualTargetChanged = true;
-    }
-
-    // Called when inspector values change
-    private void OnValidate()
-    {
-        // Trigger an update when manual target is changed in inspector
-        if (Application.isPlaying && initialized)
-        {
-            manualTargetChanged = true;
-        }
-    }
-
-    // Visualize the flow field in the editor
-    private void OnDrawGizmos()
-    {
-        if (!Application.isPlaying || gridDataGenerator == null || !gridDataGenerator.IsInitialized)
-            return;
-
-        int gridWidth = gridDataGenerator.GetGridWidth();
-        int gridHeight = gridDataGenerator.GetGridHeight();
-
-        // Draw current target position if enabled
-        if (visualizeTargetPoint)
-        {
-            Vector2Int target = GetTargetCoordinates();
-            if (IsValidTarget(target))
-            {
-                GridCell targetCell = gridDataGenerator.GetCell(target.x, target.y);
-                if (targetCell != null)
-                {
-                    Gizmos.color = targetPointColor;
-                    Gizmos.DrawSphere(targetCell.worldPosition, arrowScale * 0.5f);
-                    Gizmos.DrawWireCube(targetCell.worldPosition, new Vector3(1, 0.1f, 1));
-                }
-            }
-        }
-
-        // Only draw flow directions if flow field visualization is enabled
-        if (!visualizeFlowField)
-            return;
-            
-        // Draw flow directions
-        for (int x = 0; x < gridWidth; x++)
-        {
-            for (int y = 0; y < gridHeight; y++)
-            {
-                GridCell cell = gridDataGenerator.GetCell(x, y);
-                if (cell == null) continue;
-                
-                if (cell.flowDirection != Vector2Int.zero && cell.integrationCost != int.MaxValue)
-                {
-                    Vector3 start = cell.worldPosition;
-                    Vector3 direction = new Vector3(cell.flowDirection.x, 0, cell.flowDirection.y).normalized;
-                    Vector3 end = start + direction * arrowScale;
-                    
-                    Gizmos.color = arrowColor;
-                    Gizmos.DrawLine(start, end);
-                    
-                    // Draw arrow head
-                    Vector3 right = Quaternion.Euler(0, 30, 0) * -direction * arrowScale * 0.3f;
-                    Vector3 left = Quaternion.Euler(0, -30, 0) * -direction * arrowScale * 0.3f;
-                    Gizmos.DrawLine(end, end + right);
-                    Gizmos.DrawLine(end, end + left);
-                }
-            }
-        }
     }
 
     [ContextMenu("Print Obstacle Stats")]

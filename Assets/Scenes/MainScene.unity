@@ -1548,7 +1548,7 @@ MonoBehaviour:
   gridDataGenerator: {fileID: 527660422}
   centerBuilding: {fileID: 0}
   centerPosition: {x: 0, y: 0, z: 0}
-  ownershipRadius: 8
+  ownershipRadius: 15
   shapeBlend: 1
   visualizeInEditor: 0
   gizmoColor: {r: 1, g: 0.9813726, b: 0, a: 1}
@@ -3550,6 +3550,7 @@ GameObject:
   - component: {fileID: 1632256034}
   - component: {fileID: 1632256036}
   - component: {fileID: 1632256037}
+  - component: {fileID: 1632256038}
   - component: {fileID: 1632256033}
   - component: {fileID: 1632256032}
   m_Layer: 0
@@ -3865,6 +3866,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridController: {fileID: 527660424}
+  flowFieldGenerator: {fileID: 1632256037}
   ghostMaterial: {fileID: 2100000, guid: 63c0360517167154bad02130899a3243, type: 2}
   buildablePrefabs: []
   rotateKey: 114
@@ -3891,11 +3893,43 @@ MonoBehaviour:
   gridController: {fileID: 527660424}
   gridDataGenerator: {fileID: 527660422}
   targetTransform: {fileID: 0}
-  manualTargetCoord: {x: 0, y: 0}
-  useManualTarget: 0
-  visualizeFlowField: 0
-  arrowScale: 0.5
+  manualTargetCoord: {x: 24, y: 24}
+  useManualTarget: 1
+  useDiagonalDirections: 1
+  directionRandomness: 0.137
+  maxRandomAngle: 17
+  useWeightedDiagonals: 1
+  visualizeFlowField: 1
+  visualizeTargetPoint: 1
+  arrowScale: 1
   arrowColor: {r: 0, g: 0, b: 1, a: 1}
+  targetPointColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &1632256038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58c9d1765ac52c14d91a0afc9bd2fe15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitPrefabs:
+  - {fileID: 264810465737084052, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}
+  selectedPrefabIndex: 0
+  spawnHeightOffset: 0.1
+  placementLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  flowFieldGenerator: {fileID: 1632256037}
+  gridController: {fileID: 527660424}
+  showDebugInfo: 1
+  debugColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  debugSphereRadius: 0.25
+  debugDuration: 1
+  spawnCount: 0
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

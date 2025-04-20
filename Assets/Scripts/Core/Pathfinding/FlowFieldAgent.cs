@@ -177,25 +177,28 @@ public class FlowFieldAgent : MonoBehaviour
             return;
             
         // Check if we have a valid flow direction and can move there
-        if (currentCell.flowDirection != Vector2Int.zero && currentCell.integrationCost != int.MaxValue)
+        if (currentCell.flowDirection != Vector2.zero && currentCell.integrationCost != int.MaxValue)
         {
-            // Calculate target position
-            int targetX = currentCellCoord.x + currentCell.flowDirection.x;
-            int targetY = currentCellCoord.y + currentCell.flowDirection.y;
+            // Get the world position of the current cell
+            Vector3 currentPos = gridController.GetCellCenterFromTexture(currentCellCoord.x, currentCellCoord.y);
             
-            if (gridController.IsValidCell(targetX, targetY))
+            // Calculate the target position using the continuous flow direction
+            float cellSize = gridController.GetCellSize();
+            Vector3 targetDirection = new Vector3(currentCell.flowDirection.x, 0, currentCell.flowDirection.y);
+            Vector3 worldTargetPos = currentPos + targetDirection * cellSize;
+            
+            // Convert to grid coordinates for validity check
+            Vector2Int nextCellCoords = gridController.WorldToGridCoords(worldTargetPos);
+            
+            if (gridController.IsValidCell(nextCellCoords.x, nextCellCoords.y))
             {
-                GridCell nextCell = gridController.GetCell(targetX, targetY);
+                GridCell nextCell = gridController.GetCell(nextCellCoords.x, nextCellCoords.y);
                 
                 // Only proceed if we can travel through non-owned territories, or if the cell is owned
                 if (canTravelThroughNonOwnedCells || (nextCell != null && nextCell.flags.isOwned))
                 {
-                    // Get the world position of the target cell
-                    targetPosition = gridController.GetCellCenterFromTexture(targetX, targetY);
-                    
-                    // Preserve the agent's current height
-                    targetPosition.y = transform.position.y;
-                    
+                    // Set the target position, preserving the agent's height
+                    targetPosition = new Vector3(worldTargetPos.x, transform.position.y, worldTargetPos.z);
                     isMoving = true;
                 }
             }

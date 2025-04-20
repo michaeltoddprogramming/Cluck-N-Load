@@ -781,4 +781,9 @@ public class BuildController : MonoBehaviour
         
         currentBuildTargetPrefab = null;
     }
+
+    public void HideDeleteIcon()
+    {
+        itemDeleteIcon.gameObject.SetActive(false);
+    }
 }

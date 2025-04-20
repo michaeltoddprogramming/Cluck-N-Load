@@ -1108,7 +1108,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -287, y: 470}
+  m_AnchoredPosition: {x: -283, y: 496}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &398921168
@@ -1418,6 +1418,7 @@ GameObject:
   - component: {fileID: 441202429}
   - component: {fileID: 441202428}
   - component: {fileID: 441202427}
+  - component: {fileID: 441202430}
   m_Layer: 5
   m_Name: Pause
   m_TagString: Untagged
@@ -1475,7 +1476,7 @@ MonoBehaviour:
     m_FadeDuration: 0.1
   m_SpriteState:
     m_HighlightedSprite: {fileID: 21300000, guid: e51423debdf245d4b9f03d33e67028cb, type: 3}
-    m_PressedSprite: {fileID: 21300000, guid: 15fc52bc53f33c64e98d1f65c98c39ea, type: 3}
+    m_PressedSprite: {fileID: 0}
     m_SelectedSprite: {fileID: 21300000, guid: 4a7c7f51517acdb408e0c70d61952e0d, type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
@@ -1525,6 +1526,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1798959893}
+        m_TargetAssemblyTypeName: ToggleButtonGroup, Assembly-CSharp
+        m_MethodName: OnButtonSelected
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 441202430}
+          m_ObjectArgumentAssemblyTypeName: ToggleButtonVisual, Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &441202428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1563,6 +1576,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 441202425}
   m_CullTransparentMesh: 1
+--- !u!114 &441202430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 441202425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 449dd593b6969b447a074389c1ade3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttonImage: {fileID: 441202428}
+  defaultSprite: {fileID: 21300000, guid: 83e72468f795d1b4ca61b6ac2119d5ca, type: 3}
+  hoverSprite: {fileID: 21300000, guid: e51423debdf245d4b9f03d33e67028cb, type: 3}
+  selectedSprite: {fileID: 21300000, guid: 4a7c7f51517acdb408e0c70d61952e0d, type: 3}
 --- !u!1001 &465760064
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1931,6 +1960,8 @@ GameObject:
   m_Component:
   - component: {fileID: 539507487}
   - component: {fileID: 539507488}
+  - component: {fileID: 539507489}
+  - component: {fileID: 539507490}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -1969,6 +2000,34 @@ MonoBehaviour:
   closeButton: {fileID: 836310654}
   shopButton: {fileID: 760890653}
   shopIcon: {fileID: 760890654}
+--- !u!114 &539507489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539507485}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 449dd593b6969b447a074389c1ade3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttonImage: {fileID: 441202428}
+  defaultSprite: {fileID: 21300000, guid: 83e72468f795d1b4ca61b6ac2119d5ca, type: 3}
+  hoverSprite: {fileID: 0}
+  selectedSprite: {fileID: 21300000, guid: 4a7c7f51517acdb408e0c70d61952e0d, type: 3}
+--- !u!114 &539507490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539507485}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d37ab0ef0f54384f94b03d5b404d4e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &618655743
 GameObject:
   m_ObjectHideFlags: 0
@@ -2825,6 +2884,7 @@ GameObject:
   - component: {fileID: 902858524}
   - component: {fileID: 902858523}
   - component: {fileID: 902858522}
+  - component: {fileID: 902858525}
   m_Layer: 5
   m_Name: Play
   m_TagString: Untagged
@@ -2882,7 +2942,7 @@ MonoBehaviour:
     m_FadeDuration: 0.1
   m_SpriteState:
     m_HighlightedSprite: {fileID: 21300000, guid: 0ac88c5d2ef7b7d4fa78250673f3a553, type: 3}
-    m_PressedSprite: {fileID: 21300000, guid: 4a2e3509b5607c246919800e5c195f91, type: 3}
+    m_PressedSprite: {fileID: 0}
     m_SelectedSprite: {fileID: 21300000, guid: 7731c20069807e147901206b75913f4c, type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
@@ -2920,13 +2980,25 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 539507488}
-        m_TargetAssemblyTypeName: ShopUIManager, Assembly-CSharp
-        m_MethodName: enableShop
+      - m_Target: {fileID: 1632256034}
+        m_TargetAssemblyTypeName: NightManager, Assembly-CSharp
+        m_MethodName: PlayEnableShop
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1798959893}
+        m_TargetAssemblyTypeName: ToggleButtonGroup, Assembly-CSharp
+        m_MethodName: OnButtonSelected
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 902858525}
+          m_ObjectArgumentAssemblyTypeName: ToggleButtonVisual, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -2970,6 +3042,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 902858520}
   m_CullTransparentMesh: 1
+--- !u!114 &902858525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902858520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 449dd593b6969b447a074389c1ade3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttonImage: {fileID: 902858523}
+  defaultSprite: {fileID: 21300000, guid: 029dc9b4ea599414f9a80cb4b55f9d70, type: 3}
+  hoverSprite: {fileID: 21300000, guid: 0ac88c5d2ef7b7d4fa78250673f3a553, type: 3}
+  selectedSprite: {fileID: 21300000, guid: 7731c20069807e147901206b75913f4c, type: 3}
 --- !u!1 &919067937
 GameObject:
   m_ObjectHideFlags: 0
@@ -3348,6 +3436,7 @@ GameObject:
   - component: {fileID: 1139224271}
   - component: {fileID: 1139224270}
   - component: {fileID: 1139224269}
+  - component: {fileID: 1139224272}
   m_Layer: 5
   m_Name: Fast forward
   m_TagString: Untagged
@@ -3405,7 +3494,7 @@ MonoBehaviour:
     m_FadeDuration: 0.1
   m_SpriteState:
     m_HighlightedSprite: {fileID: 21300000, guid: 8ac7e1a903d22a54f92236ac8b3b6c39, type: 3}
-    m_PressedSprite: {fileID: 21300000, guid: f579afdc61e47164fa772a87ba86feab, type: 3}
+    m_PressedSprite: {fileID: 0}
     m_SelectedSprite: {fileID: 21300000, guid: 59c9d1f96bba07946a45f57457c6b45e, type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
@@ -3443,13 +3532,25 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 539507488}
-        m_TargetAssemblyTypeName: ShopUIManager, Assembly-CSharp
+      - m_Target: {fileID: 1632256034}
+        m_TargetAssemblyTypeName: NightManager, Assembly-CSharp
         m_MethodName: enableShop
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1798959893}
+        m_TargetAssemblyTypeName: ToggleButtonGroup, Assembly-CSharp
+        m_MethodName: OnButtonSelected
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1139224272}
+          m_ObjectArgumentAssemblyTypeName: ToggleButtonVisual, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -3493,6 +3594,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1139224267}
   m_CullTransparentMesh: 1
+--- !u!114 &1139224272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1139224267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 449dd593b6969b447a074389c1ade3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttonImage: {fileID: 1139224270}
+  defaultSprite: {fileID: 21300000, guid: c8076a2405a00a4489d98a040d79b7ea, type: 3}
+  hoverSprite: {fileID: 0}
+  selectedSprite: {fileID: 21300000, guid: 59c9d1f96bba07946a45f57457c6b45e, type: 3}
 --- !u!1 &1155276652
 GameObject:
   m_ObjectHideFlags: 0
@@ -3807,7 +3924,7 @@ MonoBehaviour:
   fastSpeed: 40
   movementTime: 5
   rotationAmount: 1
-  lockRotationDuringMovement: 1
+  lockRotationDuringMovement: 0
   zoomAmount: {x: 0, y: -3, z: 3}
   minX: -15
   maxX: 15
@@ -4642,10 +4759,10 @@ GameObject:
   - component: {fileID: 1632256034}
   - component: {fileID: 1632256037}
   - component: {fileID: 1632256036}
-  - component: {fileID: 1632256033}
-  - component: {fileID: 1632256032}
   - component: {fileID: 1632256038}
   - component: {fileID: 1632256039}
+  - component: {fileID: 1632256033}
+  - component: {fileID: 1632256032}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4996,7 +5113,9 @@ MonoBehaviour:
   shopButton: {fileID: 760890653}
   shopIcon: {fileID: 760890654}
   shopManager: {fileID: 539507488}
+  buildController: {fileID: 1632256036}
   seasonNotification: {fileID: 1626714169}
+  isFast: 0
   timeText: {fileID: 398921168}
   minutes: 0
   hours: 12
@@ -5012,6 +5131,9 @@ MonoBehaviour:
   nightFog: 0.009
   nightIntensity: 0.03
   dayIntensity: 2
+  dayTemp: 6000
+  morningTemp: 3000
+  eveningTemp: 9000
   pauseManager: {fileID: 1632256038}
 --- !u!4 &1632256035
 Transform:
@@ -5521,6 +5643,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1728855031}
   m_CullTransparentMesh: 1
+--- !u!1 &1798959890
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1798959892}
+  - component: {fileID: 1798959893}
+  m_Layer: 0
+  m_Name: ButtonGroup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1798959892
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1798959890}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.7228117, y: -1.0037395, z: -14.367851}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1798959893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1798959890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 334f8fd812cfe214a9c65c736e24a2e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttons:
+  - {fileID: 441202430}
+  - {fileID: 902858525}
+  - {fileID: 1139224272}
 --- !u!1 &1809498552
 GameObject:
   m_ObjectHideFlags: 0
@@ -6776,3 +6946,4 @@ SceneRoots:
   - {fileID: 8776932682921089610}
   - {fileID: 71102177}
   - {fileID: 775492644}
+  - {fileID: 1798959892}

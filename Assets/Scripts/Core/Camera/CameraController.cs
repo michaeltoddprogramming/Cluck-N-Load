@@ -12,7 +12,7 @@ public class CameraController : MonoBehaviour
     
     [Header("Rotation Settings")]
     public float rotationAmount = 2f;
-    public bool lockRotationDuringMovement = true;  // NEW: Lock rotation during movement
+    public bool lockRotationDuringMovement = false;  // NEW: Lock rotation during movement
     
     [Header("Zoom Settings")]
     public Vector3 zoomAmount = new Vector3(0, -5, 5);
@@ -151,68 +151,59 @@ public class CameraController : MonoBehaviour
     // Handle edge-of-screen movement
     void HandleMouseMovement()
     {
-        // Skip if mouse controls are disabled
         if (mouseControlsDisabled) return;
-        
-        // Only applies in built game, not editor
-        if (Application.isEditor) return;
 
-        // Only applies in built game, not editor
-        if (Application.isEditor) return;
-        
         float edgeThreshold = 20f;
         Vector3 direction = Vector3.zero;
-        
+
         // Handle screen edge movement
         if (Input.mousePosition.x >= Screen.width - edgeThreshold)
         {
             direction += transform.right;
             isMoving = true;
         }
-        
+
         if (Input.mousePosition.x <= edgeThreshold)
         {
             direction -= transform.right;
             isMoving = true;
         }
-        
+
         if (Input.mousePosition.y >= Screen.height - edgeThreshold)
         {
             direction += transform.forward;
             isMoving = true;
         }
-        
+
         if (Input.mousePosition.y <= edgeThreshold)
         {
             direction -= transform.forward;
             isMoving = true;
         }
-        
+
         // Apply movement
         if (direction.magnitude > 0)
         {
             newPosition += direction.normalized * currentSpeed * Time.unscaledDeltaTime;
         }
-        
+
         // Right mouse drag movement
         if (Input.GetMouseButtonDown(1))
         {
-            // Start drag
             Plane plane = new Plane(Vector3.up, Vector3.zero);
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
+
             if (plane.Raycast(ray, out float entry))
             {
                 dragStartPosition = ray.GetPoint(entry);
             }
         }
-        
+
         if (Input.GetMouseButton(1))
         {
-            // Continue drag
             Plane plane = new Plane(Vector3.up, Vector3.zero);
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
+
             if (plane.Raycast(ray, out float entry))
             {
                 dragCurrentPosition = ray.GetPoint(entry);
@@ -221,6 +212,78 @@ public class CameraController : MonoBehaviour
             }
         }
     }
+    // void HandleMouseMovement()
+    // {
+    //     // Skip if mouse controls are disabled
+    //     if (mouseControlsDisabled) return;
+        
+    //     // Only applies in built game, not editor
+    //     if (Application.isEditor) return;
+
+    //     // Only applies in built game, not editor
+    //     if (Application.isEditor) return;
+        
+    //     float edgeThreshold = 20f;
+    //     Vector3 direction = Vector3.zero;
+        
+    //     // Handle screen edge movement
+    //     if (Input.mousePosition.x >= Screen.width - edgeThreshold)
+    //     {
+    //         direction += transform.right;
+    //         isMoving = true;
+    //     }
+        
+    //     if (Input.mousePosition.x <= edgeThreshold)
+    //     {
+    //         direction -= transform.right;
+    //         isMoving = true;
+    //     }
+        
+    //     if (Input.mousePosition.y >= Screen.height - edgeThreshold)
+    //     {
+    //         direction += transform.forward;
+    //         isMoving = true;
+    //     }
+        
+    //     if (Input.mousePosition.y <= edgeThreshold)
+    //     {
+    //         direction -= transform.forward;
+    //         isMoving = true;
+    //     }
+        
+    //     // Apply movement
+    //     if (direction.magnitude > 0)
+    //     {
+    //         newPosition += direction.normalized * currentSpeed * Time.unscaledDeltaTime;
+    //     }
+        
+    //     // Right mouse drag movement
+    //     if (Input.GetMouseButtonDown(1))
+    //     {
+    //         // Start drag
+    //         Plane plane = new Plane(Vector3.up, Vector3.zero);
+    //         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            
+    //         if (plane.Raycast(ray, out float entry))
+    //         {
+    //             dragStartPosition = ray.GetPoint(entry);
+    //         }
+    //     }
+        
+    //     if (Input.GetMouseButton(1))
+    //     {
+    //         // Continue drag
+    //         Plane plane = new Plane(Vector3.up, Vector3.zero);
+    //         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            
+    //         if (plane.Raycast(ray, out float entry))
+    //         {
+    //             dragCurrentPosition = ray.GetPoint(entry);
+    //             newPosition = transform.position + dragStartPosition - dragCurrentPosition;
+    //             isMoving = true;
+    //         }
+    //     }
+    // }
     
     // Handle rotation inputs
     void HandleRotation()
@@ -281,12 +344,12 @@ public class CameraController : MonoBehaviour
                 if (scroll > 0)
                 {
                     //zooming int
-                    // cursor.zoom(true);
+                    cursor.zoom(true);
                 }
                 else if (scroll < 0)
                 {
                     // Zooming out
-                    // cursor.zoom(false);
+                    cursor.zoom(false);
                 }
 
                 newZoom += scroll * zoomAmount * 0.2f;
@@ -296,21 +359,21 @@ public class CameraController : MonoBehaviour
         // Keyboard zoom
         if (Input.GetKey(KeyCode.Alpha1))
         {
-            // cursor.zoom(true);
+            cursor.zoom(true);
             newZoom += zoomAmount * 0.2f;
         }
         
         if (Input.GetKey(KeyCode.Alpha2))
         {
-            // cursor.zoom(false);
+            cursor.zoom(false);
             newZoom -= zoomAmount * 0.2f;
         }
 
-        // // After the zooming stops (i.e., no key pressed), reset the cursor
-        // if (!Input.GetKey(KeyCode.Alpha1) && !Input.GetKey(KeyCode.Alpha2))
-        // {
-        //     cursor.resetCursor();
-        // }
+        // After the zooming stops (i.e., no key pressed), reset the cursor
+        if (!Input.GetKey(KeyCode.Alpha1) && !Input.GetKey(KeyCode.Alpha2))
+        {
+            cursor.resetCursor();
+        }
     }
     
     // Enforce camera boundaries and restrictions

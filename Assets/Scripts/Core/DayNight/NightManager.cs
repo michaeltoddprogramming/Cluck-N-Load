@@ -50,6 +50,10 @@ public class NightManager : MonoBehaviour
     public Image shopIcon;
     [SerializeField] private ShopUIManager shopManager;
 
+    //item delete icon
+    [SerializeField] private BuildController buildController;
+
+
     //time management
     //season notification
     [SerializeField] private TextMeshProUGUI seasonNotification;
@@ -57,6 +61,7 @@ public class NightManager : MonoBehaviour
     //pause, play, fast forward
     private float speedUp = 1f;
     private bool isPaused = false;
+    [SerializeField] private bool isFast = false;
 
     //time of day indicator
     [SerializeField] private TextMeshProUGUI timeText;
@@ -107,6 +112,9 @@ public class NightManager : MonoBehaviour
     //light intensity
     [SerializeField] private float nightIntensity = 0.03f;
     [SerializeField] private float dayIntensity = 2f;
+    [SerializeField] private float dayTemp = 6000f;
+    [SerializeField] private float morningTemp = 3000f;
+    [SerializeField] private float eveningTemp = 9000f;
 
     //pause game manager
     [SerializeField] private PauseManager pauseManager;
@@ -118,8 +126,8 @@ public class NightManager : MonoBehaviour
 
     private void Start()
     {
-        // SetListeners();
-        // SetInitialLight();
+        //delete icon when deleting structures
+
 
         Hours = 7;
         Years = 1;
@@ -149,7 +157,7 @@ public class NightManager : MonoBehaviour
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
    
 
-        if(tempSecond >= 2f)
+        if(tempSecond >= 5f)
         {
             Minutes += 1;
             tempSecond = 0;
@@ -164,13 +172,24 @@ public class NightManager : MonoBehaviour
     public void playTime()
     {
         isPaused = false;
+        isFast = false;
         speedUp = 1f;
     }
 
     public void fastForwardTime()
     {
-        isPaused = false;
-        speedUp = 3f;
+        if(isFast)
+        {
+            isFast = false;
+            isPaused = false;
+            speedUp = 1f;
+        }
+        else
+        {
+            isFast = true;
+            isPaused = false;
+            speedUp = 3f;
+        }
     }
 
     // public void buttonClicked()
@@ -235,6 +254,9 @@ public class NightManager : MonoBehaviour
     {
         //force close shop
         shopManager.CloseShop();
+
+        //delete icon when deleting structures
+        buildController.HideDeleteIcon();
 
         //if night is triggered by user (button is clicked)
         if(flag == 1)
@@ -449,6 +471,8 @@ public class NightManager : MonoBehaviour
             Debug.Log("morning----------------- fog is:" + RenderSettings.fogDensity);
             StartCoroutine(Skybox(skyboxNight, skyboxMorning, 2f));
             StartCoroutine(LightingChanges(nightToMorningGradient, 2f));
+
+            sceneLight.colorTemperature = 2000f;
         }
         else if(value == 7)
         {
@@ -458,6 +482,8 @@ public class NightManager : MonoBehaviour
             Debug.Log("day----------------- fog is: " + RenderSettings.fogDensity);
             StartCoroutine(Skybox(skyboxMorning, skyboxDay, 2f));
             StartCoroutine(LightingChanges(morningToDayGradient, 2f));
+            
+            sceneLight.colorTemperature = 6000f;
         }
         else if(value == 16)
         {
@@ -469,6 +495,8 @@ public class NightManager : MonoBehaviour
 
             StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
             StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
+            
+            sceneLight.colorTemperature = 2000f;
         }
         else if(value == 20)
         {
@@ -477,6 +505,8 @@ public class NightManager : MonoBehaviour
             Debug.Log("evening-----------------");
             StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
             StartCoroutine(LightingChanges(AfternoonToNightGradient, 2f));
+            
+            sceneLight.colorTemperature = 9000f;
         }        
     }
 
@@ -597,5 +627,29 @@ public class NightManager : MonoBehaviour
         yield return new WaitForSeconds(time);
 
         seasonNotification.gameObject.SetActive(false);
+    }
+
+    public void FastForwardEnableShop()
+    {
+        if(!isDay)
+        {
+
+        }
+        else
+        {
+            shopManager.enableShop();
+        }
+    }
+
+    public void PlayEnableShop()
+    {
+        if(!isDay)
+        {
+
+        }
+        else
+        {
+            shopManager.enableShop();
+        }
     }
 }

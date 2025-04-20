@@ -586,6 +586,12 @@ public class BuildController : MonoBehaviour
         {
             gridController.SetCellOccupied(cell.x, cell.y, true);
         }
+
+        // Play building placement sound
+    if (AudioManager.Instance != null)
+    {
+        AudioManager.Instance.PlayPlaceSound();
+    }
         
         // Update grid texture
         gridController.UpdateGridTexture();
@@ -609,6 +615,11 @@ public class BuildController : MonoBehaviour
             
             // Destroy the object
             Destroy(placedItem);
+            // Play building removal sound
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayRemoveSound();
+        }
             
             // Mark cells as unoccupied
             foreach (Vector2Int pos in footprint)
@@ -674,6 +685,12 @@ public class BuildController : MonoBehaviour
                         
                         // Update grid texture
                         gridController.UpdateGridTexture();
+
+                        // Play building removal sound
+    if (AudioManager.Instance != null)
+    {
+        AudioManager.Instance.PlayRemoveSound();
+    }
                         
                         return true; // Successfully removed
                     }

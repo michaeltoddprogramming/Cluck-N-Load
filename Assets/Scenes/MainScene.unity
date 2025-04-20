@@ -1501,6 +1501,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1632256038}
+        m_TargetAssemblyTypeName: PauseManager, Assembly-CSharp
+        m_MethodName: pauseGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 539507488}
+        m_TargetAssemblyTypeName: ShopUIManager, Assembly-CSharp
+        m_MethodName: disableShop
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &441202428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1942,7 +1966,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shopPanel: {fileID: 357461198}
-  closeButton: {fileID: 0}
+  closeButton: {fileID: 836310654}
+  shopButton: {fileID: 760890653}
+  shopIcon: {fileID: 760890654}
 --- !u!1 &618655743
 GameObject:
   m_ObjectHideFlags: 0
@@ -2830,6 +2856,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1632256038}
+        m_TargetAssemblyTypeName: PauseManager, Assembly-CSharp
+        m_MethodName: playGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 539507488}
+        m_TargetAssemblyTypeName: ShopUIManager, Assembly-CSharp
+        m_MethodName: enableShop
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &902858523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3329,6 +3379,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1632256038}
+        m_TargetAssemblyTypeName: PauseManager, Assembly-CSharp
+        m_MethodName: playGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 539507488}
+        m_TargetAssemblyTypeName: ShopUIManager, Assembly-CSharp
+        m_MethodName: enableShop
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1139224270
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3681,7 +3755,6 @@ MonoBehaviour:
   fastSpeed: 40
   movementTime: 5
   rotationAmount: 1
-  mouseSensitivity: 100
   lockRotationDuringMovement: 1
   zoomAmount: {x: 0, y: -3, z: 3}
   minX: -15
@@ -3690,6 +3763,8 @@ MonoBehaviour:
   maxZ: 15
   minZoom: 10
   maxZoom: 65
+  fixedPitch: 0
+  cursor: {fileID: 1632256037}
 --- !u!1 &1309907073
 GameObject:
   m_ObjectHideFlags: 0
@@ -4517,6 +4592,8 @@ GameObject:
   - component: {fileID: 1632256036}
   - component: {fileID: 1632256033}
   - component: {fileID: 1632256032}
+  - component: {fileID: 1632256038}
+  - component: {fileID: 1632256039}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4883,6 +4960,7 @@ MonoBehaviour:
   nightFog: 0.009
   nightIntensity: 0.03
   dayIntensity: 2
+  pauseManager: {fileID: 1632256038}
 --- !u!4 &1632256035
 Transform:
   m_ObjectHideFlags: 0
@@ -4923,6 +5001,34 @@ MonoBehaviour:
   enableLandBuying: 1
   buyLandKey: 304
 --- !u!114 &1632256037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d58d0a566fe124a84f7071f73b5ea9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  standardCursor: {fileID: 2800000, guid: 77fc84eab99dc6d4ea631387294b963d, type: 3}
+  zoomInCursor: {fileID: 2800000, guid: 5ac4f4d9347665f48a3346a29ab41bc1, type: 3}
+  zoomOutCursor: {fileID: 2800000, guid: e8b92c0e2ebff684fb10ea83c994e7a5, type: 3}
+--- !u!114 &1632256038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f57d00a0cf8b4245a3b873ff8bae780, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shopManager: {fileID: 539507488}
+--- !u!114 &1632256039
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

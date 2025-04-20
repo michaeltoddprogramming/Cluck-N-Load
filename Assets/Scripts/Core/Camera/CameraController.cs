@@ -267,50 +267,50 @@ public class CameraController : MonoBehaviour
         if (!mouseControlsDisabled)
         {
             // Mouse wheel zoom
-            if (Input.mouseScrollDelta.y != 0)
-            {                
-                newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
-            }
+            // if (Input.mouseScrollDelta.y != 0)
+            // {                
+            //     newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
+            // }
 
 
             // Mouse wheel zoom
-            // float scroll = Input.mouseScrollDelta.y;
+            float scroll = Input.mouseScrollDelta.y;
 
-            // if (scroll != 0)
-            // {
-            //     if (scroll > 0)
-            //     {
-            //         //zooming int
-            //         cursor.zoom(true);
-            //     }
-            //     else if (scroll < 0)
-            //     {
-            //         // Zooming out
-            //         cursor.zoom(false);
-            //     }
+            if (scroll != 0)
+            {
+                if (scroll > 0)
+                {
+                    //zooming int
+                    // cursor.zoom(true);
+                }
+                else if (scroll < 0)
+                {
+                    // Zooming out
+                    // cursor.zoom(false);
+                }
 
-            //     newZoom += scroll * zoomAmount * 0.2f;
-            // }
+                newZoom += scroll * zoomAmount * 0.2f;
+            }
         }    
         
         // Keyboard zoom
         if (Input.GetKey(KeyCode.Alpha1))
         {
-            cursor.zoom(true);
+            // cursor.zoom(true);
             newZoom += zoomAmount * 0.2f;
         }
         
         if (Input.GetKey(KeyCode.Alpha2))
         {
-            cursor.zoom(false);
+            // cursor.zoom(false);
             newZoom -= zoomAmount * 0.2f;
         }
 
-        // After the zooming stops (i.e., no key pressed), reset the cursor
-        if (!Input.GetKey(KeyCode.Alpha1) && !Input.GetKey(KeyCode.Alpha2))
-        {
-            cursor.resetCursor();
-        }
+        // // After the zooming stops (i.e., no key pressed), reset the cursor
+        // if (!Input.GetKey(KeyCode.Alpha1) && !Input.GetKey(KeyCode.Alpha2))
+        // {
+        //     cursor.resetCursor();
+        // }
     }
     
     // Enforce camera boundaries and restrictions
@@ -334,12 +334,6 @@ public class CameraController : MonoBehaviour
     newZoom.z = distance * Mathf.Cos(currentAngle);
 }
 }
-
-
-
-
-
-
 
 // using UnityEngine;
 

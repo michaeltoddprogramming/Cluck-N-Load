@@ -1,12 +1,4 @@
-# FarmDefender
-
-## How to Branch
-Use the following naming conventions when creating branches:
-- `dev-featureName` – For new features
-- `dev-bugName` – For bug fixes
-- `dev-hotfix` – For urgent fixes
-
----
+# Cluck N Load
 
 ### Controls
 

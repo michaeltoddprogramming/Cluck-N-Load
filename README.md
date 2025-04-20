@@ -23,6 +23,7 @@ Use the following naming conventions when creating branches:
 | `1`           | Zoom in                              |
 | `2`           | Zoom out                             |
 | `ESC`         | Pause Game                           |
+| `CTRL + Right Mouse Click` (While Shop open)         | Remove places buildings                            |
 
 #### **Mouse Controls**
 | Mouse Action           | Action                        |

@@ -48,6 +48,8 @@ public class BuildController : MonoBehaviour
     
     private bool isGhostTemporarilyHidden = false;
     private bool isDeleteModeActive = false;
+    private StructureData currentStructureData;
+
     
     void Start()
     {
@@ -442,23 +444,33 @@ public class BuildController : MonoBehaviour
         }
     }
     
-    public void SetBuildTarget(StructureData data)
+   public void SetBuildTarget(StructureData data)
+{
+    if (data == null || data.prefab == null)
     {
-        if (data == null || data.prefab == null)
-        {
-            Debug.LogError("Invalid StructureData or prefab is null.");
-            return;
-        }
-        
-        Debug.Log($"Setting build target to: {data.structureName}");
-        currentBuildTargetPrefab = data.prefab;
-        
-        if (isBuildModeActive)
-        {
-            CreateGhost(currentBuildTargetPrefab);
-        }
+        Debug.LogError("Invalid StructureData or prefab is null.");
+        return;
     }
     
+    // Check if player can afford this structure
+    if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(data.cost))
+    {
+        Debug.Log($"Cannot afford {data.structureName} (Cost: {data.cost})");
+        
+        // Optional: Show a message to the player that they can't afford it
+        // UIManager.Instance.ShowMessage($"Not enough {MoneyManager.Instance.GetCurrencyName()} to build {data.structureName}");
+        return;
+    }
+    
+    Debug.Log($"Setting build target to: {data.structureName}");
+    currentBuildTargetPrefab = data.prefab;
+    currentStructureData = data;
+    
+    if (isBuildModeActive)
+    {
+        CreateGhost(currentBuildTargetPrefab);
+    }
+} 
     public void SetBuildTarget(GameObject prefab)
     {
         if (prefab == null)
@@ -550,8 +562,19 @@ public class BuildController : MonoBehaviour
     void PlaceItem(int x, int y)
     {
         if (!IsValidPlacement(x, y)) return;
-        
+
+        // Check again if the player can afford it (could have changed since selection)
+    if (currentStructureData != null && 
+        MoneyManager.Instance != null && 
+        !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
+    {
+        Debug.Log("Not enough money to place structure");
+        return;
+    }
+
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
+
+
         
         // Create the actual item to place
         GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);

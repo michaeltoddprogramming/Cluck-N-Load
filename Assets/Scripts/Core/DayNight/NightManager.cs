@@ -108,6 +108,10 @@ public class NightManager : MonoBehaviour
     [SerializeField] private float nightIntensity = 0.03f;
     [SerializeField] private float dayIntensity = 2f;
 
+    //pause game manager
+    [SerializeField] private PauseManager pauseManager;
+
+
 
 
 
@@ -458,6 +462,11 @@ public class NightManager : MonoBehaviour
         else if(value == 16)
         {
             Debug.Log("afternoon-----------------");
+
+            StartCoroutine(showText("Night starting soon!!", 5f));
+
+
+
             StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
             StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
         }
@@ -513,6 +522,7 @@ public class NightManager : MonoBehaviour
             StartDay(0); // force reset to day state
             setSeason(1); // reset season if needed
         }
+        
         // if(value == 1)
         // {
         //     setSeason(1);

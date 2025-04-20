@@ -4379,7 +4379,7 @@ GameObject:
   - component: {fileID: 1626714170}
   - component: {fileID: 1626714169}
   m_Layer: 5
-  m_Name: Season Notification
+  m_Name: Notification
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4501,7 +4501,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 5, y: 355}
-  m_SizeDelta: {x: 330, y: 83.1}
+  m_SizeDelta: {x: 820.16, y: 83.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1632256031
 GameObject:
@@ -4874,7 +4874,7 @@ MonoBehaviour:
   days: 0
   years: 0
   seasonIcon: {fileID: 1870965670}
-  summer: {fileID: 21300000, guid: 90a289bcd5ee48b49b29e659a4856f0a, type: 3}
+  summer: {fileID: 21300000, guid: 6652e75c3dd201f4da8cb08de8f91547, type: 3}
   winter: {fileID: 21300000, guid: bc71adc3e371c2a43ad6be7d1a8146f1, type: 3}
   spring: {fileID: 21300000, guid: dbb38151deed1084499aa8366dabde97, type: 3}
   fall: {fileID: 21300000, guid: d73f9e868ed6f314286ed9a568ea133f, type: 3}

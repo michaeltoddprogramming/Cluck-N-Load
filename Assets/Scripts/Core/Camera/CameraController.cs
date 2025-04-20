@@ -44,6 +44,14 @@ public class CameraController : MonoBehaviour
     // Mouse control disabling (for UI interaction)
     private bool mouseControlsDisabled = false;
 
+    //import cursor manager
+    [SerializeField] private CursorManager cursor; 
+
+
+
+
+
+
     void Start()
     {
         // Initialize target positions with current transform values
@@ -259,22 +267,49 @@ public class CameraController : MonoBehaviour
         if (!mouseControlsDisabled)
         {
             // Mouse wheel zoom
-            if (Input.mouseScrollDelta.y != 0)
+            // if (Input.mouseScrollDelta.y != 0)
+            // {                
+            //     newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
+            // }
+
+
+            // Mouse wheel zoom
+            float scroll = Input.mouseScrollDelta.y;
+
+            if (scroll != 0)
             {
-                newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
+                if (scroll > 0)
+                {
+                    //zooming int
+                    cursor.zoom(true);
+                }
+                else if (scroll < 0)
+                {
+                    // Zooming out
+                    cursor.zoom(false);
+                }
+
+                newZoom += scroll * zoomAmount * 0.2f;
             }
-        }
-    
+        }    
         
         // Keyboard zoom
         if (Input.GetKey(KeyCode.Alpha1))
         {
+            cursor.zoom(true);
             newZoom += zoomAmount * 0.2f;
         }
         
         if (Input.GetKey(KeyCode.Alpha2))
         {
+            cursor.zoom(false);
             newZoom -= zoomAmount * 0.2f;
+        }
+
+        // After the zooming stops (i.e., no key pressed), reset the cursor
+        if (!Input.GetKey(KeyCode.Alpha1) && !Input.GetKey(KeyCode.Alpha2))
+        {
+            cursor.resetCursor();
         }
     }
     

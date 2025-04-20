@@ -22,6 +22,7 @@ Use the following naming conventions when creating branches:
 | `Left Shift`  | Increase movement speed (fast mode)  |
 | `1`           | Zoom in                              |
 | `2`           | Zoom out                             |
+| `ESC`         | Pause Game                           |
 
 #### **Mouse Controls**
 | Mouse Action           | Action                        |

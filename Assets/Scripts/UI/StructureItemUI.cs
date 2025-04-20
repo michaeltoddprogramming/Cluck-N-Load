@@ -90,15 +90,16 @@ public class StructureItemUI : MonoBehaviour
         UpdateAffordability();
     }
 
+        // Add to the UpdateAffordability method:
     public void UpdateAffordability()
     {
         // Make sure we have data and button
         if (data == null || selectButton == null || MoneyManager.Instance == null)
             return;
-            
+                
         // Change the appearance based on whether the player can afford this structure
         bool canAfford = MoneyManager.Instance.CanAfford(data.cost);
-                     
+                         
         // Visual feedback through button interactability
         selectButton.interactable = canAfford;
         
@@ -106,6 +107,22 @@ public class StructureItemUI : MonoBehaviour
         if (costText != null)
         {
             costText.color = canAfford ? Color.white : Color.red;
+            
+            // Add a "Cannot Afford" text or symbol for extra clarity
+            if (!canAfford)
+            {
+                costText.text = $"Cost: {data.cost} Gold (Cannot Afford!)";
+            }
+            else
+            {
+                costText.text = $"Cost: {data.cost} Gold";
+            }
+        }
+        
+        // Optional: You can also gray out or modify the icon
+        if (icon != null)
+        {
+            icon.color = canAfford ? Color.white : new Color(0.7f, 0.7f, 0.7f, 0.8f);
         }
     }
 }

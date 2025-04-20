@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Chicken Coop (2x2x1)
   prefab: {fileID: 6474609555777841612, guid: 93672a4b96bbb504e9fbea56b5142b8a, type: 3}
-  icon: {fileID: 21300000, guid: 2d490c2bf1f55824f9a8f7537c10bd51, type: 3}
+  icon: {fileID: 21300000, guid: b1a92e94552a5444ba24706da96a5214, type: 3}
   type: 0
   cost: 70
   health: 120

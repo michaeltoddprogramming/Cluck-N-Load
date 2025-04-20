@@ -12,6 +12,7 @@ public class MoneyManager : MonoBehaviour
     
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI moneyText;
+
     
     private int _currentMoney;
     
@@ -89,10 +90,21 @@ public class MoneyManager : MonoBehaviour
     
     public bool SpendMoney(int amount)
     {
-        if (!CanAfford(amount))
+        if (!CanAfford(amount)) {
+            // Play insufficient funds sound
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
             return false;
+        }
             
         _currentMoney -= amount;
+        // Play money spend sound
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayMoneySpendSound();
+        }
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);

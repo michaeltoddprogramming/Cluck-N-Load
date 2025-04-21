@@ -249,4 +249,14 @@ public class GridController : MonoBehaviour
     {
         return cellSize;
     }
+
+    public int TextureWidth 
+    {
+        get => gridDataGenerator != null ? gridDataGenerator.GetGridWidth() : 0;
+    }
+
+    public int TextureHeight 
+    {
+        get => gridDataGenerator != null ? gridDataGenerator.GetGridHeight() : 0;
+    }
 }

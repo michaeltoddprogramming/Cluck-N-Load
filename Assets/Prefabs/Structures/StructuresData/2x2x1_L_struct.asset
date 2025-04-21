@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd30dbfbb90813b48a35331b61b644e0, type: 3}
-  m_Name: 3x1x1_struct
+  m_Name: 2x2x1_L_struct
   m_EditorClassIdentifier: 
-  structureName: Chicken Barrack (3x1x1)
-  prefab: {fileID: 3848099904252558967, guid: 52313c5facdf745499eea8255d3f2a5c, type: 3}
+  structureName: Chicken Coop (2x2x1)
+  prefab: {fileID: 6474609555777841612, guid: 93672a4b96bbb504e9fbea56b5142b8a, type: 3}
   icon: {fileID: 21300000, guid: 2d490c2bf1f55824f9a8f7537c10bd51, type: 3}
   type: 0
   cost: 0
-  health: 0
+  health: 1

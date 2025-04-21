@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd30dbfbb90813b48a35331b61b644e0, type: 3}
-  m_Name: 1x1x1_struct
+  m_Name: 2x1x1_struct
   m_EditorClassIdentifier: 
-  structureName: Whatever you want it to be ;) (1x1x1)
-  prefab: {fileID: 370564253167742246, guid: b9eea720a3ef6314db77bb00761e9b86, type: 3}
+  structureName: Silo (2x1x1)
+  prefab: {fileID: 5994182827784612421, guid: 993ef1bcd251b174598fff9628aca674, type: 3}
   icon: {fileID: 21300000, guid: 2d490c2bf1f55824f9a8f7537c10bd51, type: 3}
   type: 0
   cost: 0
-  health: 0
+  health: 1

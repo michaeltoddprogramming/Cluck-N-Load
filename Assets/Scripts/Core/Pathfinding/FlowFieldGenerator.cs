@@ -245,7 +245,7 @@ public class FlowFieldGenerator : MonoBehaviour
         return rotated;
     }
 
-    // New struct to represent a neighbor cell and its movement cost
+    // New struct to represent a neighbor cell and its movement costt
     private struct NeighborInfo
     {
         public GridCell cell;

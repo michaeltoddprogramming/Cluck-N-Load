@@ -693,4 +693,15 @@ public class FlowFieldGenerator : MonoBehaviour
         
         Debug.Log($"Grid obstacles: {obstacleCount} obstacles, {occupiedCount} occupied, {bothCount} both");
     }
+
+    // Add these public methods to access the flow strength maps
+    public Dictionary<Vector2Int, float> GetFlowStrengthMap()
+    {
+        return flowStrengthMap;
+    }
+
+    public Dictionary<Vector2Int, float> GetStreamInfluenceMap()
+    {
+        return streamInfluenceMap;
+    }
 }

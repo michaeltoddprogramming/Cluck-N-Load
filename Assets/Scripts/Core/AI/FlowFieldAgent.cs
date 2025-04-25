@@ -129,7 +129,27 @@ namespace FarmDefender.Core.AI.FlowField
             // Update current cell coordinates
             currentCellCoord = gridController.WorldToGridCoords(transform.position);
             
-            // If bilinear interpolation is enabled, use that for smoother movement
+            // CRITICAL: First check for strong streams BEFORE any interpolation logic
+            GridCell currentCell = gridController.GetCell(currentCellCoord.x, currentCellCoord.y);
+            float currentCellStrength = GetFlowStrength(currentCellCoord.x, currentCellCoord.y);
+            
+            // If we're on a strong stream, SKIP all interpolation completely
+            if (currentCell != null && currentCellStrength > 0.2f && 
+                currentCell.flowDirection != Vector2.zero && 
+                currentCell.integrationCost != int.MaxValue)
+            {
+                // We're on a priority stream - use exact cell direction with ZERO interpolation
+                float cellSize = gridController.GetCellSize();
+                Vector3 currentPos = gridController.GetCellCenterFromTexture(currentCellCoord.x, currentCellCoord.y);
+                Vector3 targetDirection = new Vector3(currentCell.flowDirection.x, 0, currentCell.flowDirection.y);
+                Vector3 worldTargetPos = currentPos + targetDirection * cellSize;
+                
+                targetPosition = new Vector3(worldTargetPos.x, transform.position.y, worldTargetPos.z);
+                isMoving = true;
+                return; // Skip ALL interpolation logic
+            }
+            
+            // Continue with normal path following only if not on a strong stream
             if (useBilinearInterpolation)
             {
                 Vector2 flowDirection = GetInterpolatedFlowDirection();
@@ -150,7 +170,7 @@ namespace FarmDefender.Core.AI.FlowField
             // Otherwise use the standard cell-based approach
             else
             {
-                GridCell currentCell = gridController.GetCell(currentCellCoord.x, currentCellCoord.y);
+                currentCell = gridController.GetCell(currentCellCoord.x, currentCellCoord.y);
                 
                 if (currentCell == null)
                     return;
@@ -192,6 +212,44 @@ namespace FarmDefender.Core.AI.FlowField
             int currentX = Mathf.FloorToInt(gridX);
             int currentY = Mathf.FloorToInt(gridZ);
             
+            // NEW: First check if current cell is the strongest among neighbors
+            float currentStrength = GetFlowStrength(currentX, currentY);
+            bool currentIsStrongest = true;
+            
+            // Check all 8 neighbors plus current cell
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    if (dx == 0 && dy == 0) continue; // Skip current cell in comparison
+                    
+                    int nx = currentX + dx;
+                    int ny = currentY + dy;
+                    
+                    if (gridController.IsValidCell(nx, ny))
+                    {
+                        // If any neighbor has stronger flow, current is not strongest
+                        float neighborStrength = GetFlowStrength(nx, ny);
+                        if (neighborStrength > currentStrength)
+                        {
+                            currentIsStrongest = false;
+                            break;
+                        }
+                    }
+                }
+                if (!currentIsStrongest) break;
+            }
+            
+            // If current cell is the strongest field among all neighbors, don't interpolate
+            if (currentIsStrongest && currentStrength > 0.01f)
+            {
+                GridCell currentCell = gridController.GetCell(currentX, currentY);
+                if (currentCell != null && currentCell.flowDirection != Vector2.zero)
+                {
+                    return currentCell.flowDirection;
+                }
+            }
+            
             // CRITICAL ENHANCEMENT: First, check if we're very close to an obstacle
             // by testing more surrounding cells in a slightly larger area
             for (int dx = -1; dx <= 1; dx++)
@@ -220,9 +278,9 @@ namespace FarmDefender.Core.AI.FlowField
             }
             
             // Check if current cell has a strong flow - if so, no interpolation at all
-            // LOWER THRESHOLD from 0.5 to 0.3 to catch more priority flows
+            // LOWER THRESHOLD from 0.5 to 0.2 to catch more priority flows
             float currentCellStrength = GetFlowStrength(currentX, currentY);
-            if (currentCellStrength > 0.3f)  // REDUCED FROM 0.5 TO 0.3
+            if (currentCellStrength > 0.2f)  // REDUCED FROM 0.3f TO 0.2f
             {
                 // CRITICAL: On strong flows, completely disable interpolation
                 // and use the exact flow direction from the current cell
@@ -328,7 +386,7 @@ namespace FarmDefender.Core.AI.FlowField
             
             // If ANY cell has a strong flow, use the strongest one with NO interpolation
             float maxFlowStrength = Mathf.Max(flowStrength00, flowStrength10, flowStrength01, flowStrength11);
-            if (maxFlowStrength > 0.3f) // LOWERED from 0.5f to 0.3f to catch more priority flows
+            if (maxFlowStrength > 0.2f) // LOWERED from 0.3f to 0.2f
             {
                 // On strong flows, completely disable interpolation
                 return FindStrongestFlowCell(c00, c10, c01, c11).flowDirection;

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using FarmDefender.Core.AI.FlowField; // Add this line to reference the new namespace
 
 public class BuildController : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class BuildController : MonoBehaviour
     [SerializeField] private GridController gridController;
     
     [Header("Pathfinding")]
-    [SerializeField] private FlowFieldGenerator flowFieldGenerator;
+    [SerializeField] private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
     
     [Header("Build Settings")]
     [SerializeField] private Material ghostMaterial;
@@ -68,9 +69,9 @@ public class BuildController : MonoBehaviour
             }
         }
         
-        // Find flow field generator if not assigned
-        if (flowFieldGenerator == null)
-            flowFieldGenerator = FindObjectOfType<FlowFieldGenerator>();
+        // Find flow field manager if not assigned
+        if (flowFieldManager == null)
+            flowFieldManager = FindObjectOfType<FlowFieldManager>(); // Changed from FlowFieldGenerator
         
         // Find shop UI component - including inactive objects
         shopPanelUI = FindObjectOfType<ShopPanelUI>(true); // Include inactive objects
@@ -219,10 +220,10 @@ public class BuildController : MonoBehaviour
         }
         
         // Regenerate flow field when building is complete
-        if (flowFieldGenerator != null)
+        if (flowFieldManager != null)
         {
             Debug.Log("Build mode deactivated - regenerating flow field to account for new structures");
-            flowFieldGenerator.GenerateFlowFieldManually();
+            flowFieldManager.GenerateFlowFieldManually(); // This method exists in both classes
         }
     }
     

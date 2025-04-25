@@ -259,5 +259,41 @@ namespace FarmDefender.Core.AI.FlowField
             if (algorithm == null) return null;
             return algorithm.StreamInfluenceMap;
         }
+
+        /// <summary>
+        /// Returns the current target coordinates of the flow field.
+        /// </summary>
+        public Vector2Int GetTargetCoordinates()
+        {
+            if (targetManager != null)
+            {
+                return targetManager.GetTargetCoordinates();
+            }
+            return Vector2Int.zero;
+        }
+
+        /// <summary>
+        /// Provides public access to the GridController
+        /// </summary>
+        public GridController GridController => gridController;
+
+        // Additional methods to support transition from the old system
+
+        /// <summary>
+        /// Regenerates the flow field targeting the specified coordinates.
+        /// </summary>
+        public void SetTarget(int x, int y)
+        {
+            SetTarget(new Vector2Int(x, y));
+        }
+
+        /// <summary>
+        /// Explicitly manually regenerate the flow field.
+        /// </summary>
+        public void RegenerateFlowField()
+        {
+            // Shortcut for the method we already have
+            GenerateFlowFieldManually();
+        }
     }
 }

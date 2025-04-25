@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using FarmDefender.Core.AI.FlowField; // Add this line for the new namespace
 
 public class Structure : MonoBehaviour
 {
@@ -34,7 +35,7 @@ public class Structure : MonoBehaviour
     
     // Private references
     private GridController gridController;
-    private FlowFieldGenerator flowFieldGenerator;
+    private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
     private List<Vector2Int> occupiedCells = new List<Vector2Int>();
     private bool hasRegisteredWithGrid = false;
     
@@ -69,7 +70,8 @@ public class Structure : MonoBehaviour
         
         // Find required components
         gridController = FindObjectOfType<GridController>();
-        flowFieldGenerator = FindObjectOfType<FlowFieldGenerator>();
+        if (flowFieldManager == null)
+            flowFieldManager = FindObjectOfType<FlowFieldManager>();
         
         if (gridController == null)
         {
@@ -207,8 +209,8 @@ public class Structure : MonoBehaviour
     
     private void UpdateFlowField()
     {
-        // Trigger flow field recalculation if flow field generator exists
-        if (flowFieldGenerator != null)
+        // Trigger flow field recalculation if flowFieldManager exists
+        if (flowFieldManager != null)
         {
             // We should only update the flow field immediately if this structure is being 
             // destroyed (not during construction/placement)
@@ -230,7 +232,8 @@ public class Structure : MonoBehaviour
             else
             {
                 // GameObject is being destroyed, so directly update flow field
-                flowFieldGenerator.GenerateFlowField(flowFieldGenerator.GetTargetCoordinates());
+                Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
+                flowFieldManager.GenerateFlowField(targetCoord);
             }
         }
     }
@@ -238,7 +241,8 @@ public class Structure : MonoBehaviour
     private IEnumerator TriggerFlowFieldUpdate()
     {
         yield return new WaitForSeconds(0.1f);
-        flowFieldGenerator.GenerateFlowField(flowFieldGenerator.GetTargetCoordinates());
+        Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
+        flowFieldManager.GenerateFlowField(targetCoord);
     }
     
     #endregion

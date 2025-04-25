@@ -102,3 +102,5 @@ MonoBehaviour:
   arrivalThreshold: 0.1
   pathRefreshRate: 0.1
   showDebugInfo: 0
+  useBilinearInterpolation: 1
+  interpolationStrength: 0.5

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using FarmDefender.Core.AI.FlowField; // Add this line for the new namespace
 
 /// <summary>
 /// GridMonitor acts as a central communication hub between grid systems and AI systems.
@@ -16,6 +17,9 @@ public class GridMonitor : MonoBehaviour
     [Header("Throttling Settings")]
     [SerializeField] private float updateThrottleTime = 0.5f;
     [SerializeField] private bool debugLogging = false;
+    
+    [Header("System References")]
+    [SerializeField] private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
     
     // Events that systems can subscribe to
     public event Action<GridChangeType> OnGridChanged;
@@ -32,9 +36,6 @@ public class GridMonitor : MonoBehaviour
     private bool[,] occupancySnapshot;
     private bool[,] visibilitySnapshot;
     private bool[,] ownershipSnapshot;
-    
-    // References to other systems
-    private FlowFieldGenerator flowFieldGenerator;
     
     private void Awake()
     {
@@ -58,8 +59,9 @@ public class GridMonitor : MonoBehaviour
         // Wait for grid to initialize before taking snapshot
         StartCoroutine(InitializeWhenGridReady());
         
-        // Find and cache FlowFieldGenerator reference - to be removed once fully decoupled
-        flowFieldGenerator = FindObjectOfType<FlowFieldGenerator>();
+        // Find required components if not assigned
+        if (flowFieldManager == null)
+            flowFieldManager = FindObjectOfType<FlowFieldManager>();
     }
     
     private IEnumerator InitializeWhenGridReady()
@@ -233,9 +235,9 @@ public class GridMonitor : MonoBehaviour
             OnGridChanged(GridChangeType.Structural);
             
             // Legacy direct connection - to be removed once other systems are updated
-            if (flowFieldGenerator != null)
+            if (flowFieldManager != null)
             {
-                flowFieldGenerator.GenerateFlowFieldManually();
+                flowFieldManager.GenerateFlowFieldManually();
             }
         }
         

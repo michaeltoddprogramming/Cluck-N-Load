@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using FarmDefender.Core.AI.FlowField; // Add this line for the new namespace
 
 public class UnitSpawner : MonoBehaviour 
 {
@@ -10,7 +11,7 @@ public class UnitSpawner : MonoBehaviour
     // DEVELOPMENT-ONLY references for testing - will be refactored later
     [Header("Development Testing")]
     [Tooltip("TEMPORARY: Reference to the flow field generator for spawn positioning")]
-    [SerializeField] private FlowFieldGenerator _flowFieldGenerator;
+    [SerializeField] private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
     [Tooltip("TEMPORARY: Reference to the grid data generator for spawn positioning")]
     [SerializeField] private GridDataGenerator _gridDataGenerator;
     [Tooltip("TEMPORARY: Number of units to spawn when using development shortcuts")]
@@ -19,6 +20,15 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private float _militarySpawnRadius = 5f;
     [Tooltip("TEMPORARY: Inset from grid edge for hostile spawning")]
     [SerializeField] private float _edgeInset = 1f;
+
+    private void Start()
+    {
+        // Find required components if not assigned
+        if (flowFieldManager == null)
+            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            
+        // Rest of Start method stays the same
+    }
 
     // Original methods
     public Unit SpawnUnitOfType(UnitType type, Vector3 position) 
@@ -90,13 +100,13 @@ public class UnitSpawner : MonoBehaviour
     // DEVELOPMENT-ONLY: Spawn military units around flow field target
     public void SpawnMilitaryUnitsAroundTarget(int count)
     {
-        if (_flowFieldGenerator == null)
+        if (flowFieldManager == null)
         {
             Debug.LogError("[DEV] Flow field generator reference missing for military spawning");
             return;
         }
 
-        Vector2Int targetCoord = _flowFieldGenerator.GetTargetCoordinates();
+        Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
         GridCell targetCell = null;
         
         // Get the grid cell at target coordinates
@@ -214,7 +224,7 @@ public class UnitSpawner : MonoBehaviour
             return false;
             
         // Convert world position to grid coordinates
-        Vector2Int gridCoord = _flowFieldGenerator.gridController.WorldToGridCoords(position);
+        Vector2Int gridCoord = flowFieldManager.GridController.WorldToGridCoords(position);
         
         // Check if coordinates are within grid bounds
         if (gridCoord.x < 0 || gridCoord.x >= _gridDataGenerator.GetGridWidth() ||

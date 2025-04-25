@@ -26,6 +26,9 @@ public class OwnershipController : MonoBehaviour
     private float gizmoLineThickness = 2f;
     public bool logDebugInfo = true;
     
+    [Header("Grid Monitoring")]
+    [SerializeField] private GridMonitor gridMonitor;
+    
     // Event that fires when shop is open to ensure ownership updates are visible
     private ShopPanelUI shopPanelUI;
     
@@ -74,6 +77,10 @@ public class OwnershipController : MonoBehaviour
 
         // Initial visibility calculation should happen after applying ownership
         Invoke("UpdateCellVisibility", 0.2f);
+        
+        // Find grid monitor if not assigned
+        if (gridMonitor == null)
+            gridMonitor = FindObjectOfType<GridMonitor>();
     }
     
     private void InitializeManualOwnership()
@@ -227,6 +234,11 @@ public class OwnershipController : MonoBehaviour
         
         // Update the grid texture
         RefreshGridTexture();
+        
+        if (gridMonitor != null && cellsChanged > 0)
+        {
+            gridMonitor.ScanEntireGridForChanges(); // Scan all changes at once
+        }
     }
     
     // Update the BuyLandAtPosition method to check visibility
@@ -266,6 +278,12 @@ public class OwnershipController : MonoBehaviour
             // Set cell as owned and mark it as manually purchased
             cell.flags.isOwned = true;
             manuallyOwnedCells[cellCoords.x, cellCoords.y] = true;
+            
+            // Notify grid monitor
+            if (gridMonitor != null)
+            {
+                gridMonitor.NotifyCellChanged(cellCoords.x, cellCoords.y, GridChangeType.Ownership);
+            }
             
             if (logDebugInfo)
                 Debug.Log($"Bought land at grid position: ({cellCoords.x}, {cellCoords.y})");

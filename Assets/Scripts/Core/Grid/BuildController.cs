@@ -33,6 +33,9 @@ public class BuildController : MonoBehaviour
     [SerializeField] private KeyCode buyLandKey = KeyCode.LeftShift; // Hold shift to buy land
     private bool isInLandBuyMode = false;
     
+    [Header("Grid Monitoring")]
+    [SerializeField] private GridMonitor gridMonitor;
+    
     // Add this property for programmatic access
     public Vector2 DeleteIconOffset
     {
@@ -99,6 +102,13 @@ public class BuildController : MonoBehaviour
         // Find ownership controller if not assigned
         if (ownershipController == null)
             ownershipController = FindObjectOfType<OwnershipController>();
+        
+        // Find grid monitor if not assigned
+        if (gridMonitor == null)
+            gridMonitor = FindObjectOfType<GridMonitor>();
+        
+        if (gridMonitor == null)
+            Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
         
         Debug.Log($"BuildController started. Grid controller reference: {(gridController != null ? "Valid" : "NULL")}");
         Debug.Log($"Available prefabs: {buildablePrefabs.Length}");
@@ -624,6 +634,12 @@ public class BuildController : MonoBehaviour
         
         // Update grid texture
         gridController.UpdateGridTexture();
+        
+        // Notify grid monitor about the changes
+        if (gridMonitor != null && footprint.Count > 0)
+        {
+            gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+        }
     }
     
     void RemoveItem(int x, int y)
@@ -653,6 +669,12 @@ public class BuildController : MonoBehaviour
             
             // Update grid texture
             gridController.UpdateGridTexture();
+            
+            // Notify grid monitor
+            if (gridMonitor != null && footprint.Count > 0)
+            {
+                gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+            }
         }
     }
     
@@ -710,11 +732,10 @@ public class BuildController : MonoBehaviour
                         // Update grid texture
                         gridController.UpdateGridTexture();
                         
-                        // Optionally update flow field when a structure is removed
-                        if (flowFieldGenerator != null && !isBuildModeActive)
+                        // Notify grid monitor
+                        if (gridMonitor != null && footprint.Count > 0)
                         {
-                            Debug.Log("Structure removed - updating flow field");
-                            flowFieldGenerator.GenerateFlowFieldManually();
+                            gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
                         }
                         
                         return true; // Successfully removed

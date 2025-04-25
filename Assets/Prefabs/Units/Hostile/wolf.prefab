@@ -97,10 +97,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1a4419f4f379004c8c46ef467869ba5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 7
-  rotationSpeed: 10
-  arrivalThreshold: 0.1
-  pathRefreshRate: 0.1
-  showDebugInfo: 0
-  useBilinearInterpolation: 1
-  interpolationStrength: 0.5
+  moveSpeed: 10
+  rotationSpeed: 15
+  stoppingDistance: 0.1
+  useInterpolation: 1
+  priorityPathThreshold: 0.3
+  maxPriorityPathValue: 0.7
+  flowFieldManager: {fileID: 0}
+  velocitySmoothTime: 0.8
+  minMoveThreshold: 1
+  directionPersistence: 0.05

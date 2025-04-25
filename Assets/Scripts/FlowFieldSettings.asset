@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: FlowFieldSettings
   m_EditorClassIdentifier: 
   useDiagonalDirections: 1
-  directionRandomness: 0.1
+  directionRandomness: 0.44
   maxRandomAngle: 45
   useWeightedDiagonals: 1
-  directTargetInfluence: 0.4
-  obstaclePriorityStrength: 0.7
-  priorityPathRange: 2
-  streamInfluenceStrength: 0.5
+  directTargetInfluence: 0.94
+  obstaclePriorityStrength: 1
+  priorityPathRange: 3
+  streamInfluenceStrength: 1
   streamInfluenceRange: 4
-  visualizeFlowField: 0
+  visualizeFlowField: 1
   visualizeTargetPoint: 1
-  arrowScale: 0.5
+  arrowScale: 1
   arrowColor: {r: 0, g: 0, b: 1, a: 1}
   targetPointColor: {r: 1, g: 0, b: 0, a: 1}
   priorityPathColor: {r: 1, g: 1, b: 1, a: 1}

@@ -1553,6 +1553,7 @@ MonoBehaviour:
   visualizeInEditor: 0
   gizmoColor: {r: 1, g: 0.9813726, b: 0, a: 1}
   logDebugInfo: 1
+  gridMonitor: {fileID: 0}
 --- !u!1 &539507485
 GameObject:
   m_ObjectHideFlags: 0
@@ -3549,7 +3550,6 @@ GameObject:
   - component: {fileID: 1632256035}
   - component: {fileID: 1632256034}
   - component: {fileID: 1632256036}
-  - component: {fileID: 1632256037}
   - component: {fileID: 1632256038}
   - component: {fileID: 1632256039}
   - component: {fileID: 1632256033}
@@ -3867,7 +3867,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridController: {fileID: 527660424}
-  flowFieldGenerator: {fileID: 1632256037}
+  flowFieldManager: {fileID: 0}
   ghostMaterial: {fileID: 2100000, guid: 63c0360517167154bad02130899a3243, type: 2}
   buildablePrefabs: []
   rotateKey: 114
@@ -3876,35 +3876,10 @@ MonoBehaviour:
   removeModifierKey: 306
   itemDeleteIcon: {fileID: 2119073778}
   cursorOffset: {x: 50, y: -60}
-  ownershipController: {fileID: 0}
+  ownershipController: {fileID: 527660425}
   enableLandBuying: 1
   buyLandKey: 304
---- !u!114 &1632256037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1632256031}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c0520bf7c502364aa6040648afe1c08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridController: {fileID: 527660424}
-  gridDataGenerator: {fileID: 527660422}
-  targetTransform: {fileID: 0}
-  manualTargetCoord: {x: 24, y: 24}
-  useManualTarget: 1
-  useDiagonalDirections: 1
-  directionRandomness: 0.137
-  maxRandomAngle: 17
-  useWeightedDiagonals: 1
-  visualizeFlowField: 1
-  visualizeTargetPoint: 1
-  arrowScale: 1
-  arrowColor: {r: 0, g: 0, b: 1, a: 1}
-  targetPointColor: {r: 1, g: 0, b: 0, a: 1}
+  gridMonitor: {fileID: 0}
 --- !u!114 &1632256038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3914,39 +3889,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1632256031}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9379029393a6d334a9f43d897fcafa50, type: 3}
+  m_Script: {fileID: 11500000, guid: a679b750ab1d15a409141afb93778017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPrefabIndex: 0
-  spawnHeightOffset: 0.1
-  placementLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  militarySpawnCount: 1
-  militarySpawnRadius: 3
-  militarySpawnKey: 109
-  enemySpawnCount: 1
-  edgeBuffer: {x: 2, y: 2}
-  enemySpawnKey: 108
-  requireShiftKey: 1
-  spawnEnemiesAtStart: 0
-  spawnMilitaryAtStart: 0
-  initialDelay: 2
-  timeBetweenWaves: 60
-  enemiesPerWave: 5
-  enableWaves: 0
-  flowFieldGenerator: {fileID: 1632256037}
-  gridController: {fileID: 527660424}
-  creatureDatabase: {fileID: 11400000, guid: 2317c250af1da1a4e85cd3170e86ae77, type: 2}
-  showDebugInfo: 1
-  enemyDebugColor: {r: 1, g: 0, b: 0, a: 1}
-  militaryDebugColor: {r: 0, g: 0, b: 1, a: 1}
-  civilianDebugColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  debugSphereRadius: 0.25
-  debugDuration: 1
-  friendlySpawnCount: 1
-  spawnedMilitaryCount: 0
-  spawnedEnemiesCount: 0
+  _unitDatabase: {fileID: 11400000, guid: b134f6a1c4c367241988820715c09a9c, type: 2}
+  _spawnPoints: []
+  _spawnHeightOffset: 0.1
+  flowFieldManager: {fileID: 0}
+  _gridDataGenerator: {fileID: 527660422}
+  _devSpawnCount: 5
+  _militarySpawnRadius: 5
+  _edgeInset: 1
 --- !u!114 &1632256039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3956,9 +3909,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1632256031}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52ea203e58cfbce448989d68ce9b4179, type: 3}
+  m_Script: {fileID: 11500000, guid: 1b565c6cd58323c4f998448d90943cda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridController: {fileID: 527660424}
+  gridDataGenerator: {fileID: 527660422}
+  updateThrottleTime: 1
+  debugLogging: 1
+  flowFieldManager: {fileID: 0}
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0
@@ -4326,6 +4284,73 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1809498552}
   m_CullTransparentMesh: 1
+--- !u!1 &1838938009
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1838938012}
+  - component: {fileID: 1838938011}
+  - component: {fileID: 1838938010}
+  m_Layer: 0
+  m_Name: FLowFieldManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1838938010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1838938009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35385470c2cf8374685fb3682644f260, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridDataGenerator: {fileID: 527660422}
+  settings: {fileID: 11400000, guid: 7763f9c1aa64cca459f73371ad15906f, type: 2}
+  targetManager: {fileID: 1898407591}
+--- !u!114 &1838938011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1838938009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f233b166df83f364bae23a9dce9c1d13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridController: {fileID: 527660424}
+  gridDataGenerator: {fileID: 527660422}
+  settings: {fileID: 11400000, guid: 7763f9c1aa64cca459f73371ad15906f, type: 2}
+  targetManager: {fileID: 1898407591}
+  visualizer: {fileID: 1838938010}
+  useGridMonitor: 1
+--- !u!4 &1838938012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1838938009}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1898407592}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1847462729
 GameObject:
   m_ObjectHideFlags: 0
@@ -4670,6 +4695,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1862046310}
   m_CullTransparentMesh: 1
+--- !u!1 &1898407590
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1898407592}
+  - component: {fileID: 1898407591}
+  m_Layer: 0
+  m_Name: FFTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1898407591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1898407590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 126f2f38cb8097e4aa0c08fee6ea1ef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetTransform: {fileID: 1898407592}
+  manualTargetCoord: {x: 24, y: 24}
+  useManualTarget: 1
+  gridController: {fileID: 527660424}
+--- !u!4 &1898407592
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1898407590}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1838938012}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1958635951
 GameObject:
   m_ObjectHideFlags: 0
@@ -5224,3 +5297,4 @@ SceneRoots:
   - {fileID: 1632256035}
   - {fileID: 8776932682921089610}
   - {fileID: 71102177}
+  - {fileID: 1838938012}

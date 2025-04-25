@@ -234,10 +234,17 @@ public class GridMonitor : MonoBehaviour
         {
             OnGridChanged(GridChangeType.Structural);
             
-            // Legacy direct connection - to be removed once other systems are updated
-            if (flowFieldManager != null)
+            // Instead, notify the flow field manager about building destruction only
+            if (flowFieldManager != null && clearedCells.Count > 0)
             {
-                flowFieldManager.GenerateFlowFieldManually();
+                // Only notify for destroyed buildings
+                for (int i = 0; i < clearedCells.Count; i++)
+                {
+                    flowFieldManager.NotifyBuildingDestroyed();
+                }
+                
+                if (debugLogging)
+                    Debug.Log($"Notified FlowFieldManager of {clearedCells.Count} destroyed buildings");
             }
         }
         

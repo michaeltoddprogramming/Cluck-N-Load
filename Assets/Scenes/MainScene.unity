@@ -3867,7 +3867,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridController: {fileID: 527660424}
-  flowFieldManager: {fileID: 0}
+  flowFieldManager: {fileID: 1838938011}
   ghostMaterial: {fileID: 2100000, guid: 63c0360517167154bad02130899a3243, type: 2}
   buildablePrefabs: []
   rotateKey: 114
@@ -3879,7 +3879,7 @@ MonoBehaviour:
   ownershipController: {fileID: 527660425}
   enableLandBuying: 1
   buyLandKey: 304
-  gridMonitor: {fileID: 0}
+  gridMonitor: {fileID: 1632256039}
 --- !u!114 &1632256038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3895,11 +3895,11 @@ MonoBehaviour:
   _unitDatabase: {fileID: 11400000, guid: b134f6a1c4c367241988820715c09a9c, type: 2}
   _spawnPoints: []
   _spawnHeightOffset: 0.1
-  flowFieldManager: {fileID: 0}
+  flowFieldManager: {fileID: 1838938011}
   _gridDataGenerator: {fileID: 527660422}
   _devSpawnCount: 5
   _militarySpawnRadius: 5
-  _edgeInset: 1
+  _edgeInset: 2
 --- !u!114 &1632256039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3914,9 +3914,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridController: {fileID: 527660424}
   gridDataGenerator: {fileID: 527660422}
-  updateThrottleTime: 1
+  updateThrottleTime: 2
   debugLogging: 1
-  flowFieldManager: {fileID: 0}
+  flowFieldManager: {fileID: 1838938011}
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0
@@ -4335,6 +4335,9 @@ MonoBehaviour:
   targetManager: {fileID: 1898407591}
   visualizer: {fileID: 1838938010}
   useGridMonitor: 1
+  updateOnlyInBuildMode: 1
+  buildingDestructionThreshold: 3
+  updateThrottleTime: 0.5
 --- !u!4 &1838938012
 Transform:
   m_ObjectHideFlags: 0

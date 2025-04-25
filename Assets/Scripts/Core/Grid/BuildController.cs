@@ -206,6 +206,12 @@ public class BuildController : MonoBehaviour
         {
             CreateGhost(currentBuildTargetPrefab);
         }
+        
+        // Notify flow field manager about build mode
+        if (flowFieldManager != null)
+        {
+            flowFieldManager.SetBuildModeActive(true);
+        }
     }
     
     public void DisableBuildMode()
@@ -219,11 +225,12 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         
-        // Regenerate flow field when building is complete
+        // Notify flow field manager about build mode ending
         if (flowFieldManager != null)
         {
-            Debug.Log("Build mode deactivated - regenerating flow field to account for new structures");
-            flowFieldManager.GenerateFlowFieldManually(); // This method exists in both classes
+            // Use SetBuildModeActive instead of direct generation
+            flowFieldManager.SetBuildModeActive(false);
+            Debug.Log("Build mode deactivated - notified flow field manager");
         }
     }
     

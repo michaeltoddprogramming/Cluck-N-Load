@@ -25,6 +25,10 @@ namespace FarmDefender.Core.AI.FlowField
         [SerializeField] private float velocitySmoothTime = 0.5f; // Try 0.5-0.8 instead of 0.3
         [SerializeField] private float minMoveThreshold = 0.05f; // Add minimum velocity threshold to prevent tiny movements
         [SerializeField] private float directionPersistence = 0.2f; // How much previous direction affects current
+        
+        [Header("Debug")]
+        [SerializeField] private bool showGizmos = true; // New field to control gizmo visibility
+        
         private Vector2 previousFlowDirection = Vector2.zero;
         private Vector3 currentVelocity = Vector3.zero;
         private bool isMoving = true;
@@ -251,7 +255,7 @@ namespace FarmDefender.Core.AI.FlowField
         // For debugging - visualize current flow direction
         private void OnDrawGizmos()
         {
-            if (!Application.isPlaying || flowFieldManager == null || !enabled)
+            if (!Application.isPlaying || flowFieldManager == null || !enabled || !showGizmos)
                 return;
                 
             Vector3 position = transform.position;
@@ -296,6 +300,12 @@ namespace FarmDefender.Core.AI.FlowField
                 Gizmos.DrawLine(position, position + dirVector * 1.5f);
                 Gizmos.DrawSphere(position + dirVector * 1.5f, 0.1f);
             }
+        }
+        
+        // Public method to toggle gizmo visibility
+        public void SetGizmosVisible(bool visible)
+        {
+            showGizmos = visible;
         }
     }
 }

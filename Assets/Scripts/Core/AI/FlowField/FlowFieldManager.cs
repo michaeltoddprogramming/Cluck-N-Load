@@ -19,9 +19,25 @@ namespace FarmDefender.Core.AI.FlowField
         [Header("Grid Monitor Integration")]
         [SerializeField] private bool useGridMonitor = true;
         
+        [Header("Performance Optimization")]
+        [Tooltip("Should the flow field update only when in build mode?")]
+        [SerializeField] private bool updateOnlyInBuildMode = true;
+        
+        [Tooltip("Number of destroyed buildings before flow field update")]
+        [SerializeField] private int buildingDestructionThreshold = 3;
+        
+        [Tooltip("Minimum time (in seconds) between flow field updates")]
+        [SerializeField] private float updateThrottleTime = 0.5f;
+        
         private FlowFieldAlgorithm algorithm;
         private GridMonitor gridMonitor;
         private bool initialized = false;
+        
+        // Optimization tracking variables
+        private int destroyedBuildingsCounter = 0;
+        private float lastUpdateTime = 0f;
+        private bool buildModeActive = false;
+        private bool updateRequested = false;
         
         // Unity Lifecycle Methods
         
@@ -50,20 +66,35 @@ namespace FarmDefender.Core.AI.FlowField
             
             // Generate initial flow field after a short delay
             Invoke("GenerateInitialFlowField", 0.5f);
+            
+            // Set initial update time
+            lastUpdateTime = Time.time;
         }
         
         private void Update()
         {
             if (!initialized)
                 return;
-                
-            // Check for target changes
-            if (targetManager.HasTargetChanged())
+            
+            // Only check for target changes - don't regenerate based on timing
+            bool targetChanged = targetManager.HasTargetChanged();
+            
+            // Process updates only when explicitly requested or target changed
+            if (targetChanged || updateRequested)
             {
+                // Throttle updates based on time if needed
+                if (Time.time - lastUpdateTime < updateThrottleTime)
+                    return;
+                    
                 Vector2Int target = targetManager.GetTargetCoordinates();
                 if (targetManager.IsValidTarget(target))
                 {
                     GenerateFlowField(target);
+                    lastUpdateTime = Time.time;
+                    updateRequested = false;
+                    destroyedBuildingsCounter = 0;
+                    
+                    Debug.Log($"Flow field updated. Reason: {(targetChanged ? "Target changed" : "Building changes")}");
                 }
             }
         }
@@ -146,17 +177,51 @@ namespace FarmDefender.Core.AI.FlowField
         {
             if (changeType == GridChangeType.Structural)
             {
-                // Refresh flow field when grid structure changes
-                Vector2Int target = targetManager.GetTargetCoordinates();
-                if (targetManager.IsValidTarget(target))
+                // Don't increment counter if in build mode (building placement)
+                if (buildModeActive)
                 {
-                    Debug.Log("Regenerating flow field due to grid structural changes");
-                    GenerateFlowField(target);
+                    // When in build mode, ignore structural changes
+                    // The update will be triggered when build mode is exited
+                    return;
                 }
+                
+                // Outside of build mode, changes are likely building destruction
+                // No need to increment here as GridMonitor will call NotifyBuildingDestroyed
             }
         }
         
         // Public Methods
+        
+        /// <summary>
+        /// Set the build mode status to control when flow field updates occur.
+        /// </summary>
+        public void SetBuildModeActive(bool isActive)
+        {
+            // If exiting build mode, request an update
+            if (buildModeActive && !isActive)
+            {
+                updateRequested = true;
+                Debug.Log("Flow field update requested after exiting build mode");
+            }
+            
+            buildModeActive = isActive;
+        }
+        
+        /// <summary>
+        /// Notify the flow field that a building was destroyed.
+        /// </summary>
+        public void NotifyBuildingDestroyed()
+        {
+            destroyedBuildingsCounter++;
+            
+            // Check if we've reached the threshold for updating
+            if (destroyedBuildingsCounter >= buildingDestructionThreshold)
+            {
+                // Request an update rather than updating immediately
+                updateRequested = true;
+                Debug.Log($"Flow field update requested after {destroyedBuildingsCounter} building destructions");
+            }
+        }
         
         /// <summary>
         /// Generates a new flow field with the specified target.
@@ -215,6 +280,12 @@ namespace FarmDefender.Core.AI.FlowField
             {
                 Debug.LogWarning("Invalid target for flow field generation");
             }
+        }
+        
+        [ContextMenu("Force Flow Field Update")]
+        public void ForceFlowFieldUpdate()
+        {
+            updateRequested = true;
         }
         
         [ContextMenu("Print Obstacle Stats")]

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: FlowFieldSettings
   m_EditorClassIdentifier: 
   useDiagonalDirections: 1
-  directionRandomness: 0.44
-  maxRandomAngle: 45
+  directionRandomness: 0.5
+  maxRandomAngle: 22.5
   useWeightedDiagonals: 1
   directTargetInfluence: 0.94
   obstaclePriorityStrength: 1

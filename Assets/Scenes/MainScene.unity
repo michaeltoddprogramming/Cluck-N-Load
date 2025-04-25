@@ -3915,7 +3915,7 @@ MonoBehaviour:
   gridController: {fileID: 527660424}
   gridDataGenerator: {fileID: 527660422}
   updateThrottleTime: 2
-  debugLogging: 1
+  debugLogging: 0
   flowFieldManager: {fileID: 1838938011}
 --- !u!1 &1683679575
 GameObject:

@@ -154,13 +154,24 @@ namespace FarmDefender.Core.AI.FlowField
             // Convert world position to grid position
             Vector2Int gridPos = gridController.WorldToGridCoords(new Vector3(worldPosition.x, 0, worldPosition.y));
             
+            // Get grid dimensions to check boundaries
+            int gridWidth = dataGenerator.GetGridWidth();
+            int gridHeight = dataGenerator.GetGridHeight();
+            
+            // Check if position is valid
+            if (gridPos.x < 0 || gridPos.x >= gridWidth - 1 || gridPos.y < 0 || gridPos.y >= gridHeight - 1)
+            {
+                // Near grid edge, fall back to non-interpolated direction
+                return GetCellFlowDirection(gridPos);
+            }
+            
             // Get the positions of the four surrounding grid cells
             Vector2Int bl = gridPos;                            // Bottom Left
             Vector2Int br = new Vector2Int(gridPos.x + 1, gridPos.y);   // Bottom Right
             Vector2Int tl = new Vector2Int(gridPos.x, gridPos.y + 1);   // Top Left
             Vector2Int tr = new Vector2Int(gridPos.x + 1, gridPos.y + 1);   // Top Right
             
-            // Get world positions of the cells for calculating position within cell
+            // Now safely get the cells - we've already checked that these coordinates are valid
             GridCell blCell = dataGenerator.GetCell(bl.x, bl.y);
             GridCell brCell = dataGenerator.GetCell(br.x, br.y);
             GridCell tlCell = dataGenerator.GetCell(tl.x, tl.y);

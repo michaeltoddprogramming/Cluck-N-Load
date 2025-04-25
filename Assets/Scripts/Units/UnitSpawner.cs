@@ -70,12 +70,12 @@ public class UnitSpawner : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.H))
             {
-                Debug.Log($"[DEV] Spawning {_devSpawnCount} hostile units at grid edges");
+                // Debug.Log($"[DEV] Spawning {_devSpawnCount} hostile units at grid edges");
                 SpawnHostileUnitsAtEdges(_devSpawnCount);
             }
             else if (Input.GetKeyDown(KeyCode.M))
             {
-                Debug.Log($"[DEV] Spawning {_devSpawnCount} military units around target");
+                // Debug.Log($"[DEV] Spawning {_devSpawnCount} military units around target");
                 SpawnMilitaryUnitsAroundTarget(_devSpawnCount);
             }
         }
@@ -86,7 +86,7 @@ public class UnitSpawner : MonoBehaviour
     {
         if (_gridDataGenerator == null)
         {
-            Debug.LogError("[DEV] Grid data generator reference missing for hostile spawning");
+            // Debug.LogError("[DEV] Grid data generator reference missing for hostile spawning");
             return;
         }
 

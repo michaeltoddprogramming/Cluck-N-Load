@@ -1,11 +1,15 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using FarmDefender.Core.AI.FlowField; // Add this line to reference the new namespace
 
 public class BuildController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridController gridController;
+    
+    [Header("Pathfinding")]
+    [SerializeField] private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
     
     [Header("Build Settings")]
     [SerializeField] private Material ghostMaterial;
@@ -29,6 +33,9 @@ public class BuildController : MonoBehaviour
     [SerializeField] private bool enableLandBuying = true;
     [SerializeField] private KeyCode buyLandKey = KeyCode.LeftShift; // Hold shift to buy land
     private bool isInLandBuyMode = false;
+    
+    [Header("Grid Monitoring")]
+    [SerializeField] private GridMonitor gridMonitor;
     
     // Add this property for programmatic access
     public Vector2 DeleteIconOffset
@@ -64,6 +71,10 @@ public class BuildController : MonoBehaviour
             }
         }
         
+        // Find flow field manager if not assigned
+        if (flowFieldManager == null)
+            flowFieldManager = FindObjectOfType<FlowFieldManager>(); // Changed from FlowFieldGenerator
+        
         // Find shop UI component - including inactive objects
         shopPanelUI = FindObjectOfType<ShopPanelUI>(true); // Include inactive objects
         
@@ -94,6 +105,13 @@ public class BuildController : MonoBehaviour
         // Find ownership controller if not assigned
         if (ownershipController == null)
             ownershipController = FindObjectOfType<OwnershipController>();
+        
+        // Find grid monitor if not assigned
+        if (gridMonitor == null)
+            gridMonitor = FindObjectOfType<GridMonitor>();
+        
+        if (gridMonitor == null)
+            Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
         
         Debug.Log($"BuildController started. Grid controller reference: {(gridController != null ? "Valid" : "NULL")}");
         Debug.Log($"Available prefabs: {buildablePrefabs.Length}");
@@ -190,6 +208,12 @@ public class BuildController : MonoBehaviour
         {
             CreateGhost(currentBuildTargetPrefab);
         }
+        
+        // Notify flow field manager about build mode
+        if (flowFieldManager != null)
+        {
+            flowFieldManager.SetBuildModeActive(true);
+        }
     }
     
     public void DisableBuildMode()
@@ -201,6 +225,14 @@ public class BuildController : MonoBehaviour
         {
             Destroy(currentGhost);
             currentGhost = null;
+        }
+        
+        // Notify flow field manager about build mode ending
+        if (flowFieldManager != null)
+        {
+            // Use SetBuildModeActive instead of direct generation
+            flowFieldManager.SetBuildModeActive(false);
+            Debug.Log("Build mode deactivated - notified flow field manager");
         }
     }
     
@@ -275,6 +307,49 @@ public class BuildController : MonoBehaviour
                 
                 Debug.Log("Cancelled building selection");
                 return;
+            }
+        }
+        
+        // Left-click for placement or land buying
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Don't process if clicking on UI elements
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return;
+                
+            // Check if modifier key is pressed for removal
+            if (Input.GetKey(removeModifierKey))
+            {
+                // Try to remove structure by direct click
+                if (TryRemoveStructureByRaycast())
+                {
+                    // Successfully removed structure by direct click
+                    return;
+                }
+                
+                // Fallback to grid-based removal if no structure was hit
+                Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+                RemoveItem(hoveredCell.x, hoveredCell.y);
+            }
+            else if (currentBuildTargetPrefab == null || isInLandBuyMode)
+            {
+                // Buy land at the clicked position when no building is selected
+                if (ownershipController != null)
+                {
+                    // Get the position under the mouse
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    if (Physics.Raycast(ray, out RaycastHit hit))
+                    {
+                        ownershipController.BuyLandAtPosition(hit.point);
+                    }
+                }
+            }
+            else if (currentBuildTargetPrefab != null)
+            {
+                // Normal placement with Left Click when a building is selected
+                // Get grid cell under cursor, ignoring structures
+                Vector2Int hoveredCell = GetGridCellUnderCursor(ignoreStructures: true);
+                PlaceItem(hoveredCell.x, hoveredCell.y);
             }
         }
         
@@ -374,7 +449,8 @@ public class BuildController : MonoBehaviour
             currentGhost.SetActive(true);
         }
         
-        Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+        // Get grid cell under cursor, ignoring placed structures
+        Vector2Int hoveredCell = GetGridCellUnderCursor(ignoreStructures: true);
         
         // Add bounds checking before getting the cell center
         if (!gridController.IsValidCell(hoveredCell.x, hoveredCell.y))
@@ -595,6 +671,12 @@ public class BuildController : MonoBehaviour
         
         // Update grid texture
         gridController.UpdateGridTexture();
+        
+        // Notify grid monitor about the changes
+        if (gridMonitor != null && footprint.Count > 0)
+        {
+            gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+        }
     }
     
     void RemoveItem(int x, int y)
@@ -629,6 +711,12 @@ public class BuildController : MonoBehaviour
             
             // Update grid texture
             gridController.UpdateGridTexture();
+            
+            // Notify grid monitor
+            if (gridMonitor != null && footprint.Count > 0)
+            {
+                gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+            }
         }
     }
     
@@ -691,6 +779,12 @@ public class BuildController : MonoBehaviour
     {
         AudioManager.Instance.PlayRemoveSound();
     }
+                        
+                        // Notify grid monitor
+                        if (gridMonitor != null && footprint.Count > 0)
+                        {
+                            gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+                        }
                         
                         return true; // Successfully removed
                     }
@@ -780,6 +874,50 @@ public class BuildController : MonoBehaviour
         }
         
         currentBuildTargetPrefab = null;
+    }
+    
+    // New method to get grid cell under cursor, with option to ignore structures
+    private Vector2Int GetGridCellUnderCursor(bool ignoreStructures = false)
+    {
+        // First, try to get cell directly from GridController
+        Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+        
+        // If we want to ignore structures, do a targeted raycast to the grid plane
+        if (ignoreStructures && !isDeleteModeActive)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            
+            // Create a plane representing the grid
+            // Use gridController's grid data to determine the plane's height
+            float gridHeight = 0f;
+            if (gridController != null && gridController.TextureHeight > 0)
+            {
+                // Just get the first valid cell to determine grid height
+                for (int x = 0; x < gridController.TextureWidth; x++)
+                {
+                    for (int y = 0; y < gridController.TextureHeight; y++)
+                    {
+                        GridCell cell = gridController.GetCell(x, y);
+                        if (cell != null)
+                        {
+                            gridHeight = cell.worldPosition.y;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
+            
+            float distance;
+            if (gridPlane.Raycast(ray, out distance))
+            {
+                Vector3 hitPoint = ray.GetPoint(distance);
+                hoveredCell = gridController.WorldToGridCoords(hitPoint);
+            }
+        }
+        
+        return hoveredCell;
     }
 
     public void HideDeleteIcon()

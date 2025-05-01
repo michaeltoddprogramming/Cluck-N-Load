@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b05910e34a4710844bcb3b334cb0d050, type: 3}
+  m_Name: FlowFieldSettings
+  m_EditorClassIdentifier: 
+  useDiagonalDirections: 1
+  directionRandomness: 0.5
+  maxRandomAngle: 22.5
+  useWeightedDiagonals: 1
+  directTargetInfluence: 0.94
+  obstaclePriorityStrength: 1
+  priorityPathRange: 3
+  streamInfluenceStrength: 1
+  streamInfluenceRange: 4
+  visualizeFlowField: 1
+  visualizeTargetPoint: 1
+  arrowScale: 1
+  arrowColor: {r: 0, g: 0, b: 1, a: 1}
+  targetPointColor: {r: 1, g: 0, b: 0, a: 1}
+  priorityPathColor: {r: 1, g: 1, b: 1, a: 1}

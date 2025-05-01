@@ -243,4 +243,20 @@ public class GridController : MonoBehaviour
     {
         textureGenerator.UpdateTexture();
     }
+
+    // Add this public method to the GridController class:
+    public float GetCellSize()
+    {
+        return cellSize;
+    }
+
+    public int TextureWidth 
+    {
+        get => gridDataGenerator != null ? gridDataGenerator.GetGridWidth() : 0;
+    }
+
+    public int TextureHeight 
+    {
+        get => gridDataGenerator != null ? gridDataGenerator.GetGridHeight() : 0;
+    }
 }

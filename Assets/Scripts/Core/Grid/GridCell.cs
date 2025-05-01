@@ -8,12 +8,16 @@ public class GridCell
     public int y;
     public float height;
     public Vector3 worldPosition;
-
+    public float[] pheromones = {0f, 0f, 0f}; //each index represents an enemy type; 0 = regular, 1 = fast, 2 = strong
     public GridCellFlags flags;
 
     public GameObject placedObject; // e.g., building or item prefab instance
     public string itemID; // optional, for referencing items by type
 
+    public int integrationCost = int.MaxValue; // Start at max
+    
+    // Change this from Vector2Int to Vector2 for continuous direction
+    public Vector2 flowDirection = Vector2.zero;
 
     // Color getter for this cell (based on flags)
     public Color GetDebugColor() => flags.GetColor();

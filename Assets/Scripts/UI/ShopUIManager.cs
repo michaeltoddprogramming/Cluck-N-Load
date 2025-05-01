@@ -7,6 +7,13 @@ public class ShopUIManager : MonoBehaviour
 
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private Button closeButton;
+    
+    //open shop button
+    [SerializeField] private Button shopButton;
+    private Color dayShop = Color.white;
+    private Color nightShop = Color.grey * 0.9f;
+    public Image shopIcon;
+
 
     private ShopPanelUI shopPanelUI;
     private bool isVisible = false;
@@ -113,5 +120,19 @@ public class ShopUIManager : MonoBehaviour
             Vector3 spawnPosition = new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f));
             Instantiate(data.prefab, spawnPosition, Quaternion.identity);
         }
+    }
+
+    //disable the shop button
+        public void disableShop()
+    {
+        shopButton.interactable = false;
+        shopIcon.color = nightShop;
+    }
+
+    //enable the shop button
+    public void enableShop()
+    {
+        shopButton.interactable = true;
+        shopIcon.color = dayShop;
     }
 }

@@ -1,12 +1,4 @@
-# FarmDefender
-
-## How to Branch
-Use the following naming conventions when creating branches:
-- `dev-featureName` – For new features
-- `dev-bugName` – For bug fixes
-- `dev-hotfix` – For urgent fixes
-
----
+# Cluck N Load
 
 ### Controls
 
@@ -22,6 +14,9 @@ Use the following naming conventions when creating branches:
 | `Left Shift`  | Increase movement speed (fast mode)  |
 | `1`           | Zoom in                              |
 | `2`           | Zoom out                             |
+| `ESC`         | Pause Game                           |
+| `CTRL + Right Mouse Click` (While Shop open)         | Remove places buildings                            |
+| `Left Mouse Click` (While Shop open on dark green boxes)         | Can buy extra land to add to buildable space                            |
 
 #### **Mouse Controls**
 | Mouse Action           | Action                        |
@@ -29,3 +24,8 @@ Use the following naming conventions when creating branches:
 | Right Click + Drag     | Move camera (dragging)        |
 | Middle Click + Drag    | Rotate camera                 |
 | Scroll Wheel           | Zoom in/out                   |
+
+Final Comments:
+- Day-night speed has been sped up to allow for easier and quicker understanding of how the day-night cycle will work.
+- Seasons will last 5 days each, but for this deliverable, it has been changed so that every day is a new season, also for easier understanding of this mechanic.
+- More grid spaces can be bought when the shop is open. If you click on the dark grid boxes, you will be able to buy them, and they will be added to your overall buildable space.

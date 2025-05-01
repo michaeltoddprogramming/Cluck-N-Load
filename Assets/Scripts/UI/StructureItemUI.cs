@@ -6,6 +6,7 @@ public class StructureItemUI : MonoBehaviour
 {
     public Image icon;
     public TMP_Text nameText;
+    public TMP_Text costText; // Add this if you want to display cost
     public Button selectButton;
 
     private StructureData data;
@@ -31,6 +32,10 @@ public class StructureItemUI : MonoBehaviour
         else
             Debug.LogWarning("Name Text is not assigned!");
 
+        // Display cost if we have a cost text component
+        if (costText != null)
+            costText.text = $"{structure.cost} Gold";
+
         if (selectButton != null)
         {
             selectButton.onClick.RemoveAllListeners(); // Prevent stacking listeners
@@ -38,6 +43,15 @@ public class StructureItemUI : MonoBehaviour
         }
         else
             Debug.LogWarning("Select Button is not assigned!");
+            
+        // Check affordability when setting up
+        UpdateAffordability();
+        
+        // Subscribe to money changes
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.OnMoneyChanged += OnMoneyChanged;
+        }
     }
 
     public void SelectStructure()
@@ -66,5 +80,49 @@ public class StructureItemUI : MonoBehaviour
     {
         if (selectButton != null)
             selectButton.onClick.RemoveAllListeners();
+            
+        if (MoneyManager.Instance != null)
+            MoneyManager.Instance.OnMoneyChanged -= OnMoneyChanged;
+    }
+    
+    private void OnMoneyChanged(int newAmount)
+    {
+        UpdateAffordability();
+    }
+
+        // Add to the UpdateAffordability method:
+    public void UpdateAffordability()
+    {
+        // Make sure we have data and button
+        if (data == null || selectButton == null || MoneyManager.Instance == null)
+            return;
+                
+        // Change the appearance based on whether the player can afford this structure
+        bool canAfford = MoneyManager.Instance.CanAfford(data.cost);
+                         
+        // Visual feedback through button interactability
+        selectButton.interactable = canAfford;
+        
+        // Visual feedback through cost text color (if available)
+        if (costText != null)
+        {
+            costText.color = canAfford ? Color.white : Color.red;
+            
+            // Add a "Cannot Afford" text or symbol for extra clarity
+            if (!canAfford)
+            {
+                costText.text = $"Cost: {data.cost} Gold (Cannot Afford!)";
+            }
+            else
+            {
+                costText.text = $"Cost: {data.cost} Gold";
+            }
+        }
+        
+        // Optional: You can also gray out or modify the icon
+        if (icon != null)
+        {
+            icon.color = canAfford ? Color.white : new Color(0.7f, 0.7f, 0.7f, 0.8f);
+        }
     }
 }

@@ -8,7 +8,7 @@ public class GridCell
     public int y;
     public float height;
     public Vector3 worldPosition;
-
+    public float[] pheromones = {0f, 0f, 0f}; //each index represents an enemy type; 0 = regular, 1 = fast, 2 = strong
     public GridCellFlags flags;
 
     public GameObject placedObject; // e.g., building or item prefab instance

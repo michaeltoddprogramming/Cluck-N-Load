@@ -7,12 +7,22 @@ public enum UnitType
     Hostile
 }
 
+// Define subtypes for hostile units
+public enum HostileSubtype
+{
+    Regular,
+    Fast,
+    Strong
+}
+
 [CreateAssetMenu(fileName = "NewUnit", menuName = "Units/Unit Data")]
 public class UnitData : ScriptableObject 
 {
     [Header("Identity")]
     public string UnitName;
     public UnitType Type;
+    // Only used when Type is Hostile
+    public HostileSubtype HostileType;
     public GameObject Prefab;
     public Sprite Icon;
     

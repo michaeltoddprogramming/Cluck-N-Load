@@ -20,7 +20,6 @@ public class PheromoneManager : MonoBehaviour
     [Tooltip("How strongly to equalize pheromone values (0=none, 1=fully equal)")]
     [Range(0, 1)]
     public float equalizationFactor = 0.3f;
-    public bool enableAutoUpdate = false; // Added control flag
 
     // Registry of discovered structures to avoid redundant marking
     private HashSet<Vector2Int> markedStructures = new HashSet<Vector2Int>();
@@ -61,12 +60,48 @@ public class PheromoneManager : MonoBehaviour
         }
     }
 
-    // Add this method to allow ants to register pheromone sources
+    // Remove the enableAutoUpdate flag since we're using timed distribution
+    // public bool enableAutoUpdate = false; // Remove this line
+    
+    private bool processingEnabled = true;
+    
+    /// <summary>
+    /// Returns the number of pending pheromone sources
+    /// </summary>
+    public int GetSourceCount()
+    {
+        return newPheromoneSources.Count;
+    }
+    
+    /// <summary>
+    /// Stops all pheromone processing until explicitly restarted
+    /// </summary>
+    public void StopAllProcessing()
+    {
+        processingEnabled = false;
+        newPheromoneSources.Clear(); // Clear any pending sources
+    }
+    
+    /// <summary>
+    /// Re-enables pheromone processing for a new run
+    /// </summary>
+    public void PrepareForNewRun()
+    {
+        ResetAllPheromones();
+        processingEnabled = true;
+    }
+    
+    /// <summary>
+    /// Lays pheromone source if processing is enabled
+    /// </summary>
     public void LayPheromoneSource(Vector2Int cell, int type, float amount)
     {
-        newPheromoneSources.Add((cell, type, amount));
+        if (processingEnabled)
+        {
+            newPheromoneSources.Add((cell, type, amount));
+        }
     }
-
+    
     /// <summary>
     /// Returns the pheromone value for a given cell and type.
     /// </summary>
@@ -106,7 +141,7 @@ public class PheromoneManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Diffuse pheromones to neighboring cells (simple blur).
+    /// Diffuse pheromones to neighboring cells based on distribution range.
     /// </summary>
     private void DiffusePheromones()
     {
@@ -123,6 +158,16 @@ public class PheromoneManager : MonoBehaviour
         for (int t = 0; t < pheromoneTypes; t++)
             buffer[x, y, t] = gridDataGenerator.GetCell(x, y).pheromones[t];
 
+        // Calculate diffusion radius - if distributionRange is 1, no diffusion occurs
+        int diffusionRadius = Mathf.Max(0, distributionRange - 1);
+        
+        // If diffusionRadius is 0, skip diffusion entirely
+        if (diffusionRadius == 0)
+            return;
+            
+        // Calculate diffusion share based on affected cells
+        float cellMultiplier = 1.0f / (4.0f * diffusionRadius); // Normalize for number of cells affected
+
         // Diffuse
         for (int x = 0; x < width; x++)
         for (int y = 0; y < height; y++)
@@ -130,11 +175,30 @@ public class PheromoneManager : MonoBehaviour
             var gc = gridDataGenerator.GetCell(x, y);
             for (int t = 0; t < pheromoneTypes; t++)
             {
-                float share = gc.pheromones[t] * diffusionRate / 4f;
-                foreach (var n in GetNeighbors(x, y, width, height))
+                if (gc.pheromones[t] <= 0.001f) continue; // Skip cells with negligible pheromone
+                
+                float share = gc.pheromones[t] * diffusionRate * cellMultiplier;
+                
+                // Apply distribution in a radius determined by distribution range
+                for (int dx = -diffusionRadius; dx <= diffusionRadius; dx++)
                 {
-                    buffer[n.x, n.y, t] += share;
-                    buffer[x, y, t] -= share;
+                    for (int dy = -diffusionRadius; dy <= diffusionRadius; dy++)
+                    {
+                        // Skip the center cell and cells outside Manhattan distance
+                        if ((dx == 0 && dy == 0) || Mathf.Abs(dx) + Mathf.Abs(dy) > diffusionRadius)
+                            continue;
+                            
+                        int nx = x + dx;
+                        int ny = y + dy;
+                        
+                        // Skip out of bounds cells
+                        if (nx < 0 || nx >= width || ny < 0 || ny >= height)
+                            continue;
+                            
+                        // Add pheromone to neighbor, remove from source
+                        buffer[nx, ny, t] += share;
+                        buffer[x, y, t] -= share;
+                    }
                 }
             }
         }
@@ -196,6 +260,17 @@ public class PheromoneManager : MonoBehaviour
     [Header("Debug")]
     public bool visualizeInScene = true;
 
+    [Header("Visualization Settings")]
+    public int pheromoneTypeToVisualize = 0; // 0 = regular, 1 = fast, etc.
+    public float maxPheromoneValue = 5f;
+    public Color pheromoneColor = Color.magenta;
+    public bool showPheromoneVisualization = true;
+
+    [Header("Distribution Controls")]
+    [Range(1, 15)] 
+    public int testDistributionRange = 3;
+    public bool applyDistribution = false;
+
     private void OnDrawGizmos()
     {
         if (!visualizeInScene || !Application.isPlaying || gridDataGenerator == null)
@@ -224,18 +299,10 @@ public class PheromoneManager : MonoBehaviour
     /// </summary>
     public void ApplyDiffusionOnly()
     {
-        // Apply more diffusion passes to ensure wide coverage
-        int extraDiffusionPasses = 5;
-        for (int i = 0; i < diffusionIterations * extraDiffusionPasses; i++)
-            DiffusePheromones();
-    }
-
-    /// <summary>
-    /// Call this manually to clear all pheromones before a new run
-    /// </summary>
-    public void PrepareForNewRun()
-    {
-        ResetAllPheromones();
+        if (!processingEnabled) return;
+        
+        // Always do just one pass for better performance
+        DiffusePheromones();
     }
 
     /// <summary>
@@ -413,53 +480,100 @@ public class PheromoneManager : MonoBehaviour
     /// <summary>
     /// Spread pheromones from multiple sources using BFS for even distribution
     /// </summary>
-    public void SpreadPheromonesBFS(int spreadRange = 5, float falloff = 0.7f)
+    public void SpreadPheromonesBFS(int spreadRange = -1, float falloff = 0.7f)
     {
-        int width = gridDataGenerator.GetGridWidth();
-        int height = gridDataGenerator.GetGridHeight();
+        if (!processingEnabled) return;
+        if (spreadRange < 0) spreadRange = distributionRange;
+
+        if (spreadRange <= 1) 
+        {
+            // Process sources directly without BFS
+            foreach (var (sourceCell, type, amount) in newPheromoneSources)
+            {
+                LayPheromone(sourceCell, type, amount);
+            }
+            return;
+        }
 
         foreach (var (sourceCell, type, amount) in newPheromoneSources)
         {
-            var visited = new bool[width, height];
-            var queue = new Queue<(Vector2Int cell, int dist)>();
+            Queue<(Vector2Int pos, int dist)> queue = new Queue<(Vector2Int, int)>();
+            HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
+            
             queue.Enqueue((sourceCell, 0));
-            visited[sourceCell.x, sourceCell.y] = true;
-
+            visited.Add(sourceCell);
+            
             while (queue.Count > 0)
             {
-                var (cell, dist) = queue.Dequeue();
+                var (pos, dist) = queue.Dequeue();
+                
+                if (dist > spreadRange) continue;
+                
+                // Calculate value with falloff based on distance
                 float value = amount * Mathf.Pow(falloff, dist);
                 if (value < 0.01f) continue;
-
-                var gc = gridDataGenerator.GetCell(cell.x, cell.y);
+                
+                // Get the cell and apply pheromone
+                GridCell gc = gridDataGenerator.GetCell(pos.x, pos.y);
                 if (gc != null && type >= 0 && type < gc.pheromones.Length)
-                    gc.pheromones[type] += value;
-
-                if (dist < spreadRange)
                 {
-                    foreach (var n in GetNeighbors(cell.x, cell.y, width, height))
+                    gc.pheromones[type] = Mathf.Max(gc.pheromones[type], value);
+                }
+                
+                // Add neighbors to queue
+                foreach (var neighbor in GetNeighbors(pos))
+                {
+                    if (!visited.Contains(neighbor))
                     {
-                        if (!visited[n.x, n.y])
-                        {
-                            visited[n.x, n.y] = true;
-                            queue.Enqueue((n, dist + 1));
-                        }
+                        visited.Add(neighbor);
+                        queue.Enqueue((neighbor, dist + 1));
                     }
                 }
             }
         }
-
+        
+        // Clear processed sources
         newPheromoneSources.Clear();
     }
 
-    // Add this method to ensure regular processing of pheromone sources
-    public void Update()
+    private List<Vector2Int> GetNeighbors(Vector2Int cell)
     {
-        // Process any registered pheromone sources
-        if (newPheromoneSources.Count > 0 && enableAutoUpdate)
+        List<Vector2Int> neighbors = new List<Vector2Int>();
+        int[] dx = { -1, 1, 0, 0 };
+        int[] dy = { 0, 0, -1, 1 };
+        
+        for (int i = 0; i < 4; i++)
         {
-            SpreadPheromonesBFS();
-            DiffusePheromones();
+            int nx = cell.x + dx[i];
+            int ny = cell.y + dy[i];
+            if (nx >= 0 && nx < gridDataGenerator.GetGridWidth() && ny >= 0 && ny < gridDataGenerator.GetGridHeight())
+            {
+                neighbors.Add(new Vector2Int(nx, ny));
+            }
+        }
+        return neighbors;
+    }
+
+    private void Update()
+    {
+        // Process pheromones if we have accumulated some sources
+        if (processingEnabled && newPheromoneSources.Count > 0)
+        {
+            // Process sources every few frames or when we have enough sources
+            if (newPheromoneSources.Count >= 10 || Time.frameCount % 30 == 0)
+            {
+                SpreadPheromonesBFS();
+                Debug.Log($"Processed {newPheromoneSources.Count} pheromone sources");
+            }
+        }
+        
+        // Check for distribution test button
+        if (applyDistribution)
+        {
+            applyDistribution = false;  // Reset flag
+            distributionRange = testDistributionRange;
+            ApplyEvenDistribution();
+            Debug.Log($"Applied even distribution with range {testDistributionRange}");
         }
     }
 }

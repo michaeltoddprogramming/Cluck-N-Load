@@ -29,8 +29,23 @@ public class ScoutAntManager : MonoBehaviour
     public GridDataGenerator gridDataGenerator;
     public PheromoneManager pheromoneManager; // Add this reference
 
+    [Header("Pheromone Distribution")]
+    [Tooltip("Maximum time in seconds to run pheromone distribution after scout cycle")]
+    [Range(0f, 10f)]
+    public float pheromoneDistributionTime = 3f;
+    [Tooltip("How many distribution iterations to run")]
+    [Range(1, 10)]
+    public int distributionIterations = 3;
+    [Tooltip("How frequently to apply diffusion during distribution period")]
+    public float diffusionInterval = 1f;
+
     private List<ScoutAntAgent> activeAnts = new List<ScoutAntAgent>();
     private bool spawnPending = false;
+
+    // Track distribution state
+    private bool isDistributionRunning = false;
+    private float distributionTimer = 0f;
+    private float nextDiffusionTime = 0f;
 
     private void Awake()
     {
@@ -104,9 +119,17 @@ public class ScoutAntManager : MonoBehaviour
         return new Vector2Int(x, y);
     }
 
+    // Modify OnAntFinished to process pheromones when the last ant finishes
     public void OnAntFinished(ScoutAntAgent ant)
     {
         activeAnts.Remove(ant);
+        
+        // If this was the last ant, process all pheromones
+        if (activeAnts.Count == 0 && pheromoneManager != null && pheromoneManager.GetSourceCount() > 0)
+        {
+            Debug.Log("Last ant finished - processing all pheromones");
+            pheromoneManager.SpreadPheromonesBFS();
+        }
     }
 
     private void Update()
@@ -162,30 +185,45 @@ public class ScoutAntManager : MonoBehaviour
         // Run the ants to completion
         TriggerAnts();
         
-        // Wait for ants to finish - in practice you'd need to check when all ants are done
-        StartCoroutine(ApplyDiffusionAfterAntsComplete());
+        // Start timed distribution instead of waiting for ants
+        StartCoroutine(TimedPheromoneDistribution());
     }
 
-    private IEnumerator ApplyDiffusionAfterAntsComplete()
+    /// <summary>
+    /// Runs pheromone distribution for a fixed number of iterations, then stops
+    /// </summary>
+    private IEnumerator TimedPheromoneDistribution()
     {
-        // Wait until all ants complete their journey
-        while (activeAnts.Count > 0)
-        {
-            yield return new WaitForSeconds(0.5f);
+        // Wait for ants to lay some initial pheromones
+        yield return new WaitForSeconds(1f);
+        
+        if (pheromoneManager == null || pheromoneManager.GetSourceCount() == 0) {
+            Debug.Log("No pheromones to distribute");
+            yield break;
         }
         
-        // Apply multiple diffusion passes for wide coverage
-        if (pheromoneManager != null)
+        Debug.Log($"Processing {pheromoneManager.GetSourceCount()} pheromone sources");
+        
+        // FIXED NUMBER OF ITERATIONS - not time-based
+        // Initial spread of pheromones from sources
+        pheromoneManager.SpreadPheromonesBFS();
+        
+        // Small delay to not block the main thread
+        yield return null;
+        
+        // Apply just a few diffusion passes (based on range)
+        int diffusionPasses = Mathf.Min(3, pheromoneManager.distributionRange);
+        
+        for (int i = 0; i < diffusionPasses; i++) 
         {
-            // First process all registered pheromone sources
-            pheromoneManager.SpreadPheromonesBFS(5, 0.7f);
-            
-            // Then apply diffusion for wider coverage
             pheromoneManager.ApplyDiffusionOnly();
-            
-            // Apply final enhancement to ensure edge-to-structure connectivity
-            EnhanceCriticalPaths();
+            yield return null;  // Small delay between passes
         }
+        
+        // Final cleanup
+        pheromoneManager.StopAllProcessing();
+        
+        Debug.Log("Pheromone distribution completed and frozen");
     }
 
     // Helper to ensure strong paths from discovered structures to map edges

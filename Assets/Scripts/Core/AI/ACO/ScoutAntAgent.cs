@@ -328,26 +328,31 @@ public class ScoutAntAgent
 
     private void LayPheromone(Vector2Int cell)
     {
-        // Use the source registration method instead of direct laying
         if (pheromoneManager != null)
         {
-            // For discovered structures, add stronger pheromones
             if (discoveredTargets.Contains(cell))
             {
-                // Use LayPheromoneSource to register a source for later distribution
-                pheromoneManager.LayPheromoneSource(cell, 0, pheromoneStrength * 8.0f);
+                // Lay stronger pheromone for discovered targets
+                pheromoneManager.LayPheromoneSource(cell, 0, pheromoneStrength * 2.0f);
+                Debug.Log($"Ant laying TARGET pheromone at {cell}, strength: {pheromoneStrength * 2.0f}");
             }
             else
             {
-                // Register regular path pheromones too
-                pheromoneManager.LayPheromoneSource(cell, 0, pheromoneStrength * 3.0f);
+                // Lay normal pheromone for the path
+                pheromoneManager.LayPheromoneSource(cell, 0, pheromoneStrength);
+                if (Random.value < 0.1f) // Reduce log spam
+                    Debug.Log($"Ant laying PATH pheromone at {cell}, strength: {pheromoneStrength}");
             }
             
-            // Still mark structures to avoid redundant marking
             if (IsStructureCell(cell))
             {
+                // Mark this structure to avoid redundant marking
                 pheromoneManager.MarkStructure(cell);
             }
+        }
+        else
+        {
+            Debug.LogWarning("ScoutAnt attempted to lay pheromone but pheromoneManager is null");
         }
     }
 
@@ -571,11 +576,11 @@ public class ScoutAntAgent
             {
                 foreach (var neighbor in GetNeighbors(currentCell))
                 {
-                    pheromoneManager.LayPheromone(neighbor, 0, pheromoneStrength * 1.5f);
+                    pheromoneManager.LayPheromoneSource(neighbor, 0, pheromoneStrength * 1.5f);
                 }
             }
             
-            // Get next cell using reverse flow field but avoid saturated paths
+            // Get next cell using reverse flow field
             Vector2Int nextCell = GetReverseFlowFieldCell(currentCell);
             MoveToCell(nextCell);
             
@@ -585,8 +590,16 @@ public class ScoutAntAgent
                 // One final pheromone deposit at the edge
                 LayPheromone(nextCell);
                 returning = false;
+                manager.OnAntFinished(this);
                 break;
             }
+        }
+        
+        // Force finish if we hit the step limit
+        if (maxSteps <= 0 && returning)
+        {
+            returning = false;
+            manager.OnAntFinished(this);
         }
     }
 
@@ -601,23 +614,21 @@ public class ScoutAntAgent
         
         foreach (var n in neighbors)
         {
-            // 1. Score based on reverse flow field direction (opposite to normal flow)
-            Vector2 flowDir = GetFlowFieldDirection(n);
-            Vector2 toCurrentVector = (Vector2)(cell - n);
-            float flowAlignment = Vector2.Dot(flowDir, toCurrentVector.normalized);
+            // Calculate base score: edge proximity plus slight randomness
+            float score = GetEdgeProximityScore(n) * 3.0f + Random.value * 0.2f;
             
-            // 2. Lower score for cells that already have high pheromone levels
-            float existingPheromone = pheromoneManager.GetPheromone(n, 0);
-            float pheromoneAvoidanceFactor = 1.0f / (1.0f + existingPheromone);
-            
-            // 3. Bonus for cells closer to map edge
-            float edgeProximity = GetEdgeProximityScore(n);
-            
-            // 4. Add randomness
-            float randomFactor = Random.Range(0.8f, 1.2f);
-            
-            // Combine factors into a final score
-            float score = (0.4f * flowAlignment + 0.3f * pheromoneAvoidanceFactor + 0.3f * edgeProximity) * randomFactor;
+            // Add pheromone avoidance factor - LOWER pheromone is BETTER
+            if (pheromoneManager != null)
+            {
+                float pheromoneLevel = pheromoneManager.GetPheromone(n, 0);
+                // Convert pheromone level to penalty (higher pheromone = lower score)
+                float pheromonePenalty = pheromoneLevel * 2.0f; // Adjust multiplier for avoidance strength
+                score -= pheromonePenalty;
+                
+                // Debug output for significant decisions
+                if (pheromoneLevel > 1.0f && Random.value < 0.05f)
+                    Debug.Log($"Ant avoiding high pheromone ({pheromoneLevel:F1}) at {n}, score penalty: {pheromonePenalty:F1}");
+            }
             
             if (score > bestScore)
             {

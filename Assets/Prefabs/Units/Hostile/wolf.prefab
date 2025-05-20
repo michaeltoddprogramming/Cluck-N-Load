@@ -94,17 +94,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 264810465737084052}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1a4419f4f379004c8c46ef467869ba5, type: 3}
+  m_Script: {fileID: 11500000, guid: 065105e0a17200e499f9624c532153f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 10
-  rotationSpeed: 15
-  stoppingDistance: 0.1
-  useInterpolation: 1
-  priorityPathThreshold: 0.3
-  maxPriorityPathValue: 0.7
+  enemyType: 0
+  moveSpeed: 5
+  pheromoneFollowWeight: 1
+  flowFieldWeight: 0.5
+  randomSteer: 0.1
+  showDebug: 0
+  logMovement: 0
+  pheromoneManager: {fileID: 0}
   flowFieldManager: {fileID: 0}
-  velocitySmoothTime: 0.8
-  minMoveThreshold: 1
-  directionPersistence: 0.05
-  showGizmos: 0
+  gridController: {fileID: 0}
+  gridDataGenerator: {fileID: 0}
+  priorityProfile: {fileID: 0}

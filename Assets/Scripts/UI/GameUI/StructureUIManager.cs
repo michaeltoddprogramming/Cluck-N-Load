@@ -9,6 +9,7 @@ public class StructureUIManager : MonoBehaviour
     [SerializeField] private GameObject defaultStructureUI;
     [SerializeField] private float uiOffset = 0.5f;
     [SerializeField] private Vector2 screenOffset = new Vector2(0, 20f);
+    [SerializeField] private float uiSize = 1.5f;
     
     private Structure currentSelectedStructure;
     private GameObject activeUI;
@@ -44,7 +45,8 @@ public class StructureUIManager : MonoBehaviour
 
             // Scale based on distance (optional, remove if not needed)
             float distance = Vector3.Distance(Camera.main.transform.position, currentSelectedStructure.transform.position);
-            float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f);
+            // float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f);
+            float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f) * uiSize;
             activeUIRect.localScale = new Vector3(scale, scale, 1f);
 
             // Hide UI if the structure is off-screen

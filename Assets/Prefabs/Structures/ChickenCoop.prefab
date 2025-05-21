@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7211760275293902907}
   - component: {fileID: 8184993962672383048}
   - component: {fileID: 8041224357799890042}
-  - component: {fileID: 4302152271452769320}
+  - component: {fileID: 3405377816775691041}
   m_Layer: 0
   m_Name: ChickenCoop
   m_TagString: Untagged
@@ -109,7 +109,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &4302152271452769320
+--- !u!114 &3405377816775691041
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -118,7 +118,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7128956907063885859}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c22b4dbbaed1d714197e85047dc78133, type: 3}
+  m_Script: {fileID: 11500000, guid: a5dca4a6c6a423e4e81761af7b9e5fbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   structureData: {fileID: 11400000, guid: bd799d5ee3574cb4da135d6e3582cbf2, type: 2}
@@ -131,3 +131,9 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
+  isProducing: 0
+  productReady: 0
+  productionProgress: 0
+  productionSettings:
+    productionTime: 10
+    productAmount: 1

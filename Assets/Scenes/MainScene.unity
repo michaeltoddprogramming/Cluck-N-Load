@@ -1185,7 +1185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemPrefab: {fileID: 4265318633475862390, guid: 2fccf14272298754fbe1f24b0cf0d9f9, type: 3}
   contentParent: {fileID: 1683679576}
-  database: {fileID: 11400000, guid: df965a1a809d224408dc6de5b5fedb97, type: 2}
+  database: {fileID: 11400000, guid: 66bc7c3a18f4f494cb26e0fce57041b1, type: 2}
   closeButton: {fileID: 836310654}
   OnShopOpened:
     m_PersistentCalls:

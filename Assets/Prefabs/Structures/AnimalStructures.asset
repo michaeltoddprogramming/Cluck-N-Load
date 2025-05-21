@@ -10,13 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fbd9ea668b63497478dd4d1f4a4e8c0d, type: 3}
-  m_Name: StructureDatabase
+  m_Name: AnimalStructures
   m_EditorClassIdentifier: 
   allStructures:
-  - {fileID: 11400000, guid: e38a05d17781a9148915e0ad619ab21a, type: 2}
-  - {fileID: 11400000, guid: 033d4054d8faca44cadaa057428aa4ae, type: 2}
-  - {fileID: 11400000, guid: 1c3639a1522116648aea68f77430a694, type: 2}
-  - {fileID: 11400000, guid: 5767ba9e8d7c30a4aa21ccc42dcf908f, type: 2}
-  - {fileID: 11400000, guid: 0ea26eb04275db645a5e22e7522c10af, type: 2}
   - {fileID: 11400000, guid: bd799d5ee3574cb4da135d6e3582cbf2, type: 2}
   - {fileID: 11400000, guid: f4df2d1813bdcfb418114b665550e47b, type: 2}
+  - {fileID: 11400000, guid: 95353d0c2f36ead4fb1913285137617c, type: 2}
+  - {fileID: 11400000, guid: e72af392a87a70743a90ccd64cac2a3c, type: 2}
+  - {fileID: 11400000, guid: e22b5e98e8c3dd943b5455b568eed84b, type: 2}

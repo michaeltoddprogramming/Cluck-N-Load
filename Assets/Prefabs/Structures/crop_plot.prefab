@@ -102,7 +102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c22b4dbbaed1d714197e85047dc78133, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  structureData: {fileID: 11400000, guid: 0ea26eb04275db645a5e22e7522c10af, type: 2}
+  structureData: {fileID: 11400000, guid: bd799d5ee3574cb4da135d6e3582cbf2, type: 2}
   currentHealth: 0
   isIndestructible: 0
   blocksPathfinding: 1

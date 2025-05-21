@@ -2,7 +2,17 @@ using UnityEngine;
 
 public class AnimalStructure : Structure
 {
-    [Header("Animal Production Settings")]
+    public enum AnimalType
+    {
+        Chicken,
+        Cow,
+        Sheep,
+        Goat,
+        Pig
+    }
+
+    [Header("Animal Settings")]
+    [SerializeField] private AnimalType animalType; // Identify the animal type
     [SerializeField] private bool isProducing;
     [SerializeField] private bool productReady;
     [SerializeField] private bool productionFinished;
@@ -13,8 +23,8 @@ public class AnimalStructure : Structure
     public class AnimalProductionSettings
     {
         public float productionTime = 24f;
-        public int productAmount = 5;
-        public int moneyPerProduct = 10; // New: Money earned per product collected
+        public int productAmount = 10;
+        public int moneyPerProduct = 20;
     }
 
     private NightManager nightManager;
@@ -25,6 +35,7 @@ public class AnimalStructure : Structure
     public bool ProductionFinished => productionFinished;
     public float ProductionProgress => productionProgress;
     public AnimalProductionSettings ProductionSettings => productionSettings;
+    public AnimalType GetAnimalType => animalType; // Getter for UI or other scripts
 
     protected override void Start()
     {
@@ -98,43 +109,43 @@ public class AnimalStructure : Structure
             }
         }
     }
-public void Collect()
-{
-    Debug.Log($"{GetStructureName()} Collect called: productReady={productReady}, isProducing={isProducing}, productionFinished={productionFinished}");
 
-    if (productReady)
+    public void Collect()
     {
-        Debug.Log($"{GetStructureName()} is collecting {productionSettings.productAmount} products...");
+        Debug.Log($"{GetStructureName()} Collect called: productReady={productReady}, isProducing={isProducing}, productionFinished={productionFinished}");
 
-        // Calculate total money earned
-        int totalMoneyEarned = productionSettings.productAmount * productionSettings.moneyPerProduct;
-        Debug.Log($"Money calculation: productAmount={productionSettings.productAmount}, moneyPerProduct={productionSettings.moneyPerProduct}, totalMoneyEarned={totalMoneyEarned}");
-
-        if (MoneyManager.Instance == null)
+        if (productReady)
         {
-            Debug.LogError("MoneyManager not found in the scene!");
+            Debug.Log($"{GetStructureName()} is collecting {productionSettings.productAmount} products...");
+
+            int totalMoneyEarned = productionSettings.productAmount * productionSettings.moneyPerProduct;
+            Debug.Log($"Money calculation: productAmount={productionSettings.productAmount}, moneyPerProduct={productionSettings.moneyPerProduct}, totalMoneyEarned={totalMoneyEarned}");
+
+            if (MoneyManager.Instance == null)
+            {
+                Debug.LogError("MoneyManager not found in the scene!");
+            }
+            else
+            {
+                MoneyManager.Instance.AddMoney(totalMoneyEarned);
+                Debug.Log($"Earned {totalMoneyEarned} {MoneyManager.Instance.GetCurrencyName()} from collecting {productionSettings.productAmount} products!");
+            }
+
+            productReady = false;
+            isProducing = false;
+            productionFinished = false;
+            productionProgress = 0f;
+            if (nightManager != null)
+            {
+                lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+            }
         }
         else
         {
-            MoneyManager.Instance.AddMoney(totalMoneyEarned);
-            Debug.Log($"Earned {totalMoneyEarned} {MoneyManager.Instance.GetCurrencyName()} from collecting {productionSettings.productAmount} products!");
+            Debug.LogWarning($"{GetStructureName()} cannot collect: productReady is false!");
         }
+    }
 
-        productReady = false;
-        isProducing = false;
-        productionFinished = false;
-        productionProgress = 0f;
-        if (nightManager != null)
-        {
-            lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
-        }
-    }
-    else
-    {
-        Debug.LogWarning($"{GetStructureName()} cannot collect: productReady is false!");
-    }
-}
-    
     public void OnNewDay()
     {
         if (productionFinished && !productReady)

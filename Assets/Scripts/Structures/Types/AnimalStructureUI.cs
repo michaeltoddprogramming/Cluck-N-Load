@@ -87,6 +87,9 @@ public class AnimalStructureUI : BaseStructureUI
         bool productReady = animalStructure.ProductReady;
         bool productionFinished = animalStructure.ProductionFinished;
 
+        // Include animal type in the structure name
+        string structureName = $"{animalStructure.GetAnimalType} Structure";
+
         if (feedButton != null)
             feedButton.gameObject.SetActive(!isProducing && !productReady && !productionFinished);
 
@@ -97,7 +100,7 @@ public class AnimalStructureUI : BaseStructureUI
         {
             if (productReady)
             {
-                statusText.text = "Ready to collect!";
+                statusText.text = $"{structureName}: Ready to collect!";
                 statusText.color = Color.green;
 
                 if (progressBar != null)
@@ -105,7 +108,6 @@ public class AnimalStructureUI : BaseStructureUI
             }
             else if (productionFinished)
             {
-                // Calculate the next 05:00
                 float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
                 float hoursUntilNextDay = currentHour >= 5f ? (24f - currentHour + 5f) : (5f - currentHour);
                 int wholeHours = Mathf.FloorToInt(hoursUntilNextDay);
@@ -116,14 +118,14 @@ public class AnimalStructureUI : BaseStructureUI
                     minutes = 0;
                 }
 
-                statusText.text = $"Waiting for new day (Done at 05:00, {wholeHours}h {minutes}m)";
+                statusText.text = $"{structureName}: Waiting for new day (Done at 05:00, {wholeHours}h {minutes}m)";
                 statusText.color = Color.yellow;
 
                 if (progressBar != null)
                 {
                     progressBar.gameObject.SetActive(true);
                     progressBar.maxValue = animalStructure.ProductionSettings.productionTime;
-                    progressBar.value = animalStructure.ProductionSettings.productionTime; // Progress is maxed out
+                    progressBar.value = animalStructure.ProductionSettings.productionTime;
                 }
             }
             else if (isProducing)
@@ -131,7 +133,6 @@ public class AnimalStructureUI : BaseStructureUI
                 float progress = animalStructure.ProductionProgress;
                 float totalTime = animalStructure.ProductionSettings.productionTime;
 
-                // Calculate when production will finish (not when it's collectible)
                 float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
                 float remainingHours = totalTime - progress;
                 float completionHour = (currentHour + remainingHours) % 24f;
@@ -144,7 +145,7 @@ public class AnimalStructureUI : BaseStructureUI
                     completionMinuteInt = 0;
                 }
 
-                statusText.text = $"Producing... (Finishes at {completionHourInt:D2}:{completionMinuteInt:D2})";
+                statusText.text = $"{structureName}: Producing... (Finishes at {completionHourInt:D2}:{completionMinuteInt:D2})";
                 statusText.color = Color.yellow;
 
                 if (progressBar != null)
@@ -156,7 +157,7 @@ public class AnimalStructureUI : BaseStructureUI
             }
             else
             {
-                statusText.text = "Needs feeding";
+                statusText.text = $"{structureName}: Needs feeding";
                 statusText.color = Color.white;
 
                 if (progressBar != null)

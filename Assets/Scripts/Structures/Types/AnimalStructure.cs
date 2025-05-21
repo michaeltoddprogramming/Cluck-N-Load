@@ -12,7 +12,7 @@ public class AnimalStructure : Structure
     }
 
     [Header("Animal Settings")]
-    [SerializeField] private AnimalType animalType; // Identify the animal type
+    [SerializeField] private AnimalType animalType;
     [SerializeField] private bool isProducing;
     [SerializeField] private bool productReady;
     [SerializeField] private bool productionFinished;
@@ -23,8 +23,10 @@ public class AnimalStructure : Structure
     public class AnimalProductionSettings
     {
         public float productionTime = 24f;
-        public int productAmount = 10;
-        public int moneyPerProduct = 20;
+        public int productAmount = 1;
+        public int moneyPerProduct = 10;
+        public int baseFoodRequired = 2;
+        public float foodMultiplier = 1f;
     }
 
     private NightManager nightManager;
@@ -35,7 +37,7 @@ public class AnimalStructure : Structure
     public bool ProductionFinished => productionFinished;
     public float ProductionProgress => productionProgress;
     public AnimalProductionSettings ProductionSettings => productionSettings;
-    public AnimalType GetAnimalType => animalType; // Getter for UI or other scripts
+    public AnimalType GetAnimalType => animalType;
 
     protected override void Start()
     {
@@ -66,6 +68,8 @@ public class AnimalStructure : Structure
         {
             nightManager.RegisterAnimalStructure(this);
         }
+
+        UpdateSynergies();
     }
 
     private void Update()
@@ -99,14 +103,42 @@ public class AnimalStructure : Structure
     {
         if (!isProducing && !productReady)
         {
-            Debug.Log($"{GetStructureName()} is being fed...");
-            isProducing = true;
-            productionFinished = false;
-            productionProgress = 0f;
-            if (nightManager != null)
+            string requiredFood = GetRequiredFood();
+            int foodRequired = Mathf.RoundToInt(productionSettings.baseFoodRequired * productionSettings.foodMultiplier);
+
+            if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
             {
-                lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
+                Debug.Log($"{GetStructureName()} is being fed... (Used {foodRequired} {requiredFood})");
+                isProducing = true;
+                productionFinished = false;
+                productionProgress = 0f;
+                if (nightManager != null)
+                {
+                    lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                }
             }
+            else
+            {
+                Debug.LogWarning($"{GetStructureName()} cannot be fed: Not enough {requiredFood} (need {foodRequired})!");
+            }
+        }
+    }
+
+    private string GetRequiredFood()
+    {
+        switch (animalType)
+        {
+            case AnimalType.Chicken:
+                return "Sunflower";
+            case AnimalType.Cow:
+                return "Wheat";
+            case AnimalType.Sheep:
+            case AnimalType.Goat:
+            case AnimalType.Pig:
+                return "Carrots";
+            default:
+                return "Unknown";
         }
     }
 
@@ -154,6 +186,24 @@ public class AnimalStructure : Structure
             productionFinished = false;
             Debug.Log($"{GetStructureName()} products are now available to collect at the start of a new day!");
         }
+    }
+
+    public void UpdateSynergies()
+    {
+        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
+        float minDistance = float.MaxValue;
+        foreach (SiloStructure silo in silos)
+        {
+            float distance = Vector3.Distance(transform.position, silo.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+            }
+        }
+
+        float maxDistance = 10f;
+        productionSettings.foodMultiplier = minDistance <= maxDistance ? 0.5f : 1f;
+        Debug.Log($"{GetStructureName()} synergy updated: minDistance to silo={minDistance}, foodMultiplier={productionSettings.foodMultiplier}");
     }
 
     private void OnDestroy()

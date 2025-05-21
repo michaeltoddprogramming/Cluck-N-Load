@@ -19,5 +19,7 @@ public enum StructureType
     EnemySpawner,
     Defense,
     Utility,
-    AnimalPlot
+    AnimalPlot,
+    Silo,
+    CropPlot
 }

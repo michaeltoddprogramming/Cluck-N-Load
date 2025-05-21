@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using FarmDefender.Core.AI.FlowField; // Add this line to reference the new namespace
+using System.Collections; // Add this line for non-generic IEnumerator
 
 public class BuildController : MonoBehaviour
 {
@@ -311,47 +312,41 @@ public class BuildController : MonoBehaviour
         }
         
         // Left-click for placement or land buying
-        if (Input.GetMouseButtonDown(0))
+      // Left-click for placement, removal, or land buying
+    if (Input.GetMouseButtonDown(0))
+    {
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            return;
+            
+        if (Input.GetKey(removeModifierKey))
         {
-            // Don't process if clicking on UI elements
-            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            // Try to remove structure by direct click
+            if (TryRemoveStructureByRaycast())
+            {
                 return;
-                
-            // Check if modifier key is pressed for removal
-            if (Input.GetKey(removeModifierKey))
-            {
-                // Try to remove structure by direct click
-                if (TryRemoveStructureByRaycast())
-                {
-                    // Successfully removed structure by direct click
-                    return;
-                }
-                
-                // Fallback to grid-based removal if no structure was hit
-                Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-                RemoveItem(hoveredCell.x, hoveredCell.y);
             }
-            else if (currentBuildTargetPrefab == null || isInLandBuyMode)
+            
+            // Fallback to grid-based removal
+            Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+            RemoveItem(hoveredCell.x, hoveredCell.y);
+        }
+        else if (currentBuildTargetPrefab == null || isInLandBuyMode)
+        {
+            if (ownershipController != null)
             {
-                // Buy land at the clicked position when no building is selected
-                if (ownershipController != null)
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit))
                 {
-                    // Get the position under the mouse
-                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out RaycastHit hit))
-                    {
-                        ownershipController.BuyLandAtPosition(hit.point);
-                    }
+                    ownershipController.BuyLandAtPosition(hit.point);
                 }
-            }
-            else if (currentBuildTargetPrefab != null)
-            {
-                // Normal placement with Left Click when a building is selected
-                // Get grid cell under cursor, ignoring structures
-                Vector2Int hoveredCell = GetGridCellUnderCursor(ignoreStructures: true);
-                PlaceItem(hoveredCell.x, hoveredCell.y);
             }
         }
+        else if (currentBuildTargetPrefab != null)
+        {
+            Vector2Int hoveredCell = GetGridCellUnderCursor(ignoreStructures: true);
+            PlaceItem(hoveredCell.x, hoveredCell.y);
+        }
+    } 
         
         // Rotation
         if (Input.GetKeyDown(rotateKey))
@@ -639,14 +634,16 @@ public class BuildController : MonoBehaviour
     {
         if (!IsValidPlacement(x, y)) return;
 
+        
+
         // Check again if the player can afford it (could have changed since selection)
-    if (currentStructureData != null && 
-        MoneyManager.Instance != null && 
-        !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
-    {
-        Debug.Log("Not enough money to place structure");
-        return;
-    }
+        if (currentStructureData != null &&
+            MoneyManager.Instance != null &&
+            !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
+        {
+            Debug.Log("Not enough money to place structure");
+            return;
+        }
 
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
 
@@ -655,6 +652,13 @@ public class BuildController : MonoBehaviour
         // Create the actual item to place
         GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
         placedItem.name = $"Item_{x}_{y}";
+
+        Structure structure = placedItem.GetComponent<Structure>();
+    if (structure != null)
+    {
+        structure.SetAllowSelectionAndUI(false);
+        StartCoroutine(EnableSelectionAfterRelease(structure));
+    }
         
         // Mark cells as occupied
         List<Vector2Int> footprint = GetStructureFootprint(placedItem);
@@ -678,6 +682,22 @@ public class BuildController : MonoBehaviour
             gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
         }
     }
+
+
+private IEnumerator EnableSelectionAfterRelease(Structure structure)
+{
+    // Wait until the mouse button is released
+    while (Input.GetMouseButton(0))
+    {
+        yield return null;
+    }
+
+    // Re-enable selection and UI
+    if (structure != null)
+    {
+        structure.SetAllowSelectionAndUI(true);
+    }
+}
     
     void RemoveItem(int x, int y)
     {

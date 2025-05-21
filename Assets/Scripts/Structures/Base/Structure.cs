@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using FarmDefender.Core.AI.FlowField; // Add this line for the new namespace
+using FarmDefender.Core.AI.FlowField;
 
 public class Structure : MonoBehaviour
 {
@@ -12,6 +12,8 @@ public class Structure : MonoBehaviour
     [SerializeField] private int currentHealth;
     [Tooltip("Whether this structure can be damaged")]
     public bool isIndestructible = false;
+
+    private bool allowSelectionAndUI = true;
     
     [Header("Grid Integration")]
     [Tooltip("Whether this structure blocks pathfinding")]
@@ -32,12 +34,16 @@ public class Structure : MonoBehaviour
     [Header("Debug")]
     [Tooltip("Show debug information")]
     public bool showDebugInfo = false;
-    
+
     // Private references
     private GridController gridController;
-    private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
+    private FlowFieldManager flowFieldManager;
     private List<Vector2Int> occupiedCells = new List<Vector2Int>();
     private bool hasRegisteredWithGrid = false;
+    
+    // Selection properties
+    private GameObject selectionIndicator;
+    private bool isSelected = false;
     
     // Events
     public delegate void StructureEvent(Structure structure);
@@ -58,9 +64,17 @@ public class Structure : MonoBehaviour
             currentHealth = 100; // Default health
             Debug.LogWarning($"No StructureData assigned to {gameObject.name}", this);
         }
+        
+        // Initialize selection indicator if it exists
+        selectionIndicator = transform.Find("SelectionIndicator")?.gameObject;
+        if (selectionIndicator != null)
+        {
+            selectionIndicator.SetActive(false);
+        }
     }
     
-    private void Start()
+    // Changed from private to protected virtual to allow overriding in derived classes
+    protected virtual void Start()
     {
         // Skip processing for ghost/preview structures
         if (gameObject.name == "BuildGhost")
@@ -84,6 +98,19 @@ public class Structure : MonoBehaviour
         {
             RegisterWithGrid();
         }
+        
+        // Ensure the structure has a collider for mouse interaction
+        if (GetComponent<Collider>() == null)
+        {
+            Debug.Log($"Adding collider to {gameObject.name} for clickability");
+            AddColliderToStructure();
+        }
+    }
+
+    // Add this public method
+    public void SetAllowSelectionAndUI(bool allow)
+    {
+        allowSelectionAndUI = allow;
     }
     
     private void OnDestroy()
@@ -317,6 +344,11 @@ public class Structure : MonoBehaviour
     {
         return occupiedCells.Contains(new Vector2Int(x, y));
     }
+
+    public bool GetAllowSelectionAndUI()
+    {
+        return allowSelectionAndUI;
+    }
     
     // Get the name of the structure
     public string GetStructureName()
@@ -380,6 +412,130 @@ public class Structure : MonoBehaviour
                 new Vector3(width * healthPct, 0.1f, 0.1f)
             );
         }
+    }
+    
+    #endregion
+    
+    #region Selection and Interaction
+    
+     
+    public virtual void Select()
+    {
+        isSelected = true;
+        
+        // Show selection indicator if available
+        if (selectionIndicator != null)
+        {
+            selectionIndicator.SetActive(true);
+        }
+        // Create selection indicator if it doesn't exist
+        else
+        {
+            CreateSelectionIndicator();
+        }
+        
+        Debug.Log($"Selected structure: {GetStructureName()}");
+    }
+    
+    // Deselect this structure
+    public virtual void Deselect()
+    {
+        isSelected = false;
+        
+        if (selectionIndicator != null)
+        {
+            selectionIndicator.SetActive(false);
+        }
+        
+        Debug.Log($"Deselected structure: {GetStructureName()}");
+    }
+    
+    // Create a selection indicator
+    private void CreateSelectionIndicator()
+    {
+        selectionIndicator = new GameObject("SelectionIndicator");
+        selectionIndicator.transform.SetParent(transform);
+        
+        // Position above the structure
+        Renderer renderer = GetComponentInChildren<Renderer>();
+        if (renderer != null)
+        {
+            selectionIndicator.transform.localPosition = new Vector3(
+                0,
+                renderer.bounds.size.y + 0.1f,
+                0
+            );
+        }
+        else
+        {
+            selectionIndicator.transform.localPosition = new Vector3(0, 1f, 0);
+        }
+        
+        // Add visual element (circle sprite)
+        // You'll need to create a circle sprite and place it in Resources/UI
+        // or modify this to use a different indicator
+        
+        // Make the indicator face up
+        selectionIndicator.transform.rotation = Quaternion.Euler(90, 0, 0);
+        
+        // Create a quad for the selection
+        GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        quad.transform.SetParent(selectionIndicator.transform);
+        quad.transform.localPosition = Vector3.zero;
+        quad.transform.localRotation = Quaternion.identity;
+        quad.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+        
+        // Remove the collider from the quad
+        Destroy(quad.GetComponent<Collider>());
+        
+        // Set material to a simple highlight
+        Renderer quadRenderer = quad.GetComponent<Renderer>();
+        if (quadRenderer != null)
+        {
+            // Create a simple highlight material
+            Material highlightMaterial = new Material(Shader.Find("Transparent/Diffuse"));
+            highlightMaterial.color = new Color(1f, 1f, 0.5f, 0.3f); // Semi-transparent yellow
+            quadRenderer.material = highlightMaterial;
+        }
+        
+        selectionIndicator.SetActive(true);
+    }
+    
+    // Add a collider to the structure if it doesn't have one
+    private void AddColliderToStructure()
+    {
+        // Try to get bounds from renderers
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0)
+        {
+            // Calculate combined bounds
+            Bounds combinedBounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                combinedBounds.Encapsulate(renderers[i].bounds);
+            }
+            
+            // Add appropriate sized box collider
+            BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
+            boxCollider.center = new Vector3(0, combinedBounds.size.y / 2, 0);
+            boxCollider.size = combinedBounds.size;
+            
+            Debug.Log($"Added BoxCollider to {gameObject.name} based on renderer bounds");
+        }
+        else
+        {
+            // Fallback if no renderer
+            BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
+            boxCollider.center = new Vector3(0, 0.5f, 0);
+            boxCollider.size = new Vector3(1, 1, 1);
+            Debug.Log($"Added default BoxCollider to {gameObject.name}");
+        }
+    }
+    
+    // Check if structure is currently selected
+    public bool IsSelected()
+    {
+        return isSelected;
     }
     
     #endregion

@@ -6,9 +6,10 @@ public class StructureData : ScriptableObject
     public string structureName;
     public GameObject prefab;
     public Sprite icon;
-    public StructureType type; // enum for categorization
-    public int cost; // Cost in resources or currency
-    public int health; // Health points for the structure
+    public StructureType type; 
+    public int cost; 
+    public int health; 
+    public GameObject uiPrefab;
 }
 
 public enum StructureType
@@ -17,5 +18,6 @@ public enum StructureType
     Plant,
     EnemySpawner,
     Defense,
-    Utility
+    Utility,
+    AnimalPlot
 }

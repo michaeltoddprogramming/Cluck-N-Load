@@ -5880,8 +5880,9 @@ GameObject:
   - component: {fileID: 1838938012}
   - component: {fileID: 1838938011}
   - component: {fileID: 1838938010}
+  - component: {fileID: 1838938013}
   m_Layer: 0
-  m_Name: FLowFieldManager
+  m_Name: AIManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5939,6 +5940,33 @@ Transform:
   - {fileID: 1898407592}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1838938013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1838938009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66cae6086a21c5f4f86f6510e5255e97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxAnts: 10
+  minStructuresPerAnt: 3
+  baseFlowFieldDesirability: 0.2
+  antSpeed: 0
+  visualizeAnts: 1
+  showDiscoveredStructures: 1
+  discoveredStructureColor: {r: 0, g: 1, b: 1, a: 1}
+  exploringColor: {r: 0, g: 1, b: 0, a: 1}
+  returningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  snoopingColor: {r: 1, g: 0, b: 1, a: 1}
+  spawnDistanceFromEdge: 2
+  showStructureDebug: 1
+  timeBeforeFlowFieldIncrease: 5
+  flowFieldInfluenceGrowthRate: 0.5
+  maxSnoopingFlowFieldInfluence: 1
 --- !u!1 &1847462729
 GameObject:
   m_ObjectHideFlags: 0

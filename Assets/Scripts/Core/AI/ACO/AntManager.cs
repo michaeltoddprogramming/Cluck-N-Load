@@ -9,9 +9,8 @@ namespace FarmDefender.Core.AI.ACO
         [Header("Ant Settings")]
         [Tooltip("Minimum number of ants to spawn")]
         [SerializeField] private int maxAnts = 10;
-        [SerializeField] private int maxStructuresPerAnt = 3;
+        [SerializeField] private int minStructuresPerAnt = 3;
         [SerializeField] private float baseFlowFieldDesirability = 0.2f;
-        [SerializeField] private float flowFieldInfluenceGrowthRate = 0.05f;
         [Tooltip("Set to 0 for instant algorithm execution")]
         [SerializeField] private float antSpeed = 8f;
         
@@ -27,40 +26,26 @@ namespace FarmDefender.Core.AI.ACO
         [Header("Spawn Settings")]
         [SerializeField] private float spawnDistanceFromEdge = 2f;
         
-        // Virtual ant data structure
-        private class VirtualAnt
-        {
-            public Vector2Int position;
-            public float lifetime;
-            public float lastPheromoneTime;
-            public bool isReturning;
-            public bool isInOwnedTerritory;
-            public bool isSnooping;
-            public Vector2Int lastDirection;
-            public Vector2Int targetPosition;
-            public HashSet<Vector2Int> discoveredStructures = new HashSet<Vector2Int>();
-            public List<Vector2Int> visitedCells = new List<Vector2Int>();
-            public float currentFlowFieldInfluence;
-            public float timeSinceLastStructureFound;
-            
-            public VirtualAnt(Vector2Int position, float lifetime)
-            {
-                this.position = position;
-                this.lifetime = lifetime;
-                this.lastPheromoneTime = 0f;
-                this.isReturning = false;
-                this.isInOwnedTerritory = false;
-                this.isSnooping = false;
-                this.lastDirection = Vector2Int.zero;
-                this.currentFlowFieldInfluence = 1f;
-                this.timeSinceLastStructureFound = 0f;
-            }
-        }
+        [Header("Debug")]
+        [SerializeField] private bool showStructureDebug = true;
+        
+        [Header("Adaptation Settings")]
+        [Tooltip("Time (seconds) before flow field influence starts increasing")]
+        [SerializeField] private float timeBeforeFlowFieldIncrease = 5f;
+        [Tooltip("How quickly flow field influence grows when no structures found")]
+        [SerializeField] private float flowFieldInfluenceGrowthRate = 0.05f;
+        [Tooltip("Maximum flow field influence during snooping")]
+        [SerializeField] private float maxSnoopingFlowFieldInfluence = 0.6f;
+        
+        // Structure tracking collections
+        private HashSet<Vector2Int> allPlayerStructures = new HashSet<Vector2Int>();
+        private HashSet<Vector2Int> remainingStructuresToFind = new HashSet<Vector2Int>();
         
         // References
         private GridController gridController;
         private GridDataGenerator gridDataGenerator;
         private FarmDefender.Core.AI.FlowField.FlowFieldManager flowFieldManager;
+        private GridMonitor gridMonitor;
         
         // Internal state
         private List<VirtualAnt> virtualAnts = new List<VirtualAnt>();
@@ -73,7 +58,6 @@ namespace FarmDefender.Core.AI.ACO
         private float pheromoneLayInterval = 0.2f;
         private float pheromoneStrength = 1f;
         private int defaultEnemyTypeIndex = 0; // 0=regular, 1=fast, 2=strong
-        private float timeBeforeFlowFieldIncrease = 5f;
         private float randomMovementFactor = 0.3f;
         
         private void Start()
@@ -81,12 +65,63 @@ namespace FarmDefender.Core.AI.ACO
             gridController = FindObjectOfType<GridController>();
             gridDataGenerator = FindObjectOfType<GridDataGenerator>();
             flowFieldManager = FindObjectOfType<FarmDefender.Core.AI.FlowField.FlowFieldManager>();
+            gridMonitor = FindObjectOfType<GridMonitor>();
             
             if (gridController == null || gridDataGenerator == null || flowFieldManager == null)
             {
                 Debug.LogError("AntManager is missing required references");
                 enabled = false;
                 return;
+            }
+            
+            // Subscribe to grid monitor events to detect when buildings are placed/removed
+            if (gridMonitor != null)
+            {
+                gridMonitor.OnCellOccupied += HandleCellOccupied;
+                gridMonitor.OnCellCleared += HandleCellCleared;
+            }
+            
+            // Initial scan for structures
+            UpdatePlayerStructures();
+        }
+        
+        private void OnDestroy()
+        {
+            // Unsubscribe from events
+            if (gridMonitor != null)
+            {
+                gridMonitor.OnCellOccupied -= HandleCellOccupied;
+                gridMonitor.OnCellCleared -= HandleCellCleared;
+            }
+        }
+        
+        private void HandleCellOccupied(Vector2Int cell)
+        {
+            GridCell gridCell = gridController.GetCell(cell.x, cell.y);
+            if (gridCell != null && gridCell.flags.isOwned && gridCell.flags.isOccupied)
+            {
+                // A new structure was placed
+                allPlayerStructures.Add(cell);
+                remainingStructuresToFind.Add(cell);
+                
+                if (showStructureDebug)
+                {
+                    Debug.Log($"New structure detected at {cell}, adding to structures to find. " +
+                              $"Total: {allPlayerStructures.Count}, Remaining: {remainingStructuresToFind.Count}");
+                }
+            }
+        }
+        
+        private void HandleCellCleared(Vector2Int cell)
+        {
+            // A structure was removed
+            allPlayerStructures.Remove(cell);
+            remainingStructuresToFind.Remove(cell);
+            
+            if (showStructureDebug)
+            {
+                Debug.Log($"Structure removed at {cell}. " +
+                          $"Total: {allPlayerStructures.Count}, Remaining: {remainingStructuresToFind.Count}");
             }
         }
         
@@ -106,6 +141,41 @@ namespace FarmDefender.Core.AI.ACO
             {
                 UpdateVirtualAnts();
                 timeSinceLastUpdate = 0f;
+            }
+        }
+        
+        // Method to scan for all player structures in the world
+        public void UpdatePlayerStructures()
+        {
+            int width = gridDataGenerator.GetGridWidth();
+            int height = gridDataGenerator.GetGridHeight();
+            
+            // Store the current list to detect removed structures
+            HashSet<Vector2Int> oldStructures = new HashSet<Vector2Int>(allPlayerStructures);
+            allPlayerStructures.Clear();
+            
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    GridCell cell = gridController.GetCell(x, y);
+                    if (cell != null && cell.flags.isOccupied && cell.flags.isOwned)
+                    {
+                        Vector2Int pos = new Vector2Int(x, y);
+                        allPlayerStructures.Add(pos);
+                        
+                        // If this is a new structure, also add it to the remaining structures
+                        if (!oldStructures.Contains(pos))
+                        {
+                            remainingStructuresToFind.Add(pos);
+                        }
+                    }
+                }
+            }
+            
+            if (showStructureDebug)
+            {
+                Debug.Log($"Updated player structures: {allPlayerStructures.Count} total, {remainingStructuresToFind.Count} remaining to find");
             }
         }
         
@@ -150,11 +220,24 @@ namespace FarmDefender.Core.AI.ACO
         
         private void CheckReturnConditions(VirtualAnt ant)
         {
-            // Return if we've found our max number of structures
-            if (!ant.isReturning && ant.discoveredStructures.Count >= maxStructuresPerAnt)
+            // Only return if we've found our minimum number of structures
+            // or there are no more structures to find
+            bool minimumStructuresFound = ant.discoveredStructures.Count >= minStructuresPerAnt;
+            bool noMoreStructures = remainingStructuresToFind.Count == 0;
+            
+            if (!ant.isReturning && (minimumStructuresFound || noMoreStructures))
             {
                 ant.isReturning = true;
                 DetermineReturnTarget(ant);
+                
+                if (showStructureDebug)
+                {
+                    string reason = minimumStructuresFound ? 
+                        $"found minimum required structures ({ant.discoveredStructures.Count})" : 
+                        "no more structures to find";
+                    
+                    Debug.Log($"Ant returning: {reason}. Structures found: {ant.discoveredStructures.Count}");
+                }
                 return;
             }
             
@@ -163,15 +246,25 @@ namespace FarmDefender.Core.AI.ACO
             {
                 ant.isReturning = true;
                 DetermineReturnTarget(ant);
+                
+                if (showStructureDebug)
+                {
+                    Debug.Log("Ant returning: reached target without finding structures");
+                }
                 return;
             }
             
-            // Return if we're halfway through our lifetime
+            // Return if we're out of lifetime
             float initialLifetime = 30f; // Assuming default lifetime
-            if (!ant.isReturning && ant.lifetime < initialLifetime * 0.5f)
+            if (!ant.isReturning && ant.lifetime < initialLifetime * 0.3f)
             {
                 ant.isReturning = true;
                 DetermineReturnTarget(ant);
+                
+                if (showStructureDebug)
+                {
+                    Debug.Log($"Ant returning: out of time. Structures found: {ant.discoveredStructures.Count}");
+                }
                 return;
             }
         }
@@ -237,27 +330,58 @@ namespace FarmDefender.Core.AI.ACO
                 ant.currentFlowFieldInfluence = baseFlowFieldDesirability;
             }
             
+            // Store previous structure count before checking
+            int previousStructureCount = ant.discoveredStructures.Count;
+            
             // Check for structures around us
             CheckForStructuresAround(ant);
+            
+            // Did we find a new structure?
+            bool foundNewStructure = ant.discoveredStructures.Count > previousStructureCount;
             
             // Update snooping state based on structure discovery
             if (ant.discoveredStructures.Count > 0 && !ant.isSnooping)
             {
                 ant.isSnooping = true;
-                ant.currentFlowFieldInfluence = 0f;
+                ant.currentFlowFieldInfluence = 0f; // Start with no flow field influence when snooping
                 ant.timeSinceLastStructureFound = 0f;
             }
             
-            // When snooping or in owned territory, increase flow field influence over time if no structures found
-            if ((ant.isSnooping || ant.isInOwnedTerritory) && ant.discoveredStructures.Count > 0)
+            // Reset timer if we found a new structure
+            if (foundNewStructure)
             {
-                ant.timeSinceLastStructureFound += updateInterval;
+                ant.timeSinceLastStructureFound = 0f;
                 
+                // Reduce flow field influence when we find structures (prefer local exploration)
+                ant.currentFlowFieldInfluence = baseFlowFieldDesirability;
+                
+                if (showStructureDebug)
+                {
+                    Debug.Log($"Ant found new structure - resetting flow field influence to {baseFlowFieldDesirability}");
+                }
+            }
+            else
+            {
+                // Increase timer since we didn't find anything
+                ant.timeSinceLastStructureFound += updateInterval;
+            }
+            
+            // When snooping or in owned territory, increase flow field influence over time if no structures found recently
+            if (ant.isInOwnedTerritory || ant.isSnooping)
+            {
                 if (ant.timeSinceLastStructureFound > timeBeforeFlowFieldIncrease)
                 {
                     // Gradually increase flow field influence
+                    float previousInfluence = ant.currentFlowFieldInfluence;
                     ant.currentFlowFieldInfluence += flowFieldInfluenceGrowthRate * updateInterval;
-                    ant.currentFlowFieldInfluence = Mathf.Clamp01(ant.currentFlowFieldInfluence);
+                    ant.currentFlowFieldInfluence = Mathf.Clamp(ant.currentFlowFieldInfluence, 0f, maxSnoopingFlowFieldInfluence);
+                    
+                    // Log change if significant
+                    if (showStructureDebug && Mathf.Abs(previousInfluence - ant.currentFlowFieldInfluence) > 0.05f)
+                    {
+                        Debug.Log($"Ant has not found structures for {ant.timeSinceLastStructureFound:F1}s - " + 
+                                  $"flow field influence increased to {ant.currentFlowFieldInfluence:F2}");
+                    }
                 }
             }
             
@@ -289,16 +413,35 @@ namespace FarmDefender.Core.AI.ACO
                         continue;
                         
                     GridCell checkCell = gridController.GetCell(checkPos.x, checkPos.y);
-                    if (checkCell != null && checkCell.flags.isOccupied)
+                    if (checkCell != null && checkCell.flags.isOccupied && checkCell.flags.isOwned)
                     {
-                        // Found a structure, add it to our list
-                        if (!ant.discoveredStructures.Contains(checkPos))
+                        // Check if this structure is still in the remaining structures to find list
+                        if (remainingStructuresToFind.Contains(checkPos))
                         {
-                            ant.discoveredStructures.Add(checkPos);
-                            ant.timeSinceLastStructureFound = 0f;
-                            
-                            // Add to manager's master list of discovered structures
-                            discoveredStructures.Add(checkPos);
+                            // Found a valid structure, add it to our list
+                            if (!ant.discoveredStructures.Contains(checkPos))
+                            {
+                                ant.discoveredStructures.Add(checkPos);
+                                ant.timeSinceLastStructureFound = 0f;
+                                
+                                // Add to manager's master list of discovered structures
+                                discoveredStructures.Add(checkPos);
+                                
+                                // Remove from the remaining structures to find
+                                remainingStructuresToFind.Remove(checkPos);
+                                
+                                if (showStructureDebug)
+                                {
+                                    Debug.Log($"Ant found structure at {checkPos}. " +
+                                              $"Ant has found {ant.discoveredStructures.Count}/{minStructuresPerAnt} structures. " +
+                                              $"Structures left to find: {remainingStructuresToFind.Count}");
+                                }
+                            }
+                        }
+                        else if (showStructureDebug && !ant.discoveredStructures.Contains(checkPos))
+                        {
+                            // Structure already found by another ant
+                            Debug.Log($"Ant found structure at {checkPos} but it was already discovered by another ant");
                         }
                     }
                 }
@@ -458,53 +601,171 @@ namespace FarmDefender.Core.AI.ACO
         
         private void ReturnToEdge(VirtualAnt ant)
         {
-            // Calculate direction toward target edge position
-            Vector2Int direction = ant.targetPosition - ant.position;
+            Vector2Int originalPosition = ant.position;
+            bool moved = false;
             
-            if (direction.sqrMagnitude > 0)
+            // FIRST STRATEGY: Always check for obstacles in the direct path
+            if (!ant.useFlowFieldForReturn)
             {
-                // Normalize to grid movement
-                Vector2Int moveDir = new Vector2Int(
-                    Mathf.Clamp(direction.x, -1, 1),
-                    Mathf.Clamp(direction.y, -1, 1)
-                );
+                // Calculate direction to edge target
+                Vector2Int direction = ant.targetPosition - ant.position;
                 
-                Vector2Int newPosition = ant.position + moveDir;
-                
-                // Ensure we're not moving to an invalid cell
-                if (gridController.IsValidCell(newPosition.x, newPosition.y))
+                if (direction.sqrMagnitude > 0)
                 {
-                    // Only move if the cell isn't an obstacle
-                    GridCell targetCell = gridController.GetCell(newPosition.x, newPosition.y);
-                    if (targetCell != null && !targetCell.flags.isObstacle)
-                    {
-                        ant.position = newPosition;
-                    }
-                }
-            }
-            else
-            {
-                // Fallback: use inverted flow field
-                GridCell cell = gridController.GetCell(ant.position.x, ant.position.y);
-                if (cell != null && cell.flowDirection != Vector2.zero)
-                {
-                    // Invert the flow direction and convert to a grid movement
-                    Vector2 inverseFlow = -cell.flowDirection;
-                    Vector2Int flowMove = GetGridMoveFromDirection(inverseFlow);
-                    Vector2Int newPosition = ant.position + flowMove;
+                    Vector2Int moveDir = new Vector2Int(
+                        Mathf.Clamp(direction.x, -1, 1),
+                        Mathf.Clamp(direction.y, -1, 1)
+                    );
                     
-                    // Ensure we're not moving to an invalid cell
+                    Vector2Int newPosition = ant.position + moveDir;
+                    
+                    // Check if this direct move would hit an obstacle
                     if (gridController.IsValidCell(newPosition.x, newPosition.y))
                     {
-                        // Only move if the cell isn't an obstacle
                         GridCell targetCell = gridController.GetCell(newPosition.x, newPosition.y);
-                        if (targetCell != null && !targetCell.flags.isObstacle)
+                        if (targetCell != null && targetCell.flags.isObstacle)
                         {
-                            ant.position = newPosition;
+                            // Hit an obstacle in direct path - switch to flow field for a significant duration
+                            ant.obstacleHitCount++;
+                            
+                            // The more obstacles we've hit, the longer we use flow field
+                            ant.useFlowFieldForReturn = true;
+                            // Base duration: 2s, increasing with each obstacle (max 5s)
+                            ant.flowFieldUseDuration = Mathf.Min(2.0f + (ant.obstacleHitCount * 0.5f), 5.0f);
+                            ant.flowFieldUseTimer = ant.flowFieldUseDuration;
+                            
+                            if (showStructureDebug)
+                            {
+                                Debug.Log($"Ant hit obstacle during return. Using ONLY flow field for {ant.flowFieldUseDuration}s. " + 
+                                          $"Hit count: {ant.obstacleHitCount}");
+                            }
                         }
                     }
                 }
             }
+            
+            // Update flow field timer
+            if (ant.flowFieldUseTimer > 0)
+            {
+                ant.flowFieldUseTimer -= updateInterval;
+                ant.useFlowFieldForReturn = true;
+                
+                // Once timer expires, switch back to direct navigation
+                if (ant.flowFieldUseTimer <= 0)
+                {
+                    ant.useFlowFieldForReturn = false;
+                    ant.obstacleHitCount = Mathf.Max(0, ant.obstacleHitCount - 1); // Reduce hit count when successful
+                    
+                    if (showStructureDebug)
+                    {
+                        Debug.Log($"Ant returning to direct navigation after using flow field for {ant.flowFieldUseDuration}s");
+                    }
+                }
+            }
+            
+            // STRATEGY 1: Use flow field when obstacle was encountered
+            if (ant.useFlowFieldForReturn)
+            {
+                GridCell cell = gridController.GetCell(ant.position.x, ant.position.y);
+                if (cell != null && cell.flowDirection != Vector2.zero)
+                {
+                    // Invert the flow direction to head away from the base
+                    Vector2 inverseFlow = -cell.flowDirection;
+                    Vector2Int flowMove = GetGridMoveFromDirection(inverseFlow);
+                    Vector2Int newPosition = ant.position + flowMove;
+                    
+                    // Ensure we're not moving to an invalid cell or obstacle
+                    if (gridController.IsValidCell(newPosition.x, newPosition.y))
+                    {
+                        GridCell targetCell = gridController.GetCell(newPosition.x, newPosition.y);
+                        if (targetCell != null && !targetCell.flags.isObstacle)
+                        {
+                            ant.position = newPosition;
+                            moved = true;
+                        }
+                        else
+                        {
+                            // Even flow field hit an obstacle, try emergency moves
+                            // But keep using flow field overall (don't reset the timer)
+                        }
+                    }
+                }
+            }
+            // STRATEGY 2: Direct movement toward edge if not using flow field
+            else if (!moved)
+            {
+                // Calculate direction to edge target
+                Vector2Int direction = ant.targetPosition - ant.position;
+                
+                if (direction.sqrMagnitude > 0)
+                {
+                    Vector2Int moveDir = new Vector2Int(
+                        Mathf.Clamp(direction.x, -1, 1),
+                        Mathf.Clamp(direction.y, -1, 1)
+                    );
+                    
+                    Vector2Int newPosition = ant.position + moveDir;
+                    
+                    // Check if this direct move is valid and not blocked
+                    if (gridController.IsValidCell(newPosition.x, newPosition.y))
+                    {
+                        GridCell targetCell = gridController.GetCell(newPosition.x, newPosition.y);
+                        if (targetCell != null && !targetCell.flags.isObstacle)
+                        {
+                            ant.position = newPosition;
+                            moved = true;
+                        }
+                    }
+                }
+            }
+            
+            // EMERGENCY STRATEGY: If still stuck, try any valid move
+            if (!moved)
+            {
+                List<Vector2Int> validMoves = new List<Vector2Int>();
+                
+                // Check all neighbors for valid moves
+                for (int x = -1; x <= 1; x++)
+                {
+                    for (int y = -1; y <= 1; y++)
+                    {
+                        if (x == 0 && y == 0) continue;
+                        
+                        Vector2Int checkPos = new Vector2Int(ant.position.x + x, ant.position.y + y);
+                        if (gridController.IsValidCell(checkPos.x, checkPos.y))
+                        {
+                            GridCell checkCell = gridController.GetCell(checkPos.x, checkPos.y);
+                            if (checkCell != null && !checkCell.flags.isObstacle)
+                            {
+                                validMoves.Add(checkPos);
+                            }
+                        }
+                    }
+                }
+                
+                // If valid moves found, take one randomly
+                if (validMoves.Count > 0)
+                {
+                    ant.position = validMoves[Random.Range(0, validMoves.Count)];
+                    moved = true;
+                    
+                    // After using emergency move, try flow field for a while
+                    if (!ant.useFlowFieldForReturn)
+                    {
+                        ant.useFlowFieldForReturn = true;
+                        ant.flowFieldUseDuration = 2.0f;  // 2 seconds of flow field after emergency move
+                        ant.flowFieldUseTimer = ant.flowFieldUseDuration;
+                        
+                        if (showStructureDebug)
+                        {
+                            Debug.Log("Ant used emergency move - switching to flow field for 2s");
+                        }
+                    }
+                }
+            }
+            
+            // If this point is reached and the ant hasn't moved, it's completely trapped
+            // Let's try again next update - hopefully something will change
         }
         
         private void LayPheromones(VirtualAnt ant)
@@ -533,25 +794,10 @@ namespace FarmDefender.Core.AI.ACO
             if (hasCountedStructures)
                 return totalStructuresInWorld;
                 
-            int count = 0;
-            int width = gridDataGenerator.GetGridWidth();
-            int height = gridDataGenerator.GetGridHeight();
-            
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    GridCell cell = gridController.GetCell(x, y);
-                    if (cell != null && cell.flags.isOccupied && cell.flags.isOwned)
-                    {
-                        count++;
-                    }
-                }
-            }
-            
-            totalStructuresInWorld = count;
+            UpdatePlayerStructures();
+            totalStructuresInWorld = allPlayerStructures.Count;
             hasCountedStructures = true;
-            return count;
+            return totalStructuresInWorld;
         }
         
         // Determine how many ants to spawn based on structure count
@@ -559,8 +805,8 @@ namespace FarmDefender.Core.AI.ACO
         {
             int structureCount = CountTotalStructures();
             
-            // Calculate needed ants based on structures and max structures per ant
-            int neededAnts = Mathf.CeilToInt((float)structureCount / maxStructuresPerAnt);
+            // Calculate needed ants based on structures and min structures per ant
+            int neededAnts = Mathf.CeilToInt((float)structureCount / minStructuresPerAnt);
             
             // Use at least the minimum number specified
             return Mathf.Max(neededAnts, maxAnts);
@@ -616,6 +862,12 @@ namespace FarmDefender.Core.AI.ACO
             discoveredStructures.Clear();
             hasCountedStructures = false;
             
+            // Update player structures
+            UpdatePlayerStructures();
+            
+            // Reset the remaining structures to find
+            remainingStructuresToFind = new HashSet<Vector2Int>(allPlayerStructures);
+            
             // Determine how many ants to spawn
             int antsToSpawn = DetermineOptimalAntCount();
             
@@ -626,33 +878,84 @@ namespace FarmDefender.Core.AI.ACO
             }
             
             Debug.Log($"ACO algorithm spawned {antsToSpawn} virtual ants to explore the map");
+            Debug.Log($"Structures to find: {remainingStructuresToFind.Count}");
             
-            // If speed is set to 0, run all ants to completion immediately
+            // If speed is set to 0, run fast algorithm via coroutine instead of instant
             if (antSpeed <= 0)
             {
-                RunInstantAlgorithm();
+                StartCoroutine(RunFastAlgorithm());
             }
         }
         
-        private void RunInstantAlgorithm()
+        // Coroutine for "instant" algorithm that doesn't freeze Unity
+private IEnumerator RunFastAlgorithm()
+{
+    Debug.Log("Running ACO algorithm in fast mode");
+    
+    // Process ants in batches to prevent freezing
+    int batchSize = 100; // Process 100 ant updates per frame
+    int antUpdatesThisFrame = 0;
+    
+    // Keep running until all ants are done
+    while (virtualAnts.Count > 0)
+    {
+        // Process each ant
+        for (int i = virtualAnts.Count - 1; i >= 0; i--)
         {
-            Debug.Log("Running ACO algorithm in instant mode");
+            if (i >= virtualAnts.Count) 
+                continue; // Safety check in case ants were removed
+                
+            VirtualAnt ant = virtualAnts[i];
             
-            // Set a very short update interval for fast processing
-            float savedInterval = updateInterval;
-            updateInterval = 0.0001f;
+            // Update lifetime
+            ant.lifetime -= 0.1f; // Use a larger time step for faster completion
             
-            // Process ants until all are done
-            while (virtualAnts.Count > 0)
+            // If lifetime is expired, remove the ant
+            if (ant.lifetime <= 0)
             {
-                UpdateVirtualAnts();
+                if (i < virtualAnts.Count)
+                    virtualAnts.RemoveAt(i);
+                continue;
             }
             
-            // Restore the normal update interval
-            updateInterval = savedInterval;
+            // Check if we need to start returning
+            CheckReturnConditions(ant);
             
-            Debug.Log("ACO algorithm completed in instant mode");
+            // Different behavior based on state
+            if (ant.isReturning)
+            {
+                ReturnToEdge(ant);
+                LayPheromones(ant);
+                
+                // Check if reached edge
+                if (IsAtEdge(ant.position))
+                {
+                    if (i < virtualAnts.Count)
+                        virtualAnts.RemoveAt(i);
+                }
+            }
+            else
+            {
+                UpdateExplorationBehavior(ant);
+            }
+            
+            // Count this update
+            antUpdatesThisFrame++;
+            
+            // If we've hit our batch size, yield to let Unity breathe
+            if (antUpdatesThisFrame >= batchSize)
+            {
+                antUpdatesThisFrame = 0;
+                yield return null; // Wait for next frame
+            }
         }
+        
+        // Always yield at least once per loop
+        yield return null;
+    }
+    
+    Debug.Log($"ACO algorithm completed in fast mode. Found {discoveredStructures.Count} structures.");
+}
         
         // Public accessor for discovered structures
         public HashSet<Vector2Int> GetDiscoveredStructures()
@@ -692,6 +995,23 @@ namespace FarmDefender.Core.AI.ACO
                     Vector3 targetWorld = gridController.GetCellCenterFromTexture(ant.targetPosition.x, ant.targetPosition.y);
                     Gizmos.DrawLine(worldPos, targetWorld);
                 }
+                
+                // Draw count of discovered structures and flow field influence
+                if (visualizeAnts)
+                {
+                    // Create a formatted label showing structure count and flow field influence
+                    string label = $"{ant.discoveredStructures.Count}/{minStructuresPerAnt}\nFF: {ant.currentFlowFieldInfluence:F2}";
+                    UnityEditor.Handles.Label(worldPos + Vector3.up * 0.5f, label);
+                    
+                    // Visualize time without finding structures
+                    if (ant.timeSinceLastStructureFound > timeBeforeFlowFieldIncrease && !ant.isReturning)
+                    {
+                        // Draw a small timer indicator
+                        float timerRatio = Mathf.Clamp01((ant.timeSinceLastStructureFound - timeBeforeFlowFieldIncrease) / 10f);
+                        Gizmos.color = Color.Lerp(Color.yellow, Color.red, timerRatio);
+                        Gizmos.DrawWireSphere(worldPos, 0.3f + timerRatio * 0.2f);
+                    }
+                }
             }
             
             // Draw discovered structures
@@ -703,6 +1023,18 @@ namespace FarmDefender.Core.AI.ACO
                 {
                     Vector3 worldPos = gridController.GetCellCenterFromTexture(pos.x, pos.y);
                     Gizmos.DrawWireCube(worldPos, new Vector3(1f, 0.1f, 1f));
+                }
+            }
+            
+            // Draw remaining structures to find
+            if (showStructureDebug && remainingStructuresToFind != null && gridController != null)
+            {
+                Gizmos.color = Color.magenta;
+                
+                foreach (Vector2Int pos in remainingStructuresToFind)
+                {
+                    Vector3 worldPos = gridController.GetCellCenterFromTexture(pos.x, pos.y);
+                    Gizmos.DrawWireSphere(worldPos, 0.2f);
                 }
             }
         }

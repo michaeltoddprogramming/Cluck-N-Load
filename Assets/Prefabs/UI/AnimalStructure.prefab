@@ -380,6 +380,7 @@ GameObject:
   - component: {fileID: 5216056198666210815}
   - component: {fileID: 2682756918632530378}
   - component: {fileID: -2043354186538391933}
+  - component: {fileID: 4961389866638603184}
   m_Layer: 5
   m_Name: AnimalStructure
   m_TagString: Untagged
@@ -470,6 +471,34 @@ MonoBehaviour:
   collectButton: {fileID: 3879479822311800038}
   statusText: {fileID: 8636639880589794138}
   progressBar: {fileID: 6837154658191842910}
+--- !u!114 &4961389866638603184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3724273108228962489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5dca4a6c6a423e4e81761af7b9e5fbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  structureData: {fileID: 11400000, guid: bd799d5ee3574cb4da135d6e3582cbf2, type: 2}
+  currentHealth: 0
+  isIndestructible: 0
+  blocksPathfinding: 1
+  occupiesGridCells: 1
+  autoRegisterWithGrid: 1
+  destroyOnZeroHealth: 1
+  destroyDelay: 0.5
+  destructionEffectPrefab: {fileID: 0}
+  showDebugInfo: 0
+  isProducing: 0
+  productReady: 0
+  productionProgress: 0
+  productionSettings:
+    productionTime: 10
+    productAmount: 1
 --- !u!1 &3842100399324998721
 GameObject:
   m_ObjectHideFlags: 0
@@ -590,7 +619,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3413250954043384898}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4961389866638603184}
+        m_TargetAssemblyTypeName: AnimalStructure, Assembly-CSharp
+        m_MethodName: Collect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4320443680560254761
 GameObject:
   m_ObjectHideFlags: 0
@@ -1447,7 +1488,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -36, y: 85}
+  m_AnchoredPosition: {x: 230, y: 85}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8025437213485799495
@@ -1478,7 +1519,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Health
+  m_text: Status
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

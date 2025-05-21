@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Reflection;
 
 public class AnimalStructureUI : BaseStructureUI
 {
@@ -9,96 +8,145 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] private Button collectButton;
     [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private Slider progressBar;
-    
-    // Fields to access private variables via reflection
-    private FieldInfo isProducingField;
-    private FieldInfo productReadyField;
-    private FieldInfo productionProgressField;
-    private FieldInfo productionSettingsField;
-    
+
+    private AnimalStructure animalStructure;
+    private bool isAnimalStructure = false;
+    private NightManager nightManager;
+
     public override void Initialize(Structure structure)
     {
         base.Initialize(structure);
-        
-        // Get references to private fields using reflection
-        System.Type animalType = structure.GetType();
-        isProducingField = animalType.GetField("isProducing", BindingFlags.Instance | BindingFlags.NonPublic);
-        productReadyField = animalType.GetField("productReady", BindingFlags.Instance | BindingFlags.NonPublic);
-        productionProgressField = animalType.GetField("productionProgress", BindingFlags.Instance | BindingFlags.NonPublic);
-        productionSettingsField = animalType.GetField("productionSettings", BindingFlags.Instance | BindingFlags.NonPublic);
-        
-        // Update UI with current state
+
+        isAnimalStructure = structure is AnimalStructure;
+        if (isAnimalStructure)
+        {
+            animalStructure = (AnimalStructure)structure;
+        }
+
+        nightManager = FindObjectOfType<NightManager>();
+        if (nightManager == null)
+        {
+            Debug.LogError("NightManager not found in the scene! AnimalStructureUI requires NightManager to function.");
+        }
+
+        if (!isAnimalStructure)
+        {
+            Debug.LogWarning($"AnimalStructureUI used with non-animal structure: {structure.GetType().Name}");
+            HideAnimalSpecificUI();
+            return;
+        }
+
         UpdateUI();
-        
-        // Set up buttons
+
         if (feedButton != null)
         {
             feedButton.onClick.RemoveAllListeners();
             feedButton.onClick.AddListener(() => {
-                MethodInfo feedMethod = animalType.GetMethod("Feed", BindingFlags.Instance | BindingFlags.Public);
-                if (feedMethod != null)
-                {
-                    feedMethod.Invoke(structure, null);
-                    UpdateUI();
-                }
+                animalStructure.Feed();
+                UpdateUI();
             });
         }
-        
+        else
+        {
+            Debug.LogWarning("Feed button is not assigned in the AnimalStructureUI prefab!");
+            if (feedButton != null) feedButton.gameObject.SetActive(false);
+        }
+
         if (collectButton != null)
         {
             collectButton.onClick.RemoveAllListeners();
             collectButton.onClick.AddListener(() => {
-                MethodInfo collectMethod = animalType.GetMethod("Collect", BindingFlags.Instance | BindingFlags.Public);
-                if (collectMethod != null)
-                {
-                    collectMethod.Invoke(structure, null);
-                    UpdateUI();
-                }
+                animalStructure.Collect();
+                UpdateUI();
             });
         }
+        else
+        {
+            Debug.LogWarning("Collect button is not assigned in the AnimalStructureUI prefab!");
+            if (collectButton != null) collectButton.gameObject.SetActive(false);
+        }
     }
-    
+
     protected override void Update()
     {
         base.Update();
-        
-        // Update production progress in real-time
-        UpdateUI();
+        if (isAnimalStructure)
+        {
+            UpdateUI();
+        }
     }
-    
+
     private void UpdateUI()
     {
-        if (structure == null || isProducingField == null) return;
-        
-        bool isProducing = (bool)isProducingField.GetValue(structure);
-        bool productReady = (bool)productReadyField.GetValue(structure);
-        
-        // Update buttons visibility
+        if (!isAnimalStructure || animalStructure == null || nightManager == null)
+        {
+            return;
+        }
+
+        bool isProducing = animalStructure.IsProducing;
+        bool productReady = animalStructure.ProductReady;
+        bool productionFinished = animalStructure.ProductionFinished;
+
         if (feedButton != null)
-            feedButton.gameObject.SetActive(!isProducing && !productReady);
-            
+            feedButton.gameObject.SetActive(!isProducing && !productReady && !productionFinished);
+
         if (collectButton != null)
             collectButton.gameObject.SetActive(productReady);
-            
-        // Update status text
+
         if (statusText != null)
         {
             if (productReady)
             {
                 statusText.text = "Ready to collect!";
                 statusText.color = Color.green;
+
+                if (progressBar != null)
+                    progressBar.gameObject.SetActive(false);
+            }
+            else if (productionFinished)
+            {
+                // Calculate the next 05:00
+                float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                float hoursUntilNextDay = currentHour >= 5f ? (24f - currentHour + 5f) : (5f - currentHour);
+                int wholeHours = Mathf.FloorToInt(hoursUntilNextDay);
+                int minutes = Mathf.CeilToInt((hoursUntilNextDay - wholeHours) * 60f);
+                if (minutes == 60)
+                {
+                    wholeHours += 1;
+                    minutes = 0;
+                }
+
+                statusText.text = $"Waiting for new day (Done at 05:00, {wholeHours}h {minutes}m)";
+                statusText.color = Color.yellow;
+
+                if (progressBar != null)
+                {
+                    progressBar.gameObject.SetActive(true);
+                    progressBar.maxValue = animalStructure.ProductionSettings.productionTime;
+                    progressBar.value = animalStructure.ProductionSettings.productionTime; // Progress is maxed out
+                }
             }
             else if (isProducing)
             {
-                float progress = (float)productionProgressField.GetValue(structure);
-                object settings = productionSettingsField.GetValue(structure);
-                float totalTime = (float)settings.GetType().GetField("productionTime").GetValue(settings);
-                int secondsLeft = Mathf.CeilToInt(totalTime - progress);
-                
-                statusText.text = $"Producing... ({secondsLeft}s)";
+                float progress = animalStructure.ProductionProgress;
+                float totalTime = animalStructure.ProductionSettings.productionTime;
+
+                // Calculate when production will finish (not when it's collectible)
+                float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                float remainingHours = totalTime - progress;
+                float completionHour = (currentHour + remainingHours) % 24f;
+                int completionHourInt = Mathf.FloorToInt(completionHour);
+                int completionMinuteInt = Mathf.CeilToInt((completionHour - completionHourInt) * 60f);
+
+                if (completionMinuteInt == 60)
+                {
+                    completionHourInt = (completionHourInt + 1) % 24;
+                    completionMinuteInt = 0;
+                }
+
+                statusText.text = $"Producing... (Finishes at {completionHourInt:D2}:{completionMinuteInt:D2})";
                 statusText.color = Color.yellow;
-                
-                // Update progress bar
+
                 if (progressBar != null)
                 {
                     progressBar.gameObject.SetActive(true);
@@ -110,10 +158,22 @@ public class AnimalStructureUI : BaseStructureUI
             {
                 statusText.text = "Needs feeding";
                 statusText.color = Color.white;
-                
+
                 if (progressBar != null)
                     progressBar.gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void HideAnimalSpecificUI()
+    {
+        if (feedButton != null) feedButton.gameObject.SetActive(false);
+        if (collectButton != null) collectButton.gameObject.SetActive(false);
+        if (progressBar != null) progressBar.gameObject.SetActive(false);
+        if (statusText != null)
+        {
+            statusText.text = "Not an animal structure";
+            statusText.color = Color.red;
         }
     }
 }

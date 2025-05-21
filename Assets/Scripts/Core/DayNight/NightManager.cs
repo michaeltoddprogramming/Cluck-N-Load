@@ -31,8 +31,8 @@ public class NightManager : MonoBehaviour
     [SerializeField] private ChickenMovement chicken;
 
     //time indicator icons
-    [SerializeField] private Image timeOfDayIcon; 
-    [SerializeField] private Sprite dayIcon; 
+    [SerializeField] private Image timeOfDayIcon;
+    [SerializeField] private Sprite dayIcon;
     [SerializeField] private Sprite nightIcon;
 
     //songs
@@ -69,37 +69,41 @@ public class NightManager : MonoBehaviour
 
     //time
     [SerializeField] private int minutes;
-    [SerializeField] public int Minutes
-    { 
-        get { return minutes; } 
-        set { minutes = value; OnMinutesChange(value); } 
+    [SerializeField]
+    public int Minutes
+    {
+        get { return minutes; }
+        set { minutes = value; OnMinutesChange(value); }
     }
 
     [SerializeField] private int hours;
-    [SerializeField] public int Hours
-    { 
-        get { return hours; } 
-        set { hours = value; OnHoursChange(value); } 
+    [SerializeField]
+    public int Hours
+    {
+        get { return hours; }
+        set { hours = value; OnHoursChange(value); }
     }
 
     [SerializeField] private int days;
-    [SerializeField] public int Days
-    { 
-        get { return days; } 
-        set { days = value; OnDayChange(value); } 
+    [SerializeField]
+    public int Days
+    {
+        get { return days; }
+        set { days = value; OnDayChange(value); }
     }
 
     [SerializeField] private int years;
-    [SerializeField] public int Years
-    { 
-        get { return years; } 
-        set { years = value; } 
+    [SerializeField]
+    public int Years
+    {
+        get { return years; }
+        set { years = value; }
     }
     private float tempSecond;
 
     //season icons
-    [SerializeField] private Image seasonIcon; 
-    [SerializeField] private Sprite summer; 
+    [SerializeField] private Image seasonIcon;
+    [SerializeField] private Sprite summer;
     [SerializeField] private Sprite winter;
     [SerializeField] private Sprite spring;
     [SerializeField] private Sprite fall;
@@ -116,9 +120,11 @@ public class NightManager : MonoBehaviour
     [SerializeField] private float morningTemp = 3000f;
     [SerializeField] private float eveningTemp = 9000f;
 
+
     //pause game manager
     [SerializeField] private PauseManager pauseManager;
 
+    private List<AnimalStructure> animalStructures = new List<AnimalStructure>();
 
 
 
@@ -147,17 +153,17 @@ public class NightManager : MonoBehaviour
 
     public void Update()
     {
-        if(isPaused)
+        if (isPaused)
         {
             return;
         }
 
-        tempSecond += Time.deltaTime * speedUp;     
+        tempSecond += Time.deltaTime * speedUp;
 
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
-   
 
-        if(tempSecond >= 5f)
+
+        if (tempSecond >= 5f)
         {
             Minutes += 1;
             tempSecond = 0;
@@ -178,7 +184,7 @@ public class NightManager : MonoBehaviour
 
     public void fastForwardTime()
     {
-        if(isFast)
+        if (isFast)
         {
             isFast = false;
             isPaused = false;
@@ -259,7 +265,7 @@ public class NightManager : MonoBehaviour
         buildController.HideDeleteIcon();
 
         //if night is triggered by user (button is clicked)
-        if(flag == 1)
+        if (flag == 1)
         {
             //disable button during night and make grey
             shopButton.interactable = false;
@@ -324,13 +330,23 @@ public class NightManager : MonoBehaviour
 
     private void StartDay(int flag)
     {
+
+        // Notify all AnimalStructures of the new day
+        foreach (AnimalStructure structure in animalStructures)
+        {
+            if (structure != null)
+            {
+                structure.OnNewDay();
+            }
+        }
+
         //load day instantly if first load to always start game on day
-        if(flag == 0)
+        if (flag == 0)
         {
             //enable button during day and colour
             shopButton.interactable = true;
             shopIcon.color = dayShop;
-            
+
             isDay = true;
             buttonText.text = "Start Night";
             // SetListeners();
@@ -352,12 +368,12 @@ public class NightManager : MonoBehaviour
             wolfMovement.despawn();
             chicken.despawn();
         }
-        else if(flag == 1)   //id user clicks start day 
+        else if (flag == 1)   //id user clicks start day 
         {
             //enable button during day and colour
             shopButton.interactable = true;
             shopIcon.color = dayShop;
-            
+
             isDay = true;
             buttonText.text = "Start Night";
             // SetListeners();
@@ -385,7 +401,7 @@ public class NightManager : MonoBehaviour
             //enable button during day and colour
             shopButton.interactable = true;
             shopIcon.color = dayShop;
-            
+
             isDay = true;
             buttonText.text = "Start Night";
             // SetListeners();
@@ -437,44 +453,44 @@ public class NightManager : MonoBehaviour
 
         // Debug.Log("OnMinuteChange1");
 
-        if(value >= 1)
+        if (value >= 1)
         {
             // Debug.Log("OnMinuteChange2");
-            Hours ++;
+            Hours++;
             minutes = 0;
         }
 
-        if(Hours >= 24)
+        if (Hours >= 24)
         {
             // Debug.Log("OnMinuteChange3");
-            Days ++;
+            Days++;
             Hours = 0;
-        }     
+        }
 
-        if(Days == 5)
+        if (Days == 5)
         {
             minutes = 0;
             hours = 0;
             days = 0;
-            Years ++;
-        }   
+            Years++;
+        }
     }
     private void OnHoursChange(int value)
     {
         // Debug.Log("sediroufgeoiswuyrghfiouyesghrfiuyger: " + value);
-        if(value == 5)
+        if (value == 5)
         {
             StartDay(2);
 
             RenderSettings.fogDensity = morningFog;
-            
+
             Debug.Log("morning----------------- fog is:" + RenderSettings.fogDensity);
             StartCoroutine(Skybox(skyboxNight, skyboxMorning, 2f));
             StartCoroutine(LightingChanges(nightToMorningGradient, 2f));
 
             sceneLight.colorTemperature = 2000f;
         }
-        else if(value == 7)
+        else if (value == 7)
         {
             RenderSettings.fogDensity = dayFog;
 
@@ -482,10 +498,10 @@ public class NightManager : MonoBehaviour
             Debug.Log("day----------------- fog is: " + RenderSettings.fogDensity);
             StartCoroutine(Skybox(skyboxMorning, skyboxDay, 2f));
             StartCoroutine(LightingChanges(morningToDayGradient, 2f));
-            
+
             sceneLight.colorTemperature = 6000f;
         }
-        else if(value == 16)
+        else if (value == 16)
         {
             Debug.Log("afternoon-----------------");
 
@@ -495,45 +511,45 @@ public class NightManager : MonoBehaviour
 
             StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
             StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
-            
+
             sceneLight.colorTemperature = 2000f;
         }
-        else if(value == 20)
+        else if (value == 20)
         {
             StartNight(2);
 
             Debug.Log("evening-----------------");
             StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
             StartCoroutine(LightingChanges(AfternoonToNightGradient, 2f));
-            
+
             sceneLight.colorTemperature = 9000f;
-        }        
+        }
     }
 
     private void OnDayChange(int value)
     {
-        if(value == 0)
+        if (value == 0)
         {
             setSeason(1);
         }
-        else if(value == 1)
+        else if (value == 1)
         {
             setSeason(2);
         }
-        else if(value == 2)
+        else if (value == 2)
         {
             setSeason(3);
         }
-        else if(value == 3)
+        else if (value == 3)
         {
             setSeason(4);
         }
-        else if(value == 4)
+        else if (value == 4)
         {
             setSeason(5);
 
             Debug.Log("Resetting the full time loop!");
-            years ++;
+            years++;
             days = 0;
             hours = 7;
             minutes = 0;
@@ -541,10 +557,10 @@ public class NightManager : MonoBehaviour
             StartDay(0); // force reset to day state
             setSeason(1); // reset season if needed
         }
-        else if(value == 5)
+        else if (value == 5)
         {
             Debug.Log("Resetting the full time loop!");
-            years ++;
+            years++;
             days = 0;
             hours = 7;
             minutes = 0;
@@ -552,7 +568,7 @@ public class NightManager : MonoBehaviour
             StartDay(0); // force reset to day state
             setSeason(1); // reset season if needed
         }
-        
+
         // if(value == 1)
         // {
         //     setSeason(1);
@@ -592,27 +608,27 @@ public class NightManager : MonoBehaviour
 
     private void setSeason(int season)
     {
-        if(season == 1)
+        if (season == 1)
         {
             StartCoroutine(showText("Spring!!", 5));
             seasonIcon.sprite = spring;
         }
-        else if(season == 2)
+        else if (season == 2)
         {
             StartCoroutine(showText("Summer!!", 5));
             seasonIcon.sprite = summer;
         }
-        else if(season == 3)
+        else if (season == 3)
         {
             StartCoroutine(showText("Fall!!", 5));
             seasonIcon.sprite = fall;
         }
-        else if(season == 4)
+        else if (season == 4)
         {
             StartCoroutine(showText("Winter!!", 5));
             seasonIcon.sprite = winter;
         }
-        else if(season == 5)
+        else if (season == 5)
         {
             string text = "Year " + Years.ToString() + " done!!";
             StartCoroutine(showText(text, 5));
@@ -631,7 +647,7 @@ public class NightManager : MonoBehaviour
 
     public void FastForwardEnableShop()
     {
-        if(!isDay)
+        if (!isDay)
         {
 
         }
@@ -643,13 +659,30 @@ public class NightManager : MonoBehaviour
 
     public void PlayEnableShop()
     {
-        if(!isDay)
+        if (!isDay)
         {
 
         }
         else
         {
             shopManager.enableShop();
+        }
+    }
+    
+     // New methods to manage AnimalStructures
+    public void RegisterAnimalStructure(AnimalStructure structure)
+    {
+        if (structure != null && !animalStructures.Contains(structure))
+        {
+            animalStructures.Add(structure);
+        }
+    }
+
+    public void UnregisterAnimalStructure(AnimalStructure structure)
+    {
+        if (structure != null)
+        {
+            animalStructures.Remove(structure);
         }
     }
 }

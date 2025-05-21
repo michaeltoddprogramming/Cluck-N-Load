@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd30dbfbb90813b48a35331b61b644e0, type: 3}
-  m_Name: crop_plot
+  m_Name: SheepPen
   m_EditorClassIdentifier: 
-  structureName: Crop Plot
-  prefab: {fileID: 1061210949077460358, guid: 16f97c39f0b8f1e4fac2207adbfdbd9a, type: 3}
-  icon: {fileID: 21300000, guid: 48dd18cde811a9e48a4ff24a13f2dd09, type: 3}
-  type: 1
+  structureName: Sheep Pen
+  prefab: {fileID: 7128956907063885859, guid: 5b2a7af967d71fd4ca3a904161092f47, type: 3}
+  icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+  type: 5
   cost: 50
-  health: 10000
-  uiPrefab: {fileID: 8813689342424605839, guid: 2f6a576ba65e955459033130d6ed45ec, type: 3}
+  health: 100
+  uiPrefab: {fileID: 3724273108228962489, guid: 252610762c581414d96693c4d74a633e, type: 3}

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8041224357799890042}
   - component: {fileID: 3405377816775691041}
   m_Layer: 0
-  m_Name: ChickenCoop
+  m_Name: GoatPen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -121,7 +121,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5dca4a6c6a423e4e81761af7b9e5fbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  structureData: {fileID: 11400000, guid: bd799d5ee3574cb4da135d6e3582cbf2, type: 2}
+  structureData: {fileID: 11400000, guid: e72af392a87a70743a90ccd64cac2a3c, type: 2}
   currentHealth: 0
   isIndestructible: 0
   blocksPathfinding: 1
@@ -131,9 +131,12 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
+  animalType: 3
   isProducing: 0
   productReady: 0
+  productionFinished: 0
   productionProgress: 0
   productionSettings:
     productionTime: 10
     productAmount: 1
+    moneyPerProduct: 20

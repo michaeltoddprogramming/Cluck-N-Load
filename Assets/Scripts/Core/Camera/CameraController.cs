@@ -18,13 +18,13 @@ public class CameraController : MonoBehaviour
     public Vector3 zoomAmount = new Vector3(0, -5, 5);
     
     [Header("Boundary Settings")]
-    public float minX = -50f;
-    public float maxX = 50f;
-    public float minZ = -50f;
-    public float maxZ = 50f;
-    public float minZoom = 50f;
-    public float maxZoom = 100f;
-   [SerializeField] private float fixedPitch = 45f; 
+    public float minX = -15f;
+    public float maxX = 15f;
+    public float minZ = -15f;
+    public float maxZ = 15f;
+    public float minZoom = 10f;
+    public float maxZoom = 65f;
+   [SerializeField] private float fixedPitch = 0f; 
     
     // Target positions that the camera will move toward
     private Vector3 newPosition;
@@ -46,6 +46,7 @@ public class CameraController : MonoBehaviour
 
     //import cursor manager
     [SerializeField] private CursorManager cursor; 
+    [SerializeField] public bool devCamera; 
 
 
 
@@ -151,40 +152,45 @@ public class CameraController : MonoBehaviour
     // Handle edge-of-screen movement
     void HandleMouseMovement()
     {
-        if (mouseControlsDisabled) return;
-
-        float edgeThreshold = 20f;
-        Vector3 direction = Vector3.zero;
-
-        // Handle screen edge movement
-        if (Input.mousePosition.x >= Screen.width - edgeThreshold)
+        //devcam -> no edge moving
+        if (!devCamera)
         {
-            direction += transform.right;
-            isMoving = true;
-        }
+            if (mouseControlsDisabled) return;
 
-        if (Input.mousePosition.x <= edgeThreshold)
-        {
-            direction -= transform.right;
-            isMoving = true;
-        }
+            float edgeThreshold = 20f;
+            Vector3 direction = Vector3.zero;
 
-        if (Input.mousePosition.y >= Screen.height - edgeThreshold)
-        {
-            direction += transform.forward;
-            isMoving = true;
-        }
+            // Handle screen edge movement
+            if (Input.mousePosition.x >= Screen.width - edgeThreshold)
+            {
+                direction += transform.right;
+                isMoving = true;
+            }
 
-        if (Input.mousePosition.y <= edgeThreshold)
-        {
-            direction -= transform.forward;
-            isMoving = true;
-        }
+            if (Input.mousePosition.x <= edgeThreshold)
+            {
+                direction -= transform.right;
+                isMoving = true;
+            }
 
-        // Apply movement
-        if (direction.magnitude > 0)
-        {
-            newPosition += direction.normalized * currentSpeed * Time.unscaledDeltaTime;
+            if (Input.mousePosition.y >= Screen.height - edgeThreshold)
+            {
+                direction += transform.forward;
+                isMoving = true;
+            }
+
+            if (Input.mousePosition.y <= edgeThreshold)
+            {
+                direction -= transform.forward;
+                isMoving = true;
+            }
+
+            // Apply movement
+            if (direction.magnitude > 0)
+            {
+                newPosition += direction.normalized * currentSpeed * Time.unscaledDeltaTime;
+            }
+
         }
 
         // Right mouse drag movement
@@ -378,24 +384,24 @@ public class CameraController : MonoBehaviour
     
     // Enforce camera boundaries and restrictions
     void EnforceBoundaries()
-{
-    // Restrict position within terrain bounds
-    newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-    newPosition.z = Mathf.Clamp(newPosition.z, minZ, maxZ);
-    
-    // IMPORTANT: Always force the fixed pitch - this ensures pitch never changes
-    Vector3 currentEuler = newRotation.eulerAngles;
-    newRotation = Quaternion.Euler(fixedPitch, currentEuler.y, 0);
-    
-    // Keep zoom within limits
-    float distance = Mathf.Sqrt(newZoom.y * newZoom.y + newZoom.z * newZoom.z);
-    distance = Mathf.Clamp(distance, minZoom, maxZoom);
-    
-    // Maintain the camera angle while adjusting zoom distance
-    float currentAngle = Mathf.Atan2(newZoom.y, newZoom.z);
-    newZoom.y = distance * Mathf.Sin(currentAngle);
-    newZoom.z = distance * Mathf.Cos(currentAngle);
-}
+    {
+        // Restrict position within terrain bounds
+        newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
+        newPosition.z = Mathf.Clamp(newPosition.z, minZ, maxZ);
+        
+        // IMPORTANT: Always force the fixed pitch - this ensures pitch never changes
+        Vector3 currentEuler = newRotation.eulerAngles;
+        newRotation = Quaternion.Euler(fixedPitch, currentEuler.y, 0);
+        
+        // Keep zoom within limits
+        float distance = Mathf.Sqrt(newZoom.y * newZoom.y + newZoom.z * newZoom.z);
+        distance = Mathf.Clamp(distance, minZoom, maxZoom);
+        
+        // Maintain the camera angle while adjusting zoom distance
+        float currentAngle = Mathf.Atan2(newZoom.y, newZoom.z);
+        newZoom.y = distance * Mathf.Sin(currentAngle);
+        newZoom.z = distance * Mathf.Cos(currentAngle);
+    }
 }
 
 // using UnityEngine;

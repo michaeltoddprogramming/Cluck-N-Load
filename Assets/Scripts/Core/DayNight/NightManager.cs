@@ -348,7 +348,10 @@ public class NightManager : MonoBehaviour
 
     private void StartDay(int flag)
     {
-        // Notify all AnimalStructures of the new day
+
+        // Notify all AnimalStructures of the new day (keep only this loop)
+    if (animalStructures != null)  // Add null check for the list itself
+    {
         foreach (AnimalStructure structure in animalStructures)
         {
             if (structure != null)
@@ -356,6 +359,7 @@ public class NightManager : MonoBehaviour
                 structure.OnNewDay();
             }
         }
+    }
 
         cropGrowthOnAll(2);
 
@@ -390,7 +394,7 @@ public class NightManager : MonoBehaviour
         else if (flag == 1)   //id user clicks start day 
         {
             //Crop growth to third stage and harvest
-            cropStructure.UpdateVisuals(2);
+            // cropStructure.UpdateVisuals(2);
 
 
             //enable button during day and colour
@@ -422,7 +426,7 @@ public class NightManager : MonoBehaviour
         else  //will handle if gameloop changes to day based of time not user input
         {
             //Crop growth to third stage and harvest
-            cropStructure.UpdateVisuals(2);
+            // cropStructure.UpdateVisuals(2);
 
 
             //enable button during day and colour

@@ -18,4 +18,4 @@ MonoBehaviour:
   type: 5
   cost: 50
   health: 100
-  uiPrefab: {fileID: 3724273108228962489, guid: e95c011b60e029342bde1aaa6911b03c, type: 3}
+  uiPrefab: {fileID: 3724273108228962489, guid: 252610762c581414d96693c4d74a633e, type: 3}

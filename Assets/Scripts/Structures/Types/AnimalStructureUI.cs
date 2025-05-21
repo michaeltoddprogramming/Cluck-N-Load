@@ -12,6 +12,7 @@ public class AnimalStructureUI : BaseStructureUI
     private AnimalStructure animalStructure;
     private bool isAnimalStructure = false;
     private NightManager nightManager;
+    
 
     public override void Initialize(Structure structure)
     {
@@ -41,7 +42,8 @@ public class AnimalStructureUI : BaseStructureUI
         if (feedButton != null)
         {
             feedButton.onClick.RemoveAllListeners();
-            feedButton.onClick.AddListener(() => {
+            feedButton.onClick.AddListener(() =>
+            {
                 animalStructure.Feed();
                 UpdateUI();
             });
@@ -55,7 +57,8 @@ public class AnimalStructureUI : BaseStructureUI
         if (collectButton != null)
         {
             collectButton.onClick.RemoveAllListeners();
-            collectButton.onClick.AddListener(() => {
+            collectButton.onClick.AddListener(() =>
+            {
                 animalStructure.Collect();
                 UpdateUI();
             });

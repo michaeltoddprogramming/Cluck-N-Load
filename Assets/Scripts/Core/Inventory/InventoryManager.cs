@@ -1,14 +1,26 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
+    [Header("UI References")]
+    [SerializeField] private TextMeshProUGUI sunflowerText;
+    [SerializeField] private TextMeshProUGUI wheatText; 
+    [SerializeField] private TextMeshProUGUI carrotsText;
+    
+    // Event that fires whenever inventory changes
+    public System.Action OnInventoryChanged;
+
     private Dictionary<string, int> inventory = new Dictionary<string, int>();
+    private Dictionary<string, TextMeshProUGUI> itemTextComponents = new Dictionary<string, TextMeshProUGUI>();
 
     private void Awake()
     {
+        // Singleton setup
         if (Instance == null)
         {
             Instance = this;
@@ -21,10 +33,21 @@ public class InventoryManager : MonoBehaviour
         }
 
         // Initialize inventory with crop types
-        inventory["Sunflower"] = 0;
-        inventory["Wheat"] = 0;
-        inventory["Carrots"] = 0;
-        Debug.Log("Inventory initialized: Sunflower=0, Wheat=0, Carrots=0");
+        inventory["Sunflower"] = 20;
+        inventory["Wheat"] = 20;
+        inventory["Carrots"] = 20;
+        Debug.Log("Inventory initialized: Sunflower=20, Wheat=20, Carrots=20");
+    }
+    
+    private void Start()
+    {
+        // Set up text component mappings
+        if (sunflowerText != null) itemTextComponents["Sunflower"] = sunflowerText;
+        if (wheatText != null) itemTextComponents["Wheat"] = wheatText;
+        if (carrotsText != null) itemTextComponents["Carrots"] = carrotsText;
+        
+        // Initialize UI with starting values
+        UpdateAllUI();
     }
 
     public void AddItem(string itemName, int amount)
@@ -35,6 +58,12 @@ public class InventoryManager : MonoBehaviour
         }
         inventory[itemName] += amount;
         Debug.Log($"Added {amount} {itemName} to inventory. New total: {inventory[itemName]}");
+        
+        // Update UI
+        UpdateItemUI(itemName);
+        
+        // Notify listeners
+        OnInventoryChanged?.Invoke();
     }
 
     public bool HasItem(string itemName, int amount)
@@ -52,6 +81,12 @@ public class InventoryManager : MonoBehaviour
         {
             inventory[itemName] -= amount;
             Debug.Log($"Removed {amount} {itemName} from inventory. New total: {inventory[itemName]}");
+            
+            // Update UI
+            UpdateItemUI(itemName);
+            
+            // Notify listeners
+            OnInventoryChanged?.Invoke();
         }
         else
         {
@@ -62,5 +97,21 @@ public class InventoryManager : MonoBehaviour
     public int GetItemCount(string itemName)
     {
         return inventory.ContainsKey(itemName) ? inventory[itemName] : 0;
+    }
+    
+    private void UpdateItemUI(string itemName)
+    {
+        if (itemTextComponents.ContainsKey(itemName) && itemTextComponents[itemName] != null)
+        {
+            itemTextComponents[itemName].text = inventory[itemName].ToString();
+        }
+    }
+    
+    private void UpdateAllUI()
+    {
+        foreach (var item in inventory)
+        {
+            UpdateItemUI(item.Key);
+        }
     }
 }

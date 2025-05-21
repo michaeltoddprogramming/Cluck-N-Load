@@ -124,7 +124,10 @@ public class NightManager : MonoBehaviour
     //pause game manager
     [SerializeField] private PauseManager pauseManager;
 
+    //UI's
     private List<AnimalStructure> animalStructures = new List<AnimalStructure>();
+    public CropStructure cropStructure;
+
 
 
 
@@ -256,6 +259,16 @@ public class NightManager : MonoBehaviour
     //     }
     // }
 
+    private void cropGrowthOnAll(int stage)
+    {
+        CropStructure[] allCrops = FindObjectsOfType<CropStructure>();
+
+        foreach (CropStructure crop in allCrops)
+        {
+            crop.UpdateVisuals(stage);  // Always pass growth stage = 1
+        }
+    }
+
     private void StartNight(int flag)
     {
         //force close shop
@@ -263,6 +276,11 @@ public class NightManager : MonoBehaviour
 
         //delete icon when deleting structures
         buildController.HideDeleteIcon();
+
+        //Crop growth to second stage
+        Debug.Log("Crop growth about to change");
+        cropGrowthOnAll(1);
+        Debug.Log("Crop growth did change");
 
         //if night is triggered by user (button is clicked)
         if (flag == 1)
@@ -330,7 +348,6 @@ public class NightManager : MonoBehaviour
 
     private void StartDay(int flag)
     {
-
         // Notify all AnimalStructures of the new day
         foreach (AnimalStructure structure in animalStructures)
         {
@@ -339,6 +356,8 @@ public class NightManager : MonoBehaviour
                 structure.OnNewDay();
             }
         }
+
+        cropGrowthOnAll(2);
 
         //load day instantly if first load to always start game on day
         if (flag == 0)
@@ -370,6 +389,10 @@ public class NightManager : MonoBehaviour
         }
         else if (flag == 1)   //id user clicks start day 
         {
+            //Crop growth to third stage and harvest
+            cropStructure.UpdateVisuals(2);
+
+
             //enable button during day and colour
             shopButton.interactable = true;
             shopIcon.color = dayShop;
@@ -398,6 +421,10 @@ public class NightManager : MonoBehaviour
         }
         else  //will handle if gameloop changes to day based of time not user input
         {
+            //Crop growth to third stage and harvest
+            cropStructure.UpdateVisuals(2);
+
+
             //enable button during day and colour
             shopButton.interactable = true;
             shopIcon.color = dayShop;

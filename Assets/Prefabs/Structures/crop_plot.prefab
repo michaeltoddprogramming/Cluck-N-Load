@@ -112,7 +112,7 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  currentCropType: 1
+  currentCropType: 0
   isGrowing: 0
   cropReady: 0
   growthProgress: 0
@@ -120,6 +120,15 @@ MonoBehaviour:
     growthTime: 24
     baseProductAmount: 10
     moneyPerProduct: 5
-  stage1Visual: {fileID: 7897984561698164183, guid: 7e4b6122db5181c42a8692dd9c4d030c, type: 3}
-  stage2Visual: {fileID: 2714515601165784856, guid: 6d8adda9479c5da43965bc8427d5eda4, type: 3}
-  stage3Visual: {fileID: 9139130873216358343, guid: d6029e6d168056b44890e6bba42409d4, type: 3}
+  stage1Visual: {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}
+  stage2Visual: {fileID: 5646316627670119688, guid: afa49221c3527ce49928be8dc5f49a11, type: 3}
+  stage3Visual: {fileID: 5725026461395691348, guid: 2ee33b237890ec942a490ce10bbf59cc, type: 3}
+  sunflowerPrefab1: {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}
+  sunflowerPrefab2: {fileID: 5646316627670119688, guid: afa49221c3527ce49928be8dc5f49a11, type: 3}
+  sunflowerPrefab3: {fileID: 5725026461395691348, guid: 2ee33b237890ec942a490ce10bbf59cc, type: 3}
+  wheatPrefab1: {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}
+  wheatPrefab2: {fileID: 5646316627670119688, guid: afa49221c3527ce49928be8dc5f49a11, type: 3}
+  wheatPrefab3: {fileID: 5725026461395691348, guid: 2ee33b237890ec942a490ce10bbf59cc, type: 3}
+  carrotsPrefab1: {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}
+  carrotsPrefab2: {fileID: 5646316627670119688, guid: afa49221c3527ce49928be8dc5f49a11, type: 3}
+  carrotsPrefab3: {fileID: 5725026461395691348, guid: 2ee33b237890ec942a490ce10bbf59cc, type: 3}

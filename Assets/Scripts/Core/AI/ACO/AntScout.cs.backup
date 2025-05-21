@@ -1,0 +1,509 @@
+using UnityEngine;
+using FarmDefender.Core.AI.FlowField;
+using System.Collections.Generic;
+
+namespace FarmDefender.Core.AI.ACO
+{
+    public class AntScout : MonoBehaviour
+    {
+        [Header("Movement Settings")]
+        [Tooltip("Set to 0 for instant algorithm execution")]
+        [SerializeField] private float moveSpeed = 8f;
+        [SerializeField] private float rotationSpeed = 15f;
+        [SerializeField] private float lifetime = 30f;
+        
+        [Header("Pheromone Settings")]
+        [SerializeField] private float pheromoneStrength = 1f;
+        [SerializeField] private float pheromoneLayInterval = 0.2f;
+        [SerializeField] private int enemyTypeIndex = 0; // 0=regular, 1=fast, 2=strong
+        
+        [Header("Exploration Behavior")]
+        [Tooltip("Flow field influence when in owned territory")]
+        [Range(0f, 1f)]
+        [SerializeField] private float baseFlowFieldDesirability = 0.2f;
+        [Tooltip("How much flow field influence increases per second when no structures found")]
+        [SerializeField] private float flowFieldInfluenceGrowthRate = 0.05f;
+        [Tooltip("Maximum number of structures this ant can discover")]
+        [SerializeField] private int maxStructuresToFind = 3;
+        [Tooltip("Radius to check for nearby structures (in cells)")]
+        [SerializeField] private int structureSearchRadius = 2;
+        [Tooltip("How random movement should be (0-1)")]
+        [Range(0f, 1f)]
+        [SerializeField] private float randomMovementFactor = 0.3f;
+        [Tooltip("Time without finding structures before increasing flow field influence")]
+        [SerializeField] private float timeBeforeFlowFieldIncrease = 5f;
+        
+        [Header("Visualization")]
+        [SerializeField] private bool visualizeAnt = false;
+        [SerializeField] private Color exploringColor = Color.green;
+        [SerializeField] private Color returningColor = Color.yellow;
+        [SerializeField] private Color snoopingColor = Color.magenta;
+        [SerializeField] private float visualSize = 0.3f;
+        
+        [Header("States")]
+        [SerializeField] private bool isReturning = false;
+        [SerializeField] private bool isInOwnedTerritory = false;
+        [SerializeField] private bool isSnooping = false;
+        
+        // References
+        private GridController gridController;
+        private GridDataGenerator gridDataGenerator;
+        private FlowFieldManager flowFieldManager;
+        private AntManager antManager;
+        
+        // Internal state
+        private float lifeTimer;
+        private float lastPheromoneTime;
+        private Vector3 currentVelocity;
+        private List<Vector2Int> visitedCells = new List<Vector2Int>();
+        private HashSet<Vector2Int> discoveredStructures = new HashSet<Vector2Int>();
+        private float currentFlowFieldInfluence;
+        private float timeSinceLastStructureFound = 0f;
+        private Vector2Int lastDirection = Vector2Int.zero;
+        private Vector2Int targetPosition; // For returning to edge
+        
+        private void Start()
+        {
+            gridController = FindObjectOfType<GridController>();
+            gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            antManager = FindObjectOfType<AntManager>();
+            
+            if (gridController == null || flowFieldManager == null || 
+                antManager == null || gridDataGenerator == null)
+            {
+                Debug.LogError("AntScout is missing required references");
+                Destroy(gameObject);
+                return;
+            }
+            
+            lifeTimer = lifetime;
+            lastPheromoneTime = 0f;
+            currentFlowFieldInfluence = 1f; // Start with full flow field influence
+            
+            // Make sure there's no renderer on this object
+            Renderer renderer = GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.enabled = false;
+            }
+        }
+        
+        private void Update()
+        {
+            // Update lifetime
+            lifeTimer -= Time.deltaTime;
+            
+            // If lifetime is expired, destroy the ant
+            if (lifeTimer <= 0)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            
+            // Check if we need to start returning
+            CheckReturnConditions();
+            
+            // Different behavior based on state
+            if (isReturning)
+            {
+                ReturnToEdge();
+                LayPheromones();
+                CheckIfReachedEdge();
+            }
+            else
+            {
+                UpdateExplorationBehavior();
+            }
+        }
+        
+        private void CheckReturnConditions()
+        {
+            // Return if we've found our max number of structures
+            if (!isReturning && discoveredStructures.Count >= maxStructuresToFind)
+            {
+                isReturning = true;
+                DetermineReturnTarget();
+                return;
+            }
+            
+            // Return if we've reached flow field target and found no structures
+            if (!isReturning && HasReachedFlowFieldTarget() && discoveredStructures.Count == 0)
+            {
+                isReturning = true;
+                DetermineReturnTarget();
+                return;
+            }
+            
+            // Return if we're halfway through our lifetime
+            if (!isReturning && lifeTimer < lifetime * 0.5f)
+            {
+                isReturning = true;
+                DetermineReturnTarget();
+                return;
+            }
+        }
+        
+        private void DetermineReturnTarget()
+        {
+            // Find closest edge
+            Vector3 currentPosition = transform.position;
+            Vector2Int gridPos = gridController.WorldToGridCoords(currentPosition);
+            int width = gridDataGenerator.GetGridWidth();
+            int height = gridDataGenerator.GetGridHeight();
+            
+            int distToLeft = gridPos.x;
+            int distToRight = width - 1 - gridPos.x;
+            int distToBottom = gridPos.y;
+            int distToTop = height - 1 - gridPos.y;
+            
+            // Find the shortest distance to an edge
+            int minDist = Mathf.Min(distToLeft, distToRight, distToBottom, distToTop);
+            
+            if (minDist == distToLeft)
+                targetPosition = new Vector2Int(0, gridPos.y);
+            else if (minDist == distToRight)
+                targetPosition = new Vector2Int(width - 1, gridPos.y);
+            else if (minDist == distToBottom)
+                targetPosition = new Vector2Int(gridPos.x, 0);
+            else
+                targetPosition = new Vector2Int(gridPos.x, height - 1);
+        }
+        
+        private bool HasReachedFlowFieldTarget()
+        {
+            Vector2Int targetCoords = flowFieldManager.GetTargetCoordinates();
+            Vector2Int currentPos = gridController.WorldToGridCoords(transform.position);
+            
+            // Check if we're at the target coordinates
+            return Vector2Int.Distance(currentPos, targetCoords) < 2f;
+        }
+        
+        private void UpdateExplorationBehavior()
+        {
+            Vector3 currentPosition = transform.position;
+            Vector2Int gridPos = gridController.WorldToGridCoords(currentPosition);
+            
+            if (!gridController.IsValidCell(gridPos.x, gridPos.y))
+                return;
+            
+            // Track visited cells
+            if (!visitedCells.Contains(gridPos))
+            {
+                visitedCells.Add(gridPos);
+            }
+            
+            // Check if we're in owned territory
+            GridCell cell = gridController.GetCell(gridPos.x, gridPos.y);
+            bool wasInOwnedTerritory = isInOwnedTerritory;
+            isInOwnedTerritory = cell != null && cell.flags.isOwned;
+            
+            // If we just entered owned territory, update desirability
+            if (!wasInOwnedTerritory && isInOwnedTerritory)
+            {
+                currentFlowFieldInfluence = baseFlowFieldDesirability;
+            }
+            
+            // Check for structures around us
+            CheckForStructuresAround(gridPos);
+            
+            // Update snooping state based on structure discovery
+            if (discoveredStructures.Count > 0 && !isSnooping)
+            {
+                isSnooping = true;
+                currentFlowFieldInfluence = 0f;
+                timeSinceLastStructureFound = 0f;
+            }
+            
+            // When snooping or in owned territory, increase flow field influence over time if no structures found
+            if ((isSnooping || isInOwnedTerritory) && discoveredStructures.Count > 0)
+            {
+                timeSinceLastStructureFound += Time.deltaTime;
+                
+                if (timeSinceLastStructureFound > timeBeforeFlowFieldIncrease)
+                {
+                    // Gradually increase flow field influence
+                    currentFlowFieldInfluence += flowFieldInfluenceGrowthRate * Time.deltaTime;
+                    currentFlowFieldInfluence = Mathf.Clamp01(currentFlowFieldInfluence);
+                }
+            }
+            
+            // Now decide movement direction based on our state
+            if (isInOwnedTerritory)
+            {
+                // In owned territory: blend between flow field and random exploration
+                MoveWithSnoop(gridPos);
+            }
+            else
+            {
+                // Outside owned territory: use flow field
+                MoveWithFlowField(gridPos);
+            }
+        }
+        
+        private void CheckForStructuresAround(Vector2Int gridPos)
+        {
+            for (int x = -structureSearchRadius; x <= structureSearchRadius; x++)
+            {
+                for (int y = -structureSearchRadius; y <= structureSearchRadius; y++)
+                {
+                    Vector2Int checkPos = new Vector2Int(gridPos.x + x, gridPos.y + y);
+                    
+                    // Skip invalid cells
+                    if (!gridController.IsValidCell(checkPos.x, checkPos.y))
+                        continue;
+                        
+                    GridCell checkCell = gridController.GetCell(checkPos.x, checkPos.y);
+                    if (checkCell != null && checkCell.flags.isOccupied)
+                    {
+                        // Found a structure, add it to our list
+                        if (!discoveredStructures.Contains(checkPos))
+                        {
+                            discoveredStructures.Add(checkPos);
+                            timeSinceLastStructureFound = 0f;
+                            
+                            // Notify the ant manager about the discovered structure
+                            antManager.OnStructureDiscovered(checkPos);
+                        }
+                    }
+                }
+            }
+        }
+        
+        private void MoveWithSnoop(Vector2Int gridPos)
+        {
+            Vector3 targetDirection = Vector3.zero;
+            
+            // Blend between flow field and random exploration
+            if (Random.value < currentFlowFieldInfluence)
+            {
+                // Use flow field
+                GridCell cell = gridController.GetCell(gridPos.x, gridPos.y);
+                if (cell != null && cell.flowDirection != Vector2.zero)
+                {
+                    targetDirection = new Vector3(cell.flowDirection.x, 0, cell.flowDirection.y);
+                }
+            }
+            else
+            {
+                // Look for unvisited cells around current position
+                List<Vector2Int> possibleDirections = new List<Vector2Int>();
+                
+                for (int x = -1; x <= 1; x++)
+                {
+                    for (int y = -1; y <= 1; y++)
+                    {
+                        // Skip current cell
+                        if (x == 0 && y == 0)
+                            continue;
+                        
+                        // Check if valid and not visited
+                        Vector2Int checkPos = new Vector2Int(gridPos.x + x, gridPos.y + y);
+                        if (gridController.IsValidCell(checkPos.x, checkPos.y))
+                        {
+                            // Prefer unvisited cells
+                            if (!visitedCells.Contains(checkPos))
+                            {
+                                // Double the chance for unvisited cells
+                                possibleDirections.Add(checkPos);
+                                possibleDirections.Add(checkPos);
+                            }
+                            else
+                            {
+                                // Already visited, but still an option
+                                possibleDirections.Add(checkPos);
+                            }
+                        }
+                    }
+                }
+                
+                // Prefer continuing in previous direction
+                if (lastDirection != Vector2Int.zero)
+                {
+                    Vector2Int continueDir = new Vector2Int(gridPos.x + lastDirection.x, gridPos.y + lastDirection.y);
+                    if (gridController.IsValidCell(continueDir.x, continueDir.y))
+                    {
+                        // Add it a few times to increase probability
+                        possibleDirections.Add(continueDir);
+                        possibleDirections.Add(continueDir);
+                    }
+                }
+                
+                if (possibleDirections.Count > 0)
+                {
+                    // Randomly select a direction
+                    Vector2Int nextCell = possibleDirections[Random.Range(0, possibleDirections.Count)];
+                    Vector2Int directionVector = nextCell - gridPos;
+                    targetDirection = new Vector3(directionVector.x, 0, directionVector.y).normalized;
+                    lastDirection = directionVector;
+                }
+                else
+                {
+                    // Fallback: use flow field direction
+                    GridCell cell = gridController.GetCell(gridPos.x, gridPos.y);
+                    if (cell != null && cell.flowDirection != Vector2.zero)
+                    {
+                        targetDirection = new Vector3(cell.flowDirection.x, 0, cell.flowDirection.y);
+                    }
+                }
+            }
+            
+            // Add some randomness if specified
+            if (randomMovementFactor > 0)
+            {
+                Vector3 randomDir = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
+                targetDirection = Vector3.Lerp(targetDirection, randomDir, randomMovementFactor);
+            }
+            
+            // Apply movement
+            if (targetDirection != Vector3.zero)
+            {
+                Vector3 targetVelocity = targetDirection.normalized * moveSpeed;
+                MoveWithDirection(targetVelocity);
+            }
+        }
+        
+        private void MoveWithFlowField(Vector2Int gridPos)
+        {
+            // Use flow field to guide toward player base
+            GridCell cell = gridController.GetCell(gridPos.x, gridPos.y);
+            if (cell != null && cell.flowDirection != Vector2.zero)
+            {
+                Vector3 flowDirection = new Vector3(cell.flowDirection.x, 0, cell.flowDirection.y);
+                
+                // Apply movement using the flow direction
+                Vector3 targetVelocity = flowDirection * moveSpeed;
+                MoveWithDirection(targetVelocity);
+            }
+        }
+        
+        private void ReturnToEdge()
+        {
+            // Calculate direction toward target edge position
+            Vector3 currentPosition = transform.position;
+            Vector2Int gridPos = gridController.WorldToGridCoords(currentPosition);
+            Vector2Int direction = targetPosition - gridPos;
+            
+            if (direction.sqrMagnitude > 0)
+            {
+                // Normalize direction
+                float magnitude = Mathf.Sqrt(direction.x * direction.x + direction.y * direction.y);
+                Vector2 normalizedDir = new Vector2(direction.x / magnitude, direction.y / magnitude);
+                
+                // Apply movement toward edge
+                Vector3 moveDirection = new Vector3(normalizedDir.x, 0, normalizedDir.y);
+                Vector3 targetVelocity = moveDirection * moveSpeed;
+                MoveWithDirection(targetVelocity);
+            }
+            else
+            {
+                // Fallback: use inverted flow field
+                GridCell cell = gridController.GetCell(gridPos.x, gridPos.y);
+                if (cell != null && cell.flowDirection != Vector2.zero)
+                {
+                    // Invert the flow direction to head back to edges of map
+                    Vector3 reverseFlowDirection = new Vector3(-cell.flowDirection.x, 0, -cell.flowDirection.y);
+                    
+                    // Apply movement using the reversed flow direction
+                    Vector3 targetVelocity = reverseFlowDirection * moveSpeed;
+                    MoveWithDirection(targetVelocity);
+                }
+            }
+        }
+        
+        private void CheckIfReachedEdge()
+        {
+            // Get current grid position
+            Vector2Int gridPos = gridController.WorldToGridCoords(transform.position);
+            
+            // Check if we're at the edge of the map
+            int width = gridDataGenerator.GetGridWidth();
+            int height = gridDataGenerator.GetGridHeight();
+            
+            if (gridPos.x == 0 || gridPos.x == width - 1 || gridPos.y == 0 || gridPos.y == height - 1)
+            {
+                // We've reached an edge, destroy this ant
+                Destroy(gameObject);
+            }
+        }
+        
+        private void LayPheromones()
+        {
+            // Only lay pheromones when returning and at specified interval
+            if (Time.time - lastPheromoneTime < pheromoneLayInterval)
+                return;
+                
+            lastPheromoneTime = Time.time;
+            
+            Vector3 currentPosition = transform.position;
+            Vector2Int gridPos = gridController.WorldToGridCoords(currentPosition);
+            
+            if (!gridController.IsValidCell(gridPos.x, gridPos.y))
+                return;
+                
+            GridCell cell = gridController.GetCell(gridPos.x, gridPos.y);
+            if (cell != null)
+            {
+                // Increase pheromone level for this enemy type
+                cell.pheromones[enemyTypeIndex] += pheromoneStrength;
+                
+                // Notify the ant manager that pheromones were updated
+                antManager.OnPheromoneUpdated();
+            }
+        }
+        
+        private void MoveWithDirection(Vector3 targetVelocity)
+        {
+            // Check for instant movement mode (teleportation)
+            if (moveSpeed <= 0)
+            {
+                // For instant movement, teleport directly to next position
+                // Calculate a reasonable distance to move (use 1 unit as default step)
+                Vector3 newPosition = transform.position + (targetVelocity.normalized * 1f);
+                transform.position = newPosition;
+                return;
+            }
+            
+            // Apply movement smoothing for normal movement
+            Vector3 smoothedVelocity = Vector3.Lerp(currentVelocity, targetVelocity, 0.3f);
+            currentVelocity = smoothedVelocity;
+            
+            // Apply movement
+            transform.position += smoothedVelocity * Time.deltaTime;
+        }
+        
+        // Only used for debug visualization
+        private void OnDrawGizmos()
+        {
+            if (!Application.isPlaying || !visualizeAnt)
+                return;
+                
+            if (isReturning)
+                Gizmos.color = returningColor;
+            else if (isSnooping)
+                Gizmos.color = snoopingColor;
+            else
+                Gizmos.color = exploringColor;
+                
+            Gizmos.DrawWireSphere(transform.position, visualSize);
+            
+            // Draw line to target when returning
+            if (isReturning && gridController != null)
+            {
+                Vector3 targetWorld = gridController.GetCellCenterFromTexture(targetPosition.x, targetPosition.y);
+                Gizmos.DrawLine(transform.position, targetWorld);
+            }
+        }
+        
+        // Utility methods
+        public int GetStructuresDiscovered()
+        {
+            return discoveredStructures.Count;
+        }
+        
+        public int MaxStructuresToFind
+        {
+            get { return maxStructuresToFind; }
+        }
+    }
+}

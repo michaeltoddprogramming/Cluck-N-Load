@@ -18,6 +18,8 @@ public class AnimalStructure : Structure
     [SerializeField] private bool productionFinished;
     [SerializeField] private float productionProgress;
     [SerializeField] private AnimalProductionSettings productionSettings;
+    [SerializeField] private int animalCount = 5;
+    [SerializeField] private int maxAnimalCount = 10;
 
     [System.Serializable]
     public class AnimalProductionSettings
@@ -26,22 +28,34 @@ public class AnimalStructure : Structure
         public int productAmount = 1;
         public int moneyPerProduct = 10;
         public int baseFoodRequired = 2;
-        public float foodMultiplier = 1f;
+        // Removed foodMultiplier since we're not using synergies
     }
 
     private NightManager nightManager;
     private float lastCheckedHour;
 
+    // Public getters for UI and Barracks
     public bool IsProducing => isProducing;
     public bool ProductReady => productReady;
     public bool ProductionFinished => productionFinished;
     public float ProductionProgress => productionProgress;
     public AnimalProductionSettings ProductionSettings => productionSettings;
     public AnimalType GetAnimalType => animalType;
+    public int AnimalCount => animalCount;
+    public int MaxAnimalCount => maxAnimalCount;
 
     protected override void Start()
     {
         base.Start();
+
+        if (structureData != null && structureData.type != StructureType.Animal)
+        {
+            Debug.LogWarning($"{gameObject.name} has AnimalStructure script but StructureData.type is {structureData.type}, expected Animal.");
+        }
+
+        // Removed redundant check for StructureType.AnimalPlot since it's already checked above
+        // Make sure animalCount is initialized correctly
+            Debug.Log($"{GetStructureName()} initialized with {animalCount} {animalType}s");
         isProducing = false;
         productReady = false;
         productionFinished = false;
@@ -59,17 +73,12 @@ public class AnimalStructure : Structure
 
         lastCheckedHour = nightManager != null ? nightManager.Hours + (nightManager.Minutes / 60f) : 0f;
 
-        if (structureData != null && structureData.type != StructureType.AnimalPlot)
-        {
-            Debug.LogWarning($"{gameObject.name} has AnimalStructure script but StructureData.type is {structureData.type}, expected AnimalPlot.");
-        }
-
         if (nightManager != null)
         {
             nightManager.RegisterAnimalStructure(this);
         }
 
-        UpdateSynergies();
+        // Removed UpdateSynergies call
     }
 
     private void Update()
@@ -104,7 +113,7 @@ public class AnimalStructure : Structure
         if (!isProducing && !productReady)
         {
             string requiredFood = GetRequiredFood();
-            int foodRequired = Mathf.RoundToInt(productionSettings.baseFoodRequired * productionSettings.foodMultiplier);
+            int foodRequired = productionSettings.baseFoodRequired; // Removed foodMultiplier
 
             if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
             {
@@ -150,7 +159,7 @@ public class AnimalStructure : Structure
         {
             Debug.Log($"{GetStructureName()} is collecting {productionSettings.productAmount} products...");
 
-            int totalMoneyEarned = productionSettings.productAmount * productionSettings.moneyPerProduct;
+            int totalMoneyEarned = productionSettings.productAmount * productionSettings.moneyPerProduct; // Removed globalMoneyMultiplier
             Debug.Log($"Money calculation: productAmount={productionSettings.productAmount}, moneyPerProduct={productionSettings.moneyPerProduct}, totalMoneyEarned={totalMoneyEarned}");
 
             if (MoneyManager.Instance == null)
@@ -188,22 +197,29 @@ public class AnimalStructure : Structure
         }
     }
 
-    public void UpdateSynergies()
+    // Methods for Barracks recruitment
+    public bool CanRecruit(int amount)
     {
-        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
-        float minDistance = float.MaxValue;
-        foreach (SiloStructure silo in silos)
-        {
-            float distance = Vector3.Distance(transform.position, silo.transform.position);
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-            }
-        }
+        return animalCount >= amount;
+    }
 
-        float maxDistance = 10f;
-        productionSettings.foodMultiplier = minDistance <= maxDistance ? 0.5f : 1f;
-        Debug.Log($"{GetStructureName()} synergy updated: minDistance to silo={minDistance}, foodMultiplier={productionSettings.foodMultiplier}");
+    public void RecruitAnimals(int amount)
+    {
+        if (CanRecruit(amount))
+        {
+            animalCount -= amount;
+            Debug.Log($"{GetStructureName()} recruited {amount} {animalType}s. Remaining: {animalCount}");
+        }
+        else
+        {
+            Debug.LogWarning($"{GetStructureName()} does not have enough {animalType}s to recruit. Current count: {animalCount}");
+        }
+    }
+
+    public void AddAnimals(int amount)
+    {
+        animalCount = Mathf.Min(animalCount + amount, maxAnimalCount);
+        Debug.Log($"{GetStructureName()} added {amount} {animalType}s. New count: {animalCount}");
     }
 
     private void OnDestroy()
@@ -213,4 +229,6 @@ public class AnimalStructure : Structure
             nightManager.UnregisterAnimalStructure(this);
         }
     }
+
+    // Removed UpdateSynergies method
 }

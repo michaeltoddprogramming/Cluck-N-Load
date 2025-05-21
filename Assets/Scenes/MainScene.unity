@@ -5425,6 +5425,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 435ed4f4524278b4d9b1ad2ee2275030, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sunflowerText: {fileID: 1530185097}
+  wheatText: {fileID: 300701874}
+  carrotsText: {fileID: 476448273}
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

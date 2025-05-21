@@ -73,7 +73,6 @@ public class Structure : MonoBehaviour
         }
     }
     
-    // Changed from private to protected virtual to allow overriding in derived classes
     protected virtual void Start()
     {
         // Skip processing for ghost/preview structures
@@ -107,13 +106,12 @@ public class Structure : MonoBehaviour
         }
     }
 
-    // Add this public method
     public void SetAllowSelectionAndUI(bool allow)
     {
         allowSelectionAndUI = allow;
     }
     
-    private void OnDestroy()
+    protected virtual void OnDestroy() // Changed to protected virtual
     {
         // Ensure we unregister from grid if destroyed directly (without Die method)
         if (hasRegisteredWithGrid && gridController != null)
@@ -418,7 +416,6 @@ public class Structure : MonoBehaviour
     
     #region Selection and Interaction
     
-     
     public virtual void Select()
     {
         isSelected = true;

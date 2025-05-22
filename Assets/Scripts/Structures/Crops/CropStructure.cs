@@ -59,6 +59,7 @@ public class CropStructure : Structure
     [Header("Mechanic variations")]
     [Header("Base synergies (increase crop closer to silo)")]
     [SerializeField] private float cropHarvestMultiplier = 1.5f;
+    [SerializeField] private float cropHarvestMultiplierIncrease = 1.5f;
     [SerializeField] private float multiplierRange = 10f;
     [SerializeField] private float baseCropHarvestAmount = 10f;
 
@@ -298,7 +299,7 @@ public class CropStructure : Structure
 
 
         if (minGridDistance <= multiplierRange)
-            cropHarvestMultiplier = cropHarvestMultiplier; // or whatever bonus you want
+            cropHarvestMultiplier = cropHarvestMultiplierIncrease; // or whatever bonus you want
         else
             cropHarvestMultiplier = 1f;
         

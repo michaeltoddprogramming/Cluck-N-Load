@@ -66,6 +66,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c32de455d67fdf449a5c86954c0506ba, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3833600905869299639}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c32de455d67fdf449a5c86954c0506ba, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1375810243842186984}
   m_SourcePrefab: {fileID: 100100000, guid: c32de455d67fdf449a5c86954c0506ba, type: 3}
 --- !u!1 &264810465737084052 stripped
 GameObject:
@@ -108,3 +111,24 @@ MonoBehaviour:
   minMoveThreshold: 1
   directionPersistence: 0.05
   showGizmos: 0
+--- !u!114 &-1375810243842186984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264810465737084052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65f1e57da6ef4ea45a5182a8a0786265, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animalType: 3
+  moveSpeed: 3
+  rotationSpeed: 5
+  attackRange: 2
+  damage: 5
+  attackCooldown: 1.5
+  animator: {fileID: 0}
+  walkAnimParam: IsWalking
+  attackAnimParam: Attack

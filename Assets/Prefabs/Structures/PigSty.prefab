@@ -131,7 +131,7 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  animalType: 1
+  animalType: 4
   isProducing: 0
   productReady: 0
   productionProgress: 0

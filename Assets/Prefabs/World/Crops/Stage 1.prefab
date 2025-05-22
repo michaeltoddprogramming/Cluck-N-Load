@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4641979582885894355}
   - component: {fileID: 4554871598432187113}
   - component: {fileID: 1880614389312657986}
+  - component: {fileID: -430761819456143240}
   m_Layer: 0
   m_Name: Stage 1
   m_TagString: Untagged
@@ -110,3 +111,24 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-430761819456143240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2777186397944616743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65f1e57da6ef4ea45a5182a8a0786265, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animalType: 0
+  moveSpeed: 3
+  rotationSpeed: 5
+  attackRange: 2
+  damage: 5
+  attackCooldown: 1.5
+  animator: {fileID: 0}
+  walkAnimParam: IsWalking
+  attackAnimParam: Attack

@@ -65,7 +65,10 @@ PrefabInstance:
       addedObject: {fileID: 3389466667398691922}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c32de455d67fdf449a5c86954c0506ba, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3833600905869299639}
+      addedObject: {fileID: 4475212160096413424}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c32de455d67fdf449a5c86954c0506ba, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9135059483916690500}
   m_SourcePrefab: {fileID: 100100000, guid: c32de455d67fdf449a5c86954c0506ba, type: 3}
 --- !u!1 &264810465737084052 stripped
 GameObject:
@@ -85,7 +88,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _unitData: {fileID: 11400000, guid: 34ad9bf0aeee08f4d92f785c33c322e7, type: 2}
---- !u!114 &3833600905869299639
+--- !u!23 &4475212160096413424
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264810465737084052}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &9135059483916690500
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,17 +142,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 264810465737084052}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1a4419f4f379004c8c46ef467869ba5, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a07f7e750f9ad04d9abb04463b774d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
-  rotationSpeed: 15
+  rotationSpeed: 20
   stoppingDistance: 0.1
-  useInterpolation: 1
-  priorityPathThreshold: 0.3
-  maxPriorityPathValue: 0.7
-  flowFieldManager: {fileID: 0}
-  velocitySmoothTime: 0.8
-  minMoveThreshold: 1
-  directionPersistence: 0.05
+  followPheromones: 1
+  minPheromoneThreshold: 0.1
+  pheromoneTypeIndex: 0
+  pheromoneWeight: 2
+  flowFieldDesirabilityWithPheromones: 0.6
+  useFlowFieldInterpolation: 1
+  coneVisionAngle: 100
+  visionRange: 2
+  velocitySmoothTime: 0.5
+  minMoveThreshold: 0.01
+  directionPersistence: 0.1
+  obstacleAvoidanceWeight: 3.39
+  maxPathFindingAttempts: 5
   showGizmos: 0
+  showPheromoneDetection: 0
+  showObstacleAvoidance: 1

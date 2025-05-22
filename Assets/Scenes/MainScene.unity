@@ -5969,15 +5969,19 @@ MonoBehaviour:
   flowFieldInfluenceGrowthRate: 0.8
   maxSnoopingFlowFieldInfluence: 0.9
   pheromoneLayInterval: 0.2
-  basePheromoneStrength: 1
+  basePheromoneStrength: 2
   scalePheromonesByStructures: 1
   maxPheromoneStrength: 5
-  pheromoneSpreadRadius: 1
+  pheromoneSpreadRadius: 2
   pheromoneSpreadFactors:
   - 1
   - 0.5
   - 0.25
-  enablePheromoneVisualization: 0
+  enablePheromoneVisualization: 1
+  edgeDirectionWeight: 2
+  pheromoneAvoidanceWeight: 1.94
+  flowFieldAlignmentWeight: 1
+  returnPathRandomness: 0.784
   totalPheromonesLaid: 0
   averageStrength: 0
   highestStrength: 0

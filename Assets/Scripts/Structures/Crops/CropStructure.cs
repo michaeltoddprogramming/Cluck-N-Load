@@ -53,6 +53,9 @@ public class CropStructure : Structure
     public CropProductionSettings ProductionSettings => productionSettings;
     public float ProductionMultiplier => productionMultiplier;
     public CropType CurrentCropType => currentCropType;
+
+
+    //synergies
     [Header("Mechanic variations")]
     [Header("Base synergies (increase crop closer to silo)")]
     [SerializeField] private float cropHarvestMultiplier = 1.5f;
@@ -63,6 +66,7 @@ public class CropStructure : Structure
     protected override void Start()
     {
         base.Start();
+        UpdateSiloSynergy();
 
         if (productionSettings == null)
         {
@@ -139,7 +143,7 @@ public class CropStructure : Structure
     {
         if (cropReady)
         {
-            int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * productionMultiplier);
+            int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
 
             //check if silos have space to store the crops
             if (InventoryManager.Instance.canHarvest(totalCrops) == false)
@@ -249,15 +253,42 @@ public class CropStructure : Structure
     public void UpdateSiloSynergy()
     {
         SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
-        float minDistance = float.MaxValue;
+        float minGridDistance = float.MaxValue;
+
+        // Get the grid controller (assumes only one in scene)
+        GridController gridController = FindObjectOfType<GridController>();
+
+        if (gridController == null)
+        {
+            Debug.LogWarning("No GridController found for CropStructure synergy check.");
+            cropHarvestMultiplier = 1f;
+            return;
+        }
+
+        Vector2Int cropCell = gridController.WorldToGridCoords(transform.position);
 
         foreach (SiloStructure silo in silos)
         {
-            float distance = Vector3.Distance(transform.position, silo.transform.position);
+            // float distance = Vector3.Distance(transform.position, silo.transform.position);
 
-            if (distance < minDistance)
+            // if (distance < minDistance)
+            // {
+            //     minDistance = distance;
+            // }
+
+
+            // Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
+            // float gridDistance = Vector2Int.Distance(cropCell, siloCell);
+            // if (gridDistance < minGridDistance)
+            // {
+            //     minGridDistance = gridDistance;
+            // }
+
+            Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
+            float gridDistance = Vector2Int.Distance(cropCell, siloCell);
+            if (gridDistance < minGridDistance)
             {
-                minDistance = distance;
+                minGridDistance = gridDistance;
             }
         }
 
@@ -265,10 +296,17 @@ public class CropStructure : Structure
         // cropHarvestMultiplier = (minDistance <= multiplierRange) ? 1.5f : 1f;
 
 
-         if (minDistance <= multiplierRange)
+
+        if (minGridDistance <= multiplierRange)
             cropHarvestMultiplier = cropHarvestMultiplier; // or whatever bonus you want
         else
             cropHarvestMultiplier = 1f;
+        
+
+        //  if (minDistance <= multiplierRange)
+        //     cropHarvestMultiplier = cropHarvestMultiplier; // or whatever bonus you want
+        // else
+        //     cropHarvestMultiplier = 1f;
 
         // float maxDistance = 10f;
         // productionMultiplier = minDistance <= maxDistance ? 1.5f : 1f;
@@ -283,9 +321,15 @@ public class CropStructure : Structure
 
     public static void UpdateAllCropSynergies()
     {
-        foreach (var crop in FindObjectsOfType<CropStructure>())
+        // foreach (var crop in FindObjectsOfType<CropStructure>())
+        // {
+        //     crop.UpdateSiloSynergy();
+        // }
+
+        foreach (var crop in GameObject.FindObjectsOfType<CropStructure>())
         {
             crop.UpdateSiloSynergy();
+
         }
     }
 

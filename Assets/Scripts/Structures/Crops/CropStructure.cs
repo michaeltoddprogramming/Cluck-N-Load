@@ -63,6 +63,12 @@ public class CropStructure : Structure
     public int sunflowerTotal = 0;
     public int wheatTotal = 0;
     public int carrotTotal = 0;
+
+    [Header("Mechanic variations")]
+    [Header("Base synergies (increase crop closer to silo)")]
+    [SerializeField] private float cropHarvestMultiplier = 1f;
+    [SerializeField] private float multiplierRange = 10f;
+    [SerializeField] private float baseCropHarvestAmount = 10f;
     
 
     protected override void Start()
@@ -152,7 +158,9 @@ public class CropStructure : Structure
     {
         if (cropReady && isGrowing)
         {
-            int totalCrops = Mathf.RoundToInt(10);
+            int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * productionMultiplier);
+
+            // int totalCrops = Mathf.RoundToInt(10);
             Debug.Log($"{GetStructureName()} is harvesting {totalCrops} {currentCropType}...");
 
 
@@ -201,54 +209,42 @@ public class CropStructure : Structure
         // UpdateSynergies();
     }
 
-    // public void UpdateSynergies()
-    // {
-    //     SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
-    //     float minDistance = float.MaxValue;
-    //     foreach (SiloStructure silo in silos)
-    //     {
-    //         float distance = Vector3.Distance(transform.position, silo.transform.position);
-    //         if (distance < minDistance)
-    //         {
-    //             minDistance = distance;
-    //         }
-    //     }
+    public void UpdateSiloSynergy()
+    {
+        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
+        float minDistance = float.MaxValue;
 
-    //     float maxDistance = 10f;
-    //     productionMultiplier = minDistance <= maxDistance ? 1.5f : 1f;
-    //     Debug.Log($"{GetStructureName()} synergy updated: minDistance to silo={minDistance}, productionMultiplier={productionMultiplier}");
-    // }
+        foreach (SiloStructure silo in silos)
+        {
+            float distance = Vector3.Distance(transform.position, silo.transform.position);
 
-    // public void SpawnCropVisual(CropType cropType)
-    // {
-    //     // Destroy previous instance if any
-    //     if (currentCropInstance != null)
-    //     {
-    //         Destroy(currentCropInstance);
-    //     }
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+            }
+        }
 
-    //     GameObject prefabToSpawn = null;
+        // If within range, boost production
+        cropHarvestMultiplier = (minDistance <= multiplierRange) ? 1.5f : 1f;
 
-    //     switch (cropType)
-    //     {
-    //         case CropType.Sunflower:
-    //             prefabToSpawn = sunflowerPrefab;
-    //             break;
-    //         case CropType.Wheat:
-    //             prefabToSpawn = wheatPrefab;
-    //             break;
-    //         case CropType.Carrots:
-    //             prefabToSpawn = carrotsPrefab;
-    //             break;
-    //     }
+        // float maxDistance = 10f;
+        // productionMultiplier = minDistance <= maxDistance ? 1.5f : 1f;
+        // Debug.Log($"{GetStructureName()} synergy updated: minDistance to silo={minDistance}, productionMultiplier={productionMultiplier}");
+    }
 
-    //     if (prefabToSpawn != null)
-    //     {
-    //         currentCropInstance = Instantiate(prefabToSpawn, transform);
-    //         currentCropInstance.transform.localPosition = Vector3.zero;
-    //         Debug.Log("Crop was planted");
-    //     }
-    // }
+    public void OnPlaced()
+    {
+        // base.OnPlaced();
+        UpdateSiloSynergy();
+    }
+
+    public static void UpdateAllCropSynergies()
+    {
+        foreach (var crop in FindObjectsOfType<CropStructure>())
+        {
+            crop.UpdateSiloSynergy();
+        }
+    }
 
     private GameObject GetPrefabForStage(CropType cropType, int stage)
     {

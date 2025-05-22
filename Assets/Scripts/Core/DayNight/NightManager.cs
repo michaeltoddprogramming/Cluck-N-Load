@@ -28,7 +28,6 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Texture2D skyboxAfternoon;
     [SerializeField] private Texture2D skyboxNight;
 
-
     // Time indicator icons
     [SerializeField] private Image timeOfDayIcon;
     [SerializeField] private Sprite dayIcon;
@@ -113,6 +112,7 @@ public class NightManager : MonoBehaviour
 
     // Structures
     private List<AnimalStructure> animalStructures = new List<AnimalStructure>();
+    private List<BarracksStructure> barracksStructures = new List<BarracksStructure>();
     public CropStructure cropStructure; // Optional, for single crop plot
 
     private void Awake()
@@ -121,7 +121,7 @@ public class NightManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Persist across scenes
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -145,7 +145,7 @@ public class NightManager : MonoBehaviour
         }
     }
 
-    public void Update()
+    private void Update()
     {
         if (isPaused)
         {
@@ -178,7 +178,7 @@ public class NightManager : MonoBehaviour
     {
         isFast = !isFast;
         isPaused = false;
-        speedUp = isFast ? 5f : 1f; // Fast-forward: 1 day ≈ 2.4 minutes
+        speedUp = isFast ? 5f : 1f;
     }
 
     private void cropGrowthOnAll(int stage)
@@ -223,19 +223,33 @@ public class NightManager : MonoBehaviour
         RenderSettings.fogDensity = nightFog;
         timeOfDayIcon.sprite = nightIcon;
 
+        // Notify barracks of night
+        foreach (BarracksStructure barracks in barracksStructures)
+        {
+            if (barracks != null)
+            {
+                barracks.OnDayNightChanged(true);
+            }
+        }
     }
 
     private void StartDay(int flag)
     {
         // Notify animal structures
-        if (animalStructures != null)
+        foreach (AnimalStructure structure in animalStructures)
         {
-            foreach (AnimalStructure structure in animalStructures)
+            if (structure != null)
             {
-                if (structure != null)
-                {
-                    structure.OnNewDay();
-                }
+                structure.OnNewDay();
+            }
+        }
+
+        // Notify barracks of day
+        foreach (BarracksStructure barracks in barracksStructures)
+        {
+            if (barracks != null)
+            {
+                barracks.OnDayNightChanged(false);
             }
         }
 
@@ -254,7 +268,6 @@ public class NightManager : MonoBehaviour
         sceneLight.intensity = dayIntensity;
         RenderSettings.fogDensity = dayFog;
         timeOfDayIcon.sprite = dayIcon;
-
     }
 
     private IEnumerator LightingChanges(Gradient lightGradient, float time)
@@ -405,14 +418,32 @@ public class NightManager : MonoBehaviour
         if (structure != null && !animalStructures.Contains(structure))
         {
             animalStructures.Add(structure);
+            Debug.Log($"Registered animal structure: {structure.GetStructureName()}");
         }
     }
 
     public void UnregisterAnimalStructure(AnimalStructure structure)
     {
-        if (structure != null)
+        if (structure != null && animalStructures.Remove(structure))
         {
-            animalStructures.Remove(structure);
+            Debug.Log($"Unregistered animal structure: {structure.GetStructureName()}");
+        }
+    }
+
+    public void RegisterBarracksStructure(BarracksStructure barracks)
+    {
+        if (barracks != null && !barracksStructures.Contains(barracks))
+        {
+            barracksStructures.Add(barracks);
+            Debug.Log($"Registered barracks: {barracks.GetStructureName()}");
+        }
+    }
+
+    public void UnregisterBarracksStructure(BarracksStructure barracks)
+    {
+        if (barracks != null && barracksStructures.Remove(barracks))
+        {
+            Debug.Log($"Unregistered barracks: {barracks.GetStructureName()}");
         }
     }
 }

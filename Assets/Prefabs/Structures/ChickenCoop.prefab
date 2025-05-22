@@ -131,9 +131,13 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
+  animalType: 0
   isProducing: 0
   productReady: 0
   productionProgress: 0
-  productionSettings:
-    productionTime: 10
-    productAmount: 1
+  animalCount: 5
+  maxAnimalCount: 10
+  siloSynergyRange: 15
+  synergyFoodRequired: 0.8
+  normalFoodRequired: 1
+  foodMultiplier: 1

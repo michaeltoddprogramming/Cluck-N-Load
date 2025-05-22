@@ -22,21 +22,19 @@ public class AnimalStructure : Structure
 
     public class AnimalProductionSettings
     {
-        public float productionTime = 24f; // For UI progress
-        public int productAmount = 1; // Products per animal
+        public float productionTime = 24f;
+        public int productAmount = 1;
         public int moneyPerProduct = 10;
-        public int baseFoodRequired = 2; // Food per animal
-        public int costPerAnimal = 50; // Cost to buy one animal
+        public int baseFoodRequired = 2;
+        public int costPerAnimal = 50;
     }
 
     private NightManager nightManager;
     private float lastCheckedHour;
-    private string requiredFood; // Cached food type
+    private string requiredFood;
 
-    // Events
     public System.Action OnAnimalCountChanged;
 
-    // Public getters
     public bool IsProducing => isProducing;
     public bool ProductReady => productReady;
     public float ProductionProgress => productionProgress;
@@ -46,9 +44,21 @@ public class AnimalStructure : Structure
     public int MaxAnimalCount => maxAnimalCount;
     public string RequiredFood => requiredFood;
 
+    //synergies
+    [Header("Animal Settings")]
+    [SerializeField] private float siloSynergyRange = 15f; // blocks
+    [SerializeField] private float synergyFoodRequired = 0.8f; // food per animal when in range
+    [SerializeField] private float normalFoodRequired = 1f; // food per animal when not in range
+    [SerializeField] private float foodMultiplier = 1f; // food per animal when not in range
+
+
     protected override void Start()
     {
         base.Start();
+        updateSiloSynergy();
+
+        // Notify barracks to check for this coop
+        BarracksStructure.UpdateAllNearbyChickenCoops();
 
         if (structureData != null && structureData.type != StructureType.Animal)
         {
@@ -105,8 +115,9 @@ public class AnimalStructure : Structure
 
         if (!isProducing && !productReady && animalCount > 0)
         {
-            int foodRequired = productionSettings.baseFoodRequired * animalCount;
-
+            // int foodRequired = productionSettings.baseFoodRequired * animalCount * foodMultiplier;
+            // int foodRequired = Mathf.RoundToInt((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
+            int foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
             if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
             {
                 InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
@@ -246,6 +257,53 @@ public class AnimalStructure : Structure
         {
             nightManager.UnregisterAnimalStructure(this);
             Debug.Log($"{GetStructureName()} unregistered from NightManager");
+        }
+    }
+
+    //handles stuff for lees food if animals close to silo
+    public void updateSiloSynergy()
+    {
+        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
+        float minGridDistance = float.MaxValue;
+
+        // Get the grid controller (assumes only one in scene)
+        GridController gridController = FindObjectOfType<GridController>();
+
+        if (gridController == null)
+        {
+            Debug.LogWarning("No GridController found for AnimalStructure synergy check.");
+            foodMultiplier = normalFoodRequired;
+            return;
+        }
+
+        Vector2Int animalCell = gridController.WorldToGridCoords(transform.position);
+
+        foreach (SiloStructure silo in silos)
+        {
+            Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
+            float gridDistance = Vector2Int.Distance(animalCell, siloCell);
+
+            if (gridDistance < minGridDistance)
+            {
+                minGridDistance = gridDistance;
+            }
+        }
+
+        if (minGridDistance <= siloSynergyRange)
+        {
+            foodMultiplier = synergyFoodRequired;
+        }
+        else
+        {
+            foodMultiplier = normalFoodRequired;
+        }
+    }
+
+    public static void UpdateAllAnimalSynergies()
+    {
+        foreach (var animal in FindObjectsOfType<AnimalStructure>())
+        {
+            animal.updateSiloSynergy();
         }
     }
 }

@@ -58,7 +58,7 @@ public class CropStructure : Structure
     [SerializeField] private float cropHarvestMultiplier = 1f;
     [SerializeField] private float multiplierRange = 10f;
     [SerializeField] private float baseCropHarvestAmount = 10f;
-    
+
 
     protected override void Start()
     {
@@ -233,6 +233,9 @@ public class CropStructure : Structure
         else
         {
             Debug.LogWarning($"No prefab found for {cropType} stage {growthStage} on {GetStructureName()}");
+        }
+    }
+
     public void UpdateSiloSynergy()
     {
         SiloStructure[] silos = FindObjectsOfType<SiloStructure>();

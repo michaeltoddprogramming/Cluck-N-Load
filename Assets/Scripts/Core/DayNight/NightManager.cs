@@ -28,9 +28,6 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Texture2D skyboxAfternoon;
     [SerializeField] private Texture2D skyboxNight;
 
-    // Animals
-    [SerializeField] private WolfMovement wolfMovement;
-    [SerializeField] private ChickenMovement chicken;
 
     // Time indicator icons
     [SerializeField] private Image timeOfDayIcon;
@@ -226,8 +223,6 @@ public class NightManager : MonoBehaviour
         RenderSettings.fogDensity = nightFog;
         timeOfDayIcon.sprite = nightIcon;
 
-        wolfMovement.SpawnAndMoveWolf();
-        chicken.SpawnAndMove();
     }
 
     private void StartDay(int flag)
@@ -260,8 +255,6 @@ public class NightManager : MonoBehaviour
         RenderSettings.fogDensity = dayFog;
         timeOfDayIcon.sprite = dayIcon;
 
-        wolfMovement.despawn();
-        chicken.despawn();
     }
 
     private IEnumerator LightingChanges(Gradient lightGradient, float time)

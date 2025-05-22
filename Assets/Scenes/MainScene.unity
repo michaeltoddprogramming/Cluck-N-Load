@@ -5952,10 +5952,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66cae6086a21c5f4f86f6510e5255e97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAnts: 10
+  maxAnts: 20
   minStructuresPerAnt: 3
-  baseFlowFieldDesirability: 0.2
+  baseFlowFieldDesirability: 0.3
   antSpeed: 0
+  antLifetime: 60
   visualizeAnts: 1
   showDiscoveredStructures: 1
   discoveredStructureColor: {r: 0, g: 1, b: 1, a: 1}
@@ -5965,13 +5966,13 @@ MonoBehaviour:
   spawnDistanceFromEdge: 2
   showStructureDebug: 0
   timeBeforeFlowFieldIncrease: 5
-  flowFieldInfluenceGrowthRate: 0.2
-  maxSnoopingFlowFieldInfluence: 1
+  flowFieldInfluenceGrowthRate: 0.8
+  maxSnoopingFlowFieldInfluence: 0.9
   pheromoneLayInterval: 0.2
   basePheromoneStrength: 1
   scalePheromonesByStructures: 1
   maxPheromoneStrength: 5
-  pheromoneSpreadRadius: 2
+  pheromoneSpreadRadius: 1
   pheromoneSpreadFactors:
   - 1
   - 0.5

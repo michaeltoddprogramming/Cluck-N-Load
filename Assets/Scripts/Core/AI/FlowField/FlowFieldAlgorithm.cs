@@ -68,13 +68,28 @@ namespace FarmDefender.Core.AI.FlowField
             // 3. Dijkstra propagation with obstacle avoidance
             CalculateIntegrationField(queue, gridData);
             
-            // 4. Identify cells near obstacles for priority paths
+            // 4. Check for unreachable cells (target enclosure detection)
+            bool hasUnreachableCells = HasUnreachableCells(gridData);
+            
+            // If target is enclosed, generate a secondary flow field targeting the enclosure
+            if (hasUnreachableCells)
+            {
+                HashSet<Vector2Int> borderObstacles = FindEnclosureBoundaryObstacles(gridData);
+                
+                // Only proceed if we found boundary obstacles
+                if (borderObstacles.Count > 0)
+                {
+                    GenerateSecondaryFlowField(gridData, borderObstacles);
+                }
+            }
+            
+            // 5. Identify cells near obstacles for priority paths (original functionality)
             Dictionary<Vector2Int, float> obstaclePriorities = IdentifyObstaclePriorityAreas(gridData);
             
-            // 5. Compute enhanced flow directions
+            // 6. Compute enhanced flow directions
             HashSet<Vector2Int> priorityStreamCells = CalculateFlowDirections(gridData, goal, obstaclePriorities);
             
-            // 6. Process stream influence between priority paths and regular cells
+            // 7. Process stream influence between priority paths and regular cells
             if (priorityStreamCells.Count > 0)
             {
                 ProcessStreamInfluence(gridData, priorityStreamCells);
@@ -390,6 +405,132 @@ namespace FarmDefender.Core.AI.FlowField
             }
             
             return neighbors;
+        }
+        
+        // Check if there are any unreachable cells in the grid
+        private bool HasUnreachableCells(GridDataGenerator gridData)
+        {
+            int gridWidth = gridData.GetGridWidth();
+            int gridHeight = gridData.GetGridHeight();
+            
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int y = 0; y < gridHeight; y++)
+                {
+                    GridCell cell = gridData.GetCell(x, y);
+                    if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied && 
+                        cell.integrationCost == int.MaxValue)
+                    {
+                        return true; // Found at least one unreachable cell
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // Find obstacles that border unreachable areas
+        private HashSet<Vector2Int> FindEnclosureBoundaryObstacles(GridDataGenerator gridData)
+        {
+            HashSet<Vector2Int> boundaryObstacles = new HashSet<Vector2Int>();
+            int gridWidth = gridData.GetGridWidth();
+            int gridHeight = gridData.GetGridHeight();
+            
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int y = 0; y < gridHeight; y++)
+                {
+                    // Skip non-obstacles
+                    GridCell cell = gridData.GetCell(x, y);
+                    if (cell == null || (!cell.flags.isObstacle && !cell.flags.isOccupied))
+                        continue;
+                    
+                    // Check if this obstacle has any unreachable neighbor
+                    bool isBoundary = false;
+                    foreach (var neighborInfo in GetNeighborsWithCost(cell, gridData))
+                    {
+                        GridCell neighbor = neighborInfo.cell;
+                        if (neighbor != null && !neighbor.flags.isObstacle && !neighbor.flags.isOccupied && 
+                            neighbor.integrationCost == int.MaxValue)
+                        {
+                            // This obstacle borders an unreachable area
+                            isBoundary = true;
+                            break;
+                        }
+                    }
+                    
+                    if (isBoundary)
+                    {
+                        boundaryObstacles.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+            
+            return boundaryObstacles;
+        }
+        
+        // Generate a secondary flow field with enclosure obstacles as targets
+        private void GenerateSecondaryFlowField(GridDataGenerator gridData, HashSet<Vector2Int> boundaryObstacles)
+        {
+            int gridWidth = gridData.GetGridWidth();
+            int gridHeight = gridData.GetGridHeight();
+            
+            // Use a temporary dictionary to track our secondary integration costs
+            Dictionary<Vector2Int, int> secondaryCosts = new Dictionary<Vector2Int, int>();
+            
+            // Initialize queue with boundary obstacles as sources
+            Queue<Vector2Int> queue = new Queue<Vector2Int>();
+            foreach (var obstacle in boundaryObstacles)
+            {
+                secondaryCosts[obstacle] = 0;
+                queue.Enqueue(obstacle);
+            }
+            
+            // Dijkstra algorithm spreading from boundary obstacles
+            while (queue.Count > 0)
+            {
+                Vector2Int current = queue.Dequeue();
+                int currentCost = secondaryCosts[current];
+                
+                // Get neighbors
+                GridCell currentCell = gridData.GetCell(current.x, current.y);
+                if (currentCell == null) continue;
+                
+                foreach (var neighborInfo in GetNeighborsWithCost(currentCell, gridData))
+                {
+                    GridCell neighbor = neighborInfo.cell;
+                    if (neighbor == null) continue;
+                    
+                    Vector2Int neighborPos = new Vector2Int(neighbor.x, neighbor.y);
+                    
+                    // Skip obstacles (except the starting boundary ones)
+                    if ((neighbor.flags.isObstacle || neighbor.flags.isOccupied) && 
+                        !boundaryObstacles.Contains(neighborPos))
+                        continue;
+                    
+                    int newCost = currentCost + Mathf.RoundToInt(neighborInfo.cost);
+                    
+                    // Check if this is a better path
+                    if (!secondaryCosts.ContainsKey(neighborPos) || newCost < secondaryCosts[neighborPos])
+                    {
+                        secondaryCosts[neighborPos] = newCost;
+                        queue.Enqueue(neighborPos);
+                        
+                        // Only update flow direction for unreachable cells
+                        if (neighbor.integrationCost == int.MaxValue)
+                        {
+                            // Calculate flow direction toward the boundary obstacles
+                            Vector2 direction = new Vector2(current.x - neighbor.x, current.y - neighbor.y);
+                            if (direction.magnitude > 0)
+                            {
+                                direction.Normalize();
+                                neighbor.flowDirection = direction;
+                                neighbor.integrationCost = 1000000 + newCost; // Set a large but finite cost
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

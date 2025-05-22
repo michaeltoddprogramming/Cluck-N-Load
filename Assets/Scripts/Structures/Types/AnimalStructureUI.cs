@@ -6,13 +6,14 @@ public class AnimalStructureUI : BaseStructureUI
 {
     [SerializeField] private Button feedButton;
     [SerializeField] private Button collectButton;
+    [SerializeField] private Button buyOneAnimalButton;
+    [SerializeField] private Button buyFiveAnimalsButton;
     [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private Slider progressBar;
 
     private AnimalStructure animalStructure;
     private bool isAnimalStructure = false;
     private NightManager nightManager;
-    
 
     public override void Initialize(Structure structure)
     {
@@ -22,12 +23,14 @@ public class AnimalStructureUI : BaseStructureUI
         if (isAnimalStructure)
         {
             animalStructure = (AnimalStructure)structure;
+            animalStructure.OnAnimalCountChanged += UpdateUI;
+            Debug.Log($"{structure.GetStructureName()} AnimalStructureUI: Subscribed to OnAnimalCountChanged");
         }
 
-        nightManager = FindObjectOfType<NightManager>();
+        nightManager = NightManager.Instance ?? FindObjectOfType<NightManager>();
         if (nightManager == null)
         {
-            Debug.LogError("NightManager not found in the scene! AnimalStructureUI requires NightManager to function.");
+            Debug.LogError($"{structure.GetStructureName()} AnimalStructureUI: NightManager not found!");
         }
 
         if (!isAnimalStructure)
@@ -37,8 +40,12 @@ public class AnimalStructureUI : BaseStructureUI
             return;
         }
 
+        SetupButtonListeners();
         UpdateUI();
+    }
 
+    private void SetupButtonListeners()
+    {
         if (feedButton != null)
         {
             feedButton.onClick.RemoveAllListeners();
@@ -50,8 +57,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Feed button is not assigned in the AnimalStructureUI prefab!");
-            if (feedButton != null) feedButton.gameObject.SetActive(false);
+            Debug.LogWarning("Feed button not assigned in AnimalStructureUI prefab!");
         }
 
         if (collectButton != null)
@@ -65,8 +71,35 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Collect button is not assigned in the AnimalStructureUI prefab!");
-            if (collectButton != null) collectButton.gameObject.SetActive(false);
+            Debug.LogWarning("Collect button not assigned in AnimalStructureUI prefab!");
+        }
+
+        if (buyOneAnimalButton != null)
+        {
+            buyOneAnimalButton.onClick.RemoveAllListeners();
+            buyOneAnimalButton.onClick.AddListener(() =>
+            {
+                animalStructure.BuyAnimals(1);
+                UpdateUI();
+            });
+        }
+        else
+        {
+            Debug.LogWarning("Buy One Animal button not assigned in AnimalStructureUI prefab!");
+        }
+
+        if (buyFiveAnimalsButton != null)
+        {
+            buyFiveAnimalsButton.onClick.RemoveAllListeners();
+            buyFiveAnimalsButton.onClick.AddListener(() =>
+            {
+                animalStructure.BuyAnimals(5);
+                UpdateUI();
+            });
+        }
+        else
+        {
+            Debug.LogWarning("Buy Five Animals button not assigned in AnimalStructureUI prefab!");
         }
     }
 
@@ -83,74 +116,70 @@ public class AnimalStructureUI : BaseStructureUI
     {
         if (!isAnimalStructure || animalStructure == null || nightManager == null)
         {
+            HideAnimalSpecificUI();
             return;
         }
 
         bool isProducing = animalStructure.IsProducing;
         bool productReady = animalStructure.ProductReady;
-        bool productionFinished = animalStructure.ProductionFinished;
-
-        // Include animal type in the structure name
+        int animalCount = animalStructure.AnimalCount;
+        int maxAnimalCount = animalStructure.MaxAnimalCount;
+        bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0;
+        bool canCollect = productReady && nightManager.IsDay;
+        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount;
         string structureName = $"{animalStructure.GetAnimalType} Structure";
 
+        // Update buttons (BarracksStyle)
         if (feedButton != null)
-            feedButton.gameObject.SetActive(!isProducing && !productReady && !productionFinished);
+        {
+            feedButton.interactable = canFeed;
+            UpdateButtonVisual(feedButton, canFeed, "Feed");
+        }
 
         if (collectButton != null)
-            collectButton.gameObject.SetActive(productReady);
+        {
+            collectButton.interactable = canCollect;
+            UpdateButtonVisual(collectButton, canCollect, "Collect");
+        }
 
+        if (buyOneAnimalButton != null)
+        {
+            buyOneAnimalButton.interactable = canBuy;
+            UpdateButtonVisual(buyOneAnimalButton, canBuy, "Buy 1");
+        }
+
+        if (buyFiveAnimalsButton != null)
+        {
+            buyFiveAnimalsButton.interactable = canBuy;
+            UpdateButtonVisual(buyFiveAnimalsButton, canBuy, "Buy 5");
+        }
+
+        // Update status text
         if (statusText != null)
         {
+            string animalStatus = $"{structureName}: {animalCount}/{maxAnimalCount} {animalStructure.GetAnimalType}s";
             if (productReady)
             {
-                statusText.text = $"{structureName}: Ready to collect!";
-                statusText.color = Color.green;
-
-                if (progressBar != null)
-                    progressBar.gameObject.SetActive(false);
-            }
-            else if (productionFinished)
-            {
-                float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
-                float hoursUntilNextDay = currentHour >= 5f ? (24f - currentHour + 5f) : (5f - currentHour);
-                int wholeHours = Mathf.FloorToInt(hoursUntilNextDay);
-                int minutes = Mathf.CeilToInt((hoursUntilNextDay - wholeHours) * 60f);
-                if (minutes == 60)
-                {
-                    wholeHours += 1;
-                    minutes = 0;
-                }
-
-                statusText.text = $"{structureName}: Waiting for new day (Done at 05:00, {wholeHours}h {minutes}m)";
-                statusText.color = Color.yellow;
-
-                if (progressBar != null)
-                {
-                    progressBar.gameObject.SetActive(true);
-                    progressBar.maxValue = animalStructure.ProductionSettings.productionTime;
-                    progressBar.value = animalStructure.ProductionSettings.productionTime;
-                }
+                statusText.text = $"{animalStatus}, Ready to collect!";
+                statusText.color = nightManager.IsDay ? Color.green : Color.yellow;
+                if (progressBar != null) progressBar.gameObject.SetActive(false);
             }
             else if (isProducing)
             {
                 float progress = animalStructure.ProductionProgress;
                 float totalTime = animalStructure.ProductionSettings.productionTime;
-
                 float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
                 float remainingHours = totalTime - progress;
                 float completionHour = (currentHour + remainingHours) % 24f;
                 int completionHourInt = Mathf.FloorToInt(completionHour);
                 int completionMinuteInt = Mathf.CeilToInt((completionHour - completionHourInt) * 60f);
-
                 if (completionMinuteInt == 60)
                 {
                     completionHourInt = (completionHourInt + 1) % 24;
                     completionMinuteInt = 0;
                 }
-
-                statusText.text = $"{structureName}: Producing... (Finishes at {completionHourInt:D2}:{completionMinuteInt:D2})";
+                statusText.text = $"{animalStatus}, Producing... (Ready at 05:00)";
                 statusText.color = Color.yellow;
-
                 if (progressBar != null)
                 {
                     progressBar.gameObject.SetActive(true);
@@ -160,24 +189,125 @@ public class AnimalStructureUI : BaseStructureUI
             }
             else
             {
-                statusText.text = $"{structureName}: Needs feeding";
-                statusText.color = Color.white;
-
-                if (progressBar != null)
-                    progressBar.gameObject.SetActive(false);
+                statusText.text = animalCount > 0 ? $"{animalStatus}, Needs feeding" : $"{animalStatus}, No animals!";
+                statusText.color = animalCount > 0 ? (nightManager.IsDay ? Color.white : Color.red) : Color.red;
+                if (progressBar != null) progressBar.gameObject.SetActive(false);
             }
         }
     }
 
+    private void UpdateButtonVisual(Button button, bool isInteractable, string action)
+    {
+        TextMeshProUGUI buttonText = button.GetComponentInChildren<TextMeshProUGUI>();
+        if (buttonText != null)
+        {
+            if (isInteractable)
+            {
+                buttonText.text = action;
+            }
+            else
+            {
+                string reason;
+                if (action == "Feed")
+                {
+                    if (nightManager != null && !nightManager.IsDay)
+                        reason = "Only During Day";
+                    else if (animalStructure != null && animalStructure.IsProducing)
+                        reason = "Already Fed";
+                    else if (animalStructure != null && animalStructure.ProductReady)
+                        reason = "Collect First";
+                    else if (animalStructure != null && animalStructure.AnimalCount <= 0)
+                        reason = "No Animals";
+                    else if (animalStructure != null && InventoryManager.Instance != null)
+                    {
+                        string requiredFood = animalStructure.RequiredFood;
+                        int requiredAmount = animalStructure.ProductionSettings.baseFoodRequired * animalStructure.AnimalCount;
+                        if (!InventoryManager.Instance.HasItem(requiredFood, requiredAmount))
+                            reason = $"Need {requiredAmount} {requiredFood}";
+                        else
+                            reason = "Unavailable";
+                    }
+                    else
+                        reason = "Unavailable";
+                    buttonText.text = $"{action}\n<size=9>({reason})</size>";
+                }
+                else if (action == "Collect")
+                {
+                    if (nightManager != null && !nightManager.IsDay)
+                        reason = "Only During Day";
+                    else if (animalStructure != null && !animalStructure.ProductReady)
+                        reason = "Not Ready";
+                    else
+                        reason = "Unavailable";
+                    buttonText.text = $"{action}\n<size=9>({reason})</size>";
+                }
+                else if (action.StartsWith("Buy"))
+                {
+                    if (nightManager != null && !nightManager.IsDay)
+                        reason = "Only During Day";
+                    else if (animalStructure != null && animalStructure.AnimalCount >= animalStructure.MaxAnimalCount)
+                        reason = "Max Animals";
+                    else if (animalStructure != null && MoneyManager.Instance != null)
+                    {
+                        int amount = action == "Buy 1" ? 1 : 5;
+                        int totalCost = amount * animalStructure.ProductionSettings.costPerAnimal;
+                        if (!MoneyManager.Instance.CanAfford(totalCost))
+                            reason = $"Need {totalCost} Gold";
+                        else
+                            reason = "Unavailable";
+                    }
+                    else
+                        reason = "Unavailable";
+                    buttonText.text = $"{action}\n<size=9>({reason})</size>";
+                }
+                else
+                {
+                    buttonText.text = $"{action}\n<size=9>(Unavailable)</size>";
+                }
+            }
+        }
+
+        ColorBlock colors = button.colors;
+        colors.normalColor = isInteractable ? Color.white : new Color(0.7f, 0.7f, 0.7f);
+        colors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.5f);
+        button.colors = colors;
+    }
+
     private void HideAnimalSpecificUI()
     {
-        if (feedButton != null) feedButton.gameObject.SetActive(false);
-        if (collectButton != null) collectButton.gameObject.SetActive(false);
+        if (feedButton != null)
+        {
+            feedButton.interactable = false;
+            UpdateButtonVisual(feedButton, false, "Feed");
+        }
+        if (collectButton != null)
+        {
+            collectButton.interactable = false;
+            UpdateButtonVisual(collectButton, false, "Collect");
+        }
+        if (buyOneAnimalButton != null)
+        {
+            buyOneAnimalButton.interactable = false;
+            UpdateButtonVisual(buyOneAnimalButton, false, "Buy 1");
+        }
+        if (buyFiveAnimalsButton != null)
+        {
+            buyFiveAnimalsButton.interactable = false;
+            UpdateButtonVisual(buyFiveAnimalsButton, false, "Buy 5");
+        }
         if (progressBar != null) progressBar.gameObject.SetActive(false);
         if (statusText != null)
         {
             statusText.text = "Not an animal structure";
             statusText.color = Color.red;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (isAnimalStructure && animalStructure != null)
+        {
+            animalStructure.OnAnimalCountChanged -= UpdateUI;
         }
     }
 }

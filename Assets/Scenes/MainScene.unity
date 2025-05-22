@@ -149,12 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3bf8f7d7184f5242a7d1b29597c7886, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chickenPrefab: {fileID: 3837066348099546182, guid: b93f116607f60244a9aa3986596b864c, type: 3}
-  spawnHeight: 0.35
-  speed: 10
-  rotation: 30
-  targetPos: {x: 0, y: 0, z: 0}
-  wolf: {fileID: 843724223}
 --- !u!82 &28559153
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2791,10 +2785,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ec004fdef7f2d743ba9be00dc95aadf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wolfPrefab: {fileID: 264810465737084052, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}
-  spawnHeight: 0.25
-  speed: 10
-  chicken: {fileID: 28559152}
 --- !u!82 &843724224
 AudioSource:
   m_ObjectHideFlags: 0
@@ -4105,7 +4095,7 @@ MonoBehaviour:
   maxZoom: 65
   fixedPitch: 0
   cursor: {fileID: 1632256037}
-  devCamera: 0
+  devCamera: 1
 --- !u!1 &1309907073
 GameObject:
   m_ObjectHideFlags: 0
@@ -5279,8 +5269,6 @@ MonoBehaviour:
   skyboxDay: {fileID: 2800000, guid: 0a08e110b5185334f8652754a6cf06e5, type: 3}
   skyboxAfternoon: {fileID: 2800000, guid: 846cce7d90ad21b4b80fcb937193081e, type: 3}
   skyboxNight: {fileID: 2800000, guid: 2b91b373461220c469a6e92e28aff6f5, type: 3}
-  wolfMovement: {fileID: 843724223}
-  chicken: {fileID: 28559152}
   timeOfDayIcon: {fileID: 439653491}
   dayIcon: {fileID: 21300000, guid: aa569479ed0578a41b5531a0fd5c5afa, type: 3}
   nightIcon: {fileID: 21300000, guid: 17e76cb4ea164da46b202d95baf46863, type: 3}
@@ -5431,6 +5419,9 @@ MonoBehaviour:
   sunflowerText: {fileID: 1530185097}
   wheatText: {fileID: 300701874}
   carrotsText: {fileID: 476448273}
+  totalPerSilo: 100
+  totalCapacity: 0
+  currCapacity: 0
 --- !u!1 &1683679575
 GameObject:
   m_ObjectHideFlags: 0

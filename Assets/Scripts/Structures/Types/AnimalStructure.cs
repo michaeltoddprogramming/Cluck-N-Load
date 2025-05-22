@@ -15,34 +15,36 @@ public class AnimalStructure : Structure
     [SerializeField] private AnimalType animalType;
     [SerializeField] private bool isProducing;
     [SerializeField] private bool productReady;
-    [SerializeField] private bool productionFinished;
     [SerializeField] private float productionProgress;
     [SerializeField] private AnimalProductionSettings productionSettings;
     [SerializeField] private int animalCount = 5;
     [SerializeField] private int maxAnimalCount = 10;
 
-    [System.Serializable]
     public class AnimalProductionSettings
     {
-        public float productionTime = 24f;
-        public int productAmount = 1;
+        public float productionTime = 24f; // For UI progress
+        public int productAmount = 1; // Products per animal
         public int moneyPerProduct = 10;
-        public int baseFoodRequired = 2;
-        // Removed foodMultiplier since we're not using synergies
+        public int baseFoodRequired = 2; // Food per animal
+        public int costPerAnimal = 50; // Cost to buy one animal
     }
 
     private NightManager nightManager;
     private float lastCheckedHour;
+    private string requiredFood; // Cached food type
 
-    // Public getters for UI and Barracks
+    // Events
+    public System.Action OnAnimalCountChanged;
+
+    // Public getters
     public bool IsProducing => isProducing;
     public bool ProductReady => productReady;
-    public bool ProductionFinished => productionFinished;
     public float ProductionProgress => productionProgress;
     public AnimalProductionSettings ProductionSettings => productionSettings;
     public AnimalType GetAnimalType => animalType;
     public int AnimalCount => animalCount;
     public int MaxAnimalCount => maxAnimalCount;
+    public string RequiredFood => requiredFood;
 
     protected override void Start()
     {
@@ -53,84 +55,74 @@ public class AnimalStructure : Structure
             Debug.LogWarning($"{gameObject.name} has AnimalStructure script but StructureData.type is {structureData.type}, expected Animal.");
         }
 
-        // Removed redundant check for StructureType.AnimalPlot since it's already checked above
-        // Make sure animalCount is initialized correctly
-            Debug.Log($"{GetStructureName()} initialized with {animalCount} {animalType}s");
         isProducing = false;
         productReady = false;
-        productionFinished = false;
         productionProgress = 0f;
         if (productionSettings == null)
         {
             productionSettings = new AnimalProductionSettings();
         }
 
-        nightManager = FindObjectOfType<NightManager>();
+        nightManager = NightManager.Instance ?? FindObjectOfType<NightManager>();
         if (nightManager == null)
         {
-            Debug.LogError("NightManager not found in the scene! AnimalStructure requires NightManager to function.");
+            Debug.LogError($"{GetStructureName()} cannot find NightManager!");
         }
 
-        lastCheckedHour = nightManager != null ? nightManager.Hours + (nightManager.Minutes / 60f) : 0f;
+        lastCheckedHour = nightManager != null ? nightManager.Hours + (nightManager.Minutes / 60f) : 7f;
+        requiredFood = GetRequiredFood();
+        Debug.Log($"{GetStructureName()} initialized with {animalCount}/{maxAnimalCount} {animalType}s, requiredFood={requiredFood}, lastCheckedHour={lastCheckedHour}");
 
         if (nightManager != null)
         {
             nightManager.RegisterAnimalStructure(this);
         }
-
-        // Removed UpdateSynergies call
     }
 
     private void Update()
     {
-        if (nightManager == null || !isProducing || productReady || productionFinished) return;
+        if (nightManager == null || !isProducing || productReady) return;
 
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
-        float hourDelta;
-        if (currentHour < lastCheckedHour)
-        {
-            hourDelta = (24f - lastCheckedHour) + currentHour;
-        }
-        else
-        {
-            hourDelta = currentHour - lastCheckedHour;
-        }
-
+        float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;
         productionProgress += hourDelta;
         lastCheckedHour = currentHour;
 
         if (productionProgress >= productionSettings.productionTime)
         {
-            productionFinished = true;
-            isProducing = false;
             productionProgress = productionSettings.productionTime;
-            Debug.Log($"{GetStructureName()} has finished producing, waiting for the next day to make products available.");
+            Debug.Log($"{GetStructureName()} production progress complete, awaiting new day (05:00).");
         }
     }
 
     public void Feed()
     {
-        if (!isProducing && !productReady)
+        if (nightManager == null || !nightManager.IsDay)
         {
-            string requiredFood = GetRequiredFood();
-            int foodRequired = productionSettings.baseFoodRequired; // Removed foodMultiplier
+            Debug.LogWarning($"{GetStructureName()} cannot feed: Feeding only allowed during the day!");
+            return;
+        }
+
+        if (!isProducing && !productReady && animalCount > 0)
+        {
+            int foodRequired = productionSettings.baseFoodRequired * animalCount;
 
             if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
             {
                 InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
-                Debug.Log($"{GetStructureName()} is being fed... (Used {foodRequired} {requiredFood})");
                 isProducing = true;
-                productionFinished = false;
                 productionProgress = 0f;
-                if (nightManager != null)
-                {
-                    lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
-                }
+                lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                Debug.Log($"{GetStructureName()} fed with {foodRequired} {requiredFood} for {animalCount} {animalType}s.");
             }
             else
             {
-                Debug.LogWarning($"{GetStructureName()} cannot be fed: Not enough {requiredFood} (need {foodRequired})!");
+                Debug.LogWarning($"{GetStructureName()} cannot feed: Need {foodRequired} {requiredFood}.");
             }
+        }
+        else
+        {
+            Debug.LogWarning($"{GetStructureName()} cannot feed: Producing={isProducing}, ProductReady={productReady}, Animals={animalCount}.");
         }
     }
 
@@ -138,66 +130,89 @@ public class AnimalStructure : Structure
     {
         switch (animalType)
         {
-            case AnimalType.Chicken:
-                return "Sunflower";
-            case AnimalType.Cow:
-                return "Wheat";
+            case AnimalType.Chicken: return "Sunflower";
+            case AnimalType.Cow: return "Wheat";
             case AnimalType.Sheep:
             case AnimalType.Goat:
-            case AnimalType.Pig:
-                return "Carrots";
-            default:
-                return "Unknown";
+            case AnimalType.Pig: return "Carrots";
+            default: return "Unknown";
         }
     }
 
     public void Collect()
     {
-        Debug.Log($"{GetStructureName()} Collect called: productReady={productReady}, isProducing={isProducing}, productionFinished={productionFinished}");
-
-        if (productReady)
+        if (!productReady || nightManager == null || !nightManager.IsDay)
         {
-            Debug.Log($"{GetStructureName()} is collecting {productionSettings.productAmount} products...");
+            Debug.LogWarning($"{GetStructureName()} cannot collect: ProductReady={productReady}, IsDay={nightManager?.IsDay}.");
+            return;
+        }
 
-            int totalMoneyEarned = productionSettings.productAmount * productionSettings.moneyPerProduct; // Removed globalMoneyMultiplier
-            Debug.Log($"Money calculation: productAmount={productionSettings.productAmount}, moneyPerProduct={productionSettings.moneyPerProduct}, totalMoneyEarned={totalMoneyEarned}");
+        int totalProducts = productionSettings.productAmount * animalCount;
+        int totalMoneyEarned = totalProducts * productionSettings.moneyPerProduct;
+        Debug.Log($"{GetStructureName()} collecting {totalProducts} products from {animalCount} {animalType}s, earning {totalMoneyEarned} gold.");
 
-            if (MoneyManager.Instance == null)
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.AddMoney(totalMoneyEarned);
+        }
+        else
+        {
+            Debug.LogError($"{GetStructureName()} cannot add money: MoneyManager not found!");
+        }
+
+        productReady = false;
+        isProducing = false;
+        productionProgress = 0f;
+        lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+    }
+
+    public void BuyAnimals(int amount)
+    {
+        if (nightManager == null || !nightManager.IsDay)
+        {
+            Debug.LogWarning($"{GetStructureName()} cannot buy animals: Buying only allowed during the day!");
+            return;
+        }
+
+        if (animalCount >= maxAnimalCount)
+        {
+            Debug.LogWarning($"{GetStructureName()} cannot buy animals: Max animal count reached ({animalCount}/{maxAnimalCount}).");
+            return;
+        }
+
+        int availableSlots = maxAnimalCount - animalCount;
+        int animalsToBuy = Mathf.Min(amount, availableSlots);
+        int totalCost = animalsToBuy * productionSettings.costPerAnimal;
+
+        if (MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(totalCost))
+        {
+            if (MoneyManager.Instance.SpendMoney(totalCost))
             {
-                Debug.LogError("MoneyManager not found in the scene!");
+                AddAnimals(animalsToBuy);
+                Debug.Log($"{GetStructureName()} bought {animalsToBuy} {animalType}s for {totalCost} gold. Now: {animalCount}/{maxAnimalCount}.");
             }
             else
             {
-                MoneyManager.Instance.AddMoney(totalMoneyEarned);
-                Debug.Log($"Earned {totalMoneyEarned} {MoneyManager.Instance.GetCurrencyName()} from collecting {productionSettings.productAmount} products!");
-            }
-
-            productReady = false;
-            isProducing = false;
-            productionFinished = false;
-            productionProgress = 0f;
-            if (nightManager != null)
-            {
-                lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                Debug.LogWarning($"{GetStructureName()} cannot buy {animalsToBuy} {animalType}s: SpendMoney failed.");
             }
         }
         else
         {
-            Debug.LogWarning($"{GetStructureName()} cannot collect: productReady is false!");
+            Debug.LogWarning($"{GetStructureName()} cannot buy {animalsToBuy} {animalType}s: Need {totalCost} gold.");
         }
     }
 
     public void OnNewDay()
     {
-        if (productionFinished && !productReady)
+        if (isProducing && animalCount > 0)
         {
             productReady = true;
-            productionFinished = false;
-            Debug.Log($"{GetStructureName()} products are now available to collect at the start of a new day!");
+            isProducing = false;
+            productionProgress = productionSettings.productionTime;
+            Debug.Log($"{GetStructureName()} products ready to collect at 05:00 for {animalCount} {animalType}s.");
         }
     }
 
-    // Methods for Barracks recruitment
     public bool CanRecruit(int amount)
     {
         return animalCount >= amount;
@@ -208,27 +223,29 @@ public class AnimalStructure : Structure
         if (CanRecruit(amount))
         {
             animalCount -= amount;
-            Debug.Log($"{GetStructureName()} recruited {amount} {animalType}s. Remaining: {animalCount}");
+            Debug.Log($"{GetStructureName()} recruited {amount} {animalType}s. Remaining: {animalCount}/{maxAnimalCount}");
+            OnAnimalCountChanged?.Invoke();
         }
         else
         {
-            Debug.LogWarning($"{GetStructureName()} does not have enough {animalType}s to recruit. Current count: {animalCount}");
+            Debug.LogWarning($"{GetStructureName()} cannot recruit: Need {amount}, have {animalCount} {animalType}s.");
         }
     }
 
     public void AddAnimals(int amount)
     {
         animalCount = Mathf.Min(animalCount + amount, maxAnimalCount);
-        Debug.Log($"{GetStructureName()} added {amount} {animalType}s. New count: {animalCount}");
+        Debug.Log($"{GetStructureName()} added {amount} {animalType}s. Now: {animalCount}/{maxAnimalCount}");
+        OnAnimalCountChanged?.Invoke();
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         if (nightManager != null)
         {
             nightManager.UnregisterAnimalStructure(this);
+            Debug.Log($"{GetStructureName()} unregistered from NightManager");
         }
     }
-
-    // Removed UpdateSynergies method
 }

@@ -22,21 +22,19 @@ public class AnimalStructure : Structure
 
     public class AnimalProductionSettings
     {
-        public float productionTime = 24f; // For UI progress
-        public int productAmount = 1; // Products per animal
+        public float productionTime = 24f;
+        public int productAmount = 1;
         public int moneyPerProduct = 10;
-        public int baseFoodRequired = 2; // Food per animal
-        public int costPerAnimal = 50; // Cost to buy one animal
+        public int baseFoodRequired = 2;
+        public int costPerAnimal = 50;
     }
 
     private NightManager nightManager;
     private float lastCheckedHour;
-    private string requiredFood; // Cached food type
+    private string requiredFood;
 
-    // Events
     public System.Action OnAnimalCountChanged;
 
-    // Public getters
     public bool IsProducing => isProducing;
     public bool ProductReady => productReady;
     public float ProductionProgress => productionProgress;
@@ -49,6 +47,9 @@ public class AnimalStructure : Structure
     protected override void Start()
     {
         base.Start();
+
+        // Notify barracks to check for this coop
+        BarracksStructure.UpdateAllNearbyChickenCoops();
 
         if (structureData != null && structureData.type != StructureType.Animal)
         {

@@ -134,9 +134,10 @@ MonoBehaviour:
   animalType: 1
   isProducing: 0
   productReady: 0
-  productionFinished: 0
   productionProgress: 0
-  productionSettings:
-    productionTime: 24
-    productAmount: 10
-    moneyPerProduct: 20
+  animalCount: 5
+  maxAnimalCount: 10
+  siloSynergyRange: 15
+  synergyFoodRequired: 0.8
+  normalFoodRequired: 1
+  foodMultiplier: 1

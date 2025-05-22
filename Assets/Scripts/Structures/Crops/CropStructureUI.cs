@@ -12,6 +12,7 @@ public class CropStructureUI : BaseStructureUI
     [SerializeField] private GameObject selectCropPanel;
     [SerializeField] private GameObject plantingClose;
     [SerializeField] private TextMeshProUGUI cropStatusText;
+    [SerializeField] private TextMeshProUGUI notificationText;
 
     [Header("Dependencies")]
     [SerializeField] private NightManager nightManager;
@@ -21,6 +22,9 @@ public class CropStructureUI : BaseStructureUI
 
     public override void Initialize(Structure structure)
     {
+        //make notification invisible
+        notificationText.gameObject.SetActive(false);
+
         base.Initialize(structure);
 
         isCropStructure = structure is CropStructure;
@@ -192,7 +196,35 @@ public class CropStructureUI : BaseStructureUI
         if (isCropStructure && cropStructure != null)
         {
             Debug.Log($"Attempting to harvest {cropStructure.CurrentCropType} on {cropStructure.GetStructureName()}");
-            cropStructure.Harvest();
+            string answer = cropStructure.Harvest();
+
+            switch (answer)
+            {
+                case "space":
+                    Debug.Log("Harvest unsuccessful there is no space in silo");
+                    notificationText.gameObject.SetActive(true);
+                    notificationText.color = Color.red;
+                    notificationText.text = "Harvest unsuccessful: No space in silo";
+                    break;
+                case "yes":
+                    Debug.Log("Harvest successful");
+                    notificationText.gameObject.SetActive(true);
+                    notificationText.color = Color.green;
+                    notificationText.text = "Harvest successful";
+                    break;
+                case "ready":
+                    Debug.Log("Harvest successful: crop not ready");
+                    notificationText.gameObject.SetActive(true);
+                    notificationText.color = Color.red;
+                    notificationText.text = "Harvest unsuccessful: Crop not ready";
+                    break;
+                default:
+                    Debug.LogWarning($"Unexpected response from harvest: {answer}");
+                    notificationText.gameObject.SetActive(true);
+                    notificationText.color = Color.red;
+                    notificationText.text = "Harvest unsuccessful: not sure why";
+                    break;
+            }
             UpdateUI();
         }
         else

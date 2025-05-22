@@ -55,7 +55,7 @@ public class CropStructure : Structure
     public CropType CurrentCropType => currentCropType;
     [Header("Mechanic variations")]
     [Header("Base synergies (increase crop closer to silo)")]
-    [SerializeField] private float cropHarvestMultiplier = 1f;
+    [SerializeField] private float cropHarvestMultiplier = 1.5f;
     [SerializeField] private float multiplierRange = 10f;
     [SerializeField] private float baseCropHarvestAmount = 10f;
 
@@ -135,11 +135,18 @@ public class CropStructure : Structure
         }
     }
 
-    public void Harvest()
+    public string Harvest()
     {
         if (cropReady)
         {
             int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * productionMultiplier);
+
+            //check if silos have space to store the crops
+            if (InventoryManager.Instance.canHarvest(totalCrops) == false)
+            {
+                Debug.LogWarning($"{GetStructureName()} cannot harvest: Not enough space in inventory.");
+                return "space";
+            }
 
             // int totalCrops = Mathf.RoundToInt(10);
             Debug.Log($"{GetStructureName()} is harvesting {totalCrops} {currentCropType}...");
@@ -172,10 +179,13 @@ public class CropStructure : Structure
             growthProgress = 0f;
 
             DestroyCrop();
+
+            return "yes";
         }
         else
         {
             Debug.LogWarning($"{GetStructureName()} cannot harvest: Crop is not ready.");
+            return "ready";
         }
     }
 
@@ -252,7 +262,13 @@ public class CropStructure : Structure
         }
 
         // If within range, boost production
-        cropHarvestMultiplier = (minDistance <= multiplierRange) ? 1.5f : 1f;
+        // cropHarvestMultiplier = (minDistance <= multiplierRange) ? 1.5f : 1f;
+
+
+         if (minDistance <= multiplierRange)
+            cropHarvestMultiplier = cropHarvestMultiplier; // or whatever bonus you want
+        else
+            cropHarvestMultiplier = 1f;
 
         // float maxDistance = 10f;
         // productionMultiplier = minDistance <= maxDistance ? 1.5f : 1f;

@@ -132,6 +132,7 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI carrotsText;
     [SerializeField] public int totalPerSilo = 100;
     [SerializeField] public int totalCapacity = 0;
+    [SerializeField] public int currCapacity = 0;
     private List<SiloStructure> silos = new List<SiloStructure>();
 
 
@@ -167,6 +168,7 @@ public class InventoryManager : MonoBehaviour
     {
         // Update total capacity based on the number of silos
         totalCapacity = GetTotalSiloCapacity();
+        currCapacity = GetCurrentSiloCapacity();
         // Debug.Log($"Total Capacity: {totalCapacity}");
         // Debug.Log($"Total Silo Count: {silos.Count}");
 
@@ -292,5 +294,25 @@ public class InventoryManager : MonoBehaviour
     {
         totalCapacity = silos.Count * totalPerSilo;
         return totalCapacity;
+    }
+
+    public int GetCurrentSiloCapacity()
+    {
+        currCapacity = inventory["Sunflower"] + inventory["Wheat"] + inventory["Carrots"];
+        return currCapacity;
+    }
+
+    public bool canHarvest(int harvestAmount)
+    {
+        if (currCapacity < totalCapacity && currCapacity + harvestAmount <= totalCapacity)
+        {
+            Debug.Log("Can harvest: Silo has enough capacity.");
+            return true;
+        }
+        else
+        {
+            Debug.Log("Cannot harvest: Silo is full.");
+            return false;
+        }
     }
 }

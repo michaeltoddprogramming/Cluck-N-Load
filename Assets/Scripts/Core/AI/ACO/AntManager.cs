@@ -13,6 +13,8 @@ namespace FarmDefender.Core.AI.ACO
         [SerializeField] private float baseFlowFieldDesirability = 0.2f;
         [Tooltip("Set to 0 for instant algorithm execution")]
         [SerializeField] private float antSpeed = 8f;
+        [Tooltip("How long ants stay alive before expiring (seconds)")]
+        [SerializeField] private float antLifetime = 30f;
         
         [Header("Visualization")]
         [Tooltip("Enable to visualize ant movement (for debugging)")]
@@ -37,6 +39,21 @@ namespace FarmDefender.Core.AI.ACO
         [Tooltip("Maximum flow field influence during snooping")]
         [SerializeField] private float maxSnoopingFlowFieldInfluence = 0.6f;
         
+        [Header("Pheromone Settings")]
+        [SerializeField] private float pheromoneLayInterval = 0.2f;
+        [SerializeField] private float basePheromoneStrength = 1f;
+        [SerializeField] private bool scalePheromonesByStructures = true;
+        [SerializeField] private float maxPheromoneStrength = 5f;
+        [SerializeField] private int pheromoneSpreadRadius = 1;
+        [SerializeField] private float[] pheromoneSpreadFactors = new float[] { 1.0f, 0.5f, 0.25f }; // Center, adjacent, diagonal
+        [SerializeField] private bool enablePheromoneVisualization = true; // Flag to enable/disable visualization
+
+        [Header("Pheromone Statistics")]
+        [SerializeField] private int totalPheromonesLaid = 0;
+        [SerializeField] private float averageStrength = 0f;
+        [SerializeField] private float highestStrength = 0f;
+        [SerializeField] private int cellsWithPheromones = 0;
+
         // Structure tracking collections
         private HashSet<Vector2Int> allPlayerStructures = new HashSet<Vector2Int>();
         private HashSet<Vector2Int> remainingStructuresToFind = new HashSet<Vector2Int>();
@@ -55,7 +72,6 @@ namespace FarmDefender.Core.AI.ACO
         private float updateInterval = 0.1f; // How often to update the virtual ants
         private float timeSinceLastUpdate = 0f;
         private float structureSearchRadius = 2f;
-        private float pheromoneLayInterval = 0.2f;
         private float pheromoneStrength = 1f;
         private int defaultEnemyTypeIndex = 0; // 0=regular, 1=fast, 2=strong
         private float randomMovementFactor = 0.3f;
@@ -83,6 +99,8 @@ namespace FarmDefender.Core.AI.ACO
             
             // Initial scan for structures
             UpdatePlayerStructures();
+            
+            SetupPheromoneVisualizer();
         }
         
         private void OnDestroy()
@@ -134,14 +152,7 @@ namespace FarmDefender.Core.AI.ACO
                 Debug.Log("ACO algorithm triggered with Shift+P");
             }
             
-            // Update virtual ants based on time interval
-            timeSinceLastUpdate += Time.deltaTime;
-            
-            if (timeSinceLastUpdate >= updateInterval && virtualAnts.Count > 0)
-            {
-                UpdateVirtualAnts();
-                timeSinceLastUpdate = 0f;
-            }
+            // Remove regular ant update logic - we only use the fast algorithm now
         }
         
         // Method to scan for all player structures in the world
@@ -179,51 +190,16 @@ namespace FarmDefender.Core.AI.ACO
             }
         }
         
-        private void UpdateVirtualAnts()
-        {
-            // Process each virtual ant
-            for (int i = virtualAnts.Count - 1; i >= 0; i--)
-            {
-                VirtualAnt ant = virtualAnts[i];
-                
-                // Update lifetime
-                ant.lifetime -= updateInterval;
-                
-                // If lifetime is expired, remove the ant
-                if (ant.lifetime <= 0)
-                {
-                    virtualAnts.RemoveAt(i);
-                    continue;
-                }
-                
-                // Check if we need to start returning
-                CheckReturnConditions(ant);
-                
-                // Different behavior based on state
-                if (ant.isReturning)
-                {
-                    ReturnToEdge(ant);
-                    LayPheromones(ant);
-                    
-                    // Check if reached edge
-                    if (IsAtEdge(ant.position))
-                    {
-                        virtualAnts.RemoveAt(i);
-                    }
-                }
-                else
-                {
-                    UpdateExplorationBehavior(ant);
-                }
-            }
-        }
-        
         private void CheckReturnConditions(VirtualAnt ant)
         {
             // Only return if we've found our minimum number of structures
             // or there are no more structures to find
             bool minimumStructuresFound = ant.discoveredStructures.Count >= minStructuresPerAnt;
-            bool noMoreStructures = remainingStructuresToFind.Count == 0;
+            
+            // Only consider global completion if ALL structures are actually discovered
+            // Don't just rely on remainingStructuresToFind.Count == 0
+            bool allStructuresFound = discoveredStructures.Count >= allPlayerStructures.Count;
+            bool noMoreStructures = remainingStructuresToFind.Count == 0 && allStructuresFound;
             
             if (!ant.isReturning && (minimumStructuresFound || noMoreStructures))
             {
@@ -234,7 +210,7 @@ namespace FarmDefender.Core.AI.ACO
                 {
                     string reason = minimumStructuresFound ? 
                         $"found minimum required structures ({ant.discoveredStructures.Count})" : 
-                        "no more structures to find";
+                        "all structures found";
                     
                     Debug.Log($"Ant returning: {reason}. Structures found: {ant.discoveredStructures.Count}");
                 }
@@ -255,8 +231,8 @@ namespace FarmDefender.Core.AI.ACO
             }
             
             // Return if we're out of lifetime
-            float initialLifetime = 30f; // Assuming default lifetime
-            if (!ant.isReturning && ant.lifetime < initialLifetime * 0.3f)
+            float initialLifetime = antLifetime; // Assuming default lifetime
+            if (!ant.isReturning && ant.lifetime < antLifetime * 0.3f)
             {
                 ant.isReturning = true;
                 DetermineReturnTarget(ant);
@@ -780,12 +756,129 @@ namespace FarmDefender.Core.AI.ACO
             if (!gridController.IsValidCell(ant.position.x, ant.position.y))
                 return;
                 
-            GridCell cell = gridController.GetCell(ant.position.x, ant.position.y);
-            if (cell != null)
+            // Calculate pheromone strength based on structures found
+            float strength = basePheromoneStrength;
+            
+            // Scale pheromone strength based on how many structures the ant found
+            if (scalePheromonesByStructures && ant.discoveredStructures.Count > 0)
             {
-                // Increase pheromone level for this enemy type
-                cell.pheromones[defaultEnemyTypeIndex] += pheromoneStrength;
+                // More structures = stronger pheromone trail
+                strength = Mathf.Min(
+                    basePheromoneStrength * (1f + ant.discoveredStructures.Count * 0.5f), 
+                    maxPheromoneStrength
+                );
             }
+            
+            // Optimization: Skip diffusion for weak pheromones
+            int effectiveRadius = strength > 2f ? pheromoneSpreadRadius : 
+                                  strength > 1f ? Mathf.Min(1, pheromoneSpreadRadius) : 0;
+            
+            // Apply pheromones with diffusion to the grid
+            ApplyPheromonesWithDiffusion(ant.position, strength, defaultEnemyTypeIndex, effectiveRadius);
+        }
+
+        private void ApplyPheromonesWithDiffusion(Vector2Int center, float strength, int enemyType, int radius)
+        {
+            // Apply to center cell at full strength
+            GridCell centerCell = gridController.GetCell(center.x, center.y);
+            if (centerCell != null)
+            {
+                centerCell.pheromones[enemyType] += strength * pheromoneSpreadFactors[0];
+            }
+            
+            // Skip diffusion if radius is 0
+            if (radius <= 0)
+            {
+                // Just update statistics
+                totalPheromonesLaid++;
+                averageStrength = ((averageStrength * (totalPheromonesLaid - 1)) + strength) / totalPheromonesLaid;
+                highestStrength = Mathf.Max(highestStrength, strength);
+                return;
+            }
+            
+            // Optimization: Pre-compute factor array indices to avoid bounds checking in loop
+            int maxDistFactor = pheromoneSpreadFactors.Length - 1;
+            
+            // Apply to neighboring cells with diminishing strength
+            for (int x = -radius; x <= radius; x++)
+            {
+                for (int y = -radius; y <= radius; y++)
+                {
+                    // Skip center cell (already processed)
+                    if (x == 0 && y == 0)
+                        continue;
+                        
+                    Vector2Int neighborPos = new Vector2Int(center.x + x, center.y + y);
+                    if (!gridController.IsValidCell(neighborPos.x, neighborPos.y))
+                        continue;
+                        
+                    GridCell neighborCell = gridController.GetCell(neighborPos.x, neighborPos.y);
+                    if (neighborCell == null)
+                        continue;
+                        
+                    // Calculate distance factor (adjacent or diagonal)
+                    int distFactor = (Mathf.Abs(x) + Mathf.Abs(y) == 1) ? 1 : 2;  // 1 for adjacent, 2 for diagonal
+                    
+                    // Apply pheromone with reduced strength based on distance
+                    if (distFactor <= maxDistFactor)
+                    {
+                        neighborCell.pheromones[enemyType] += strength * pheromoneSpreadFactors[distFactor];
+                    }
+                }
+            }
+            
+            // Update statistics less frequently to improve performance
+            totalPheromonesLaid++;
+            if (totalPheromonesLaid % 10 == 0) // Only update averages every 10 pheromones
+            {
+                averageStrength = ((averageStrength * (totalPheromonesLaid - 1)) + strength) / totalPheromonesLaid;
+                highestStrength = Mathf.Max(highestStrength, strength);
+            }
+            
+            // Count cells with pheromones very infrequently to avoid performance hit
+            if (totalPheromonesLaid % 500 == 0)
+            {
+                CountCellsWithPheromones();
+            }
+        }
+
+        private void CountCellsWithPheromones()
+        {
+            // Use sampling instead of checking every cell
+            int width = gridDataGenerator.GetGridWidth();
+            int height = gridDataGenerator.GetGridHeight();
+            int count = 0;
+            int samplesPerAxis = 10; // Sample only 10 cells per axis
+            
+            int xStep = Mathf.Max(1, width / samplesPerAxis);
+            int yStep = Mathf.Max(1, height / samplesPerAxis);
+            
+            for (int x = 0; x < width; x += xStep)
+            {
+                for (int y = 0; y < height; y += yStep)
+                {
+                    GridCell cell = gridController.GetCell(x, y);
+                    if (cell != null)
+                    {
+                        bool hasPheromone = false;
+                        for (int i = 0; i < cell.pheromones.Length; i++)
+                        {
+                            if (cell.pheromones[i] > 0.1f)
+                            {
+                                hasPheromone = true;
+                                break;
+                            }
+                        }
+                        
+                        if (hasPheromone)
+                            count++;
+                    }
+                }
+            }
+            
+            // Estimate total based on sampling ratio
+            float samplingRatio = (float)(samplesPerAxis * samplesPerAxis) / (width * height);
+            cellsWithPheromones = Mathf.RoundToInt(count / samplingRatio);
         }
         
         // Count all player structures in the world
@@ -818,7 +911,7 @@ namespace FarmDefender.Core.AI.ACO
             Vector2Int spawnPos = GetRandomEdgeCellPosition();
             
             // Create a new virtual ant
-            VirtualAnt ant = new VirtualAnt(spawnPos, 30f); // 30 seconds lifetime
+            VirtualAnt ant = new VirtualAnt(spawnPos, antLifetime); // 30 seconds lifetime
             virtualAnts.Add(ant);
         }
         
@@ -862,6 +955,12 @@ namespace FarmDefender.Core.AI.ACO
             discoveredStructures.Clear();
             hasCountedStructures = false;
             
+            // Reset statistics
+            totalPheromonesLaid = 0;
+            averageStrength = 0f;
+            highestStrength = 0f;
+            cellsWithPheromones = 0;
+            
             // Update player structures
             UpdatePlayerStructures();
             
@@ -880,21 +979,38 @@ namespace FarmDefender.Core.AI.ACO
             Debug.Log($"ACO algorithm spawned {antsToSpawn} virtual ants to explore the map");
             Debug.Log($"Structures to find: {remainingStructuresToFind.Count}");
             
-            // If speed is set to 0, run fast algorithm via coroutine instead of instant
-            if (antSpeed <= 0)
-            {
-                StartCoroutine(RunFastAlgorithm());
-            }
+            // Always use the fast algorithm
+            StartCoroutine(RunFastAlgorithm());
         }
         
-        // Coroutine for "instant" algorithm that doesn't freeze Unity
+        // Optimized RunFastAlgorithm coroutine
 private IEnumerator RunFastAlgorithm()
 {
     Debug.Log("Running ACO algorithm in fast mode");
     
-    // Process ants in batches to prevent freezing
-    int batchSize = 100; // Process 100 ant updates per frame
+    // Temporarily disable pheromone visualization during execution
+    PheromoneVisualizer[] visualizers = FindObjectsOfType<PheromoneVisualizer>();
+    bool wasVisualizationEnabled = enablePheromoneVisualization;
+    
+    if (wasVisualizationEnabled)
+    {
+        foreach (var viz in visualizers)
+        {
+            viz.enabled = false;
+        }
+    }
+    
+    // Optimization: Larger batch size for faster processing
+    int batchSize = 250;
     int antUpdatesThisFrame = 0;
+    
+    // Optimization: Larger time steps for faster simulation
+    float fastTimeStep = 0.25f;
+    
+    // Cache counts for progress tracking
+    int totalAnts = virtualAnts.Count;
+    int completedAnts = 0;
+    float startTime = Time.realtimeSinceStartup;
     
     // Keep running until all ants are done
     while (virtualAnts.Count > 0)
@@ -903,18 +1019,18 @@ private IEnumerator RunFastAlgorithm()
         for (int i = virtualAnts.Count - 1; i >= 0; i--)
         {
             if (i >= virtualAnts.Count) 
-                continue; // Safety check in case ants were removed
+                continue; // Safety check
                 
             VirtualAnt ant = virtualAnts[i];
             
             // Update lifetime
-            ant.lifetime -= 0.1f; // Use a larger time step for faster completion
+            ant.lifetime -= fastTimeStep;
             
             // If lifetime is expired, remove the ant
             if (ant.lifetime <= 0)
             {
-                if (i < virtualAnts.Count)
-                    virtualAnts.RemoveAt(i);
+                virtualAnts.RemoveAt(i);
+                completedAnts++;
                 continue;
             }
             
@@ -924,14 +1040,19 @@ private IEnumerator RunFastAlgorithm()
             // Different behavior based on state
             if (ant.isReturning)
             {
-                ReturnToEdge(ant);
-                LayPheromones(ant);
-                
-                // Check if reached edge
-                if (IsAtEdge(ant.position))
+                // Optimization: Process multiple steps at once for returning ants
+                for (int step = 0; step < 3; step++) // Process 3 steps at once
                 {
-                    if (i < virtualAnts.Count)
+                    ReturnToEdge(ant);
+                    LayPheromones(ant);
+                    
+                    // Check if reached edge
+                    if (IsAtEdge(ant.position))
+                    {
                         virtualAnts.RemoveAt(i);
+                        completedAnts++;
+                        break;
+                    }
                 }
             }
             else
@@ -954,7 +1075,26 @@ private IEnumerator RunFastAlgorithm()
         yield return null;
     }
     
-    Debug.Log($"ACO algorithm completed in fast mode. Found {discoveredStructures.Count} structures.");
+    // Re-enable visualizers if they were enabled before
+    if (wasVisualizationEnabled)
+    {
+        foreach (var viz in visualizers)
+        {
+            viz.enabled = true;
+        }
+    }
+    
+    float endTime = Time.realtimeSinceStartup;
+    
+    Debug.Log($"ACO algorithm completed in {(endTime - startTime):F2} seconds. " +
+              $"Found {discoveredStructures.Count}/{allPlayerStructures.Count} structures. " +
+              $"Laid {totalPheromonesLaid} pheromones.");
+              
+    // Final update to visualize pheromones
+    if (enablePheromoneVisualization && visualizers.Length > 0)
+    {
+        visualizers[0].ForceUpdate();
+    }
 }
         
         // Public accessor for discovered structures
@@ -1038,5 +1178,80 @@ private IEnumerator RunFastAlgorithm()
                 }
             }
         }
+
+        // Add to your AntManager's Start method
+private void SetupPheromoneVisualizer()
+{
+    // Check if visualization should be enabled
+    PheromoneVisualizer existingVisualizer = FindObjectOfType<PheromoneVisualizer>();
+
+    if (!enablePheromoneVisualization)
+    {
+        // Find and disable any existing visualizer
+        if (existingVisualizer != null)
+        {
+            existingVisualizer.gameObject.SetActive(false);
+        }
+        return;
+    }
+    
+    // Check if a visualizer already exists
+    if (existingVisualizer != null)
+    {
+        existingVisualizer.gameObject.SetActive(true);
+        return;
+    }
+    
+    // Create a new game object for the visualizer
+    GameObject visualizerObject = new GameObject("PheromoneVisualizer");
+    visualizerObject.transform.position = new Vector3(0, 0.05f, 0);
+    
+    // Add a quad mesh
+    MeshFilter meshFilter = visualizerObject.AddComponent<MeshFilter>();
+    meshFilter.mesh = CreateQuadMesh();
+    
+    // Add mesh renderer
+    visualizerObject.AddComponent<MeshRenderer>();
+    
+    // Add the visualizer component
+    PheromoneVisualizer visualizer = visualizerObject.AddComponent<PheromoneVisualizer>();
+}
+
+private Mesh CreateQuadMesh()
+{
+    Mesh mesh = new Mesh();
+    
+    // Define vertices (simple quad)
+    Vector3[] vertices = new Vector3[4]
+    {
+        new Vector3(-0.5f, 0, -0.5f), // Bottom left
+        new Vector3(0.5f, 0, -0.5f),  // Bottom right
+        new Vector3(-0.5f, 0, 0.5f),  // Top left
+        new Vector3(0.5f, 0, 0.5f)    // Top right
+    };
+    
+    // Define UVs
+    Vector2[] uv = new Vector2[4]
+    {
+        new Vector2(0, 0),
+        new Vector2(1, 0),
+        new Vector2(0, 1),
+        new Vector2(1, 1)
+    };
+    
+    // Define triangles
+    int[] triangles = new int[6]
+    {
+        0, 2, 1, // First triangle
+        2, 3, 1  // Second triangle
+    };
+    
+    // Apply to mesh
+    mesh.vertices = vertices;
+    mesh.uv = uv;
+    mesh.triangles = triangles;
+    
+    return mesh;
+}
     }
 }

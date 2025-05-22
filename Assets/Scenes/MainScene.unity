@@ -5963,10 +5963,24 @@ MonoBehaviour:
   returningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   snoopingColor: {r: 1, g: 0, b: 1, a: 1}
   spawnDistanceFromEdge: 2
-  showStructureDebug: 1
+  showStructureDebug: 0
   timeBeforeFlowFieldIncrease: 5
-  flowFieldInfluenceGrowthRate: 0.5
+  flowFieldInfluenceGrowthRate: 0.2
   maxSnoopingFlowFieldInfluence: 1
+  pheromoneLayInterval: 0.2
+  basePheromoneStrength: 1
+  scalePheromonesByStructures: 1
+  maxPheromoneStrength: 5
+  pheromoneSpreadRadius: 2
+  pheromoneSpreadFactors:
+  - 1
+  - 0.5
+  - 0.25
+  enablePheromoneVisualization: 0
+  totalPheromonesLaid: 0
+  averageStrength: 0
+  highestStrength: 0
+  cellsWithPheromones: 0
 --- !u!1 &1847462729
 GameObject:
   m_ObjectHideFlags: 0

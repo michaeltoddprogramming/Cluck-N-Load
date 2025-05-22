@@ -853,7 +853,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 256, y: 0}
+  m_AnchoredPosition: {x: -1, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &300701874
@@ -1226,6 +1226,7 @@ MonoBehaviour:
   defaultStructureUI: {fileID: 3724273108228962489, guid: e95c011b60e029342bde1aaa6911b03c, type: 3}
   uiOffset: 2
   screenOffset: {x: 0, y: 20}
+  uiSize: 1.5
 --- !u!4 &369685984
 Transform:
   m_ObjectHideFlags: 0
@@ -1914,7 +1915,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -251, y: 0}
+  m_AnchoredPosition: {x: 7, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &476448273
@@ -4104,6 +4105,7 @@ MonoBehaviour:
   maxZoom: 65
   fixedPitch: 0
   cursor: {fileID: 1632256037}
+  devCamera: 0
 --- !u!1 &1309907073
 GameObject:
   m_ObjectHideFlags: 0
@@ -5307,6 +5309,7 @@ MonoBehaviour:
   morningTemp: 3000
   eveningTemp: 9000
   pauseManager: {fileID: 1632256040}
+  cropStructure: {fileID: 0}
 --- !u!4 &1632256035
 Transform:
   m_ObjectHideFlags: 0

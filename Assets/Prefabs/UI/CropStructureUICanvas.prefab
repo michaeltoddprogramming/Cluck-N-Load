@@ -2659,7 +2659,7 @@ RectTransform:
   m_GameObject: {fileID: 8813689342424605839}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3.212227, y: 3.212227, z: 3.212227}
+  m_LocalScale: {x: 3.18, y: 3.18, z: 3.18}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 799758731768558869}
@@ -2736,6 +2736,7 @@ MonoBehaviour:
   selectCropPanel: {fileID: 6907215235884733584}
   plantingClose: {fileID: 5263178693938711161}
   cropStatusText: {fileID: 8758886788875045827}
+  nightManager: {fileID: 0}
 --- !u!1 &8887726481687074685
 GameObject:
   m_ObjectHideFlags: 0

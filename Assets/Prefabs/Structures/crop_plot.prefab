@@ -120,9 +120,7 @@ MonoBehaviour:
     growthTime: 24
     baseProductAmount: 10
     moneyPerProduct: 5
-  stage1Visual: {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}
-  stage2Visual: {fileID: 5646316627670119688, guid: afa49221c3527ce49928be8dc5f49a11, type: 3}
-  stage3Visual: {fileID: 5725026461395691348, guid: 2ee33b237890ec942a490ce10bbf59cc, type: 3}
+  nightManager: {fileID: 0}
   sunflowerPrefab1: {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}
   sunflowerPrefab2: {fileID: 5646316627670119688, guid: afa49221c3527ce49928be8dc5f49a11, type: 3}
   sunflowerPrefab3: {fileID: 5725026461395691348, guid: 2ee33b237890ec942a490ce10bbf59cc, type: 3}
@@ -132,3 +130,6 @@ MonoBehaviour:
   carrotsPrefab1: {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}
   carrotsPrefab2: {fileID: 5646316627670119688, guid: afa49221c3527ce49928be8dc5f49a11, type: 3}
   carrotsPrefab3: {fileID: 5725026461395691348, guid: 2ee33b237890ec942a490ce10bbf59cc, type: 3}
+  sunflowerTotal: 0
+  wheatTotal: 0
+  carrotTotal: 0

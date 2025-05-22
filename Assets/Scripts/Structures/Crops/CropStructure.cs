@@ -16,6 +16,7 @@ public class CropStructure : Structure
     [SerializeField] private bool cropReady;
     [SerializeField] private float growthProgress;
     [SerializeField] private CropProductionSettings productionSettings;
+    [SerializeField] private NightManager nightManager; // Optional, for Inspector
 
     [Header("Crop Prefabs")]
     [SerializeField] private GameObject sunflowerPrefab1;
@@ -31,7 +32,7 @@ public class CropStructure : Structure
     [System.Serializable]
     public class CropProductionSettings
     {
-        public float growthTime = 24f;
+        public float growthTime = 24f; // Hours to fully grow
         public int baseProductAmount = 10;
         public int moneyPerProduct = 5;
     }
@@ -43,6 +44,7 @@ public class CropStructure : Structure
 
     private GameObject currentCropInstance;
     private float productionMultiplier = 1f;
+    private float lastCheckedHour;
 
     // Public properties
     public bool IsGrowing => isGrowing;
@@ -65,6 +67,43 @@ public class CropStructure : Structure
         {
             Debug.LogWarning($"{gameObject.name} has CropStructure script but StructureData.type is {structureData.type}, expected CropPlot.");
         }
+
+        // Prefer singleton access
+        if (nightManager == null)
+        {
+            nightManager = NightManager.Instance;
+            if (nightManager == null)
+            {
+                nightManager = FindObjectOfType<NightManager>();
+                if (nightManager == null)
+                {
+                    Debug.LogError($"{GetStructureName()} cannot find NightManager!");
+                }
+            }
+        }
+
+        lastCheckedHour = nightManager?.Hours ?? 7;
+    }
+
+    private void Update()
+    {
+        if (nightManager == null || !isGrowing || cropReady) return;
+
+        float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+        float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;
+        growthProgress += hourDelta;
+        lastCheckedHour = currentHour;
+
+        int growthStage = Mathf.Min(Mathf.FloorToInt(growthProgress / (productionSettings.growthTime / 3)), 2);
+        UpdateCropVisual(currentCropType, growthStage);
+
+        if (growthProgress >= productionSettings.growthTime)
+        {
+            cropReady = true;
+            isGrowing = false;
+            growthProgress = productionSettings.growthTime;
+            Debug.Log($"{GetStructureName()} ({currentCropType}) has finished growing!");
+        }
     }
 
     public void Plant(CropType cropType)
@@ -80,6 +119,7 @@ public class CropStructure : Structure
             currentCropType = cropType;
             isGrowing = true;
             growthProgress = 0f;
+            lastCheckedHour = nightManager?.Hours ?? 7;
             Debug.Log($"{GetStructureName()} is planting {currentCropType}...");
             UpdateCropVisual(cropType, 0);
         }
@@ -96,11 +136,9 @@ public class CropStructure : Structure
             int totalCrops = Mathf.RoundToInt(productionSettings.baseProductAmount * productionMultiplier);
             Debug.Log($"Harvesting crop type: {currentCropType} on {GetStructureName()} - {totalCrops} units");
 
-            // Add to inventory
             string cropName = currentCropType.ToString();
             InventoryManager.Instance.AddItem(cropName, totalCrops);
 
-            // Update total counts
             switch (currentCropType)
             {
                 case CropType.Sunflower:

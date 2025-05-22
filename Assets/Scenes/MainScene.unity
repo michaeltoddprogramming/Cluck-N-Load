@@ -1226,7 +1226,7 @@ MonoBehaviour:
   defaultStructureUI: {fileID: 3724273108228962489, guid: e95c011b60e029342bde1aaa6911b03c, type: 3}
   uiOffset: 2
   screenOffset: {x: 0, y: 20}
-  uiSize: 1.5
+  uiSize: 2.73
 --- !u!4 &369685984
 Transform:
   m_ObjectHideFlags: 0

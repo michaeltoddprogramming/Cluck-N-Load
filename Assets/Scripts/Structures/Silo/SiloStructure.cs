@@ -10,5 +10,16 @@ public class SiloStructure : Structure
         {
             Debug.LogWarning($"{gameObject.name} has SiloStructure script but StructureData.type is {structureData.type}, expected Silo.");
         }
+
+        InventoryManager.Instance.RegisterSilo(this);
+        CropStructure.UpdateAllCropSynergies();
+    }
+
+
+    private void OnDestroy()
+    {
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.UnregisterSilo(this);
+        CropStructure.UpdateAllCropSynergies();
     }
 }

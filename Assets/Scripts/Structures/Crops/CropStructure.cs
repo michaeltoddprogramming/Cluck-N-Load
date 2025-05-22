@@ -1,5 +1,4 @@
 using UnityEngine;
-using System;
 
 public class CropStructure : Structure
 {
@@ -13,35 +12,11 @@ public class CropStructure : Structure
 
     [Header("Crop Settings")]
     [SerializeField] private CropType currentCropType = CropType.None;
-    [SerializeField] public bool isGrowing = true;
+    [SerializeField] private bool isGrowing;
     [SerializeField] private bool cropReady;
     [SerializeField] private float growthProgress;
     [SerializeField] private CropProductionSettings productionSettings;
-
-    [Header("Growth Stages Visuals")]
-    [SerializeField] private GameObject stage1Visual; // Seedling stage
-    [SerializeField] private GameObject stage2Visual; // Growing stage
-    [SerializeField] private GameObject stage3Visual; // Mature stage
-
-    [System.Serializable]
-    public class CropProductionSettings
-    {
-        public float growthTime = 24f;
-        public int baseProductAmount = 10;
-        public int moneyPerProduct = 5;
-    }
-
-    // public static StructureManager Instance;
-    // public List<CropStructure> placedCrops = new List<CropStructure>();
-    private float lastCheckedHour;
-    private float productionMultiplier = 1f;
-
-    // public bool IsGrowing => isGrowing;
-    public bool CropReady => cropReady;
-    public float GrowthProgress => growthProgress;
-    public CropProductionSettings ProductionSettings => productionSettings;
-    public float ProductionMultiplier => productionMultiplier;
-    public CropType CurrentCropType => currentCropType;
+    [SerializeField] private NightManager nightManager; // Optional, for Inspector
 
     [Header("Crop Prefabs")]
     [SerializeField] private GameObject sunflowerPrefab1;
@@ -54,131 +29,153 @@ public class CropStructure : Structure
     [SerializeField] private GameObject carrotsPrefab2;
     [SerializeField] private GameObject carrotsPrefab3;
 
+    [System.Serializable]
+    public class CropProductionSettings
+    {
+        public float growthTime = 24f; // Hours to fully grow
+        public int baseProductAmount = 10;
+        public int moneyPerProduct = 5;
+    }
 
-    private GameObject currentCropInstance;
-    // private GameObject currentCropInstance;
-
-
-    //totalCrop amounts
+    // Total crop amounts
     public int sunflowerTotal = 0;
     public int wheatTotal = 0;
     public int carrotTotal = 0;
-    
+
+    private GameObject currentCropInstance;
+    private float productionMultiplier = 1f;
+    private float lastCheckedHour;
+
+    // Public properties
+    public bool IsGrowing => isGrowing;
+    public bool CropReady => cropReady;
+    public float GrowthProgress => growthProgress;
+    public CropProductionSettings ProductionSettings => productionSettings;
+    public float ProductionMultiplier => productionMultiplier;
+    public CropType CurrentCropType => currentCropType;
+    [Header("Mechanic variations")]
+    [Header("Base synergies (increase crop closer to silo)")]
+    [SerializeField] private float cropHarvestMultiplier = 1f;
+    [SerializeField] private float multiplierRange = 10f;
+    [SerializeField] private float baseCropHarvestAmount = 10f;
+
 
     protected override void Start()
     {
-        // Add this instance to the global list of placed crops
-        // CropRegistry.Instance.RegisterCrop(this);
-
-
-
         base.Start();
-        // isGrowing = false;
-        // cropReady = false;
-        // growthProgress = 0f;
-
 
         if (productionSettings == null)
         {
             productionSettings = new CropProductionSettings();
         }
 
-        // nightManager = FindObjectOfType<NightManager>();
-        // if (nightManager == null)
-        // {
-        //     Debug.LogError("NightManager not found in the scene! CropStructure requires NightManager to function.");
-        // }
-
-        // lastCheckedHour = nightManager != null ? nightManager.Hours + (nightManager.Minutes / 60f) : 0f;
-
         if (structureData != null && structureData.type != StructureType.CropPlot)
         {
             Debug.LogWarning($"{gameObject.name} has CropStructure script but StructureData.type is {structureData.type}, expected CropPlot.");
         }
 
-        // UpdateVisuals(0);
-        // UpdateSynergies();
+        // Prefer singleton access
+        if (nightManager == null)
+        {
+            nightManager = NightManager.Instance;
+            if (nightManager == null)
+            {
+                nightManager = FindObjectOfType<NightManager>();
+                if (nightManager == null)
+                {
+                    Debug.LogError($"{GetStructureName()} cannot find NightManager!");
+                }
+            }
+        }
+
+        lastCheckedHour = nightManager?.Hours ?? 7;
     }
 
-    // private void Update()
-    // {
-    //     if (nightManager == null || !isGrowing || cropReady) return;
+    private void Update()
+    {
+        if (nightManager == null || !isGrowing || cropReady) return;
 
-    //     float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
-    //     float hourDelta;
-    //     if (currentHour < lastCheckedHour)
-    //     {
-    //         hourDelta = (24f - lastCheckedHour) + currentHour;
-    //     }
-    //     else
-    //     {
-    //         hourDelta = currentHour - lastCheckedHour;
-    //     }
+        float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+        float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;
+        growthProgress += hourDelta;
+        lastCheckedHour = currentHour;
 
-    //     growthProgress += hourDelta;
-    //     lastCheckedHour = currentHour;
+        int growthStage = Mathf.Min(Mathf.FloorToInt(growthProgress / (productionSettings.growthTime / 3)), 2);
+        UpdateCropVisual(currentCropType, growthStage);
 
-    //     if (growthProgress >= productionSettings.growthTime)
-    //     {
-    //         cropReady = true;
-    //         isGrowing = false;
-    //         growthProgress = productionSettings.growthTime;
-    //         Debug.Log($"{GetStructureName()} has finished growing!");
-    //     }
-
-    //     UpdateVisuals();
-    // }
+        if (growthProgress >= productionSettings.growthTime)
+        {
+            cropReady = true;
+            isGrowing = false;
+            growthProgress = productionSettings.growthTime;
+            Debug.Log($"{GetStructureName()} ({currentCropType}) has finished growing!");
+        }
+    }
 
     public void Plant(CropType cropType)
     {
-        // if (!isGrowing && !cropReady && cropType != CropType.None)
-        Debug.Log($"I am in the plant function growing : {isGrowing} and crop ready : {cropReady}");
+        if (cropType == CropType.None)
+        {
+            Debug.LogWarning($"{GetStructureName()} cannot plant CropType.None.");
+            return;
+        }
+
         if (!isGrowing && !cropReady)
         {
             currentCropType = cropType;
-            Debug.Log($"{GetStructureName()} is planting {currentCropType}...");
-
             isGrowing = true;
-            Debug.Log($"Setting isGrowing=true on instance: {this.GetInstanceID()}--------------------------------------------------------------------------------------------------------------------------------");
-            Debug.Log($"Planting now growing is {isGrowing}");
-
-
-            SpawnCropVisual(cropType);
-            // UpdateVisuals(0);
+            growthProgress = 0f;
+            lastCheckedHour = nightManager?.Hours ?? 7;
+            Debug.Log($"{GetStructureName()} is planting {currentCropType}...");
+            UpdateCropVisual(cropType, 0);
+        }
+        else
+        {
+            Debug.LogWarning($"{GetStructureName()} cannot plant {cropType}: Crop is already growing or ready.");
         }
     }
 
     public void Harvest()
     {
-        if (cropReady && isGrowing)
+        if (cropReady)
         {
-            int totalCrops = Mathf.RoundToInt(10);
+            int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * productionMultiplier);
+
+            // int totalCrops = Mathf.RoundToInt(10);
             Debug.Log($"{GetStructureName()} is harvesting {totalCrops} {currentCropType}...");
 
+            string cropName = currentCropType.ToString();
+            InventoryManager.Instance.AddItem(cropName, totalCrops);
 
-            // Debug.Log($"Earned {totalMoneyEarned} {MoneyManager.Instance.GetCurrencyName()} from harvesting {totalCrops} {currentCropType}!");
-
-            // Add to inventory
-            // InventoryManager.Instance.AddItem(currentCropType.ToString(), totalCrops);
-
-            if (currentCropType == CropType.Sunflower)
+            switch (currentCropType)
             {
-                sunflowerTotal += totalCrops;
-            }
-            else if (currentCropType == CropType.Wheat)
-            {
-                wheatTotal += totalCrops;
-            }
-            else if (currentCropType == CropType.Carrots)
-            {
-                carrotTotal += totalCrops;
+                case CropType.Sunflower:
+                    sunflowerTotal += totalCrops;
+                    Debug.Log($"Added {totalCrops} Sunflowers to total: {sunflowerTotal}");
+                    break;
+                case CropType.Wheat:
+                    wheatTotal += totalCrops;
+                    Debug.Log($"Added {totalCrops} Wheat to total: {wheatTotal}");
+                    break;
+                case CropType.Carrots:
+                    carrotTotal += totalCrops;
+                    Debug.Log($"Added {totalCrops} Carrots to total: {carrotTotal}");
+                    break;
+                default:
+                    Debug.LogError($"Unexpected crop type in Harvest: {currentCropType}");
+                    break;
             }
 
             currentCropType = CropType.None;
             cropReady = false;
             isGrowing = false;
+            growthProgress = 0f;
 
             DestroyCrop();
+        }
+        else
+        {
+            Debug.LogWarning($"{GetStructureName()} cannot harvest: Crop is not ready.");
         }
     }
 
@@ -191,64 +188,90 @@ public class CropStructure : Structure
             Debug.Log($"{GetStructureName()} crop destroyed.");
         }
         currentCropType = CropType.None;
-        // cropReady = false;
-        // isGrowing = false;
-        // growthProgress = 0f;
-        // if (nightManager != null)
-        // {
-        //     lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
-        // }
-        // UpdateSynergies();
+        cropReady = false;
+        isGrowing = false;
+        growthProgress = 0f;
     }
 
-    // public void UpdateSynergies()
-    // {
-    //     SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
-    //     float minDistance = float.MaxValue;
-    //     foreach (SiloStructure silo in silos)
-    //     {
-    //         float distance = Vector3.Distance(transform.position, silo.transform.position);
-    //         if (distance < minDistance)
-    //         {
-    //             minDistance = distance;
-    //         }
-    //     }
+    public void UpdateVisuals(int growthStage)
+    {
+        if (!isGrowing && !cropReady)
+        {
+            if (currentCropInstance != null)
+            {
+                Destroy(currentCropInstance);
+                currentCropInstance = null;
+                Debug.Log($"{GetStructureName()} cleared visuals (no crop planted).");
+            }
+            return;
+        }
 
-    //     float maxDistance = 10f;
-    //     productionMultiplier = minDistance <= maxDistance ? 1.5f : 1f;
-    //     Debug.Log($"{GetStructureName()} synergy updated: minDistance to silo={minDistance}, productionMultiplier={productionMultiplier}");
-    // }
+        UpdateCropVisual(currentCropType, growthStage);
 
-    // public void SpawnCropVisual(CropType cropType)
-    // {
-    //     // Destroy previous instance if any
-    //     if (currentCropInstance != null)
-    //     {
-    //         Destroy(currentCropInstance);
-    //     }
+        if (growthStage == 2)
+        {
+            cropReady = true;
+            isGrowing = false;
+            Debug.Log($"{GetStructureName()} is ready to harvest.");
+        }
+    }
 
-    //     GameObject prefabToSpawn = null;
+    private void UpdateCropVisual(CropType cropType, int growthStage)
+    {
+        if (currentCropInstance != null)
+        {
+            Destroy(currentCropInstance);
+        }
 
-    //     switch (cropType)
-    //     {
-    //         case CropType.Sunflower:
-    //             prefabToSpawn = sunflowerPrefab;
-    //             break;
-    //         case CropType.Wheat:
-    //             prefabToSpawn = wheatPrefab;
-    //             break;
-    //         case CropType.Carrots:
-    //             prefabToSpawn = carrotsPrefab;
-    //             break;
-    //     }
+        GameObject prefabToSpawn = GetPrefabForStage(cropType, growthStage);
+        if (prefabToSpawn != null)
+        {
+            currentCropInstance = Instantiate(prefabToSpawn, transform);
+            currentCropInstance.transform.localPosition = Vector3.zero;
+            Debug.Log($"{GetStructureName()} spawned visual for {cropType} stage {growthStage}.");
+        }
+        else
+        {
+            Debug.LogWarning($"No prefab found for {cropType} stage {growthStage} on {GetStructureName()}");
+        }
+    }
 
-    //     if (prefabToSpawn != null)
-    //     {
-    //         currentCropInstance = Instantiate(prefabToSpawn, transform);
-    //         currentCropInstance.transform.localPosition = Vector3.zero;
-    //         Debug.Log("Crop was planted");
-    //     }
-    // }
+    public void UpdateSiloSynergy()
+    {
+        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
+        float minDistance = float.MaxValue;
+
+        foreach (SiloStructure silo in silos)
+        {
+            float distance = Vector3.Distance(transform.position, silo.transform.position);
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+            }
+        }
+
+        // If within range, boost production
+        cropHarvestMultiplier = (minDistance <= multiplierRange) ? 1.5f : 1f;
+
+        // float maxDistance = 10f;
+        // productionMultiplier = minDistance <= maxDistance ? 1.5f : 1f;
+        // Debug.Log($"{GetStructureName()} synergy updated: minDistance to silo={minDistance}, productionMultiplier={productionMultiplier}");
+    }
+
+    public void OnPlaced()
+    {
+        // base.OnPlaced();
+        UpdateSiloSynergy();
+    }
+
+    public static void UpdateAllCropSynergies()
+    {
+        foreach (var crop in FindObjectsOfType<CropStructure>())
+        {
+            crop.UpdateSiloSynergy();
+        }
+    }
 
     private GameObject GetPrefabForStage(CropType cropType, int stage)
     {
@@ -272,106 +295,4 @@ public class CropStructure : Structure
         }
         return null;
     }
-
-    // public void UpdateVisuals(int growth)
-    // {
-    //     if (stage1Visual != null) stage1Visual.SetActive(false);
-    //     if (stage2Visual != null) stage2Visual.SetActive(false);
-    //     if (stage3Visual != null) stage3Visual.SetActive(false);
-
-    //     if (!isGrowing && !cropReady)
-    //     {
-    //         // No crop planted, no visuals
-    //         return;
-    //     }
-
-    //     // float growthPercentage = growthProgress / productionSettings.growthTime;
-
-    //     //if growth is 0 then it is night and go to second growth stage
-    //     //if growth is 1 then it is day and go to third growth stage and allow harvest
-    //     if (growth == 0)
-    //     {
-    //         if (stage1Visual != null) stage1Visual.SetActive(true);
-    //         Debug.Log("now stage 0 of growth");
-    //     }
-    //     else if (growth == 1)
-    //     {
-    //         if (stage2Visual != null) stage2Visual.SetActive(true);
-    //         Debug.Log("now stage 1 of growth");
-    //     }
-    //     else if (growth == 2)
-    //     {
-    //         if (stage3Visual != null) stage3Visual.SetActive(true);
-    //         Debug.Log("now stage 2 of growth can harvest");
-    //         cropReady = true;
-    //     }
-    // } 
-
-
-    public void UpdateVisuals(int growth)
-    {
-        Debug.Log("UpdateVisuals() was called.", this);
-    Debug.Log(Environment.StackTrace);
-        Debug.Log($"I am in the update visuals function growing : {isGrowing} and crop ready : {cropReady}");
-        Debug.Log($"UpdateVisuals called on instance: {this.GetInstanceID()} with isGrowing={isGrowing}-------------------------------------------------------------------------------------------------------------------");
-
-
-        if (!isGrowing && !cropReady)
-        {
-            // No crop planted, no visuals
-            if (currentCropInstance != null)
-            {
-                Debug.Log("I have deleted the old crop that had no hope");
-                Destroy(currentCropInstance);
-            }
-            Debug.Log("I have deleted the old crop that had no hope --------------");
-            return;
-        }
-
-        CropVisualChanger(currentCropType, growth);
-
-        if (growth == 2)
-        {
-            cropReady = true;
-        }
-    }
-
-
-    public void SpawnCropVisual(CropType cropType)
-    {
-        if (currentCropInstance != null)
-        {
-            Destroy(currentCropInstance);
-        }
-
-        GameObject prefabToSpawn = GetPrefabForStage(cropType, 0);
-
-        if (prefabToSpawn != null)
-        {
-            currentCropInstance = Instantiate(prefabToSpawn, transform);
-            currentCropInstance.transform.localPosition = Vector3.zero;
-            Debug.Log($"Crop visual spawned for {cropType} stage");
-        }
-    }  
-
-    public void CropVisualChanger(CropType cropType, int growth)
-    {
-        if (currentCropInstance != null)
-        {
-            Destroy(currentCropInstance);
-            Debug.Log("I have deleted the old crop-------------------------");
-        }
-            Debug.Log("I have deleted the old crop+++++++++++++++++++++++++");
-
-        GameObject prefabToSpawn = GetPrefabForStage(cropType, growth);
-
-        if (prefabToSpawn != null)
-        {
-        
-            Debug.Log("deleted old crop going to spawn new crop size--------------------------------");
-            currentCropInstance = Instantiate(prefabToSpawn, transform);
-            currentCropInstance.transform.localPosition = Vector3.zero;
-            Debug.Log($"Crop visual spawned for {cropType} stage");
-        }
-    }  
 }

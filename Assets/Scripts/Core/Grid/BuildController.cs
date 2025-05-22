@@ -654,11 +654,18 @@ public class BuildController : MonoBehaviour
         placedItem.name = $"Item_{x}_{y}";
 
         Structure structure = placedItem.GetComponent<Structure>();
-    if (structure != null)
-    {
-        structure.SetAllowSelectionAndUI(false);
-        StartCoroutine(EnableSelectionAfterRelease(structure));
-    }
+        if (structure != null)
+        {
+            structure.SetAllowSelectionAndUI(false);
+            StartCoroutine(EnableSelectionAfterRelease(structure));
+
+            // Register silo if this is a SiloStructure
+            SiloStructure silo = structure as SiloStructure;
+            if (silo != null)
+            {
+                InventoryManager.Instance.RegisterSilo(silo);
+            }
+        }
         
         // Mark cells as occupied
         List<Vector2Int> footprint = GetStructureFootprint(placedItem);
@@ -712,6 +719,17 @@ private IEnumerator EnableSelectionAfterRelease(Structure structure)
         
         if (placedItem != null)
         {
+
+            // Unregister silo if this is a SiloStructure
+            Structure structure = placedItem.GetComponent<Structure>();
+            if (structure is SiloStructure silo)
+            {
+                InventoryManager.Instance.UnregisterSilo(silo);
+            }
+
+
+
+
             // Get the footprint before destroying
             List<Vector2Int> footprint = GetStructureFootprint(placedItem);
             
@@ -787,6 +805,13 @@ private IEnumerator EnableSelectionAfterRelease(Structure structure)
                                 gridController.SetCellOccupied(pos.x, pos.y, false);
                             }
                         }
+
+                        //remove silo from inventory when deleted
+                        Structure structure = placedItem.GetComponent<Structure>();
+                        if (structure is SiloStructure silo)
+                        {
+                            InventoryManager.Instance.UnregisterSilo(silo);
+                        }
                         
                         // Destroy the object
                         Destroy(placedItem);
@@ -795,10 +820,10 @@ private IEnumerator EnableSelectionAfterRelease(Structure structure)
                         gridController.UpdateGridTexture();
 
                         // Play building removal sound
-    if (AudioManager.Instance != null)
-    {
-        AudioManager.Instance.PlayRemoveSound();
-    }
+                        if (AudioManager.Instance != null)
+                        {
+                            AudioManager.Instance.PlayRemoveSound();
+                        }
                         
                         // Notify grid monitor
                         if (gridMonitor != null && footprint.Count > 0)

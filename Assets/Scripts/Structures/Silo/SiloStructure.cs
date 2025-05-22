@@ -13,6 +13,7 @@ public class SiloStructure : Structure
 
         InventoryManager.Instance.RegisterSilo(this);
         CropStructure.UpdateAllCropSynergies();
+        AnimalStructure.UpdateAllAnimalSynergies();
     }
 
 
@@ -21,5 +22,6 @@ public class SiloStructure : Structure
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.UnregisterSilo(this);
         CropStructure.UpdateAllCropSynergies();
+        AnimalStructure.UpdateAllAnimalSynergies();
     }
 }

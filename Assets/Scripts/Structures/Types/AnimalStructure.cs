@@ -50,6 +50,8 @@ public class AnimalStructure : Structure
     [SerializeField] private float synergyFoodRequired = 0.8f; // food per animal when in range
     [SerializeField] private float normalFoodRequired = 1f; // food per animal when not in range
     [SerializeField] private float foodMultiplier = 1f; // food per animal when not in range
+    [SerializeField] public int baseMoneyPerProduct = 10;
+    [SerializeField] public int baseProductAmount = 1;
 
 
     protected override void Start()
@@ -345,6 +347,13 @@ public class AnimalStructure : Structure
         {
             productionSettings.moneyPerProduct = (int)(productionSettings.moneyPerProduct * increasePercent);
         }
-        
+
+    }
+    
+    public void resetAnimalProductionAmount()
+    {
+        // Reset to base value (adjust as needed)
+        productionSettings.moneyPerProduct = baseMoneyPerProduct;
+        productionSettings.productAmount = baseProductAmount;
     }
 }

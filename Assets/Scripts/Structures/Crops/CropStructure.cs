@@ -270,21 +270,6 @@ public class CropStructure : Structure
 
         foreach (SiloStructure silo in silos)
         {
-            // float distance = Vector3.Distance(transform.position, silo.transform.position);
-
-            // if (distance < minDistance)
-            // {
-            //     minDistance = distance;
-            // }
-
-
-            // Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
-            // float gridDistance = Vector2Int.Distance(cropCell, siloCell);
-            // if (gridDistance < minGridDistance)
-            // {
-            //     minGridDistance = gridDistance;
-            // }
-
             Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
             float gridDistance = Vector2Int.Distance(cropCell, siloCell);
             if (gridDistance < minGridDistance)
@@ -293,25 +278,12 @@ public class CropStructure : Structure
             }
         }
 
-        // If within range, boost production
-        // cropHarvestMultiplier = (minDistance <= multiplierRange) ? 1.5f : 1f;
-
 
 
         if (minGridDistance <= multiplierRange)
             cropHarvestMultiplier = cropHarvestMultiplierIncrease; // or whatever bonus you want
         else
             cropHarvestMultiplier = 1f;
-        
-
-        //  if (minDistance <= multiplierRange)
-        //     cropHarvestMultiplier = cropHarvestMultiplier; // or whatever bonus you want
-        // else
-        //     cropHarvestMultiplier = 1f;
-
-        // float maxDistance = 10f;
-        // productionMultiplier = minDistance <= maxDistance ? 1.5f : 1f;
-        // Debug.Log($"{GetStructureName()} synergy updated: minDistance to silo={minDistance}, productionMultiplier={productionMultiplier}");
     }
 
     public void OnPlaced()
@@ -322,11 +294,6 @@ public class CropStructure : Structure
 
     public static void UpdateAllCropSynergies()
     {
-        // foreach (var crop in FindObjectsOfType<CropStructure>())
-        // {
-        //     crop.UpdateSiloSynergy();
-        // }
-
         foreach (var crop in GameObject.FindObjectsOfType<CropStructure>())
         {
             crop.UpdateSiloSynergy();

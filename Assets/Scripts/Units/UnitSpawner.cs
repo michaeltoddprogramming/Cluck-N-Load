@@ -2,12 +2,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using FarmDefender.Core.AI.FlowField; // Add this line for the new namespace
 
-public class UnitSpawner : MonoBehaviour 
+public class UnitSpawner : MonoBehaviour
 {
     [SerializeField] private UnitDatabase _unitDatabase;
     [SerializeField] private Transform[] _spawnPoints;
     [SerializeField] private float _spawnHeightOffset = 0.1f;
-    
+
     // DEVELOPMENT-ONLY references for testing - will be refactored later
     [Header("Development Testing")]
     [Tooltip("TEMPORARY: Reference to the flow field generator for spawn positioning")]
@@ -26,37 +26,37 @@ public class UnitSpawner : MonoBehaviour
         // Find required components if not assigned
         if (flowFieldManager == null)
             flowFieldManager = FindObjectOfType<FlowFieldManager>();
-            
+
         // Rest of Start method stays the same
     }
 
     // Original methods
-    public Unit SpawnUnitOfType(UnitType type, Vector3 position) 
+    public Unit SpawnUnitOfType(UnitType type, Vector3 position)
     {
-        if (_unitDatabase == null) 
+        if (_unitDatabase == null)
         {
             Debug.LogError("Unit database not assigned to spawner");
             return null;
         }
-        
+
         UnitData randomData = _unitDatabase.GetRandomUnitOfType(type);
         if (randomData == null) return null;
-        
+
         Vector3 spawnPos = position + Vector3.up * _spawnHeightOffset;
         return UnitFactory.CreateUnit(randomData, spawnPos);
     }
-    
-    public Unit SpawnRandomEnemy() 
+
+    public Unit SpawnRandomEnemy()
     {
         if (_spawnPoints.Length == 0) return null;
-        
+
         Transform spawnPoint = _spawnPoints[Random.Range(0, _spawnPoints.Length)];
         return SpawnUnitOfType(UnitType.Hostile, spawnPoint.position);
     }
-    
-    public void SpawnEnemyWave(int count) 
+
+    public void SpawnEnemyWave(int count)
     {
-        for (int i = 0; i < count; i++) 
+        for (int i = 0; i < count; i++)
         {
             SpawnRandomEnemy();
         }
@@ -108,9 +108,9 @@ public class UnitSpawner : MonoBehaviour
 
         Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
         GridCell targetCell = null;
-        
+
         // Get the grid cell at target coordinates
-        if (_gridDataGenerator != null && 
+        if (_gridDataGenerator != null &&
             targetCoord.x >= 0 && targetCoord.x < _gridDataGenerator.GetGridWidth() &&
             targetCoord.y >= 0 && targetCoord.y < _gridDataGenerator.GetGridHeight())
         {
@@ -124,7 +124,7 @@ public class UnitSpawner : MonoBehaviour
         }
 
         Vector3 targetPosition = targetCell.worldPosition;
-        
+
         for (int i = 0; i < count; i++)
         {
             // Generate random position in circle around target
@@ -137,7 +137,7 @@ public class UnitSpawner : MonoBehaviour
             );
 
             Vector3 spawnPosition = targetPosition + offset;
-            
+
             // Check if position is valid on the grid
             if (IsValidSpawnPosition(spawnPosition))
             {
@@ -155,19 +155,19 @@ public class UnitSpawner : MonoBehaviour
     private List<Vector3> GetRandomEdgePositions(int count)
     {
         List<Vector3> positions = new List<Vector3>();
-        
+
         if (_gridDataGenerator == null)
             return positions;
-            
+
         int width = _gridDataGenerator.GetGridWidth();
         int height = _gridDataGenerator.GetGridHeight();
-        
+
         for (int i = 0; i < count; i++)
         {
             // Choose which edge (0=top, 1=right, 2=bottom, 3=left)
             int edge = Random.Range(0, 4);
             int x, y;
-            
+
             switch (edge)
             {
                 case 0: // Top edge
@@ -191,20 +191,20 @@ public class UnitSpawner : MonoBehaviour
                     y = 0;
                     break;
             }
-            
+
             // Get the cell and use its position
             GridCell cell = _gridDataGenerator.GetCell(x, y);
             if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied)
             {
                 // Apply a small inset from the edge
                 Vector3 position = cell.worldPosition;
-                
+
                 // Inset the position slightly from the edge
                 if (edge == 0) position.z -= _edgeInset;
                 else if (edge == 1) position.x -= _edgeInset;
                 else if (edge == 2) position.z += _edgeInset;
                 else if (edge == 3) position.x += _edgeInset;
-                
+
                 positions.Add(position);
             }
             else
@@ -213,7 +213,7 @@ public class UnitSpawner : MonoBehaviour
                 i--;
             }
         }
-        
+
         return positions;
     }
 
@@ -222,17 +222,55 @@ public class UnitSpawner : MonoBehaviour
     {
         if (_gridDataGenerator == null)
             return false;
-            
+
         // Convert world position to grid coordinates
         Vector2Int gridCoord = flowFieldManager.GridController.WorldToGridCoords(position);
-        
+
         // Check if coordinates are within grid bounds
         if (gridCoord.x < 0 || gridCoord.x >= _gridDataGenerator.GetGridWidth() ||
             gridCoord.y < 0 || gridCoord.y >= _gridDataGenerator.GetGridHeight())
             return false;
-            
+
         // Get the cell and check if it's valid for spawning
         GridCell cell = _gridDataGenerator.GetCell(gridCoord.x, gridCoord.y);
         return cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied;
     }
+    
+           // Fix the SpawnWolf method
+        public Unit SpawnWolf()
+        {
+            // Make sure we have a wolf prefab
+            GameObject wolfPrefab = Resources.Load<GameObject>("Prefabs/Wolf");
+            if (wolfPrefab == null)
+            {
+                Debug.LogError("CRITICAL ERROR: Wolf prefab not found at Resources/Prefabs/Wolf");
+                return null;
+            }
+        
+            // Get a spawn position at map edge - FIX HERE: Pass 1 as the count parameter
+            List<Vector3> edgePositions = GetRandomEdgePositions(1);
+            
+            if (edgePositions.Count == 0)
+            {
+                Debug.LogError("Failed to find valid edge position for wolf spawn");
+                return null;
+            }
+            
+            Vector3 spawnPosition = edgePositions[0];
+            
+            // Spawn the wolf
+            GameObject wolfInstance = Instantiate(wolfPrefab, spawnPosition, Quaternion.identity);
+            Debug.Log($"Wolf spawned at {spawnPosition}");
+            
+            // Make sure it has a Wolf component
+            Wolf wolf = wolfInstance.GetComponent<Wolf>();
+            if (wolf == null)
+            {
+                Debug.LogError("CRITICAL ERROR: Wolf prefab doesn't have Wolf component");
+                Destroy(wolfInstance);
+                return null;
+            }
+            
+            return wolfInstance.GetComponent<Unit>();
+        }
 }

@@ -261,6 +261,17 @@ namespace FarmDefender.Core.AI.FlowField
                 targetManager.SetTargetTransform(target);
             }
         }
+
+        /// <summary>
+        /// Sets a transform and specific world point to follow for the flow field.
+        /// </summary>
+        public void SetTargetTransformWithPoint(Transform target, Vector3 worldPoint)
+        {
+            if (targetManager != null)
+            {
+                targetManager.SetTargetTransformWithPoint(target, worldPoint);
+            }
+        }
         
         // Manual utility methods
         
@@ -318,7 +329,6 @@ namespace FarmDefender.Core.AI.FlowField
             Debug.Log($"Grid obstacles: {obstacleCount} obstacles, {occupiedCount} occupied, {bothCount} both");
         }
 
-        // Add these methods to your FlowFieldManager class
         public Dictionary<Vector2Int, float> GetFlowStrengthMap()
         {
             if (algorithm == null) return null;
@@ -348,8 +358,6 @@ namespace FarmDefender.Core.AI.FlowField
         /// </summary>
         public GridController GridController => gridController;
 
-        // Additional methods to support transition from the old system
-
         /// <summary>
         /// Regenerates the flow field targeting the specified coordinates.
         /// </summary>
@@ -363,7 +371,6 @@ namespace FarmDefender.Core.AI.FlowField
         /// </summary>
         public void RegenerateFlowField()
         {
-            // Shortcut for the method we already have
             GenerateFlowFieldManually();
         }
     }

@@ -140,3 +140,6 @@ MonoBehaviour:
   protectionRadius: 5
   flagColor: {r: 1, g: 1, b: 1, a: 1}
   structureCheckInterval: 5
+  synergyMinDist: 10
+  synergyMaxDist: 20
+  synergyDiscount: 0.8

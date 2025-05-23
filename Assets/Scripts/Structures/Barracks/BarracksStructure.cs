@@ -33,6 +33,14 @@ public class BarracksStructure : Structure
 
     public System.Action OnArmyChanged;
 
+    //synergy
+    [Header("Barack Synergy")]
+    public float synergyMinDist = 10f; // Minimum distance for synergy effect
+    public float synergyMaxDist = 20f; // Maximum distance for synergy effect
+    public float synergyDiscount = 0.8f; // discount for when barrack in in the correct range
+
+
+
     protected override void Start()
     {
         base.Start();
@@ -71,6 +79,8 @@ public class BarracksStructure : Structure
             FindTargetAnimalStructure();
             nextStructureCheckTime = Time.time + structureCheckInterval;
         }
+
+        UpdateRecruitmentCostByDistance();
     }
 
     public void OnDayNightChanged(bool isNight)
@@ -167,34 +177,83 @@ public class BarracksStructure : Structure
         UpdateArmyAnimalPositions();
     }
 
+    // public void FindTargetAnimalStructure()
+    // {
+    //     AnimalStructure[] animalStructures = FindObjectsOfType<AnimalStructure>();
+    //     float minDistance = float.MaxValue;
+    //     AnimalStructure closestStructure = null;
+    //     foreach (AnimalStructure structure in animalStructures)
+    //     {
+    //         if (structure == null || !structure.gameObject.activeInHierarchy) continue;
+    //         string animalType = structure.GetAnimalType.ToString();
+    //         if (animalType.Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
+    //         {
+    //             float distance = Vector3.Distance(transform.position, structure.transform.position);
+    //             Debug.Log($"Found {animalType} structure at distance {distance:F2} (range: {recruitmentRange})");
+    //             if (distance <= recruitmentRange && distance < minDistance)
+    //             {
+    //                 minDistance = distance;
+    //                 closestStructure = structure;
+    //             }
+    //         }
+    //     }
+
+    //     targetAnimalStructure = closestStructure;
+    //     UpdateRecruitmentCostByDistance();
+
+    //     if (targetAnimalStructure == null)
+    //     {
+    //         Debug.LogWarning($"{GetStructureName()} could not find a {targetAnimalType} structure within range ({recruitmentRange} units).");
+    //     }
+    //     else
+    //     {
+    //         Debug.Log($"{GetStructureName()} found target {targetAnimalType} structure: {targetAnimalStructure.GetStructureName()} at distance {minDistance:F2}");
+    //         OnArmyChanged?.Invoke();
+    //     }
+    // }
+
     public void FindTargetAnimalStructure()
     {
         AnimalStructure[] animalStructures = FindObjectsOfType<AnimalStructure>();
-        float minDistance = float.MaxValue;
+        float minGridDistance = float.MaxValue;
         AnimalStructure closestStructure = null;
+
+        GridController gridController = FindObjectOfType<GridController>();
+        if (gridController == null)
+        {
+            Debug.LogWarning("No GridController found for FindTargetAnimalStructure.");
+            targetAnimalStructure = null;
+            return;
+        }
+
+        Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+
         foreach (AnimalStructure structure in animalStructures)
         {
             if (structure == null || !structure.gameObject.activeInHierarchy) continue;
             string animalType = structure.GetAnimalType.ToString();
             if (animalType.Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
             {
-                float distance = Vector3.Distance(transform.position, structure.transform.position);
-                Debug.Log($"Found {animalType} structure at distance {distance:F2} (range: {recruitmentRange})");
-                if (distance <= recruitmentRange && distance < minDistance)
+                Vector2Int animalCell = gridController.WorldToGridCoords(structure.transform.position);
+                float gridDistance = Vector2Int.Distance(barracksCell, animalCell);
+                if (gridDistance < minGridDistance)
                 {
-                    minDistance = distance;
+                    minGridDistance = gridDistance;
                     closestStructure = structure;
                 }
             }
         }
+
         targetAnimalStructure = closestStructure;
+        UpdateRecruitmentCostByDistance();
+
         if (targetAnimalStructure == null)
         {
-            Debug.LogWarning($"{GetStructureName()} could not find a {targetAnimalType} structure within range ({recruitmentRange} units).");
+            Debug.LogWarning($"{GetStructureName()} could not find a {targetAnimalType} structure in the scene.");
         }
         else
         {
-            Debug.Log($"{GetStructureName()} found target {targetAnimalType} structure: {targetAnimalStructure.GetStructureName()} at distance {minDistance:F2}");
+            Debug.Log($"{GetStructureName()} found target {targetAnimalType} structure: {targetAnimalStructure.GetStructureName()} at grid distance {minGridDistance:F2}");
             OnArmyChanged?.Invoke();
         }
     }
@@ -290,6 +349,7 @@ public class BarracksStructure : Structure
         }
         Debug.Log($"{GetStructureName()} recruited {amount} army {targetAnimalType}s. Total army: {armyAnimals.Count}");
         OnArmyChanged?.Invoke();
+        UpdateRecruitmentCostByDistance();
     }
 
     public void PlaceFlag(Vector3 position)
@@ -408,4 +468,150 @@ public class BarracksStructure : Structure
             barrack.FindTargetAnimalStructure();
         }
     }
+
+    //barrack synergy
+    // private void UpdateRecruitmentCostByDistance()
+    // {
+    //     if (targetAnimalStructure == null)
+    //     {
+    //         recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //         return;
+    //     }
+
+    //     float distance = Vector3.Distance(transform.position, targetAnimalStructure.transform.position);
+    //     // int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //     int baseCost = 50;
+
+    //     // int minCost = Mathf.RoundToInt(baseCost * synergyDiscount); // discount at max distance
+    //     int minCost = (int)(baseCost * synergyDiscount); // discount at max distance
+
+    //     if (distance <= synergyMinDist)
+    //     {
+    //         recruitmentCostPerAnimal = baseCost;
+    //     }
+    //     else if (distance >= synergyMinDist && distance <= synergyMaxDist)
+    //     {
+    //         recruitmentCostPerAnimal = minCost;
+    //     }
+    //     // else
+    //     // {
+    //     //     float t = (distance - synergyMinDist) / (synergyMaxDist - synergyMaxDist);
+    //     //     recruitmentCostPerAnimal = Mathf.RoundToInt(Mathf.Lerp(baseCost, minCost, t));
+    //     // }
+    // }
+
+
+    //     private void UpdateRecruitmentCostByDistance()
+    // {
+    //     if (targetAnimalStructure == null)
+    //     {
+    //         recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //         return;
+    //     }
+
+    //     GridController gridController = FindObjectOfType<GridController>();
+    //     if (gridController == null)
+    //     {
+    //         Debug.LogWarning("No GridController found for barracks synergy check.");
+    //         recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //         return;
+    //     }
+
+    //     // Convert both positions to grid coordinates
+    //     Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+    //     Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+
+    //     // Use integer grid distance (Euclidean, but you can use Manhattan if you want)
+    //     int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+
+    //     int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //     int minCost = (int)(baseCost * synergyDiscount); // truncated discount
+
+    //     if (gridDist <= synergyMinDist) // 0 to 10 blocks (inclusive)
+    //     {
+    //         recruitmentCostPerAnimal = baseCost;
+    //     }
+    //     else if (gridDist > synergyMinDist && gridDist <= synergyMaxDist) // 11 to 20 blocks (inclusive)
+    //     {
+    //         recruitmentCostPerAnimal = minCost;
+    //     }
+    //     else // further than 20 blocks
+    //     {
+    //         recruitmentCostPerAnimal = minCost;
+    //     }
+    // }
+
+    // private void UpdateRecruitmentCostByDistance()
+    // {
+    //     if (targetAnimalStructure == null)
+    //     {
+    //         recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //         return;
+    //     }
+
+    //     GridController gridController = FindObjectOfType<GridController>();
+    //     if (gridController == null)
+    //     {
+    //         Debug.LogWarning("No GridController found for barracks synergy check.");
+    //         recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //         return;
+    //     }
+
+    //     Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+    //     Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+    //     int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+
+    //     int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //     int minCost = (int)(baseCost * synergyDiscount); // truncated discount
+
+    //     if (gridDist <= synergyMinDist) // 0 to 10 blocks (inclusive)
+    //     {
+    //         recruitmentCostPerAnimal = baseCost;
+    //     }
+    //     else if (gridDist > synergyMinDist && gridDist <= synergyMaxDist) // 11 to 20 blocks (inclusive)
+    //     {
+    //         recruitmentCostPerAnimal = minCost;
+    //     }
+    //     else // further than 20 blocks
+    //     {
+    //         recruitmentCostPerAnimal = minCost;
+    //     }
+    // }
+
+private void UpdateRecruitmentCostByDistance()
+{
+    if (targetAnimalStructure == null)
+    {
+        recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+        return;
+    }
+
+    GridController gridController = FindObjectOfType<GridController>();
+    if (gridController == null)
+    {
+        Debug.LogWarning("No GridController found for barracks synergy check.");
+        recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+        return;
+    }
+
+    Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+    Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+    int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+
+    int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    int minCost = (int)(baseCost * synergyDiscount); // truncated discount
+
+    if (gridDist <= synergyMinDist) // 0 to 10 blocks (inclusive)
+    {
+        recruitmentCostPerAnimal = baseCost;
+    }
+    else if (gridDist > synergyMinDist && gridDist <= synergyMaxDist) // 11 to 20 blocks (inclusive)
+    {
+        recruitmentCostPerAnimal = minCost;
+    }
+    else // further than 20 blocks
+    {
+        recruitmentCostPerAnimal = minCost;
+    }
+}
 }

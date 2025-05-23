@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using FarmDefender.Core.AI.FlowField;
+using System.Linq;
 
 public class Structure : MonoBehaviour
 {
@@ -50,6 +51,20 @@ public class Structure : MonoBehaviour
     public event StructureEvent OnDamaged;
     public event StructureEvent OnDestroyed;
 
+    // Wolf notifications
+    private static readonly List<Wolf> registeredWolves = new List<Wolf>();
+
+    public static void RegisterWolf(Wolf wolf)
+    {
+        if (wolf != null && !registeredWolves.Contains(wolf))
+            registeredWolves.Add(wolf);
+    }
+
+    public static void UnregisterWolf(Wolf wolf)
+    {
+        registeredWolves.Remove(wolf);
+    }
+
     #region Unity Lifecycle
 
     private void Awake()
@@ -92,6 +107,9 @@ public class Structure : MonoBehaviour
             return;
         }
 
+        // Register with GameLoopManager
+        GameLoopManager.Instance?.RegisterStructure(this);
+
         // Register this structure with the grid system
         if (autoRegisterWithGrid && gridController != null)
         {
@@ -111,13 +129,14 @@ public class Structure : MonoBehaviour
         allowSelectionAndUI = allow;
     }
 
-    protected virtual void OnDestroy() // Changed to protected virtual
+    protected virtual void OnDestroy()
     {
-        // Ensure we unregister from grid if destroyed directly (without Die method)
+        // Unregister from grid and GameLoopManager
         if (hasRegisteredWithGrid && gridController != null)
         {
             UnregisterFromGrid();
         }
+        GameLoopManager.Instance?.UnregisterStructure(this);
     }
 
     #endregion
@@ -137,8 +156,7 @@ public class Structure : MonoBehaviour
         // Calculate the cells this structure occupies WITHOUT marking them
         CalculateOccupiedCells();
 
-        // We DON'T mark cells as occupied here anymore since BuildController already did that
-        // We just mark them as obstacles for pathfinding if needed
+        // Mark cells as obstacles for pathfinding if needed
         if (blocksPathfinding)
         {
             foreach (Vector2Int cellPos in occupiedCells)
@@ -237,9 +255,6 @@ public class Structure : MonoBehaviour
         // Trigger flow field recalculation if flowFieldManager exists
         if (flowFieldManager != null)
         {
-            // We should only update the flow field immediately if this structure is being 
-            // destroyed (not during construction/placement)
-
             // Check if in build mode - if so, skip flow field update
             BuildController buildController = FindObjectOfType<BuildController>();
             if (buildController != null && buildController.IsBuildModeActive())
@@ -299,6 +314,13 @@ public class Structure : MonoBehaviour
     {
         // Notify listeners
         OnDestroyed?.Invoke(this);
+
+        // Notify wolves of destruction
+        foreach (Wolf wolf in registeredWolves.ToList())
+        {
+            if (wolf != null && wolf)
+                wolf.OnTargetDestroyed(gameObject);
+        }
 
         // Spawn destruction effect if available
         if (destructionEffectPrefab != null)
@@ -434,7 +456,6 @@ public class Structure : MonoBehaviour
         Debug.Log($"Selected structure: {GetStructureName()}");
     }
 
-    // Deselect this structure
     public virtual void Deselect()
     {
         isSelected = false;
@@ -447,7 +468,6 @@ public class Structure : MonoBehaviour
         Debug.Log($"Deselected structure: {GetStructureName()}");
     }
 
-    // Create a selection indicator
     private void CreateSelectionIndicator()
     {
         selectionIndicator = new GameObject("SelectionIndicator");
@@ -468,10 +488,6 @@ public class Structure : MonoBehaviour
             selectionIndicator.transform.localPosition = new Vector3(0, 1f, 0);
         }
 
-        // Add visual element (circle sprite)
-        // You'll need to create a circle sprite and place it in Resources/UI
-        // or modify this to use a different indicator
-
         // Make the indicator face up
         selectionIndicator.transform.rotation = Quaternion.Euler(90, 0, 0);
 
@@ -489,7 +505,6 @@ public class Structure : MonoBehaviour
         Renderer quadRenderer = quad.GetComponent<Renderer>();
         if (quadRenderer != null)
         {
-            // Create a simple highlight material
             Material highlightMaterial = new Material(Shader.Find("Transparent/Diffuse"));
             highlightMaterial.color = new Color(1f, 1f, 0.5f, 0.3f); // Semi-transparent yellow
             quadRenderer.material = highlightMaterial;
@@ -498,7 +513,6 @@ public class Structure : MonoBehaviour
         selectionIndicator.SetActive(true);
     }
 
-    // Add a collider to the structure if it doesn't have one
     private void AddColliderToStructure()
     {
         // Try to get bounds from renderers
@@ -529,7 +543,6 @@ public class Structure : MonoBehaviour
         }
     }
 
-    // Check if structure is currently selected
     public bool IsSelected()
     {
         return isSelected;

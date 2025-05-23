@@ -10,10 +10,12 @@ public class NightManager : MonoBehaviour
     public static NightManager Instance { get; private set; }
 
     // Start night button
+    [Header("Start NIght button")]
     [SerializeField] private Button startNightButton;
     [SerializeField] private TextMeshProUGUI buttonText;
 
     // Light
+    [Header("Lighting stuff")]
     [SerializeField] private Light sceneLight;
     [SerializeField] private Color color = new Color32(0xAA, 0xBB, 0xDD, 0xFF);
     [SerializeField] private float intensity = 0.3f;
@@ -23,12 +25,14 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Gradient nightToMorningGradient;
 
     // Skyboxes
+    [Header("Skyboxes")]
     [SerializeField] private Texture2D skyboxMorning;
     [SerializeField] private Texture2D skyboxDay;
     [SerializeField] private Texture2D skyboxAfternoon;
     [SerializeField] private Texture2D skyboxNight;
 
     // Time indicator icons
+    [Header("Time Indicator")]
     [SerializeField] private Image timeOfDayIcon;
     [SerializeField] private Sprite dayIcon;
     [SerializeField] private Sprite nightIcon;
@@ -42,6 +46,7 @@ public class NightManager : MonoBehaviour
     public bool IsDay => isDay; // For CropStructureUI
 
     // Shop stuff
+    [Header("Shop Stuff")]
     [SerializeField] private Button shopButton;
     private Color dayShop = Color.white;
     private Color nightShop = Color.grey * 0.9f;
@@ -49,16 +54,23 @@ public class NightManager : MonoBehaviour
     [SerializeField] private ShopUIManager shopManager;
 
     // Item delete icon
+    [Header("Delete Icon")]
     [SerializeField] private BuildController buildController;
 
     // Time management
+    [Header("Time Management")]
     [SerializeField] private TextMeshProUGUI seasonNotification;
-    private float speedUp = 1f;
+    [SerializeField] private float speedUp = 1f;
+    [SerializeField] private float speedOfFast = 5f;
+
+    [Tooltip("How many in-game minutes per real life second (0.0625f -> 1 in-game minute = 0.0625 seconds (1 day ≈ 12 minutes))")]
+    [SerializeField] private float inGameMinVSSec = 0.0625f;
     private bool isPaused = false;
     [SerializeField] private bool isFast = false;
     [SerializeField] private TextMeshProUGUI timeText;
 
     // Time
+    [Header("Time")]
     [SerializeField] private int minutes;
     public int Minutes
     {
@@ -89,6 +101,7 @@ public class NightManager : MonoBehaviour
     private float tempSecond;
 
     // Season icons
+    [Header("Season Icons")]
     [SerializeField] private Image seasonIcon;
     [SerializeField] private Sprite summer;
     [SerializeField] private Sprite winter;
@@ -96,11 +109,13 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Sprite fall;
 
     // Fog density
+    [Header("Fog stuff")]
     [SerializeField] private float morningFog = 0.005f;
     [SerializeField] private float dayFog = 0.003f;
     [SerializeField] private float nightFog = 0.009f;
 
     // Light intensity
+    [Header("Light intensity")]
     [SerializeField] private float nightIntensity = 0.03f;
     [SerializeField] private float dayIntensity = 2f;
     [SerializeField] private float dayTemp = 6000f;
@@ -108,6 +123,7 @@ public class NightManager : MonoBehaviour
     [SerializeField] private float eveningTemp = 9000f;
 
     // Pause game manager
+    [Header("Pause Game Manager")]
     [SerializeField] private PauseManager pauseManager;
 
     // Structures
@@ -155,7 +171,7 @@ public class NightManager : MonoBehaviour
         tempSecond += Time.deltaTime * speedUp;
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
 
-        if (tempSecond >= 0.0625f) // 1 in-game minute = 0.0625 seconds (1 day ≈ 12 minutes)
+        if (tempSecond >= inGameMinVSSec) // 1 in-game minute = 0.0625 seconds (1 day ≈ 12 minutes)
         {
             Minutes += 1;
             tempSecond = 0;
@@ -178,7 +194,7 @@ public class NightManager : MonoBehaviour
     {
         isFast = !isFast;
         isPaused = false;
-        speedUp = isFast ? 5f : 1f;
+        speedUp = isFast ? speedOfFast : 1f;
     }
 
     private void cropGrowthOnAll(int stage)
@@ -372,18 +388,22 @@ public class NightManager : MonoBehaviour
             case 1:
                 text = "Spring!!";
                 seasonIcon.sprite = spring;
+                chooseAnimalProductForSeason();
                 break;
             case 2:
                 text = "Summer!!";
                 seasonIcon.sprite = summer;
+                chooseAnimalProductForSeason();
                 break;
             case 3:
                 text = "Fall!!";
                 seasonIcon.sprite = fall;
+                chooseAnimalProductForSeason();
                 break;
             case 4:
                 text = "Winter!!";
                 seasonIcon.sprite = winter;
+                chooseAnimalProductForSeason();
                 break;
             case 5:
                 text = $"Year {Years} done!!";
@@ -444,6 +464,95 @@ public class NightManager : MonoBehaviour
         if (barracks != null && barracksStructures.Remove(barracks))
         {
             Debug.Log($"Unregistered barracks: {barracks.GetStructureName()}");
+        }
+    }
+
+    public void chooseAnimalProductForSeason()
+    {
+        float sameProduct = Random.Range(0f, 1f);
+        int product1 = Random.Range(1, 6);
+        int product2 = Random.Range(1, 6);
+        float increasePercent = 1.5f; // 50% increase
+        
+        foreach (AnimalStructure animalStructure in animalStructures)
+        {            
+            //5% change of same product same as random number between 0 and 100 and the final being less than 5 -> 5 percent
+            if (sameProduct <= 0.05f)
+            {
+                string animal = determineAnimalProduct(product1);
+
+                if (animal == "E")
+                {
+                    Debug.LogError("Invalid animal product determined.");
+                    return;
+                }
+
+                animalStructure.updateAnimalProductionAmount(animal, increasePercent * 2);
+            }
+            else
+            {
+                if (product1 == product2)
+                {
+                    int[] newRange = new int[4];
+
+                    switch (product2)
+                    {
+                        case 1:
+                            newRange = new int[] { 2, 3, 4, 5 };
+                            break;
+                        case 2:
+                            newRange = new int[] { 1, 3, 4, 5 };
+                            break;
+                        case 3:
+                            newRange = new int[] { 1, 2, 4, 5 };
+                            break;
+                        case 4:
+                            newRange = new int[] { 1, 2, 3, 5 };
+                            break;
+                        case 5:
+                            newRange = new int[] { 1, 2, 3, 4 };
+                            break;
+                        default:
+                            Debug.LogError("Invalid product number.");
+                            return;
+                    }
+
+                    product2 = newRange[Random.Range(1, newRange.Length + 1)];
+                    string animal = determineAnimalProduct(product2);
+                    animalStructure.updateAnimalProductionAmount(animal, increasePercent);
+
+                    animal = determineAnimalProduct(product1);
+                    animalStructure.updateAnimalProductionAmount(animal, increasePercent);
+                }
+                else
+                {
+
+                    string animal = determineAnimalProduct(product1);
+                    animalStructure.updateAnimalProductionAmount(animal, increasePercent);
+
+                    animal = determineAnimalProduct(product2);
+                    animalStructure.updateAnimalProductionAmount(animal, increasePercent);
+                }
+            }
+        }
+    }
+    
+    private string determineAnimalProduct(int product)
+    {
+        switch (product)
+        {
+            case 1:
+                return "Ch";
+            case 2:
+                return "C";
+            case 3:
+                return "S";
+            case 4:
+                return "G";
+            case 5:
+                return "P";
+            default:
+                return "E";
         }
     }
 }

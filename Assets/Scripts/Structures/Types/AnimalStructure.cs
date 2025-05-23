@@ -306,4 +306,45 @@ public class AnimalStructure : Structure
             animal.updateSiloSynergy();
         }
     }
+
+    public void updateAnimalProductionAmount(string animalType, float increasePercent)
+    {
+        // Use the first letter(s) to match the type
+        string thisType = GetAnimalType.ToString();
+        bool matches = false;
+
+
+        switch (animalType)
+        {
+            case "Ch":
+                matches = thisType.StartsWith("Chicken");
+                Debug.Log($"The animal product increase is for Chicken amount increased is {increasePercent}");
+                break;
+            case "C":
+                matches = thisType.StartsWith("Cow");
+                Debug.Log($"The animal product increase is for Cow amount increased is {increasePercent}");
+                break;
+            case "S":
+                matches = thisType.StartsWith("Sheep");
+                Debug.Log($"The animal product increase is for Sheep amount increased is {increasePercent}");
+                break;
+            case "G":
+                matches = thisType.StartsWith("Goat");
+                Debug.Log($"The animal product increase is for Goat amount increased is {increasePercent}");
+                break;
+            case "P":
+                matches = thisType.StartsWith("Pig");
+                Debug.Log($"The animal product increase is for Pig amount increased is {increasePercent}");
+                break;
+            default:
+                Debug.LogWarning($"Unknown animal type: {animalType}");
+                break;
+        }
+
+        if (matches)
+        {
+            productionSettings.moneyPerProduct = (int)(productionSettings.moneyPerProduct * increasePercent);
+        }
+        
+    }
 }

@@ -60,6 +60,7 @@ public class NightManager : MonoBehaviour
     // Time management
     [Header("Time Management")]
     [SerializeField] private TextMeshProUGUI seasonNotification;
+    [SerializeField] private TextMeshProUGUI productionNotification;
     [SerializeField] private float speedUp = 1f;
     [SerializeField] private float speedOfFast = 5f;
 
@@ -159,6 +160,8 @@ public class NightManager : MonoBehaviour
             source1 = sources[0];
             source2 = sources[1];
         }
+
+        chooseAnimalProductForSeason();
     }
 
     private void Update()
@@ -466,73 +469,101 @@ public class NightManager : MonoBehaviour
             Debug.Log($"Unregistered barracks: {barracks.GetStructureName()}");
         }
     }
-    
+
     public void chooseAnimalProductForSeason()
-{
-    float sameProduct = Random.Range(0f, 1f);
-    int product1 = Random.Range(1, 6);
-    int product2 = Random.Range(1, 6);
-    float increasePercent = 1.5f; // 50% increase
-    float sameProductIncreasePercent = 2f; // 100% increase
-
-    // Reset all animal production to base before applying bonuses
-    foreach (AnimalStructure animalStructure in animalStructures)
     {
-        animalStructure.resetAnimalProductionAmount();
-    }
+        float sameProduct = Random.Range(0f, 1f);
+        int product1 = Random.Range(1, 6);
+        int product2 = Random.Range(1, 6);
+        float increasePercent = 1.5f; // 50% increase
+        float sameProductIncreasePercent = 2f; // 100% increase
 
-    // if (sameProduct <= 0.05f)
-    if (sameProduct <= 1f)
-    {
-        string animal = determineAnimalProduct(product1);
-        if (animal == "E")
-        {
-            Debug.LogError("Invalid animal product determined.");
-            return;
-        }
+        // Reset all animal production to base before applying bonuses
         foreach (AnimalStructure animalStructure in animalStructures)
         {
-            animalStructure.updateAnimalProductionAmount(animal, sameProductIncreasePercent);
+            animalStructure.resetAnimalProductionAmount();
         }
-    }
-    else
-    {
-        if (product1 == product2)
+
+        if (sameProduct <= 0.05f)
+        // if (sameProduct <= f)
         {
-            int[] newRange = new int[4];
-            switch (product2)
+            string animal = determineAnimalProduct(product1);
+            string fullAnimalName = getFullAnimalName(animal);
+            if (animal == "E")
             {
-                case 1: newRange = new int[] { 2, 3, 4, 5 }; break;
-                case 2: newRange = new int[] { 1, 3, 4, 5 }; break;
-                case 3: newRange = new int[] { 1, 2, 4, 5 }; break;
-                case 4: newRange = new int[] { 1, 2, 3, 5 }; break;
-                case 5: newRange = new int[] { 1, 2, 3, 4 }; break;
-                default: Debug.LogError("Invalid product number."); return;
+                Debug.LogError("Invalid animal product determined.");
+                return;
             }
-            product2 = newRange[Random.Range(0, newRange.Length)];
-            string animal1 = determineAnimalProduct(product1);
-            string animal2 = determineAnimalProduct(product2);
 
             foreach (AnimalStructure animalStructure in animalStructures)
             {
-                animalStructure.updateAnimalProductionAmount(animal1, increasePercent);
-                animalStructure.updateAnimalProductionAmount(animal2, increasePercent);
+                animalStructure.updateAnimalProductionAmount(animal, sameProductIncreasePercent);
             }
+
+            string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
+
+
+            StartCoroutine(showProductionText(message, 5));
+
+            // productionNotification.text = $"Animal production increased for {fullAnimalName} by {increasePercent * 100}!\nLUCKY!!! You got a double production bonus!";
         }
         else
         {
-            string animal1 = determineAnimalProduct(product1);
-            string animal2 = determineAnimalProduct(product2);
-
-            foreach (AnimalStructure animalStructure in animalStructures)
+            if (product1 == product2)
             {
-                animalStructure.updateAnimalProductionAmount(animal1, increasePercent);
-                animalStructure.updateAnimalProductionAmount(animal2, increasePercent);
+                int[] newRange = new int[4];
+                switch (product2)
+                {
+                    case 1: newRange = new int[] { 2, 3, 4, 5 }; break;
+                    case 2: newRange = new int[] { 1, 3, 4, 5 }; break;
+                    case 3: newRange = new int[] { 1, 2, 4, 5 }; break;
+                    case 4: newRange = new int[] { 1, 2, 3, 5 }; break;
+                    case 5: newRange = new int[] { 1, 2, 3, 4 }; break;
+                    default: Debug.LogError("Invalid product number."); return;
+                }
+
+                product2 = newRange[Random.Range(0, newRange.Length)];
+                string animal1 = determineAnimalProduct(product1);
+                string fullAnimalName1 = getFullAnimalName(animal1);
+
+                string animal2 = determineAnimalProduct(product2);
+                string fullAnimalName2 = getFullAnimalName(animal2);
+
+                foreach (AnimalStructure animalStructure in animalStructures)
+                {
+                    animalStructure.updateAnimalProductionAmount(animal1, increasePercent);
+                    animalStructure.updateAnimalProductionAmount(animal2, increasePercent);
+                }
+
+                string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
+
+                StartCoroutine(showProductionText(message, 5));
+
+                // productionNotification.text = $"Animal production increased for {fullAnimalName1} by {increasePercent * 100}and {fullAnimalName2} by {increasePercent * 100}!";
+            }
+            else
+            {
+                string animal1 = determineAnimalProduct(product1);
+                string fullAnimalName1 = getFullAnimalName(animal1);
+
+                string animal2 = determineAnimalProduct(product2);
+                string fullAnimalName2 = getFullAnimalName(animal2);
+
+                foreach (AnimalStructure animalStructure in animalStructures)
+                {
+                    animalStructure.updateAnimalProductionAmount(animal1, increasePercent);
+                    animalStructure.updateAnimalProductionAmount(animal2, increasePercent);
+                }
+
+                string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
+
+                StartCoroutine(showProductionText(message, 5));
+
+                // productionNotification.text = $"Animal production increased for {fullAnimalName1} by {increasePercent * 100}and {fullAnimalName2} by {increasePercent * 100}!";
             }
         }
     }
-}
-    
+
     private string determineAnimalProduct(int product)
     {
         switch (product)
@@ -550,5 +581,32 @@ public class NightManager : MonoBehaviour
             default:
                 return "E";
         }
+    }
+
+    private string getFullAnimalName(string animal)
+    {
+        switch (animal)
+        {
+            case "Ch":
+                return "Chicken";
+            case "C":
+                return "Cow";
+            case "S":
+                return "Sheep";
+            case "G":
+                return "Goat";
+            case "P":
+                return "Pig";
+            default:
+                return "Eish";
+        }
+    }
+    
+    private IEnumerator showProductionText(string message, float time)
+    {
+        productionNotification.text = message;
+        productionNotification.gameObject.SetActive(true);
+        yield return new WaitForSeconds(time);
+        productionNotification.gameObject.SetActive(false);
     }
 }

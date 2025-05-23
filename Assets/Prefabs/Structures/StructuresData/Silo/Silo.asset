@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Silo
   m_EditorClassIdentifier: 
   structureName: Silo
-  prefab: {fileID: 5981659149702903468, guid: d461f82b5a73bb44a9cf9096a9aa8132, type: 3}
-  icon: {fileID: 21300000, guid: 489d19a40a7a4a94581126e801bae86d, type: 3}
+  prefab: {fileID: 4970292996819563663, guid: 334c245d2beb02344ae796a220dc6124, type: 3}
+  icon: {fileID: 21300000, guid: f8f0e6180621c8744aa618f174ca6704, type: 3}
   type: 6
   cost: 100
   health: 150

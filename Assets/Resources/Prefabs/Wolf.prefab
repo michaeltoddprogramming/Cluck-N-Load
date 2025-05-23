@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 264810465737084052, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}
       propertyPath: m_Name
-      value: wolf Variant
+      value: Wolf
       objectReference: {fileID: 0}
     - target: {fileID: 641511277748868654, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 641511277748868654, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 2.033
       objectReference: {fileID: 0}
     - target: {fileID: 641511277748868654, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -83,9 +83,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 2
-  damage: 10
-  attackCooldown: 2
+  damage: 50
+  attackCooldown: 1
   maxHealth: 50
   detectionRange: 1000
+  globalSearchInterval: 0.5
+  chickenPriority: 10
+  structurePriority: 5
   flowFieldAgent: {fileID: 0}
-  flowFieldManager: {fileID: 0}
+  animator: {fileID: 0}

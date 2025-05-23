@@ -13,6 +13,8 @@ public class ArmyAnimal : MonoBehaviour
     [SerializeField] private string walkAnimParam = "IsWalking";
     [SerializeField] private string attackAnimParam = "Attack";
 
+
+
     private Vector3 guardPosition;
     private float guardRadius;
     private Vector3 targetPosition;
@@ -26,8 +28,13 @@ public class ArmyAnimal : MonoBehaviour
 
     public AnimalStructure.AnimalType AnimalType => animalType;
 
+    [Header("Health")]
+    [SerializeField] private int maxHealth = 30;
+    private int currentHealth;
+
     private void Start()
     {
+        currentHealth = maxHealth;
         guardPosition = transform.position;
         guardRadius = 5f;
         if (animator == null)
@@ -221,7 +228,27 @@ public class ArmyAnimal : MonoBehaviour
 
     private GameObject FindNearestEnemy()
     {
-        return null; // Placeholder
+        // Look for wolves in detection range
+        float detectionRange = 10f; // Add this as a serialized field later
+        Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRange);
+        GameObject closestEnemy = null;
+        float closestDistance = detectionRange;
+        
+        foreach (Collider col in colliders)
+        {
+            Wolf wolf = col.GetComponent<Wolf>();
+            if (wolf != null && wolf.gameObject.activeInHierarchy)
+            {
+                float distance = Vector3.Distance(transform.position, wolf.transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestEnemy = wolf.gameObject;
+                }
+            }
+        }
+        
+        return closestEnemy;
     }
 
     public void AttackEnemy(GameObject enemy)
@@ -245,5 +272,21 @@ public class ArmyAnimal : MonoBehaviour
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(transform.position, targetPosition);
         }
+    }
+    public void TakeDamage(int amount)
+    {
+        currentHealth -= amount;
+        Debug.Log($"{name} took {amount} damage. Health: {currentHealth}/{maxHealth}");
+        
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log($"{name} died!");
+        Destroy(gameObject);
     }
 }

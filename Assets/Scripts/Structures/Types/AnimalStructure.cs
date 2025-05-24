@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class AnimalStructure : Structure
 {
@@ -19,6 +20,15 @@ public class AnimalStructure : Structure
     [SerializeField] private AnimalProductionSettings productionSettings;
     [SerializeField] private int animalCount = 5;
     [SerializeField] private int maxAnimalCount = 10;
+
+    [Header("SFX")]
+    [Tooltip("Background sound for the animal structure.")]
+    // [SerializeField] public AudioClip backgroundNoise;
+    // [SerializeField] public AudioSource backgroundNoise;
+    // [SerializeField] public AudioSource backgroundNoise;
+    [SerializeField] private AudioSource audioSource; // Assign in Inspector
+    [SerializeField] private AudioClip backgroundClip; // Assign in Inspector
+    private Coroutine soundCoroutine;
 
     public class AnimalProductionSettings
     {
@@ -88,6 +98,16 @@ public class AnimalStructure : Structure
         if (nightManager != null)
         {
             nightManager.RegisterAnimalStructure(this);
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                Debug.LogWarning($"{gameObject.name}: AudioSource was missing, so one was added at runtime.-------------------------------------");
+            }
         }
     }
 
@@ -349,11 +369,30 @@ public class AnimalStructure : Structure
         }
 
     }
-    
+
     public void resetAnimalProductionAmount()
     {
         // Reset to base value (adjust as needed)
         productionSettings.moneyPerProduct = baseMoneyPerProduct;
         productionSettings.productAmount = baseProductAmount;
+    }
+
+    public void PlayBackgroundNoise()
+    {
+        if (audioSource != null && backgroundClip != null)
+        {
+            audioSource.clip = backgroundClip;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+    }
+    
+
+    public void StopBackgroundNoise()
+    {
+        if (audioSource != null && backgroundClip != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class BarracksStructure : Structure
@@ -12,6 +13,10 @@ public class BarracksStructure : Structure
     [SerializeField] private float protectionRadius = 5f;
     [SerializeField] private Color flagColor = Color.white;
     [SerializeField] private float structureCheckInterval = 5f;
+
+    [Header("Sound effects")]
+    [SerializeField] private AudioSource flagPlaceSound;
+    [SerializeField] private AudioSource flagPlaceSong;
 
     private AnimalStructure targetAnimalStructure;
     private List<GameObject> armyAnimals = new List<GameObject>();
@@ -354,6 +359,8 @@ public class BarracksStructure : Structure
 
     public void PlaceFlag(Vector3 position)
     {
+        flagPlacementSounds();
+
         if (flag != null)
         {
             flag.transform.position = position;
@@ -468,6 +475,23 @@ public class BarracksStructure : Structure
             barrack.FindTargetAnimalStructure();
         }
     }
+    
+
+    public void flagPlacementSounds()
+    {
+        StartCoroutine(PlayFlagPlacementSoundsWithDelay());
+    }
+
+    private IEnumerator PlayFlagPlacementSoundsWithDelay()
+    {
+        if (flagPlaceSound != null)
+            flagPlaceSound.Play();
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (flagPlaceSong != null)
+            flagPlaceSong.Play();
+    }
 
     //barrack synergy
     // private void UpdateRecruitmentCostByDistance()
@@ -578,40 +602,40 @@ public class BarracksStructure : Structure
     //     }
     // }
 
-private void UpdateRecruitmentCostByDistance()
-{
-    if (targetAnimalStructure == null)
+    private void UpdateRecruitmentCostByDistance()
     {
-        recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
-        return;
-    }
+        if (targetAnimalStructure == null)
+        {
+            recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+            return;
+        }
 
-    GridController gridController = FindObjectOfType<GridController>();
-    if (gridController == null)
-    {
-        Debug.LogWarning("No GridController found for barracks synergy check.");
-        recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
-        return;
-    }
+        GridController gridController = FindObjectOfType<GridController>();
+        if (gridController == null)
+        {
+            Debug.LogWarning("No GridController found for barracks synergy check.");
+            recruitmentCostPerAnimal = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+            return;
+        }
 
-    Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
-    Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
-    int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+        Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+        Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+        int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
 
-    int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
-    int minCost = (int)(baseCost * synergyDiscount); // truncated discount
+        int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+        int minCost = (int)(baseCost * synergyDiscount); // truncated discount
 
-    if (gridDist <= synergyMinDist) // 0 to 10 blocks (inclusive)
-    {
-        recruitmentCostPerAnimal = baseCost;
+        if (gridDist <= synergyMinDist) // 0 to 10 blocks (inclusive)
+        {
+            recruitmentCostPerAnimal = baseCost;
+        }
+        else if (gridDist > synergyMinDist && gridDist <= synergyMaxDist) // 11 to 20 blocks (inclusive)
+        {
+            recruitmentCostPerAnimal = minCost;
+        }
+        else // further than 20 blocks
+        {
+            recruitmentCostPerAnimal = minCost;
+        }
     }
-    else if (gridDist > synergyMinDist && gridDist <= synergyMaxDist) // 11 to 20 blocks (inclusive)
-    {
-        recruitmentCostPerAnimal = minCost;
-    }
-    else // further than 20 blocks
-    {
-        recruitmentCostPerAnimal = minCost;
-    }
-}
 }

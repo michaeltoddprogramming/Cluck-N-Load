@@ -122,6 +122,7 @@ public class BarracksStructureUI : BaseStructureUI
                 barracksStructure.PlaceFlag(position);
             }
         }
+        // flagPlacementSounds();
         EndFlagPlacement();
     }
 
@@ -137,6 +138,8 @@ public class BarracksStructureUI : BaseStructureUI
         {
             flagPlacementIndicator.SetActive(false);
         }
+
+        
     }
 
     private void UpdateUI()
@@ -225,4 +228,6 @@ public class BarracksStructureUI : BaseStructureUI
             barracksStructure.OnArmyChanged -= UpdateUI;
         }
     }
+
+    
 }

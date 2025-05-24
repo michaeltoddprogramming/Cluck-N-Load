@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: CowBarrack
   m_EditorClassIdentifier: 
   structureName: Cow Barrack
-  prefab: {fileID: 7128956907063885859, guid: 071f2593956e1034db90c9fafe76d0f9, type: 3}
-  icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+  prefab: {fileID: 4222961760227805080, guid: 07f2549d802357147b1d73db35f24ed1, type: 3}
+  icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50
   health: 150
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  backgroundNoise: {fileID: 0}
   targetAnimalType: Cow
   armyAnimalPrefabs:
   - {fileID: 3736252830002851638, guid: f55dfb8588e44b144b88f36b20ff30cd, type: 3}

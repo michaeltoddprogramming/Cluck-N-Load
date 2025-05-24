@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: GoatBarrack
   m_EditorClassIdentifier: 
   structureName: Goat Barrack
-  prefab: {fileID: 7128956907063885859, guid: 55a578f4768f7a64380be6ccd0be2bbd, type: 3}
-  icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+  prefab: {fileID: 4222961760227805080, guid: 1eb92778785a8da4d90a339f51346da0, type: 3}
+  icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50
   health: 150
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  backgroundNoise: {fileID: 0}
   targetAnimalType: Goat
   armyAnimalPrefabs:
   - {fileID: 264810465737084052, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}

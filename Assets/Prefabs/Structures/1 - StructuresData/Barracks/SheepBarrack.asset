@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: SheepBarrack
   m_EditorClassIdentifier: 
   structureName: Sheep Barrack
-  prefab: {fileID: 7128956907063885859, guid: 7b3aa5add69a4294699db1a59fadac25, type: 3}
-  icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+  prefab: {fileID: 4222961760227805080, guid: db22cff296fb76b44bd330afc7094d02, type: 3}
+  icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50
   health: 150
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  backgroundNoise: {fileID: 0}
   targetAnimalType: Sheep
   armyAnimalPrefabs:
   - {fileID: 2777186397944616743, guid: af8e1390443f4794ba8848b0aab68baa, type: 3}

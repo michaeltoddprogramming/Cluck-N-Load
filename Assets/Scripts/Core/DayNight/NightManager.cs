@@ -73,6 +73,11 @@ public class NightManager : MonoBehaviour
 
     // Time
     [Header("Time")]
+    [Header("Year Change Sounds")]
+    private AudioSource yearAudioSource;
+    private AudioSource clockTickingSource;
+    private AudioSource roosterMorningSource;
+    private AudioSource doubleProductionSource;
     [SerializeField] private int minutes;
     public int Minutes
     {
@@ -144,13 +149,13 @@ public class NightManager : MonoBehaviour
     private float nextWolfSpawnTime;
 
     public void RegisterWolf(Wolf wolf)
-{
-    if (wolf != null && !activeWolves.Contains(wolf))
     {
-        activeWolves.Add(wolf);
-        Debug.Log($"Registered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
+        if (wolf != null && !activeWolves.Contains(wolf))
+        {
+            activeWolves.Add(wolf);
+            Debug.Log($"Registered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
+        }
     }
-}
 
     public void UnregisterWolf(Wolf wolf)
     {
@@ -231,6 +236,10 @@ private IEnumerator SpawnWolvesOverTime()
         {
             source1 = sources[0];
             source2 = sources[1];
+            yearAudioSource = sources[2];
+            clockTickingSource = sources[3];
+            roosterMorningSource = sources[4];
+            doubleProductionSource = sources[5];
         }
 
         chooseAnimalProductForSeason();
@@ -416,6 +425,10 @@ activeWolves.Clear();
         if (value == 5)
         {
             StartDay(2);
+            if (roosterMorningSource != null)
+            {
+                roosterMorningSource.Play();
+            }
             RenderSettings.fogDensity = morningFog;
             StartCoroutine(Skybox(skyboxNight, skyboxMorning, 2f));
             StartCoroutine(LightingChanges(nightToMorningGradient, 2f));
@@ -430,6 +443,10 @@ activeWolves.Clear();
         }
         else if (value == 16)
         {
+            if (clockTickingSource != null)
+            {
+                clockTickingSource.Play();
+            }
             StartCoroutine(showText("Night starting soon!!", 5f));
             StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
             StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
@@ -449,6 +466,10 @@ activeWolves.Clear();
         if (value >= 5)
         {
             years++;
+            if (yearAudioSource != null)
+            {
+                yearAudioSource.Play();
+            }
             days = 0;
             hours = 7;
             minutes = 0;
@@ -634,6 +655,11 @@ activeWolves.Clear();
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
                 StartCoroutine(showProductionText(message, 5));
+
+                if (doubleProductionSource != null)
+                {
+                    doubleProductionSource.Play();
+                }
 
                 // productionNotification.text = $"Animal production increased for {fullAnimalName1} by {increasePercent * 100}and {fullAnimalName2} by {increasePercent * 100}!";
             }

@@ -25,6 +25,8 @@ public class AnimalStructureUI : BaseStructureUI
             animalStructure = (AnimalStructure)structure;
             animalStructure.OnAnimalCountChanged += UpdateUI;
             Debug.Log($"{structure.GetStructureName()} AnimalStructureUI: Subscribed to OnAnimalCountChanged");
+
+            animalStructure.PlayBackgroundNoise();
         }
 
         nightManager = NightManager.Instance ?? FindObjectOfType<NightManager>();
@@ -42,7 +44,14 @@ public class AnimalStructureUI : BaseStructureUI
 
         SetupButtonListeners();
         UpdateUI();
+
+        
     }
+
+    // public void Start()
+    // {
+    //     animalStructure.PlayBackgroundNoise();
+    // }
 
     private void SetupButtonListeners()
     {
@@ -309,5 +318,8 @@ public class AnimalStructureUI : BaseStructureUI
         {
             animalStructure.OnAnimalCountChanged -= UpdateUI;
         }
+
+        animalStructure.StopBackgroundNoise();
+        
     }
 }

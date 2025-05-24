@@ -19,3 +19,11 @@ MonoBehaviour:
   cost: 50
   health: 100
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
+  targetAnimalType: 
+  armyAnimalPrefabs: []
+  flagPrefab: {fileID: 0}
+  recruitmentRange: 4000
+  maxArmyAnimals: 5
+  recruitmentCostPerAnimal: 50
+  protectionRadius: 5
+  backgroundNoise: {fileID: 0}

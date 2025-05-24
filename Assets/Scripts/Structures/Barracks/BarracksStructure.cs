@@ -17,6 +17,8 @@ public class BarracksStructure : Structure
     [Header("Sound effects")]
     [SerializeField] private AudioSource flagPlaceSound;
     [SerializeField] private AudioSource flagPlaceSong;
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip backgroundNoise;
 
     private AnimalStructure targetAnimalStructure;
     private List<GameObject> armyAnimals = new List<GameObject>();
@@ -491,6 +493,16 @@ public class BarracksStructure : Structure
 
         if (flagPlaceSong != null)
             flagPlaceSong.Play();
+    }
+
+    public void playBackgroundSound()
+    {
+        if (audioSource != null && backgroundNoise != null)
+        {
+            audioSource.clip = backgroundNoise;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
     }
 
     //barrack synergy

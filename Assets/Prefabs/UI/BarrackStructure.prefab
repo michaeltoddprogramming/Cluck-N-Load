@@ -618,6 +618,8 @@ MonoBehaviour:
   setFlagColorButton: {fileID: 6453612061303373420}
   recruitAmount: 1
   flagPlacementIndicator: {fileID: 5952118600856900788, guid: 1ff35929655321244925308fad2325d2, type: 3}
+  flagPlaceSound: {fileID: -3890299253567259747, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
+  flagPlaceSong: {fileID: -354238595652762120, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
 --- !u!114 &1870193486873066752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -648,6 +650,10 @@ MonoBehaviour:
   recruitmentCostPerAnimal: 50
   protectionRadius: 5
   flagColor: {r: 1, g: 1, b: 1, a: 1}
+  structureCheckInterval: 5
+  synergyMinDist: 10
+  synergyMaxDist: 20
+  synergyDiscount: 0.8
 --- !u!1 &4037316871027617026
 GameObject:
   m_ObjectHideFlags: 0

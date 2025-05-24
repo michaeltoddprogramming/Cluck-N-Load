@@ -12,6 +12,10 @@ public class StructureData : ScriptableObject
     public int health;
     public GameObject uiPrefab;
 
+    [Header("SFX")]
+    // [Tooltip("Radius for army animals to patrol around the flag.")]
+    [SerializeField] public AudioClip backgroundNoise;
+
     [Header("Barracks Settings")]
     [Tooltip("Animal type this barracks recruits from (e.g., Chicken, Cow). Leave empty for non-barracks structures.")]
     public string targetAnimalType; // e.g., "Chicken", "Cow"
@@ -27,6 +31,23 @@ public class StructureData : ScriptableObject
     public int recruitmentCostPerAnimal = 50;
     [Tooltip("Radius for army animals to patrol around the flag.")]
     public float protectionRadius = 5f;
+
+    // public void playBackgroundNoise()
+    // {
+    //     StartCoroutine(playSound(10f));
+    // }
+
+    // private IEnumerator playSound(float seconds)
+    // {
+    //     while (true)
+    //     {
+    //         if (structureData != null && structureData.backgroundNoise != null && audioSource != null)
+    //         {
+    //             audioSource.PlayOneShot(structureData.backgroundNoise);
+    //         }
+    //         yield return new WaitForSeconds(seconds);
+    //     }
+    // }
 }
 
 public enum StructureType

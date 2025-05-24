@@ -147,6 +147,13 @@ public class NightManager : MonoBehaviour
     
     private List<Wolf> activeWolves = new List<Wolf>();
     private float nextWolfSpawnTime;
+    
+    // Coroutine tracking for better management
+    private Coroutine seasonNotificationCoroutine = null;
+    private Coroutine productionNotificationCoroutine = null;
+    private Coroutine wolfSpawnCoroutine = null;
+    private List<Coroutine> skyboxCoroutines = new List<Coroutine>();
+    private List<Coroutine> lightingCoroutines = new List<Coroutine>();
 
     public void RegisterWolf(Wolf wolf)
     {
@@ -165,49 +172,49 @@ public class NightManager : MonoBehaviour
         }
     }
     
-// Add this method to your NightManager class
-// Fix the SpawnWolvesOverTime coroutine
-private IEnumerator SpawnWolvesOverTime()
-{
-    // Calculate how many wolves to spawn tonight (increasing difficulty)
-    int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
-    int wolvesSpawned = 0;
-    
-    Debug.Log($"🐺 NIGHT {days}: Planning to spawn {totalWolvesToSpawn} wolves tonight");
-    
-    // Initial delay before first spawn
-    yield return new WaitForSeconds(3f);
-    
-    // Keep spawning wolves until we reach the limit or day breaks
-    while (wolvesSpawned < totalWolvesToSpawn && !isDay)
+    // Fix the SpawnWolvesOverTime coroutine
+    private IEnumerator SpawnWolvesOverTime()
     {
-        // Don't spawn more if we're at max concurrent wolves
-        if (activeWolves.Count < maxWolvesAtOnce)
+        // Calculate how many wolves to spawn tonight (increasing difficulty)
+        int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
+        int wolvesSpawned = 0;
+        
+        Debug.Log($"🐺 NIGHT {days}: Planning to spawn {totalWolvesToSpawn} wolves tonight");
+        
+        // Initial delay before first spawn
+        yield return new WaitForSeconds(3f);
+        
+        // Keep spawning wolves until we reach the limit or day breaks
+        while (wolvesSpawned < totalWolvesToSpawn && !isDay)
         {
-            // Use new specific wolf spawner method
-            if (unitSpawner != null)
+            // Don't spawn more if we're at max concurrent wolves
+            if (activeWolves.Count < maxWolvesAtOnce)
             {
-                unitSpawner.SpawnWolf();
-                wolvesSpawned++;
-                Debug.Log($"🐺 Wolf {wolvesSpawned}/{totalWolvesToSpawn} spawned! Active wolves: {activeWolves.Count}");
+                // Use new specific wolf spawner method
+                if (unitSpawner != null)
+                {
+                    unitSpawner.SpawnWolf();
+                    wolvesSpawned++;
+                    Debug.Log($"🐺 Wolf {wolvesSpawned}/{totalWolvesToSpawn} spawned! Active wolves: {activeWolves.Count}");
+                }
+                else
+                {
+                    Debug.LogError("CRITICAL ERROR: UnitSpawner is null!");
+                    break;
+                }
             }
             else
             {
-                Debug.LogError("CRITICAL ERROR: UnitSpawner is null!");
-                break;
+                Debug.Log($"Maximum active wolves reached ({maxWolvesAtOnce}). Waiting for some to die before spawning more.");
             }
-        }
-        else
-        {
-            Debug.Log($"Maximum active wolves reached ({maxWolvesAtOnce}). Waiting for some to die before spawning more.");
+            
+            // Wait before spawning next wolf
+            yield return new WaitForSeconds(spawnInterval);
         }
         
-        // Wait before spawning next wolf
-        yield return new WaitForSeconds(spawnInterval);
+        Debug.Log($"🐺 Wolf spawning complete: {wolvesSpawned} wolves spawned");
+        wolfSpawnCoroutine = null;
     }
-    
-    Debug.Log($"🐺 Wolf spawning complete: {wolvesSpawned} wolves spawned");
-}
 
     private void Awake()
     {
@@ -229,6 +236,7 @@ private IEnumerator SpawnWolvesOverTime()
         Hours = 7;
         Years = 1;
         seasonNotification.gameObject.SetActive(false);
+        productionNotification.gameObject.SetActive(false);
         setSeason(1);
 
         AudioSource[] sources = GetComponents<AudioSource>();
@@ -260,7 +268,8 @@ private IEnumerator SpawnWolvesOverTime()
             Minutes += 1;
             tempSecond = 0;
         }
-                // Clean up any null references in the wolves list
+        
+        // Clean up any null references in the wolves list
         activeWolves.RemoveAll(wolf => wolf == null);
     }
 
@@ -320,8 +329,13 @@ private IEnumerator SpawnWolvesOverTime()
         // Start wolf spawning when night begins
         if (unitSpawner != null)
         {
-            StopAllCoroutines(); // Stop any existing spawn coroutines
-            StartCoroutine(SpawnWolvesOverTime()); // Use the existing method
+            // Stop only wolf spawning coroutine if active
+            if (wolfSpawnCoroutine != null)
+            {
+                StopCoroutine(wolfSpawnCoroutine);
+            }
+            
+            wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
             Debug.Log($"Night {days}: Starting wolf spawning");
         }
         else
@@ -329,7 +343,10 @@ private IEnumerator SpawnWolvesOverTime()
             Debug.LogError("UnitSpawner reference missing in NightManager!");
         }
 
-        StartCoroutine(Skybox(skyboxDay, skyboxNight, 5f));
+        // Manage skybox coroutines
+        Coroutine skyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxNight, 5f));
+        skyboxCoroutines.Add(skyboxCor);
+        
         if (source1 != null) source1.Play();
         if (source2 != null) source2.Stop();
 
@@ -385,7 +402,10 @@ private IEnumerator SpawnWolvesOverTime()
         isDay = true;
         buttonText.text = "Start Night";
 
-        StartCoroutine(Skybox(skyboxNight, skyboxDay, flag == 0 ? 0f : 5f));
+        // Manage skybox coroutines
+        Coroutine skyboxCor = StartCoroutine(Skybox(skyboxNight, skyboxDay, flag == 0 ? 0f : 5f));
+        skyboxCoroutines.Add(skyboxCor);
+        
         if (source1 != null) source1.Stop();
         if (source2 != null) source2.Play();
 
@@ -394,15 +414,18 @@ private IEnumerator SpawnWolvesOverTime()
         timeOfDayIcon.sprite = dayIcon;
     }
 
-    private IEnumerator LightingChanges(Gradient lightGradient, float time)
-    {
-        for (float k = 0; k < time; k += Time.deltaTime)
+            private IEnumerator LightingChanges(Gradient lightGradient, float time)
         {
-            sceneLight.color = lightGradient.Evaluate(k / time);
-            RenderSettings.fogColor = sceneLight.color;
-            yield return null;
+            for (float k = 0; k < time; k += Time.deltaTime)
+            {
+                sceneLight.color = lightGradient.Evaluate(k / time);
+                RenderSettings.fogColor = sceneLight.color;
+                yield return null;
+            }
+            
+            // Remove the problematic line entirely - coroutines will be cleaned up
+            // by Unity when the object is destroyed
         }
-    }
 
     private void OnMinutesChange(int value)
     {
@@ -430,15 +453,25 @@ private IEnumerator SpawnWolvesOverTime()
                 roosterMorningSource.Play();
             }
             RenderSettings.fogDensity = morningFog;
-            StartCoroutine(Skybox(skyboxNight, skyboxMorning, 2f));
-            StartCoroutine(LightingChanges(nightToMorningGradient, 2f));
+            
+            Coroutine skyboxCor = StartCoroutine(Skybox(skyboxNight, skyboxMorning, 2f));
+            skyboxCoroutines.Add(skyboxCor);
+            
+            Coroutine lightCor = StartCoroutine(LightingChanges(nightToMorningGradient, 2f));
+            lightingCoroutines.Add(lightCor);
+            
             sceneLight.colorTemperature = 2000f;
         }
         else if (value == 7)
         {
             RenderSettings.fogDensity = dayFog;
-            StartCoroutine(Skybox(skyboxMorning, skyboxDay, 2f));
-            StartCoroutine(LightingChanges(morningToDayGradient, 2f));
+            
+            Coroutine skyboxCor = StartCoroutine(Skybox(skyboxMorning, skyboxDay, 2f));
+            skyboxCoroutines.Add(skyboxCor);
+            
+            Coroutine lightCor = StartCoroutine(LightingChanges(morningToDayGradient, 2f));
+            lightingCoroutines.Add(lightCor);
+            
             sceneLight.colorTemperature = 6000f;
         }
         else if (value == 16)
@@ -448,9 +481,14 @@ private IEnumerator SpawnWolvesOverTime()
                 clockTickingSource.Play();
             }
 
-            StartCoroutine(showText("Night starting soon!!", 5f));
-            StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
-            StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
+            StartNotification("Night starting soon!!", 5f);
+            
+            Coroutine skyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
+            skyboxCoroutines.Add(skyboxCor);
+            
+            Coroutine lightCor = StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
+            lightingCoroutines.Add(lightCor);
+            
             sceneLight.colorTemperature = 2000f;
         }
         else if (value == 20)
@@ -461,15 +499,20 @@ private IEnumerator SpawnWolvesOverTime()
             }
 
             StartNight(2);
-            StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
-            StartCoroutine(LightingChanges(AfternoonToNightGradient, 2f));
+            
+            Coroutine skyboxCor = StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
+            skyboxCoroutines.Add(skyboxCor);
+            
+            Coroutine lightCor = StartCoroutine(LightingChanges(AfternoonToNightGradient, 2f));
+            lightingCoroutines.Add(lightCor);
+            
             sceneLight.colorTemperature = 9000f;
         }
     }
 
     private void OnDayChange(int value)
     {
-        if (value >= 5)
+        if (value >= 20)
         {
             years++;
             if (yearAudioSource != null)
@@ -484,26 +527,40 @@ private IEnumerator SpawnWolvesOverTime()
             return;
         }
 
-        if (value == 0) setSeason(1);
-        else if (value == 1) setSeason(2);
-        else if (value == 2) setSeason(3);
-        else if (value == 3) setSeason(4);
-        else if (value == 4) setSeason(5);
+        int currentSeason;
+    
+        if (value < 5)
+            currentSeason = 1; // Spring
+        else if (value < 10)
+            currentSeason = 2; // Summer
+        else if (value < 15)
+            currentSeason = 3; // Fall
+        else
+            currentSeason = 4; // Winter
+            
+        // Only trigger season change on first day of the season
+        if (value % 5 == 0)
+        {
+            setSeason(currentSeason);
+        }
     }
 
-    private IEnumerator Skybox(Texture2D a, Texture2D b, float time)
+        private IEnumerator Skybox(Texture2D a, Texture2D b, float time)
     {
         RenderSettings.skybox.SetTexture("_Texture1", a);
         RenderSettings.skybox.SetTexture("_Texture2", b);
         RenderSettings.skybox.SetFloat("_Blend", 0);
-
+    
         for (float k = 0; k < time; k += Time.deltaTime)
         {
             RenderSettings.skybox.SetFloat("_Blend", k / time);
             yield return null;
         }
-
+    
         RenderSettings.skybox.SetTexture("_Texture1", b);
+        
+        // Remove this problematic line:
+        // skyboxCoroutines.Remove(System.Array.Find(skyboxCoroutines.ToArray(), c => c == this));
     }
 
     private void setSeason(int season)
@@ -538,7 +595,21 @@ private IEnumerator SpawnWolvesOverTime()
                 text = "";
                 break;
         }
-        StartCoroutine(showText(text, 5));
+        StartNotification(text, 5);
+    }
+    
+    // New method to properly manage notification coroutines
+    private void StartNotification(string message, float duration)
+    {
+        // Stop any existing notification first
+        if (seasonNotificationCoroutine != null)
+        {
+            StopCoroutine(seasonNotificationCoroutine);
+            seasonNotification.gameObject.SetActive(false);
+        }
+        
+        // Start new notification
+        seasonNotificationCoroutine = StartCoroutine(showText(message, duration));
     }
 
     private IEnumerator showText(string message, float time)
@@ -547,6 +618,21 @@ private IEnumerator SpawnWolvesOverTime()
         seasonNotification.gameObject.SetActive(true);
         yield return new WaitForSeconds(time);
         seasonNotification.gameObject.SetActive(false);
+        seasonNotificationCoroutine = null;
+    }
+    
+    // New method to properly manage production notification coroutines
+    private void StartProductionNotification(string message, float duration)
+    {
+        // Stop any existing notification first
+        if (productionNotificationCoroutine != null)
+        {
+            StopCoroutine(productionNotificationCoroutine);
+            productionNotification.gameObject.SetActive(false);
+        }
+        
+        // Start new notification
+        productionNotificationCoroutine = StartCoroutine(showProductionText(message, duration));
     }
 
     public void FastForwardEnableShop()
@@ -608,7 +694,6 @@ private IEnumerator SpawnWolvesOverTime()
         }
 
         if (sameProduct <= 0.05f)
-        // if (sameProduct <= f)
         {
             string animal = determineAnimalProduct(product1);
             string fullAnimalName = getFullAnimalName(animal);
@@ -625,10 +710,13 @@ private IEnumerator SpawnWolvesOverTime()
 
             string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
 
-
-            StartCoroutine(showProductionText(message, 5));
-
-            // productionNotification.text = $"Animal production increased for {fullAnimalName} by {increasePercent * 100}!\nLUCKY!!! You got a double production bonus!";
+            StartProductionNotification(message, 5);
+            
+            // Play the sound for the lucky bonus case
+            if (doubleProductionSource != null)
+            {
+                doubleProductionSource.Play();
+            }
         }
         else
         {
@@ -660,14 +748,12 @@ private IEnumerator SpawnWolvesOverTime()
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
-                StartCoroutine(showProductionText(message, 5));
+                StartProductionNotification(message, 5);
 
                 if (doubleProductionSource != null)
                 {
                     doubleProductionSource.Play();
                 }
-
-                // productionNotification.text = $"Animal production increased for {fullAnimalName1} by {increasePercent * 100}and {fullAnimalName2} by {increasePercent * 100}!";
             }
             else
             {
@@ -685,9 +771,7 @@ private IEnumerator SpawnWolvesOverTime()
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
-                StartCoroutine(showProductionText(message, 5));
-
-                // productionNotification.text = $"Animal production increased for {fullAnimalName1} by {increasePercent * 100}and {fullAnimalName2} by {increasePercent * 100}!";
+                StartProductionNotification(message, 5);
             }
         }
     }
@@ -736,5 +820,6 @@ private IEnumerator SpawnWolvesOverTime()
         productionNotification.gameObject.SetActive(true);
         yield return new WaitForSeconds(time);
         productionNotification.gameObject.SetActive(false);
+        productionNotificationCoroutine = null;
     }
 }

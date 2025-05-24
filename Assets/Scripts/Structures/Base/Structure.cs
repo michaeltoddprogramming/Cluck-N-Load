@@ -51,6 +51,10 @@ public class Structure : MonoBehaviour
     public event StructureEvent OnDamaged;
     public event StructureEvent OnDestroyed;
 
+    // Add the new event that StructureUIManager is looking for
+    public delegate void StructureDestroyedEventHandler(Structure destroyedStructure);
+    public event StructureDestroyedEventHandler OnStructureDestroyed;
+
     // Wolf notifications
     private static readonly List<Wolf> registeredWolves = new List<Wolf>();
 
@@ -312,8 +316,9 @@ public class Structure : MonoBehaviour
 
     public virtual void Die()
     {
-        // Notify listeners
+        // Notify listeners through both events
         OnDestroyed?.Invoke(this);
+        OnStructureDestroyed?.Invoke(this); // Add this line to trigger the new event
 
         // Notify wolves of destruction
         foreach (Wolf wolf in registeredWolves.ToList())
@@ -342,6 +347,7 @@ public class Structure : MonoBehaviour
             Destroy(gameObject, destroyDelay);
         }
     }
+
 
     // Public getter for current health
     public int GetCurrentHealth()

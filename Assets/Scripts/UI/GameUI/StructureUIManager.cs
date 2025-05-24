@@ -38,6 +38,13 @@ public class StructureUIManager : MonoBehaviour
 
     private void Update()
     {
+        // First check if the current structure still exists
+        if (currentSelectedStructure == null && activeUI != null)
+        {
+            HideStructureUI();
+            return;
+        }
+        
         if (currentSelectedStructure != null && activeUI != null && activeUIRect != null)
         {
             // Calculate the target screen position including the offset
@@ -49,7 +56,6 @@ public class StructureUIManager : MonoBehaviour
 
             // Scale based on distance (optional, remove if not needed)
             float distance = Vector3.Distance(Camera.main.transform.position, currentSelectedStructure.transform.position);
-            // float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f);
             float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f) * uiSize;
             activeUIRect.localScale = new Vector3(scale, scale, 1f);
 
@@ -57,8 +63,6 @@ public class StructureUIManager : MonoBehaviour
             Vector3 viewportPos = Camera.main.WorldToViewportPoint(currentSelectedStructure.transform.position);
             bool isOnScreen = viewportPos.x >= 0 && viewportPos.x <= 1 && viewportPos.y >= 0 && viewportPos.y <= 1 && viewportPos.z > 0;
             activeUI.SetActive(isOnScreen);
-
-
         }
     }
 
@@ -66,7 +70,6 @@ public class StructureUIManager : MonoBehaviour
     {
         //play opening SFX
         playOpenSFX();
-
 
         if (structure == null)
         {
@@ -79,6 +82,9 @@ public class StructureUIManager : MonoBehaviour
         HideStructureUI();
 
         currentSelectedStructure = structure;
+        
+        // Subscribe to the structure's destruction event
+        currentSelectedStructure.OnStructureDestroyed += OnSelectedStructureDestroyed;
 
         GameObject prefab = null;
         if (structure.structureData != null && structure.structureData.uiPrefab != null)
@@ -146,7 +152,22 @@ public class StructureUIManager : MonoBehaviour
             activeUIRect = null;
         }
 
-        currentSelectedStructure = null;
+        // Unsubscribe from events when hiding UI
+        if (currentSelectedStructure != null)
+        {
+            currentSelectedStructure.OnStructureDestroyed -= OnSelectedStructureDestroyed;
+            currentSelectedStructure = null;
+        }
+    }
+    
+    // Event handler for when the selected structure is destroyed
+    private void OnSelectedStructureDestroyed(Structure destroyedStructure)
+    {
+        if (destroyedStructure == currentSelectedStructure)
+        {
+            Debug.Log($"Selected structure {destroyedStructure.GetStructureName()} was destroyed - hiding UI");
+            HideStructureUI();
+        }
     }
 
     private Vector3 GetScreenPositionAboveStructure(Structure structure)
@@ -178,11 +199,21 @@ public class StructureUIManager : MonoBehaviour
             closeSound.Play();
         }
     }
+    
     public void playOpenSFX()
     {
         if (openSound != null)
         {
             openSound.Play();
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Clean up event subscriptions when this manager is destroyed
+        if (currentSelectedStructure != null)
+        {
+            currentSelectedStructure.OnStructureDestroyed -= OnSelectedStructureDestroyed;
         }
     }
 }

@@ -3048,6 +3048,10 @@ MonoBehaviour:
   cropStatusText: {fileID: 8758886788875045827}
   notificationText: {fileID: 5519286877853876276}
   nightManager: {fileID: 0}
+  errorSound: {fileID: 8300000, guid: efec1d0cfaca32c4eb555bc598644eab, type: 3}
+  plantSound: {fileID: 0}
+  harvestSound: {fileID: 0}
+  soundVolume: 0.7
 --- !u!82 &3221153313513895485
 AudioSource:
   m_ObjectHideFlags: 0

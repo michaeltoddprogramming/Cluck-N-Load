@@ -19,11 +19,10 @@ MonoBehaviour:
   cost: 50
   health: 150
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
-  backgroundNoise: {fileID: 0}
   targetAnimalType: Cow
   armyAnimalPrefabs:
-  - {fileID: 3736252830002851638, guid: f55dfb8588e44b144b88f36b20ff30cd, type: 3}
-  flagPrefab: {fileID: 7043309248494615266, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
+  - {fileID: 1963215568946069723, guid: eee980f74c0e2ee4dac90448aaa8dc68, type: 3}
+  flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50

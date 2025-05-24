@@ -1,20 +1,25 @@
 using UnityEngine;
-using System.Collections.Generic;
+using System.Collections;
+using UnityEngine.UI;
 
 public class StructureUIManager : MonoBehaviour
 {
     public static StructureUIManager Instance { get; private set; }
-    
+
     [SerializeField] private Transform uiParent;
     [SerializeField] private GameObject defaultStructureUI;
     [SerializeField] private float uiOffset = 0.5f;
     [SerializeField] private Vector2 screenOffset = new Vector2(0, 20f);
-    [SerializeField] private float uiSize = 1.5f;
-    
+
+    [Header("UI SFX")]
+    [SerializeField] public AudioSource closeSound;
+    [SerializeField] public AudioSource openSound;
+
     private Structure currentSelectedStructure;
     private GameObject activeUI;
     private RectTransform activeUIRect;
-    
+    private bool isHidingUI = false;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -23,7 +28,7 @@ public class StructureUIManager : MonoBehaviour
             return;
         }
         Instance = this;
-        
+
         if (uiParent == null)
         {
             GameObject parent = new GameObject("Structure UI Parent");
@@ -31,33 +36,28 @@ public class StructureUIManager : MonoBehaviour
             parent.transform.SetParent(transform);
         }
     }
-    
+
     private void Update()
     {
-        if (currentSelectedStructure != null && activeUI != null && activeUIRect != null)
+        if ((currentSelectedStructure == null && activeUI != null) ||
+            (currentSelectedStructure != null && currentSelectedStructure.GetCurrentHealth() <= 0))
         {
-            // Calculate the target screen position including the offset
-            Vector3 screenPos = GetScreenPositionAboveStructure(currentSelectedStructure);
-            screenPos += new Vector3(screenOffset.x, screenOffset.y, 0);
-
-            // Directly set the position for an anchored feel (no Lerp)
-            activeUIRect.position = screenPos;
-
-            // Scale based on distance (optional, remove if not needed)
-            float distance = Vector3.Distance(Camera.main.transform.position, currentSelectedStructure.transform.position);
-            // float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f);
-            float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f) * uiSize;
-            activeUIRect.localScale = new Vector3(scale, scale, 1f);
-
-            // Hide UI if the structure is off-screen
-            Vector3 viewportPos = Camera.main.WorldToViewportPoint(currentSelectedStructure.transform.position);
-            bool isOnScreen = viewportPos.x >= 0 && viewportPos.x <= 1 && viewportPos.y >= 0 && viewportPos.y <= 1 && viewportPos.z > 0;
-            activeUI.SetActive(isOnScreen);
-
-
+            HideStructureUI();
+            return;
         }
+
+        if (isHidingUI || currentSelectedStructure == null || activeUI == null || activeUIRect == null)
+            return;
+
+        Vector3 screenPos = GetScreenPositionAboveStructure(currentSelectedStructure);
+        screenPos += new Vector3(screenOffset.x, screenOffset.y, 0);
+        activeUIRect.position = screenPos;
+
+        Vector3 viewportPos = Camera.main.WorldToViewportPoint(currentSelectedStructure.transform.position);
+        bool isOnScreen = viewportPos.x >= 0 && viewportPos.x <= 1 && viewportPos.y >= 0 && viewportPos.y <= 1 && viewportPos.z > 0;
+        activeUI.SetActive(isOnScreen);
     }
-    
+
     public void ShowStructureUI(Structure structure)
     {
         if (structure == null)
@@ -67,54 +67,42 @@ public class StructureUIManager : MonoBehaviour
         }
 
         Debug.Log($"ShowStructureUI called for {structure.GetStructureName()}");
-        
-        HideStructureUI();
-        
+
+        HideStructureUI(); // Ensure previous UI is closed
+
         currentSelectedStructure = structure;
-        
-        GameObject prefab = null;
-        if (structure.structureData != null && structure.structureData.uiPrefab != null)
+        currentSelectedStructure.OnStructureDestroyed += OnSelectedStructureDestroyed;
+
+        GameObject prefab = structure.structureData?.uiPrefab ?? defaultStructureUI;
+        if (prefab == null)
         {
-            prefab = structure.structureData.uiPrefab;
-            Debug.Log($"Using specific UI prefab: {prefab.name}");
-        }
-        else
-        {
+            Debug.LogWarning("No UI prefab assigned, using default.");
             prefab = defaultStructureUI;
             if (prefab == null)
             {
                 Debug.LogWarning("No default structure UI prefab assigned!");
                 return;
             }
-            Debug.Log($"Using default UI prefab: {prefab.name}");
         }
-        
-        // Instantiate the UI under the Canvas
+
         activeUI = Instantiate(prefab, uiParent);
-        
-        // Set up the RectTransform for positioning
         activeUIRect = activeUI.GetComponent<RectTransform>();
         if (activeUIRect != null)
         {
             activeUIRect.anchorMin = new Vector2(0.5f, 0.5f);
             activeUIRect.anchorMax = new Vector2(0.5f, 0.5f);
             activeUIRect.pivot = new Vector2(0.5f, 0.5f);
-            
-            // Set initial position with the same logic as Update
+            activeUIRect.localScale = Vector3.one;
+
             Vector3 screenPos = GetScreenPositionAboveStructure(structure);
             screenPos += new Vector3(screenOffset.x, screenOffset.y, 0);
             activeUIRect.position = screenPos;
-
-            // Set initial scale (optional, remove if not needed)
-            float distance = Vector3.Distance(Camera.main.transform.position, structure.transform.position);
-            float scale = Mathf.Clamp(1f / (distance * 0.1f), 0.5f, 1.5f);
-            activeUIRect.localScale = new Vector3(scale, scale, 1f);
         }
         else
         {
             Debug.LogWarning("UI prefab does not have a RectTransform!");
         }
-        
+
         IStructureUI structureUI = activeUI.GetComponent<IStructureUI>();
         if (structureUI != null)
         {
@@ -125,20 +113,51 @@ public class StructureUIManager : MonoBehaviour
         {
             Debug.LogWarning($"UI prefab for {structure.GetStructureName()} doesn't implement IStructureUI interface");
         }
+
+        playOpenSFX();
     }
-    
+
     public void HideStructureUI()
     {
+        isHidingUI = true;
+
         if (activeUI != null)
         {
+            playClosingSFX();
             Destroy(activeUI);
             activeUI = null;
             activeUIRect = null;
         }
-        
-        currentSelectedStructure = null;
+
+        if (currentSelectedStructure != null)
+        {
+            currentSelectedStructure.Deselect(); // Explicitly deselect
+            currentSelectedStructure.OnStructureDestroyed -= OnSelectedStructureDestroyed;
+            currentSelectedStructure = null;
+        }
+
+        StartCoroutine(ResetHidingFlag());
     }
-    
+
+    private IEnumerator ResetHidingFlag()
+    {
+        yield return new WaitForSeconds(0.1f);
+        isHidingUI = false;
+    }
+
+    private void OnSelectedStructureDestroyed(Structure destroyedStructure)
+    {
+        if (destroyedStructure == currentSelectedStructure)
+        {
+            Debug.Log($"Selected structure {destroyedStructure.GetStructureName()} was destroyed - hiding UI");
+            if (activeUI != null)
+            {
+                activeUI.SetActive(false);
+            }
+            HideStructureUI();
+        }
+    }
+
     private Vector3 GetScreenPositionAboveStructure(Structure structure)
     {
         if (structure == null || Camera.main == null)
@@ -154,10 +173,35 @@ public class StructureUIManager : MonoBehaviour
         Vector3 worldPos = structure.transform.position + Vector3.up * (structureHeight + uiOffset);
         Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 
-        // Clamp to screen bounds to prevent the UI from going off-screen
         screenPos.x = Mathf.Clamp(screenPos.x, 0, Screen.width);
         screenPos.y = Mathf.Clamp(screenPos.y, 0, Screen.height);
 
         return screenPos;
+    }
+
+    public void playClosingSFX()
+    {
+        if (closeSound != null)
+        {
+            closeSound.Play();
+        }
+    }
+
+    public void playOpenSFX()
+    {
+        if (openSound != null)
+        {
+            openSound.Play();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (currentSelectedStructure != null)
+        {
+            currentSelectedStructure.OnStructureDestroyed -= OnSelectedStructureDestroyed;
+            currentSelectedStructure.Deselect();
+            currentSelectedStructure = null;
+        }
     }
 }

@@ -8,7 +8,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip buildingPlaceSound;
     [SerializeField] private AudioClip buildingRemoveSound;
     [SerializeField] private AudioClip insufficientFundsSound;
-    [SerializeField] private AudioClip moneySpendSound;
+    [SerializeField] private AudioSource moneySpendSound;
     [SerializeField] private float volume = 1.0f;
 
     [Header("Time Control Sounds")]
@@ -54,7 +54,7 @@ public class AudioManager : MonoBehaviour
     {
         if (moneySpendSound != null)
         {
-            audioSource.PlayOneShot(moneySpendSound, volume);
+            moneySpendSound.Play();
         }
     }
         

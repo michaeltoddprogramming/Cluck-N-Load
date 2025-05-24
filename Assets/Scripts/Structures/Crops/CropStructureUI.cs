@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
+using System.Collections;
 public class CropStructureUI : BaseStructureUI
 {
     [Header("UI Elements")]
@@ -16,6 +16,15 @@ public class CropStructureUI : BaseStructureUI
 
     [Header("Dependencies")]
     [SerializeField] private NightManager nightManager;
+    
+    // Add these fields for audio
+    [Header("Audio")]
+    [SerializeField] private AudioClip errorSound;
+    [SerializeField] private AudioClip plantSound;
+    [SerializeField] private AudioClip harvestSound;
+    [SerializeField] private float soundVolume = 0.7f;
+    private AudioSource audioSource;
+    private float lastErrorSoundTime;
 
     private CropStructure cropStructure;
     private bool isCropStructure = false;
@@ -24,6 +33,11 @@ public class CropStructureUI : BaseStructureUI
     {
         //make notification invisible
         notificationText.gameObject.SetActive(false);
+
+        // Setup audio source
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.volume = soundVolume;
 
         base.Initialize(structure);
 
@@ -71,12 +85,45 @@ public class CropStructureUI : BaseStructureUI
         UpdateUI();
     }
 
+    // Add this method to play error sounds
+    private void PlayErrorSound()
+    {
+        // Prevent sound spam by adding cooldown
+        if (Time.time - lastErrorSoundTime < 0.5f)
+            return;
+            
+        lastErrorSoundTime = Time.time;
+        
+        if (errorSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(errorSound);
+            Debug.Log("Crop Structure UI: Playing error sound");
+        }
+    }
+    
+    // Add method to play success sounds
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
+    }
+
     private void SetupButtonListeners()
     {
         if (plantSunflowerButton != null)
         {
             plantSunflowerButton.onClick.RemoveAllListeners();
-            plantSunflowerButton.onClick.AddListener(() => plantCrop(0));
+            plantSunflowerButton.onClick.AddListener(() => {
+                // Check conditions before planting
+                if (!CanPlantCrops())
+                {
+                    PlayErrorSound();
+                    return;
+                }
+                plantCrop(0);
+            });
         }
         else
         {
@@ -86,7 +133,15 @@ public class CropStructureUI : BaseStructureUI
         if (plantWheatButton != null)
         {
             plantWheatButton.onClick.RemoveAllListeners();
-            plantWheatButton.onClick.AddListener(() => plantCrop(1));
+            plantWheatButton.onClick.AddListener(() => {
+                // Check conditions before planting
+                if (!CanPlantCrops())
+                {
+                    PlayErrorSound();
+                    return;
+                }
+                plantCrop(1);
+            });
         }
         else
         {
@@ -96,7 +151,15 @@ public class CropStructureUI : BaseStructureUI
         if (plantCarrotsButton != null)
         {
             plantCarrotsButton.onClick.RemoveAllListeners();
-            plantCarrotsButton.onClick.AddListener(() => plantCrop(2));
+            plantCarrotsButton.onClick.AddListener(() => {
+                // Check conditions before planting
+                if (!CanPlantCrops())
+                {
+                    PlayErrorSound();
+                    return;
+                }
+                plantCrop(2);
+            });
         }
         else
         {
@@ -106,7 +169,15 @@ public class CropStructureUI : BaseStructureUI
         if (harvestButton != null)
         {
             harvestButton.onClick.RemoveAllListeners();
-            harvestButton.onClick.AddListener(harvestCrops);
+            harvestButton.onClick.AddListener(() => {
+                // Check conditions before harvesting
+                if (!CanHarvestCrops())
+                {
+                    PlayErrorSound();
+                    return;
+                }
+                harvestCrops();
+            });
         }
         else
         {
@@ -124,9 +195,46 @@ public class CropStructureUI : BaseStructureUI
         }
     }
 
+    // Add helper method to check if crops can be planted
+    private bool CanPlantCrops()
+    {
+        if (!isCropStructure || cropStructure == null)
+            return false;
+            
+        if (nightManager == null || !nightManager.IsDay)
+            return false;
+            
+        if (cropStructure.IsGrowing || cropStructure.CropReady)
+            return false;
+            
+        return true;
+    }
+    
+    // Add helper method to check if crops can be harvested
+    private bool CanHarvestCrops()
+    {
+        if (!isCropStructure || cropStructure == null)
+            return false;
+            
+        if (nightManager == null || !nightManager.IsDay)
+            return false;
+            
+        if (!cropStructure.CropReady)
+            return false;
+            
+        return true;
+    }
+
     public void ShowSelectCropPanel()
     {
-        if (selectCropPanel != null && nightManager != null && nightManager.IsDay && cropStructure != null && !cropStructure.IsGrowing && !cropStructure.CropReady)
+        bool canShowPanel = selectCropPanel != null && 
+                           nightManager != null && 
+                           nightManager.IsDay && 
+                           cropStructure != null && 
+                           !cropStructure.IsGrowing && 
+                           !cropStructure.CropReady;
+                           
+        if (canShowPanel)
         {
             selectCropPanel.SetActive(true);
             UpdateUI();
@@ -134,6 +242,7 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
+            PlayErrorSound();
             Debug.LogWarning($"Cannot show select crop panel: IsDay={nightManager?.IsDay}, Growing={cropStructure?.IsGrowing}, Ready={cropStructure?.CropReady}, PanelAssigned={selectCropPanel != null}");
             closeSelectCropPanel(); // Ensure panel closes if conditions aren't met
         }
@@ -153,21 +262,23 @@ public class CropStructureUI : BaseStructureUI
         }
     }
 
-    public void plantCrop(int crop)
+       public void plantCrop(int crop)
     {
         if (!isCropStructure || cropStructure == null)
         {
             Debug.LogWarning("Cannot plant crop: No valid CropStructure assigned.");
+            PlayErrorSound();
             return;
         }
-
+    
         if (nightManager == null || !nightManager.IsDay)
         {
             Debug.LogWarning("Cannot plant crop: Planting is only allowed during the day!");
+            PlayErrorSound();
             closeSelectCropPanel();
             return;
         }
-
+    
         CropStructure.CropType cropType;
         switch (crop)
         {
@@ -182,13 +293,29 @@ public class CropStructureUI : BaseStructureUI
                 break;
             default:
                 Debug.LogWarning($"Invalid crop type selected: {crop}");
+                PlayErrorSound();
                 return;
         }
-
+    
         Debug.Log($"Attempting to plant {cropType} on {cropStructure.GetStructureName()}");
         cropStructure.Plant(cropType);
+        PlaySound(plantSound); // Play planting sound on success
         closeSelectCropPanel();
-        UpdateUI();
+        
+        // Close the entire structure UI after a short delay
+        StartCoroutine(CloseUIAfterDelay(0.2f));
+    }
+    
+    // Add this coroutine method to close the UI after a delay
+    private IEnumerator CloseUIAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Use StructureUIManager to close the UI
+        if (StructureUIManager.Instance != null)
+        {
+            StructureUIManager.Instance.HideStructureUI();
+        }
     }
 
     public void harvestCrops()
@@ -205,24 +332,28 @@ public class CropStructureUI : BaseStructureUI
                     notificationText.gameObject.SetActive(true);
                     notificationText.color = Color.red;
                     notificationText.text = "Harvest unsuccessful: No space in silo";
+                    PlayErrorSound();
                     break;
                 case "yes":
                     Debug.Log("Harvest successful");
                     notificationText.gameObject.SetActive(true);
                     notificationText.color = Color.green;
                     notificationText.text = "Harvest successful";
+                    PlaySound(harvestSound); // Play harvest sound on success
                     break;
                 case "ready":
-                    Debug.Log("Harvest successful: crop not ready");
+                    Debug.Log("Harvest unsuccessful: crop not ready");
                     notificationText.gameObject.SetActive(true);
                     notificationText.color = Color.red;
                     notificationText.text = "Harvest unsuccessful: Crop not ready";
+                    PlayErrorSound();
                     break;
                 default:
                     Debug.LogWarning($"Unexpected response from harvest: {answer}");
                     notificationText.gameObject.SetActive(true);
                     notificationText.color = Color.red;
                     notificationText.text = "Harvest unsuccessful: not sure why";
+                    PlayErrorSound();
                     break;
             }
             UpdateUI();
@@ -230,6 +361,7 @@ public class CropStructureUI : BaseStructureUI
         else
         {
             Debug.LogWarning("HarvestCrops called but no valid CropStructure found.");
+            PlayErrorSound();
         }
     }
 
@@ -321,60 +453,68 @@ public class CropStructureUI : BaseStructureUI
         Debug.Log($"UpdateUI: canPlant={canPlant}, IsDay={nightManager.IsDay}, IsGrowing={isGrowing}, CropReady={cropReady}, Hours={nightManager.Hours}");
     }
 
-           private void UpdateButtonVisual(Button button, bool isInteractable, string action)
+                private void UpdateButtonVisual(Button button, bool isInteractable, string action)
         {
+            // Get the text component
             TextMeshProUGUI buttonText = button.GetComponentInChildren<TextMeshProUGUI>();
-            if (buttonText != null)
+            if (buttonText == null) return;
+            
+            // Set appropriate text based on button state and type
+            if (action.Equals("Harvest"))
             {
-                // Handle harvest button differently from plant buttons
-                if (action.Equals("Harvest"))
+                if (isInteractable)
                 {
-                    // For the harvest button
-                    if (isInteractable)
-                    {
-                        buttonText.text = "Harvest";
-                    }
-                    else
-                    {
-                        string reason;
-                        if (cropStructure != null && cropStructure.IsGrowing)
-                            reason = "Still Growing";
-                        else if (cropStructure != null && cropStructure.CurrentCropType == CropStructure.CropType.None)
-                            reason = "No Crop Planted";
-                        else
-                            reason = "Not Ready";
-                        
-                        buttonText.text = $"Harvest ({reason})";
-                    }
+                    buttonText.text = "Harvest";
                 }
                 else
                 {
-                    // For plant buttons
-                    if (isInteractable)
-                    {
-                        buttonText.text = $"Plant {action}";
-                    }
-                    else
-                    {
-                        string reason;
-                        if (nightManager != null && !nightManager.IsDay)
-                            reason = "Night";
-                        else if (cropStructure != null && cropStructure.IsGrowing)
-                            reason = "Growing";
-                        else if (cropStructure != null && cropStructure.CropReady)
-                            reason = "Ready to Harvest";
-                        else
-                            reason = "Unavailable";
-                        
-                        buttonText.text = $"Plant {action} ({reason})";
-                    }
+                    // Similar to how BarracksStructureUI handles button text
+                    string reason = GetHarvestDisabledReason();
+                    buttonText.text = $"Harvest\n<size=10>({reason})</size>";
                 }
             }
-        
-            // Update button color to provide visual feedback
+            else
+            {
+                // Plant buttons
+                if (isInteractable)
+                {
+                    buttonText.text = $"Plant {action}";
+                }
+                else
+                {
+                    string reason = GetPlantDisabledReason();
+                    buttonText.text = $"Plant {action}\n<size=10>({reason})</size>";
+                }
+            }
+            
+            // Set colors like the BarracksStructureUI does
             ColorBlock colors = button.colors;
-            colors.normalColor = isInteractable ? Color.white : Color.grey;
+            colors.normalColor = isInteractable ? Color.white : new Color(0.7f, 0.7f, 0.7f);
+            colors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.5f);
             button.colors = colors;
+        }
+        
+        // Helper methods to determine reasons
+        private string GetHarvestDisabledReason()
+        {
+            if (nightManager != null && !nightManager.IsDay)
+                return "Only During Day";
+            if (cropStructure != null && cropStructure.IsGrowing)
+                return "Still Growing";
+            if (cropStructure != null && cropStructure.CurrentCropType == CropStructure.CropType.None)
+                return "No Crop Planted";
+            return "Not Ready";
+        }
+        
+        private string GetPlantDisabledReason()
+        {
+            if (nightManager != null && !nightManager.IsDay)
+                return "Only During Day";
+            if (cropStructure != null && cropStructure.IsGrowing)
+                return "Growing";
+            if (cropStructure != null && cropStructure.CropReady)
+                return "Harvest First";
+            return "Unavailable";
         }
     private void HideCropSpecificUI()
     {

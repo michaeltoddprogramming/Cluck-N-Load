@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ChickenCoop
   m_EditorClassIdentifier: 
   structureName: Chicken Coop
-  prefab: {fileID: 7360235863127942857, guid: 0738cd73459085040abbc5df1507dfa9, type: 3}
+  prefab: {fileID: 24278512715701046, guid: 0738cd73459085040abbc5df1507dfa9, type: 3}
   icon: {fileID: 21300000, guid: edf6e7cff72ddd64ca638184f059f553, type: 3}
   type: 8
   cost: 50

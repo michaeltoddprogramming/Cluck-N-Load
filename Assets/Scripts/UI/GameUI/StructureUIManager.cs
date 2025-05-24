@@ -4,17 +4,21 @@ using System.Collections.Generic;
 public class StructureUIManager : MonoBehaviour
 {
     public static StructureUIManager Instance { get; private set; }
-    
+
     [SerializeField] private Transform uiParent;
     [SerializeField] private GameObject defaultStructureUI;
     [SerializeField] private float uiOffset = 0.5f;
     [SerializeField] private Vector2 screenOffset = new Vector2(0, 20f);
     [SerializeField] private float uiSize = 1.5f;
-    
+
+    [Header("UI SFX")]
+    [SerializeField] public AudioSource closeSound;
+    [SerializeField] public AudioSource openSound;
+
     private Structure currentSelectedStructure;
     private GameObject activeUI;
     private RectTransform activeUIRect;
-    
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -23,7 +27,7 @@ public class StructureUIManager : MonoBehaviour
             return;
         }
         Instance = this;
-        
+
         if (uiParent == null)
         {
             GameObject parent = new GameObject("Structure UI Parent");
@@ -31,7 +35,7 @@ public class StructureUIManager : MonoBehaviour
             parent.transform.SetParent(transform);
         }
     }
-    
+
     private void Update()
     {
         if (currentSelectedStructure != null && activeUI != null && activeUIRect != null)
@@ -57,9 +61,13 @@ public class StructureUIManager : MonoBehaviour
 
         }
     }
-    
+
     public void ShowStructureUI(Structure structure)
     {
+        //play opening SFX
+        playOpenSFX();
+
+
         if (structure == null)
         {
             Debug.LogWarning("Cannot show UI: Structure is null");
@@ -67,11 +75,11 @@ public class StructureUIManager : MonoBehaviour
         }
 
         Debug.Log($"ShowStructureUI called for {structure.GetStructureName()}");
-        
+
         HideStructureUI();
-        
+
         currentSelectedStructure = structure;
-        
+
         GameObject prefab = null;
         if (structure.structureData != null && structure.structureData.uiPrefab != null)
         {
@@ -88,10 +96,10 @@ public class StructureUIManager : MonoBehaviour
             }
             Debug.Log($"Using default UI prefab: {prefab.name}");
         }
-        
+
         // Instantiate the UI under the Canvas
         activeUI = Instantiate(prefab, uiParent);
-        
+
         // Set up the RectTransform for positioning
         activeUIRect = activeUI.GetComponent<RectTransform>();
         if (activeUIRect != null)
@@ -99,7 +107,7 @@ public class StructureUIManager : MonoBehaviour
             activeUIRect.anchorMin = new Vector2(0.5f, 0.5f);
             activeUIRect.anchorMax = new Vector2(0.5f, 0.5f);
             activeUIRect.pivot = new Vector2(0.5f, 0.5f);
-            
+
             // Set initial position with the same logic as Update
             Vector3 screenPos = GetScreenPositionAboveStructure(structure);
             screenPos += new Vector3(screenOffset.x, screenOffset.y, 0);
@@ -114,7 +122,7 @@ public class StructureUIManager : MonoBehaviour
         {
             Debug.LogWarning("UI prefab does not have a RectTransform!");
         }
-        
+
         IStructureUI structureUI = activeUI.GetComponent<IStructureUI>();
         if (structureUI != null)
         {
@@ -126,19 +134,21 @@ public class StructureUIManager : MonoBehaviour
             Debug.LogWarning($"UI prefab for {structure.GetStructureName()} doesn't implement IStructureUI interface");
         }
     }
-    
+
     public void HideStructureUI()
     {
+        //play closing SFX
         if (activeUI != null)
         {
+            playClosingSFX();
             Destroy(activeUI);
             activeUI = null;
             activeUIRect = null;
         }
-        
+
         currentSelectedStructure = null;
     }
-    
+
     private Vector3 GetScreenPositionAboveStructure(Structure structure)
     {
         if (structure == null || Camera.main == null)
@@ -159,5 +169,20 @@ public class StructureUIManager : MonoBehaviour
         screenPos.y = Mathf.Clamp(screenPos.y, 0, Screen.height);
 
         return screenPos;
+    }
+
+    public void playClosingSFX()
+    {
+        if (closeSound != null)
+        {
+            closeSound.Play();
+        }
+    }
+    public void playOpenSFX()
+    {
+        if (openSound != null)
+        {
+            openSound.Play();
+        }
     }
 }

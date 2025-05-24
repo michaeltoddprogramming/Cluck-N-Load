@@ -350,14 +350,14 @@ private IEnumerator SpawnWolvesOverTime()
     private void StartDay(int flag)
     {
         // Destroy all remaining wolves when day starts
-foreach (Wolf wolf in activeWolves.ToList())
-{
-    if (wolf != null)
-    {
-        wolf.OnDayNightChanged(false); // This should trigger the wolf to destroy itself
-    }
-}
-activeWolves.Clear();
+        foreach (Wolf wolf in activeWolves.ToList())
+        {
+            if (wolf != null)
+            {
+                wolf.OnDayNightChanged(false); // This should trigger the wolf to destroy itself
+            }
+        }
+        activeWolves.Clear();
 
         // Notify animal structures
         foreach (AnimalStructure structure in animalStructures)
@@ -447,6 +447,7 @@ activeWolves.Clear();
             {
                 clockTickingSource.Play();
             }
+
             StartCoroutine(showText("Night starting soon!!", 5f));
             StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
             StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
@@ -454,6 +455,11 @@ activeWolves.Clear();
         }
         else if (value == 20)
         {
+            if (clockTickingSource.isPlaying)
+            {
+                clockTickingSource.Stop();
+            }
+
             StartNight(2);
             StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
             StartCoroutine(LightingChanges(AfternoonToNightGradient, 2f));

@@ -1,64 +1,62 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using FarmDefender.Core.AI.FlowField; // Add this line to reference the new namespace
-using System.Collections; // Add this line for non-generic IEnumerator
+using FarmDefender.Core.AI.FlowField;
+using System.Collections;
 
 public class BuildController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridController gridController;
-    
-    [Header("Pathfinding")]
-    [SerializeField] private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
-    
+    [SerializeField] private FlowFieldManager flowFieldManager;
+    [SerializeField] private OwnershipController ownershipController;
+    [SerializeField] private GridMonitor gridMonitor;
+
     [Header("Build Settings")]
     [SerializeField] private Material ghostMaterial;
     [SerializeField] private GameObject[] buildablePrefabs;
-    
+
     [Header("Input Settings")]
     [SerializeField] private KeyCode rotateKey = KeyCode.R;
     [SerializeField] private KeyCode nextItemKey = KeyCode.N;
     [SerializeField] private KeyCode previousItemKey = KeyCode.P;
-    [SerializeField] private KeyCode removeModifierKey = KeyCode.LeftControl; // New: Key to hold for removal
-    
+    [SerializeField] private KeyCode removeModifierKey = KeyCode.LeftControl;
+    [SerializeField] private KeyCode moveKey = KeyCode.M;
+    [SerializeField] private KeyCode buyLandKey = KeyCode.LeftShift;
+
     [Header("UI References")]
-    [SerializeField] private RectTransform itemDeleteIcon; // Reference to your red cross UI element
-    
+    [SerializeField] private RectTransform itemDeleteIcon;
+
     [Header("Delete Mode Settings")]
     [Tooltip("Position offset from the cursor where the delete icon will appear")]
-    [SerializeField] private Vector2 cursorOffset = new Vector2(15f, 15f); // Now exposed in Inspector
-    
+    [SerializeField] private Vector2 cursorOffset = new Vector2(15f, 15f);
+
     [Header("Land Ownership")]
-    [SerializeField] private OwnershipController ownershipController;
     [SerializeField] private bool enableLandBuying = true;
-    [SerializeField] private KeyCode buyLandKey = KeyCode.LeftShift; // Hold shift to buy land
-    private bool isInLandBuyMode = false;
-    
-    [Header("Grid Monitoring")]
-    [SerializeField] private GridMonitor gridMonitor;
-    
-    // Add this property for programmatic access
+
     public Vector2 DeleteIconOffset
     {
-        get { return cursorOffset; }
-        set { cursorOffset = value; }
+        get => cursorOffset;
+        set => cursorOffset = value;
     }
-    
+
     private GameObject currentGhost;
     private GameObject currentBuildTargetPrefab;
+    private Structure movingStructure;
+    private Vector3 originalPosition;
+    private Quaternion originalRotation;
+    private List<Vector2Int> originalFootprint;
     private bool isBuildModeActive = false;
+    private bool isMoveModeActive = false;
+    private bool isDeleteModeActive = false;
+    private bool isInLandBuyMode = false;
+    private bool isGhostTemporarilyHidden = false;
     private int currentPrefabIndex = 0;
     private Quaternion currentRotation = Quaternion.identity;
-    
-    // References to shop UI component
     private ShopPanelUI shopPanelUI;
-    
-    private bool isGhostTemporarilyHidden = false;
-    private bool isDeleteModeActive = false;
     private StructureData currentStructureData;
+    private bool isSelectedStructure = false;
 
-    
     void Start()
     {
         if (gridController == null)
@@ -71,15 +69,20 @@ public class BuildController : MonoBehaviour
                 return;
             }
         }
-        
-        // Find flow field manager if not assigned
+
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>(); // Changed from FlowFieldGenerator
-        
-        // Find shop UI component - including inactive objects
-        shopPanelUI = FindObjectOfType<ShopPanelUI>(true); // Include inactive objects
-        
-        // Set up shop event listeners
+            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+
+        if (ownershipController == null)
+            ownershipController = FindObjectOfType<OwnershipController>();
+
+        if (gridMonitor == null)
+            gridMonitor = FindObjectOfType<GridMonitor>();
+
+        if (gridMonitor == null)
+            Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
+
+        shopPanelUI = FindObjectOfType<ShopPanelUI>(true);
         if (shopPanelUI != null)
         {
             Debug.Log("BuildController: Found ShopPanelUI, subscribing to events");
@@ -90,153 +93,100 @@ public class BuildController : MonoBehaviour
         {
             Debug.LogWarning("BuildController: ShopPanelUI not found in scene!");
         }
-        
-        // Set a default build target if available
+
         if (buildablePrefabs.Length > 0)
-        {
             currentBuildTargetPrefab = buildablePrefabs[0];
-        }
-        
-        // Make sure the delete icon doesn't block raycasts
+
         if (itemDeleteIcon != null && itemDeleteIcon.GetComponent<Graphic>() != null)
-        {
             itemDeleteIcon.GetComponent<Graphic>().raycastTarget = false;
-        }
-        
-        // Find ownership controller if not assigned
-        if (ownershipController == null)
-            ownershipController = FindObjectOfType<OwnershipController>();
-        
-        // Find grid monitor if not assigned
-        if (gridMonitor == null)
-            gridMonitor = FindObjectOfType<GridMonitor>();
-        
-        if (gridMonitor == null)
-            Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
-        
+
         Debug.Log($"BuildController started. Grid controller reference: {(gridController != null ? "Valid" : "NULL")}");
         Debug.Log($"Available prefabs: {buildablePrefabs.Length}");
     }
 
     void OnDestroy()
     {
-        // Clean up event listeners
         if (shopPanelUI != null)
         {
             shopPanelUI.OnShopOpened.RemoveListener(HandleShopOpened);
             shopPanelUI.OnShopClosed.RemoveListener(HandleShopClosed);
         }
     }
-    
-    // Event handlers for shop state changes
+
     public void HandleShopOpened()
     {
         Debug.Log("BuildController: HandleShopOpened called");
         gridController.ShowGrid();
         EnableBuildMode();
     }
-    
+
     public void HandleShopClosed()
     {
         DisableBuildMode();
         gridController.HideGrid();
     }
-    
+
     void Update()
     {
-        if (!isBuildModeActive) return;
-        
-        // Check for delete mode toggle (Ctrl key)
+        if (!isBuildModeActive && !isMoveModeActive) return;
+
         bool deleteKeyPressed = Input.GetKey(removeModifierKey);
-        
-        // If delete mode state has changed
         if (deleteKeyPressed != isDeleteModeActive)
         {
             isDeleteModeActive = deleteKeyPressed;
-            
-            // Toggle visibility of ghost and delete icon
             if (isDeleteModeActive)
             {
-                // Entering delete mode
-                if (currentGhost != null)
-                {
-                    currentGhost.SetActive(false);
-                }
-                
-                // Show delete icon
-                if (itemDeleteIcon != null)
-                {
-                    itemDeleteIcon.gameObject.SetActive(true);
-                }
+                if (currentGhost != null) currentGhost.SetActive(false);
+                if (itemDeleteIcon != null) itemDeleteIcon.gameObject.SetActive(true);
             }
             else
             {
-                // Exiting delete mode
-                if (currentGhost != null && !isGhostTemporarilyHidden)
-                {
-                    currentGhost.SetActive(true);
-                }
-                
-                // Hide delete icon
-                if (itemDeleteIcon != null)
-                {
-                    itemDeleteIcon.gameObject.SetActive(false);
-                }
+                if (currentGhost != null && !isGhostTemporarilyHidden) currentGhost.SetActive(true);
+                if (itemDeleteIcon != null) itemDeleteIcon.gameObject.SetActive(false);
             }
         }
-        
-        // Update delete icon position if active
+
         if (isDeleteModeActive && itemDeleteIcon != null && itemDeleteIcon.gameObject.activeSelf)
-        {
             UpdateDeleteIconPosition();
-        }
-        
+
         HandleBuildInput();
-        
-        // Only update ghost position if not in delete mode
-        if (!isDeleteModeActive && currentGhost != null)
-        {
+        if (!isDeleteModeActive && currentGhost != null && !isMoveModeActive)
             UpdateGhostPosition();
-        }
+        if (isMoveModeActive && currentGhost != null)
+            UpdateGhostPositionForMove();
     }
-    
+
     public void EnableBuildMode()
     {
         isBuildModeActive = true;
+        isMoveModeActive = false;
         gridController.ShowGrid();
-        
         if (currentBuildTargetPrefab != null && currentGhost == null)
-        {
             CreateGhost(currentBuildTargetPrefab);
-        }
-        
-        // Notify flow field manager about build mode
         if (flowFieldManager != null)
-        {
             flowFieldManager.SetBuildModeActive(true);
-        }
     }
-    
+
     public void DisableBuildMode()
     {
         isBuildModeActive = false;
+        isMoveModeActive = false;
         gridController.HideGrid();
-        
         if (currentGhost != null)
         {
             Destroy(currentGhost);
             currentGhost = null;
         }
-        
-        // Notify flow field manager about build mode ending
+        movingStructure = null;
         if (flowFieldManager != null)
         {
-            // Use SetBuildModeActive instead of direct generation
             flowFieldManager.SetBuildModeActive(false);
             Debug.Log("Build mode deactivated - notified flow field manager");
         }
+        if (itemDeleteIcon != null)
+            itemDeleteIcon.gameObject.SetActive(false);
     }
-    
+
     public void ToggleBuildMode()
     {
         if (isBuildModeActive)
@@ -244,13 +194,68 @@ public class BuildController : MonoBehaviour
         else
             EnableBuildMode();
     }
-    
+
     public bool IsBuildModeActive()
     {
         return isBuildModeActive;
     }
-    
-    // Called from ShopPanelUI when pointer enters the UI
+
+    public void ToggleMoveMode()
+    {
+        if (isMoveModeActive)
+        {
+            CancelMove();
+        }
+        else
+        {
+            isMoveModeActive = true;
+            isBuildModeActive = false;
+            if (currentGhost != null)
+            {
+                Destroy(currentGhost);
+                currentGhost = null;
+            }
+            Debug.Log("Entered Move Mode: Click a structure to select it for moving.");
+        }
+    }
+
+    public void StartMoveModeForStructure(Structure structure)
+    {
+        if (structure == null)
+        {
+            Debug.LogWarning("Cannot start move mode: Structure is null");
+            return;
+        }
+
+        isMoveModeActive = true;
+        isBuildModeActive = false;
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+        }
+
+        movingStructure = structure;
+        originalPosition = structure.transform.position;
+        originalRotation = structure.transform.rotation;
+        originalFootprint = GetStructureFootprint(structure.gameObject);
+        currentBuildTargetPrefab = structure.structureData?.prefab;
+        currentRotation = originalRotation;
+
+        if (currentBuildTargetPrefab == null)
+        {
+            Debug.LogWarning($"No prefab assigned to {structure.GetStructureName()}'s StructureData. Cannot create ghost.");
+            CancelMove();
+            return;
+        }
+
+        CreateGhost(currentBuildTargetPrefab);
+        structure.UnregisterFromGrid();
+        structure.gameObject.SetActive(false);
+        gridController.ShowGrid();
+        Debug.Log($"Started move mode for {structure.GetStructureName()}.");
+    }
+
     public void HideGhostTemporarily()
     {
         if (currentGhost != null && currentGhost.activeSelf)
@@ -258,182 +263,196 @@ public class BuildController : MonoBehaviour
             isGhostTemporarilyHidden = true;
             currentGhost.SetActive(false);
         }
-        
-        // Also hide delete icon if visible
         if (itemDeleteIcon != null && isDeleteModeActive)
-        {
             itemDeleteIcon.gameObject.SetActive(false);
-        }
     }
-    
-    // Called from ShopPanelUI when pointer exits the UI
+
     public void RestoreGhost()
     {
         isGhostTemporarilyHidden = false;
-        
-        // Only show ghost if we're not in delete mode
         if (currentGhost != null && !isDeleteModeActive)
-        {
             currentGhost.SetActive(true);
-        }
-        
-        // Restore delete icon if in delete mode
         if (itemDeleteIcon != null && isDeleteModeActive && !isGhostTemporarilyHidden)
-        {
             itemDeleteIcon.gameObject.SetActive(true);
-        }
     }
-    
+
     void HandleBuildInput()
     {
-        // Skip input handling if ghost is temporarily hidden (hovering over UI)
         if (isGhostTemporarilyHidden) return;
-        
-        // We're in land buying mode if no building is selected
+
         isInLandBuyMode = enableLandBuying && currentBuildTargetPrefab == null;
-        
-        // Right-click to cancel selected building
-        if (Input.GetMouseButtonDown(1))
+
+        if (Input.GetKeyDown(moveKey) && !isDeleteModeActive)
         {
-            // Don't process if clicking on UI elements
-            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-                return;
-                
-            // Cancel the current building selection
-            if (currentGhost != null)
-            {
-                Destroy(currentGhost);
-                currentGhost = null;
-                currentBuildTargetPrefab = null;
-                
-                Debug.Log("Cancelled building selection");
-                return;
-            }
-        }
-        
-        // Left-click for placement or land buying
-      // Left-click for placement, removal, or land buying
-    if (Input.GetMouseButtonDown(0))
-    {
-        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            ToggleMoveMode();
             return;
-            
-        if (Input.GetKey(removeModifierKey))
-        {
-            // Try to remove structure by direct click
-            if (TryRemoveStructureByRaycast())
-            {
-                return;
-            }
-            
-            // Fallback to grid-based removal
-            Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-            RemoveItem(hoveredCell.x, hoveredCell.y);
         }
-        else if (currentBuildTargetPrefab == null || isInLandBuyMode)
+
+        if (isMoveModeActive)
         {
-            if (ownershipController != null)
+            if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit))
+                if (movingStructure == null)
                 {
-                    ownershipController.BuyLandAtPosition(hit.point);
+                    SelectStructureToMove();
+                }
+                else
+                {
+                    Vector2Int hoveredCell = GetGridCellUnderCursor(true);
+                    PlaceMovedStructure(hoveredCell.x, hoveredCell.y);
                 }
             }
-        }
-        else if (currentBuildTargetPrefab != null)
-        {
-            Vector2Int hoveredCell = GetGridCellUnderCursor(ignoreStructures: true);
-            PlaceItem(hoveredCell.x, hoveredCell.y);
-        }
-    } 
-        
-        // Rotation
-        if (Input.GetKeyDown(rotateKey))
-        {
-            currentRotation *= Quaternion.Euler(0, 90, 0);
-            if (currentGhost != null)
+            else if (Input.GetMouseButtonDown(1))
             {
-                currentGhost.transform.rotation = currentRotation;
+                CancelMove();
+            }
+            else if (Input.GetKeyDown(rotateKey))
+            {
+                currentRotation *= Quaternion.Euler(0, 90, 0);
+                if (currentGhost != null)
+                    currentGhost.transform.rotation = currentRotation;
             }
         }
-        
-        // Next/Previous item
-        if (Input.GetKeyDown(nextItemKey) && buildablePrefabs.Length > 0)
+        else
         {
-            currentPrefabIndex = (currentPrefabIndex + 1) % buildablePrefabs.Length;
-            currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
-            CreateGhost(currentBuildTargetPrefab);
-        }
-        
-        if (Input.GetKeyDown(previousItemKey) && buildablePrefabs.Length > 0)
-        {
-            currentPrefabIndex = (currentPrefabIndex - 1 + buildablePrefabs.Length) % buildablePrefabs.Length;
-            currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
-            CreateGhost(currentBuildTargetPrefab);
-        }
-        
-        // Left-click for placement or land buying
-        if (Input.GetMouseButtonDown(0))
-        {
-            // Don't process if clicking on UI elements
-            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-                return;
-                
-            // Check if modifier key is pressed for removal
-            if (Input.GetKey(removeModifierKey))
+            if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
-                // Try to remove structure by direct click
-                if (TryRemoveStructureByRaycast())
+                CancelCurrentBuilding();
+            }
+            else if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                if (isDeleteModeActive)
                 {
-                    // Successfully removed structure by direct click
-                    return;
+                    if (TryRemoveStructureByRaycast()) return;
+                    Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+                    RemoveItem(hoveredCell.x, hoveredCell.y);
                 }
-                
-                // Fallback to grid-based removal if no structure was hit
-                Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-                RemoveItem(hoveredCell.x, hoveredCell.y);
-            }
-            else if (currentBuildTargetPrefab == null || isInLandBuyMode)
-            {
-                // Buy land at the clicked position when no building is selected
-                if (ownershipController != null)
+                else if (currentBuildTargetPrefab == null || isInLandBuyMode)
                 {
-                    // Get the position under the mouse
-                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out RaycastHit hit))
+                    if (ownershipController != null)
                     {
-                        ownershipController.BuyLandAtPosition(hit.point);
+                        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                        if (Physics.Raycast(ray, out RaycastHit hit))
+                            ownershipController.BuyLandAtPosition(hit.point);
                     }
                 }
+                else if (currentBuildTargetPrefab != null)
+                {
+                    Vector2Int hoveredCell = GetGridCellUnderCursor(true);
+                    PlaceItem(hoveredCell.x, hoveredCell.y);
+                }
             }
-            else if (currentBuildTargetPrefab != null)
+            else if (Input.GetKeyDown(rotateKey))
             {
-                // Normal placement with Left Click when a building is selected
-                Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-                PlaceItem(hoveredCell.x, hoveredCell.y);
+                currentRotation *= Quaternion.Euler(0, 90, 0);
+                if (currentGhost != null)
+                    currentGhost.transform.rotation = currentRotation;
+            }
+            else if (Input.GetKeyDown(nextItemKey) && buildablePrefabs.Length > 0)
+            {
+                currentPrefabIndex = (currentPrefabIndex + 1) % buildablePrefabs.Length;
+                currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
+                CreateGhost(currentBuildTargetPrefab);
+            }
+            else if (Input.GetKeyDown(previousItemKey) && buildablePrefabs.Length > 0)
+            {
+                currentPrefabIndex = (currentPrefabIndex - 1 + buildablePrefabs.Length) % buildablePrefabs.Length;
+                currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
+                CreateGhost(currentBuildTargetPrefab);
             }
         }
     }
-    
-    // Public method to change the removal modifier key at runtime
-    public void SetRemovalModifierKey(KeyCode newKey)
+
+    void SelectStructureToMove()
     {
-        removeModifierKey = newKey;
-        Debug.Log($"Removal modifier key changed to: {newKey}");
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        int layerMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast"));
+        if (Physics.Raycast(ray, out hit, 1000f, layerMask))
+        {
+            Transform hitTransform = hit.transform;
+            while (hitTransform != null)
+            {
+                if (hitTransform.name.StartsWith("Item_"))
+                {
+                    Structure structure = hitTransform.GetComponent<Structure>();
+                    if (structure != null)
+                    {
+                        movingStructure = structure;
+                        originalPosition = structure.transform.position;
+                        originalRotation = structure.transform.rotation;
+                        originalFootprint = GetStructureFootprint(structure.gameObject);
+                        currentBuildTargetPrefab = structure.structureData?.prefab;
+                        currentRotation = originalRotation;
+                        CreateGhost(currentBuildTargetPrefab);
+                        structure.UnregisterFromGrid();
+                        structure.gameObject.SetActive(false);
+                        Debug.Log($"Selected {structure.GetStructureName()} for moving.");
+                        return;
+                    }
+                }
+                hitTransform = hitTransform.parent;
+            }
+        }
+        Debug.Log("No structure selected for moving.");
     }
-    
-    // Get the current removal modifier key
-    public KeyCode GetRemovalModifierKey()
+
+    void PlaceMovedStructure(int x, int y)
     {
-        return removeModifierKey;
+        if (!IsValidPlacement(x, y)) return;
+
+        Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
+        movingStructure.transform.position = cellCenter;
+        movingStructure.transform.rotation = currentRotation;
+        movingStructure.gameObject.SetActive(true);
+
+        List<Vector2Int> newFootprint = GetStructureFootprint(movingStructure.gameObject);
+        foreach (Vector2Int cell in newFootprint)
+            gridController.SetCellOccupied(cell.x, cell.y, true);
+
+        movingStructure.RegisterWithGrid();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayPlaceSound();
+        gridController.UpdateGridTexture();
+        if (gridMonitor != null && newFootprint.Count > 0)
+            gridMonitor.NotifyMultipleCellsChanged(newFootprint, GridChangeType.Structural);
+
+        movingStructure = null;
+        isMoveModeActive = false;
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+        }
+        DisableBuildMode();
+        Debug.Log("Structure moved successfully.");
     }
-    
+
+    void CancelMove()
+    {
+        if (movingStructure != null)
+        {
+            movingStructure.transform.position = originalPosition;
+            movingStructure.transform.rotation = originalRotation;
+            movingStructure.gameObject.SetActive(true);
+            movingStructure.RegisterWithGrid();
+            movingStructure = null;
+        }
+        isMoveModeActive = false;
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+        }
+        gridController.HideGrid();
+        DisableBuildMode();
+        Debug.Log("Move cancelled.");
+    }
+
     void UpdateGhostPosition()
     {
         if (currentGhost == null) return;
-        
-        // Hide ghost if in land buying mode
+
         if (isInLandBuyMode)
         {
             currentGhost.SetActive(false);
@@ -443,54 +462,55 @@ public class BuildController : MonoBehaviour
         {
             currentGhost.SetActive(true);
         }
-        
-        // Get grid cell under cursor, ignoring placed structures
-        Vector2Int hoveredCell = GetGridCellUnderCursor(ignoreStructures: true);
-        
-        // Add bounds checking before getting the cell center
+
+        Vector2Int hoveredCell = GetGridCellUnderCursor(true);
         if (!gridController.IsValidCell(hoveredCell.x, hoveredCell.y))
         {
-            // Optional: Hide ghost when mouse is outside valid grid area
             currentGhost.SetActive(false);
             return;
         }
-        
+
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(hoveredCell.x, hoveredCell.y);
-        
         currentGhost.transform.position = cellCenter;
-        
-        // Update ghost visibility based on placement validity
+
         bool isValidPlacement = IsValidPlacement(hoveredCell.x, hoveredCell.y);
-        
-        // Change ghost material color based on validity
         foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
-        {
-            // Apply translucent green for valid placement, red for invalid
-            renderer.material.color = isValidPlacement ? 
-                new Color(0, 1, 0, 0.5f) : 
-                new Color(1, 0, 0, 0.5f);
-        }
+            renderer.material.color = isValidPlacement ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
     }
-    
+
+    void UpdateGhostPositionForMove()
+    {
+        if (currentGhost == null || movingStructure == null) return;
+
+        Vector2Int hoveredCell = GetGridCellUnderCursor(true);
+        if (!gridController.IsValidCell(hoveredCell.x, hoveredCell.y))
+        {
+            currentGhost.SetActive(false);
+            return;
+        }
+
+        Vector3 cellCenter = gridController.GetCellCenterFromTexture(hoveredCell.x, hoveredCell.y);
+        currentGhost.transform.position = cellCenter;
+        currentGhost.SetActive(true);
+
+        bool isValidPlacement = IsValidPlacement(hoveredCell.x, hoveredCell.y);
+        foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
+            renderer.material.color = isValidPlacement ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
+    }
+
     void CreateGhost(GameObject prefab)
     {
         if (currentGhost != null)
-        {
             Destroy(currentGhost);
-        }
-        
+
         if (prefab == null) return;
-        
+
         currentGhost = Instantiate(prefab);
         currentGhost.name = "BuildGhost";
-        
-        // Apply ghost material to all renderers
         ApplyGhostMaterial(currentGhost);
-        
-        // Set rotation
         currentGhost.transform.rotation = currentRotation;
     }
-    
+
     void ApplyGhostMaterial(GameObject obj)
     {
         if (ghostMaterial == null)
@@ -498,7 +518,7 @@ public class BuildController : MonoBehaviour
             Debug.LogWarning("Ghost material not assigned! Creating a simple translucent material.");
             ghostMaterial = new Material(Shader.Find("Standard"));
             ghostMaterial.color = new Color(0, 1, 0, 0.5f);
-            ghostMaterial.SetFloat("_Mode", 3); // Transparent mode
+            ghostMaterial.SetFloat("_Mode", 3);
             ghostMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             ghostMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             ghostMaterial.SetInt("_ZWrite", 0);
@@ -507,41 +527,36 @@ public class BuildController : MonoBehaviour
             ghostMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
             ghostMaterial.renderQueue = 3000;
         }
-        
+
         foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
         {
             Material ghostMatInstance = new Material(ghostMaterial);
             renderer.material = ghostMatInstance;
         }
     }
-    
-   public void SetBuildTarget(StructureData data)
-{
-    if (data == null || data.prefab == null)
+
+    public void SetBuildTarget(StructureData data)
     {
-        Debug.LogError("Invalid StructureData or prefab is null.");
-        return;
+        if (data == null || data.prefab == null)
+        {
+            Debug.LogError("Invalid StructureData or prefab is null.");
+            return;
+        }
+
+        if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(data.cost))
+        {
+            Debug.Log($"Cannot afford {data.structureName} (Cost: {data.cost})");
+            return;
+        }
+
+        Debug.Log($"Setting build target to: {data.structureName}");
+        currentBuildTargetPrefab = data.prefab;
+        currentStructureData = data;
+
+        if (isBuildModeActive && !isMoveModeActive)
+            CreateGhost(currentBuildTargetPrefab);
     }
-    
-    // Check if player can afford this structure
-    if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(data.cost))
-    {
-        Debug.Log($"Cannot afford {data.structureName} (Cost: {data.cost})");
-        
-        // Optional: Show a message to the player that they can't afford it
-        // UIManager.Instance.ShowMessage($"Not enough {MoneyManager.Instance.GetCurrencyName()} to build {data.structureName}");
-        return;
-    }
-    
-    Debug.Log($"Setting build target to: {data.structureName}");
-    currentBuildTargetPrefab = data.prefab;
-    currentStructureData = data;
-    
-    if (isBuildModeActive)
-    {
-        CreateGhost(currentBuildTargetPrefab);
-    }
-} 
+
     public void SetBuildTarget(GameObject prefab)
     {
         if (prefab == null)
@@ -549,107 +564,72 @@ public class BuildController : MonoBehaviour
             Debug.LogError("Cannot set null prefab as build target.");
             return;
         }
-        
+
         currentBuildTargetPrefab = prefab;
-        
-        if (isBuildModeActive)
-        {
+
+        if (isBuildModeActive && !isMoveModeActive)
             CreateGhost(currentBuildTargetPrefab);
-        }
     }
-    
+
     private List<Vector2Int> GetStructureFootprint(GameObject obj)
     {
         List<Vector2Int> occupiedCells = new List<Vector2Int>();
-        
-        // Get the object's bounds in world space
         Renderer renderer = obj.GetComponentInChildren<Renderer>();
         if (renderer == null) return occupiedCells;
-        
-        // Get bounds in world space (handles rotation correctly)
+
         Bounds bounds = renderer.bounds;
-        
-        // Shrink bounds slightly to prevent edge cases
         bounds.Expand(-0.1f);
-        
-        // Convert to grid coordinates
+
         Vector2Int bottomLeft = gridController.WorldToGridCoords(bounds.min);
         Vector2Int topRight = gridController.WorldToGridCoords(bounds.max);
-        
-        // Loop through all cells
+
         for (int x = bottomLeft.x; x <= topRight.x; x++)
         {
             for (int y = bottomLeft.y; y <= topRight.y; y++)
             {
                 if (gridController.IsValidCell(x, y))
                 {
-                    // Get cell center in world space
                     Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
-                    
-                    // Only occupy if cell center is within bounds
                     if (bounds.Contains(new Vector3(cellCenter.x, bounds.center.y, cellCenter.z)))
-                    {
                         occupiedCells.Add(new Vector2Int(x, y));
-                    }
                 }
             }
         }
-        
+
         return occupiedCells;
     }
-    
+
     bool IsValidPlacement(int x, int y)
     {
-        if (!gridController.IsValidCell(x, y)) return false;
-        if (currentBuildTargetPrefab == null) return false;
-        
-        // Check if shop is actually visible/active in the scene
-        bool shopOpen = (shopPanelUI != null && shopPanelUI.gameObject.activeSelf);
-        
-        if (!shopOpen) return false;
-        
-        // Create a temporary object to calculate footprint
-        GameObject tempObj = Instantiate(currentBuildTargetPrefab, 
-            gridController.GetCellCenterFromTexture(x, y), 
-            currentRotation);
-            
+        if (!gridController.IsValidCell(x, y) || currentBuildTargetPrefab == null) return false;
+        bool shopOpen = (shopPanelUI != null && shopPanelUI.gameObject.activeSelf && !isMoveModeActive);
+        if (!shopOpen && !isMoveModeActive) return false;
+
+        GameObject tempObj = Instantiate(currentBuildTargetPrefab, gridController.GetCellCenterFromTexture(x, y), currentRotation);
         List<Vector2Int> footprint = GetStructureFootprint(tempObj);
         Destroy(tempObj);
-        
-        // Check if all cells in footprint are valid for placement
+
         foreach (Vector2Int cell in footprint)
         {
-            if (!gridController.IsValidCell(cell.x, cell.y))
-                return false;
-                
+            if (!gridController.IsValidCell(cell.x, cell.y)) return false;
             GridCell gridCell = gridController.GetCell(cell.x, cell.y);
-            if (gridCell == null || !gridCell.flags.isOwned || gridCell.flags.isOccupied || gridCell.flags.isObstacle)
+            if (gridCell == null || !gridCell.flags.isOwned || (gridCell.flags.isOccupied && !originalFootprint.Contains(cell)) || gridCell.flags.isObstacle)
                 return false;
         }
-        
         return true;
     }
-    
+
     void PlaceItem(int x, int y)
     {
         if (!IsValidPlacement(x, y)) return;
 
-        
-
-        // Check again if the player can afford it (could have changed since selection)
-        if (currentStructureData != null &&
-            MoneyManager.Instance != null &&
-            !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
+        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
         {
             Debug.Log("Not enough money to place structure");
             return;
         }
 
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
-
-
-        
-        // Create the actual item to place
         GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
         placedItem.name = $"Item_{x}_{y}";
 
@@ -659,257 +639,151 @@ public class BuildController : MonoBehaviour
             structure.SetAllowSelectionAndUI(false);
             StartCoroutine(EnableSelectionAfterRelease(structure));
 
-            // Register silo if this is a SiloStructure
             SiloStructure silo = structure as SiloStructure;
             if (silo != null)
-            {
                 InventoryManager.Instance.RegisterSilo(silo);
-            }
         }
-        
-        // Mark cells as occupied
+
         List<Vector2Int> footprint = GetStructureFootprint(placedItem);
         foreach (Vector2Int cell in footprint)
-        {
             gridController.SetCellOccupied(cell.x, cell.y, true);
-        }
 
-        // Play building placement sound
-    if (AudioManager.Instance != null)
-    {
-        AudioManager.Instance.PlayPlaceSound();
-    }
-        
-        // Update grid texture
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayPlaceSound();
+
         gridController.UpdateGridTexture();
-        
-        // Notify grid monitor about the changes
         if (gridMonitor != null && footprint.Count > 0)
-        {
             gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
-        }
     }
 
-
-private IEnumerator EnableSelectionAfterRelease(Structure structure)
-{
-    // Wait until the mouse button is released
-    while (Input.GetMouseButton(0))
+    private IEnumerator EnableSelectionAfterRelease(Structure structure)
     {
-        yield return null;
+        while (Input.GetMouseButton(0))
+            yield return null;
+        if (structure != null)
+            structure.SetAllowSelectionAndUI(true);
     }
 
-    // Re-enable selection and UI
-    if (structure != null)
-    {
-        structure.SetAllowSelectionAndUI(true);
-    }
-}
-    
     void RemoveItem(int x, int y)
     {
         if (!gridController.IsValidCell(x, y)) return;
-        
         GridCell cell = gridController.GetCell(x, y);
         if (cell == null || !cell.flags.isOccupied) return;
-        
-        // Find the object at this position
+
         string itemName = $"Item_{x}_{y}";
         GameObject placedItem = GameObject.Find(itemName);
-        
         if (placedItem != null)
         {
-
-            // Unregister silo if this is a SiloStructure
             Structure structure = placedItem.GetComponent<Structure>();
             if (structure is SiloStructure silo)
-            {
                 InventoryManager.Instance.UnregisterSilo(silo);
-            }
 
-
-
-
-            // Get the footprint before destroying
             List<Vector2Int> footprint = GetStructureFootprint(placedItem);
-            
-            // Destroy the object
             Destroy(placedItem);
-            // Play building removal sound
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayRemoveSound();
-        }
-            
-            // Mark cells as unoccupied
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayRemoveSound();
+
             foreach (Vector2Int pos in footprint)
-            {
                 gridController.SetCellOccupied(pos.x, pos.y, false);
-            }
-            
-            // Update grid texture
+
             gridController.UpdateGridTexture();
-            
-            // Notify grid monitor
             if (gridMonitor != null && footprint.Count > 0)
-            {
                 gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
-            }
         }
     }
-    
-    // Enhanced method to check if mouse is directly over a placed structure
+
     private bool TryRemoveStructureByRaycast()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        
-        // Skip this object if it's the ghost to avoid raycast issues
         int layerMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast"));
-        
         if (Physics.Raycast(ray, out hit, 1000f, layerMask))
         {
-            // Skip if we hit the ghost
             if (hit.transform.name == "BuildGhost") return false;
-            
-            // Debug.Log($"Raycast hit: {hit.transform.name} at distance {hit.distance}");
-            
-            // Search upward in hierarchy to find the parent structure
+
             Transform hitTransform = hit.transform;
             while (hitTransform != null)
             {
-                // Check if this transform or any parent is a placed structure
                 if (hitTransform.name.StartsWith("Item_"))
                 {
                     GameObject placedItem = hitTransform.gameObject;
-                    // Debug.Log($"Found structure to remove: {placedItem.name}");
-                    
-                    // Get footprint before destroying
                     List<Vector2Int> footprint = GetStructureFootprint(placedItem);
-                    
                     if (footprint.Count == 0)
                     {
                         Debug.LogWarning("Structure has empty footprint, trying alternate method");
                         footprint = GetExtendedStructureFootprint(placedItem);
                     }
-                    
-                    // Find the grid position - parse from the object name (Item_X_Y)
+
                     string[] parts = placedItem.name.Split('_');
                     if (parts.Length >= 3 && int.TryParse(parts[1], out int gridX) && int.TryParse(parts[2], out int gridY))
                     {
-                        // Make sure to update the grid for all cells occupied by this structure
+                        Structure structure = placedItem.GetComponent<Structure>();
+                        if (structure is SiloStructure silo)
+                            InventoryManager.Instance.UnregisterSilo(silo);
+
                         foreach (Vector2Int pos in footprint)
                         {
                             if (gridController.IsValidCell(pos.x, pos.y))
-                            {
                                 gridController.SetCellOccupied(pos.x, pos.y, false);
-                            }
                         }
 
-                        //remove silo from inventory when deleted
-                        Structure structure = placedItem.GetComponent<Structure>();
-                        if (structure is SiloStructure silo)
-                        {
-                            InventoryManager.Instance.UnregisterSilo(silo);
-                        }
-                        
-                        // Destroy the object
                         Destroy(placedItem);
-                        
-                        // Update grid texture
-                        gridController.UpdateGridTexture();
-
-                        // Play building removal sound
                         if (AudioManager.Instance != null)
-                        {
                             AudioManager.Instance.PlayRemoveSound();
-                        }
-                        
-                        // Notify grid monitor
+
+                        gridController.UpdateGridTexture();
                         if (gridMonitor != null && footprint.Count > 0)
-                        {
                             gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
-                        }
-                        
-                        return true; // Successfully removed
+
+                        return true;
                     }
                 }
-                
-                // Move up the hierarchy
                 hitTransform = hitTransform.parent;
             }
         }
-        
-        return false; // Nothing found to remove
+        return false;
     }
-    
-    // Alternative method to get structure footprint that's more thorough
+
     private List<Vector2Int> GetExtendedStructureFootprint(GameObject obj)
     {
         List<Vector2Int> occupiedCells = new List<Vector2Int>();
-        
-        // Get all renderers (in case there are multiple parts)
         Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0) return occupiedCells;
-        
-        // Create a combined bounds
+
         Bounds combinedBounds = renderers[0].bounds;
         for (int i = 1; i < renderers.Length; i++)
-        {
             combinedBounds.Encapsulate(renderers[i].bounds);
-        }
-        
-        // Add a small margin to ensure we catch all cells
+
         combinedBounds.Expand(0.1f);
-        
-        // Convert to grid coordinates
         Vector2Int bottomLeft = gridController.WorldToGridCoords(combinedBounds.min);
         Vector2Int topRight = gridController.WorldToGridCoords(combinedBounds.max);
-        
-        // Debug info
-        Debug.Log($"Structure bounds: min={combinedBounds.min}, max={combinedBounds.max}");
-        Debug.Log($"Grid coords: bottomLeft={bottomLeft}, topRight={topRight}");
-        
-        // Loop through all potentially affected cells
+
         for (int x = bottomLeft.x - 1; x <= topRight.x + 1; x++)
         {
             for (int y = bottomLeft.y - 1; y <= topRight.y + 1; y++)
             {
                 if (gridController.IsValidCell(x, y))
                 {
-                    // Check if cell is occupied
                     GridCell cell = gridController.GetCell(x, y);
                     if (cell != null && cell.flags.isOccupied)
-                    {
                         occupiedCells.Add(new Vector2Int(x, y));
-                    }
                 }
             }
         }
-        
+
         Debug.Log($"Found {occupiedCells.Count} occupied cells in extended footprint");
         return occupiedCells;
     }
-    
+
     private void UpdateDeleteIconPosition()
     {
-        // Get current mouse position
         Vector2 mousePosition = Input.mousePosition;
-        
-        // Apply offset so icon doesn't cover what we're pointing at
         mousePosition += cursorOffset;
-        
-        // Set the position of the delete icon to follow cursor
         itemDeleteIcon.position = mousePosition;
-        
-        // Make sure all graphics in the delete icon hierarchy don't block raycasts
         foreach (Graphic graphic in itemDeleteIcon.GetComponentsInChildren<Graphic>())
-        {
             graphic.raycastTarget = false;
-        }
     }
-    
-    // Add this method to provide a public way to cancel the current building
+
     public void CancelCurrentBuilding()
     {
         if (currentGhost != null)
@@ -917,27 +791,18 @@ private IEnumerator EnableSelectionAfterRelease(Structure structure)
             Destroy(currentGhost);
             currentGhost = null;
         }
-        
         currentBuildTargetPrefab = null;
     }
-    
-    // New method to get grid cell under cursor, with option to ignore structures
+
     private Vector2Int GetGridCellUnderCursor(bool ignoreStructures = false)
     {
-        // First, try to get cell directly from GridController
         Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-        
-        // If we want to ignore structures, do a targeted raycast to the grid plane
         if (ignoreStructures && !isDeleteModeActive)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
-            // Create a plane representing the grid
-            // Use gridController's grid data to determine the plane's height
             float gridHeight = 0f;
             if (gridController != null && gridController.TextureHeight > 0)
             {
-                // Just get the first valid cell to determine grid height
                 for (int x = 0; x < gridController.TextureWidth; x++)
                 {
                     for (int y = 0; y < gridController.TextureHeight; y++)
@@ -951,9 +816,8 @@ private IEnumerator EnableSelectionAfterRelease(Structure structure)
                     }
                 }
             }
-            
-            Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
-            
+
+            Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0)); // Fixed typo
             float distance;
             if (gridPlane.Raycast(ray, out distance))
             {
@@ -961,8 +825,18 @@ private IEnumerator EnableSelectionAfterRelease(Structure structure)
                 hoveredCell = gridController.WorldToGridCoords(hitPoint);
             }
         }
-        
         return hoveredCell;
+    }
+
+    public void SetRemovalModifierKey(KeyCode newKey)
+    {
+        removeModifierKey = newKey;
+        Debug.Log($"Removal modifier key changed to: {newKey}");
+    }
+
+    public KeyCode GetRemovalModifierKey()
+    {
+        return removeModifierKey;
     }
 
     public void HideDeleteIcon()

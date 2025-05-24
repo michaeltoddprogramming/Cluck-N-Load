@@ -1,8 +1,8 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using FarmDefender.Core.AI.FlowField;
 using System.Linq;
+using System.Collections;
 
 public class Structure : MonoBehaviour
 {
@@ -50,8 +50,6 @@ public class Structure : MonoBehaviour
     public delegate void StructureEvent(Structure structure);
     public event StructureEvent OnDamaged;
     public event StructureEvent OnDestroyed;
-
-    // Add the new event that StructureUIManager is looking for
     public delegate void StructureDestroyedEventHandler(Structure destroyedStructure);
     public event StructureDestroyedEventHandler OnStructureDestroyed;
 
@@ -73,18 +71,16 @@ public class Structure : MonoBehaviour
 
     private void Awake()
     {
-        // Initialize health from structure data if available
         if (structureData != null)
         {
             currentHealth = structureData.health;
         }
         else
         {
-            currentHealth = 100; // Default health
+            currentHealth = 100;
             Debug.LogWarning($"No StructureData assigned to {gameObject.name}", this);
         }
 
-        // Initialize selection indicator if it exists
         selectionIndicator = transform.Find("SelectionIndicator")?.gameObject;
         if (selectionIndicator != null)
         {
@@ -94,13 +90,11 @@ public class Structure : MonoBehaviour
 
     protected virtual void Start()
     {
-        // Skip processing for ghost/preview structures
         if (gameObject.name == "BuildGhost")
         {
             return;
         }
 
-        // Find required components
         gridController = FindObjectOfType<GridController>();
         if (flowFieldManager == null)
             flowFieldManager = FindObjectOfType<FlowFieldManager>();
@@ -111,16 +105,13 @@ public class Structure : MonoBehaviour
             return;
         }
 
-        // Register with GameLoopManager
         GameLoopManager.Instance?.RegisterStructure(this);
 
-        // Register this structure with the grid system
         if (autoRegisterWithGrid && gridController != null)
         {
             RegisterWithGrid();
         }
 
-        // Ensure the structure has a collider for mouse interaction
         if (GetComponent<Collider>() == null)
         {
             Debug.Log($"Adding collider to {gameObject.name} for clickability");
@@ -131,11 +122,15 @@ public class Structure : MonoBehaviour
     public void SetAllowSelectionAndUI(bool allow)
     {
         allowSelectionAndUI = allow;
+        if (!allow && isSelected)
+        {
+            Deselect();
+        }
+        Debug.Log($"SetAllowSelectionAndUI for {GetStructureName()}: {allow}");
     }
 
     protected virtual void OnDestroy()
     {
-        // Unregister from grid and GameLoopManager
         if (hasRegisteredWithGrid && gridController != null)
         {
             UnregisterFromGrid();
@@ -150,17 +145,10 @@ public class Structure : MonoBehaviour
     public void RegisterWithGrid()
     {
         if (gridController == null || !occupiesGridCells) return;
+        if (gameObject.name == "BuildGhost") return;
 
-        // Skip registration if this is a ghost/preview
-        if (gameObject.name == "BuildGhost")
-        {
-            return;
-        }
-
-        // Calculate the cells this structure occupies WITHOUT marking them
         CalculateOccupiedCells();
 
-        // Mark cells as obstacles for pathfinding if needed
         if (blocksPathfinding)
         {
             foreach (Vector2Int cellPos in occupiedCells)
@@ -177,7 +165,6 @@ public class Structure : MonoBehaviour
         }
 
         hasRegisteredWithGrid = true;
-
         if (showDebugInfo)
         {
             Debug.Log($"Structure {gameObject.name} registered with grid for tracking {occupiedCells.Count} cells.");
@@ -188,15 +175,11 @@ public class Structure : MonoBehaviour
     {
         if (gridController == null || !hasRegisteredWithGrid || !occupiesGridCells) return;
 
-        // Mark all cells as unoccupied
         foreach (Vector2Int cellPos in occupiedCells)
         {
             if (gridController.IsValidCell(cellPos.x, cellPos.y))
             {
-                // Mark as unoccupied
                 gridController.SetCellOccupied(cellPos.x, cellPos.y, false);
-
-                // Also clear obstacle flag if needed
                 if (blocksPathfinding)
                 {
                     GridCell cell = gridController.GetCell(cellPos.x, cellPos.y);
@@ -209,10 +192,7 @@ public class Structure : MonoBehaviour
         }
 
         hasRegisteredWithGrid = false;
-
-        // Update flow field to account for removed obstacles
         UpdateFlowField();
-
         if (showDebugInfo)
         {
             Debug.Log($"Structure {gameObject.name} unregistered from grid.");
@@ -222,26 +202,19 @@ public class Structure : MonoBehaviour
     private void CalculateOccupiedCells()
     {
         occupiedCells.Clear();
-
-        // Get the object's bounds in world space
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0) return;
 
-        // Calculate combined bounds of all renderers
         Bounds combinedBounds = renderers[0].bounds;
         for (int i = 1; i < renderers.Length; i++)
         {
             combinedBounds.Encapsulate(renderers[i].bounds);
         }
 
-        // Shrink bounds slightly to prevent edge cases
         combinedBounds.Expand(-0.1f);
-
-        // Convert to grid coordinates
         Vector2Int bottomLeft = gridController.WorldToGridCoords(combinedBounds.min);
         Vector2Int topRight = gridController.WorldToGridCoords(combinedBounds.max);
 
-        // Loop through all cells in bounds
         for (int x = bottomLeft.x; x <= topRight.x; x++)
         {
             for (int y = bottomLeft.y; y <= topRight.y; y++)
@@ -256,26 +229,19 @@ public class Structure : MonoBehaviour
 
     private void UpdateFlowField()
     {
-        // Trigger flow field recalculation if flowFieldManager exists
         if (flowFieldManager != null)
         {
-            // Check if in build mode - if so, skip flow field update
             BuildController buildController = FindObjectOfType<BuildController>();
             if (buildController != null && buildController.IsBuildModeActive())
             {
-                // Skip flow field update - will be handled when exiting build mode
                 return;
             }
-
-            // Check if gameObject is still active before starting coroutine
             if (gameObject.activeInHierarchy)
             {
-                // Give a small delay for grid updates to complete
                 StartCoroutine(TriggerFlowFieldUpdate());
             }
             else
             {
-                // GameObject is being destroyed, so directly update flow field
                 Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
                 flowFieldManager.GenerateFlowField(targetCoord);
             }
@@ -298,16 +264,11 @@ public class Structure : MonoBehaviour
         if (isIndestructible) return;
 
         currentHealth -= amount;
-
-        // Notify listeners
         OnDamaged?.Invoke(this);
-
         if (showDebugInfo)
         {
             Debug.Log($"Structure {gameObject.name} took {amount} damage. Health: {currentHealth}/{structureData?.health ?? 100}");
         }
-
-        // Check if destroyed
         if (currentHealth <= 0)
         {
             Die();
@@ -316,46 +277,37 @@ public class Structure : MonoBehaviour
 
     public virtual void Die()
     {
-        // Notify listeners through both events
         OnDestroyed?.Invoke(this);
-        OnStructureDestroyed?.Invoke(this); // Add this line to trigger the new event
+        OnStructureDestroyed?.Invoke(this);
 
-        // Notify wolves of destruction
         foreach (Wolf wolf in registeredWolves.ToList())
         {
             if (wolf != null && wolf)
                 wolf.OnTargetDestroyed(gameObject);
         }
 
-        // Spawn destruction effect if available
         if (destructionEffectPrefab != null)
         {
             Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
         }
 
-        // Unregister from grid
         UnregisterFromGrid();
-
         if (showDebugInfo)
         {
             Debug.Log($"Structure {gameObject.name} destroyed.");
         }
 
-        // Destroy the game object after delay
         if (destroyOnZeroHealth)
         {
             Destroy(gameObject, destroyDelay);
         }
     }
 
-
-    // Public getter for current health
     public int GetCurrentHealth()
     {
         return currentHealth;
     }
 
-    // Public getter for max health
     public int GetMaxHealth()
     {
         return structureData != null ? structureData.health : 100;
@@ -365,7 +317,6 @@ public class Structure : MonoBehaviour
 
     #region Utility
 
-    // Check if structure occupies a specific grid cell
     public bool OccupiesCell(int x, int y)
     {
         return occupiedCells.Contains(new Vector2Int(x, y));
@@ -376,19 +327,16 @@ public class Structure : MonoBehaviour
         return allowSelectionAndUI;
     }
 
-    // Get the name of the structure
     public string GetStructureName()
     {
         return structureData != null ? structureData.structureName : gameObject.name;
     }
 
-    // Get structure type
     public StructureType GetStructureType()
     {
         return structureData != null ? structureData.type : StructureType.Building;
     }
 
-    // Get cost of the structure
     public int GetCost()
     {
         return structureData != null ? structureData.cost : 0;
@@ -403,35 +351,27 @@ public class Structure : MonoBehaviour
         if (!showDebugInfo || !Application.isPlaying || gridController == null)
             return;
 
-        // Show occupied cells
-        Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f); // Orange
-
+        Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f);
         foreach (Vector2Int cell in occupiedCells)
         {
             if (gridController.IsValidCell(cell.x, cell.y))
             {
                 Vector3 cellCenter = gridController.GetCellCenterFromTexture(cell.x, cell.y);
                 float cellSize = gridController.GetCellSize();
-
                 Gizmos.DrawCube(cellCenter, new Vector3(cellSize * 0.9f, 0.1f, cellSize * 0.9f));
             }
         }
 
-        // Show health bar above structure
         Renderer renderer = GetComponentInChildren<Renderer>();
         if (renderer != null)
         {
             Bounds bounds = renderer.bounds;
             Vector3 top = new Vector3(bounds.center.x, bounds.max.y + 0.5f, bounds.center.z);
-
             float healthPct = (float)currentHealth / GetMaxHealth();
             float width = bounds.size.x;
 
-            // Background
             Gizmos.color = Color.gray;
             Gizmos.DrawCube(top, new Vector3(width, 0.1f, 0.1f));
-
-            // Health fill
             Gizmos.color = Color.green;
             Gizmos.DrawCube(
                 top - new Vector3((width * (1 - healthPct)) / 2, 0, 0),
@@ -446,102 +386,49 @@ public class Structure : MonoBehaviour
 
     public virtual void Select()
     {
+        if (!allowSelectionAndUI) return;
         isSelected = true;
-
-        // Show selection indicator if available
         if (selectionIndicator != null)
         {
             selectionIndicator.SetActive(true);
         }
-        // Create selection indicator if it doesn't exist
-        else
-        {
-            CreateSelectionIndicator();
-        }
-
-        Debug.Log($"Selected structure: {GetStructureName()}");
+        Debug.Log($"Selected structure: {GetStructureName()}, IsSelected: {isSelected}");
     }
 
     public virtual void Deselect()
     {
         isSelected = false;
-
         if (selectionIndicator != null)
         {
             selectionIndicator.SetActive(false);
         }
-
-        Debug.Log($"Deselected structure: {GetStructureName()}");
-    }
-
-    private void CreateSelectionIndicator()
-    {
-        selectionIndicator = new GameObject("SelectionIndicator");
-        selectionIndicator.transform.SetParent(transform);
-
-        // Position above the structure
-        Renderer renderer = GetComponentInChildren<Renderer>();
-        if (renderer != null)
+        // Ensure collider is enabled for reselection
+        Collider col = GetComponent<Collider>();
+        if (col != null && !col.enabled)
         {
-            selectionIndicator.transform.localPosition = new Vector3(
-                0,
-                renderer.bounds.size.y + 0.1f,
-                0
-            );
+            col.enabled = true;
+            Debug.Log($"Re-enabled collider for {GetStructureName()}");
         }
-        else
-        {
-            selectionIndicator.transform.localPosition = new Vector3(0, 1f, 0);
-        }
-
-        // Make the indicator face up
-        selectionIndicator.transform.rotation = Quaternion.Euler(90, 0, 0);
-
-        // Create a quad for the selection
-        GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        quad.transform.SetParent(selectionIndicator.transform);
-        quad.transform.localPosition = Vector3.zero;
-        quad.transform.localRotation = Quaternion.identity;
-        quad.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-
-        // Remove the collider from the quad
-        Destroy(quad.GetComponent<Collider>());
-
-        // Set material to a simple highlight
-        Renderer quadRenderer = quad.GetComponent<Renderer>();
-        if (quadRenderer != null)
-        {
-            Material highlightMaterial = new Material(Shader.Find("Transparent/Diffuse"));
-            highlightMaterial.color = new Color(1f, 1f, 0.5f, 0.3f); // Semi-transparent yellow
-            quadRenderer.material = highlightMaterial;
-        }
-
-        selectionIndicator.SetActive(true);
+        Debug.Log($"Deselected structure: {GetStructureName()}, IsSelected: {isSelected}");
     }
 
     private void AddColliderToStructure()
     {
-        // Try to get bounds from renderers
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)
         {
-            // Calculate combined bounds
             Bounds combinedBounds = renderers[0].bounds;
             for (int i = 1; i < renderers.Length; i++)
             {
                 combinedBounds.Encapsulate(renderers[i].bounds);
             }
-
-            // Add appropriate sized box collider
             BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
             boxCollider.center = new Vector3(0, combinedBounds.size.y / 2, 0);
             boxCollider.size = combinedBounds.size;
-
             Debug.Log($"Added BoxCollider to {gameObject.name} based on renderer bounds");
         }
         else
         {
-            // Fallback if no renderer
             BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
             boxCollider.center = new Vector3(0, 0.5f, 0);
             boxCollider.size = new Vector3(1, 1, 1);
@@ -554,10 +441,10 @@ public class Structure : MonoBehaviour
         return isSelected;
     }
 
-    #endregion
-    
     public void ApplyDamage(int damage)
     {
         TakeDamage(damage);
     }
+
+    #endregion
 }

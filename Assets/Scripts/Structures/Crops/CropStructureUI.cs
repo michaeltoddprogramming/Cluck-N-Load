@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
+using System.Collections;
 public class CropStructureUI : BaseStructureUI
 {
     [Header("UI Elements")]
@@ -262,7 +262,7 @@ public class CropStructureUI : BaseStructureUI
         }
     }
 
-    public void plantCrop(int crop)
+       public void plantCrop(int crop)
     {
         if (!isCropStructure || cropStructure == null)
         {
@@ -270,7 +270,7 @@ public class CropStructureUI : BaseStructureUI
             PlayErrorSound();
             return;
         }
-
+    
         if (nightManager == null || !nightManager.IsDay)
         {
             Debug.LogWarning("Cannot plant crop: Planting is only allowed during the day!");
@@ -278,7 +278,7 @@ public class CropStructureUI : BaseStructureUI
             closeSelectCropPanel();
             return;
         }
-
+    
         CropStructure.CropType cropType;
         switch (crop)
         {
@@ -296,12 +296,26 @@ public class CropStructureUI : BaseStructureUI
                 PlayErrorSound();
                 return;
         }
-
+    
         Debug.Log($"Attempting to plant {cropType} on {cropStructure.GetStructureName()}");
         cropStructure.Plant(cropType);
         PlaySound(plantSound); // Play planting sound on success
         closeSelectCropPanel();
-        UpdateUI();
+        
+        // Close the entire structure UI after a short delay
+        StartCoroutine(CloseUIAfterDelay(0.2f));
+    }
+    
+    // Add this coroutine method to close the UI after a delay
+    private IEnumerator CloseUIAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Use StructureUIManager to close the UI
+        if (StructureUIManager.Instance != null)
+        {
+            StructureUIManager.Instance.HideStructureUI();
+        }
     }
 
     public void harvestCrops()

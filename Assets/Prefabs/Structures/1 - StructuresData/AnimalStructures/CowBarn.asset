@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: CowBarn
   m_EditorClassIdentifier: 
   structureName: Cow Barn
-  prefab: {fileID: 8904144573820400465, guid: 2a94af7644ba8c6479cd8184a46bbb61, type: 3}
-  icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+  prefab: {fileID: 8921371263811498732, guid: 73d56bec68accdb46a42b94af8267d0a, type: 3}
+  icon: {fileID: 21300000, guid: 22c616fcc593d794ca9573d5e6610dd6, type: 3}
   type: 8
   cost: 50
   health: 100
@@ -26,4 +26,3 @@ MonoBehaviour:
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
   protectionRadius: 5
-  backgroundNoise: {fileID: 0}

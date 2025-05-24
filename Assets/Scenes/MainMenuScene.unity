@@ -393,49 +393,49 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 4c2b90544cce3ac488580e57a3baa7b3, type: 2}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalPosition.x
       value: 197
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalPosition.y
       value: -31
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalPosition.z
       value: -624
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.94975376
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalRotation.y
       value: -0.31299797
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: -36.48
       objectReference: {fileID: 0}
-    - target: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5728266925620452558, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+    - target: {fileID: 4059874661627574406, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
       propertyPath: m_Name
-      value: Chicken2
+      value: ArmyChicken
       objectReference: {fileID: 0}
     - target: {fileID: 6099751006286484123, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -453,10 +453,10 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+  m_SourcePrefab: {fileID: 100100000, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
 --- !u!4 &249964571 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 4914892601045911156, guid: 16acbeef94746a947bad5d9c204eac03, type: 3}
+  m_CorrespondingSourceObject: {fileID: 3682892065065919036, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
   m_PrefabInstance: {fileID: 249964570}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &552998001

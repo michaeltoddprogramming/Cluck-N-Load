@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65f1e57da6ef4ea45a5182a8a0786265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animalType: 0
+  animalType: 1
   moveSpeed: 3
   rotationSpeed: 5
   attackRange: 2
@@ -118,3 +118,4 @@ MonoBehaviour:
   animator: {fileID: 0}
   walkAnimParam: IsWalking
   attackAnimParam: Attack
+  maxHealth: 30

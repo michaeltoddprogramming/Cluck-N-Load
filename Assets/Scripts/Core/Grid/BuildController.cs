@@ -600,24 +600,27 @@ public class BuildController : MonoBehaviour
     }
 
     bool IsValidPlacement(int x, int y)
+{
+    if (!gridController.IsValidCell(x, y) || currentBuildTargetPrefab == null) return false;
+    bool shopOpen = (shopPanelUI != null && shopPanelUI.gameObject.activeSelf && !isMoveModeActive);
+    if (!shopOpen && !isMoveModeActive) return false;
+
+    GameObject tempObj = Instantiate(currentBuildTargetPrefab, gridController.GetCellCenterFromTexture(x, y), currentRotation);
+    List<Vector2Int> footprint = GetStructureFootprint(tempObj);
+    Destroy(tempObj);
+
+    foreach (Vector2Int cell in footprint)
     {
-        if (!gridController.IsValidCell(x, y) || currentBuildTargetPrefab == null) return false;
-        bool shopOpen = (shopPanelUI != null && shopPanelUI.gameObject.activeSelf && !isMoveModeActive);
-        if (!shopOpen && !isMoveModeActive) return false;
-
-        GameObject tempObj = Instantiate(currentBuildTargetPrefab, gridController.GetCellCenterFromTexture(x, y), currentRotation);
-        List<Vector2Int> footprint = GetStructureFootprint(tempObj);
-        Destroy(tempObj);
-
-        foreach (Vector2Int cell in footprint)
-        {
-            if (!gridController.IsValidCell(cell.x, cell.y)) return false;
-            GridCell gridCell = gridController.GetCell(cell.x, cell.y);
-            if (gridCell == null || !gridCell.flags.isOwned || (gridCell.flags.isOccupied && !originalFootprint.Contains(cell)) || gridCell.flags.isObstacle)
-                return false;
-        }
-        return true;
+        if (!gridController.IsValidCell(cell.x, cell.y)) return false;
+        GridCell gridCell = gridController.GetCell(cell.x, cell.y);
+        if (gridCell == null || !gridCell.flags.isOwned || gridCell.flags.isObstacle) return false;
+        
+        // Only check originalFootprint in move mode when it's initialized
+        if (gridCell.flags.isOccupied && isMoveModeActive && originalFootprint != null && !originalFootprint.Contains(cell))
+            return false;
     }
+    return true;
+}
 
     void PlaceItem(int x, int y)
     {

@@ -106,6 +106,7 @@ public class NightManager : MonoBehaviour
         set => years = value;
     }
     private float tempSecond;
+    private bool yearsChanged = false;
 
     // Season icons
     [Header("Season Icons")]
@@ -474,7 +475,7 @@ public class NightManager : MonoBehaviour
             
             sceneLight.colorTemperature = 6000f;
         }
-        else if (value == 16)
+        else if (value == 15)
         {
             if (clockTickingSource != null)
             {
@@ -491,7 +492,7 @@ public class NightManager : MonoBehaviour
             
             sceneLight.colorTemperature = 2000f;
         }
-        else if (value == 20)
+        else if (value == 18)
         {
             if (clockTickingSource.isPlaying)
             {
@@ -512,36 +513,54 @@ public class NightManager : MonoBehaviour
 
     private void OnDayChange(int value)
     {
-        if (value >= 20)
+        if (value == 0)
         {
-            years++;
+            setSeason(1);
+        }
+        else if (value == 1)
+        {
+            setSeason(2);
+        }
+        else if (value == 2)
+        {
+            setSeason(3);
+        }
+        else if (value == 3)
+        {
+            setSeason(4);
+        }
+        else if (value == 4)
+        {
+            // StartNotification("Night starting soon!!", 5f);
+
             if (yearAudioSource != null)
             {
                 yearAudioSource.Play();
             }
+
+            Debug.Log("Resetting the full time loop!");
+            years++;
             days = 0;
             hours = 7;
             minutes = 0;
-            StartDay(0);
-            setSeason(1);
-            return;
-        }
+            yearsChanged = true;
 
-        int currentSeason;
-    
-        if (value < 5)
-            currentSeason = 1; // Spring
-        else if (value < 10)
-            currentSeason = 2; // Summer
-        else if (value < 15)
-            currentSeason = 3; // Fall
-        else
-            currentSeason = 4; // Winter
-            
-        // Only trigger season change on first day of the season
-        if (value % 5 == 0)
+            setSeason(1);
+
+
+            StartDay(0); // force reset to day state
+            // setSeason(1); // reset season if needed
+        }
+        else if (value == 5)
         {
-            setSeason(currentSeason);
+            Debug.Log("Resetting the full time loop!");
+            years++;
+            days = 0;
+            hours = 7;
+            minutes = 0;
+
+            StartDay(0); // force reset to day state
+            setSeason(1); // reset season if needed
         }
     }
 
@@ -569,11 +588,22 @@ public class NightManager : MonoBehaviour
         switch (season)
         {
             case 1:
-                text = "Spring!!";
-                seasonIcon.sprite = spring;
-                chooseAnimalProductForSeason();
-                break;
+                if (yearsChanged)
+                {
+                    text = $"Year {Years} done!!\nSpring!!!!";
+                    seasonIcon.sprite = spring;
+                    chooseAnimalProductForSeason();
+                    break;
+                }
+                else
+                {
+                    text = "Spring!!";
+                    seasonIcon.sprite = spring;
+                    chooseAnimalProductForSeason();
+                    break;                    
+                }
             case 2:
+                yearsChanged = false;
                 text = "Summer!!";
                 seasonIcon.sprite = summer;
                 chooseAnimalProductForSeason();
@@ -587,10 +617,7 @@ public class NightManager : MonoBehaviour
                 text = "Winter!!";
                 seasonIcon.sprite = winter;
                 chooseAnimalProductForSeason();
-                break;
-            case 5:
-                text = $"Year {Years} done!!";
-                break;
+                break;                
             default:
                 text = "";
                 break;
@@ -773,6 +800,11 @@ public class NightManager : MonoBehaviour
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
                 StartProductionNotification(message, 5);
+
+                if (doubleProductionSource != null)
+                {
+                    doubleProductionSource.Play();
+                }
             }
         }
     }

@@ -19,6 +19,8 @@ public class BarracksStructure : Structure
     [SerializeField] private AudioSource flagPlaceSong;
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip backgroundNoise;
+    [SerializeField] private AudioSource audioSourceRecruit;
+    [SerializeField] private AudioClip recruitSound;
 
     private AnimalStructure targetAnimalStructure;
     private List<GameObject> armyAnimals = new List<GameObject>();
@@ -74,6 +76,7 @@ public class BarracksStructure : Structure
         {
             nightManager.RegisterBarracksStructure(this);
         }
+
         InitializeFlag();
         FindTargetAnimalStructure();
         nextStructureCheckTime = Time.time + structureCheckInterval;
@@ -357,6 +360,8 @@ public class BarracksStructure : Structure
         Debug.Log($"{GetStructureName()} recruited {amount} army {targetAnimalType}s. Total army: {armyAnimals.Count}");
         OnArmyChanged?.Invoke();
         UpdateRecruitmentCostByDistance();
+
+        playRecruitSound();
     }
 
     public void PlaceFlag(Vector3 position)
@@ -504,6 +509,25 @@ public class BarracksStructure : Structure
             audioSource.Play();
         }
     }
+
+    public void stopBackgroundSound()
+    {
+        if (audioSource != null && backgroundNoise != null && audioSource.isPlaying)
+        {
+            // audioSource.loop = false;
+            audioSource.Stop();
+        }
+    }
+
+    public void playRecruitSound()
+    {
+        if (audioSourceRecruit != null && recruitSound != null)
+        {
+            audioSourceRecruit.clip = recruitSound;
+            audioSourceRecruit.Play();
+        }
+    }
+
 
     //barrack synergy
     // private void UpdateRecruitmentCostByDistance()

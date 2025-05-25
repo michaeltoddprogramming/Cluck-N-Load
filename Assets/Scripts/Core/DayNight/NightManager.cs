@@ -457,7 +457,7 @@ public class NightManager : MonoBehaviour
             Hours = 0;
         }
 
-        if (value == 20)
+        if (value == 5)
         {
             StartDay(2);
             if (roosterMorningSource != null)

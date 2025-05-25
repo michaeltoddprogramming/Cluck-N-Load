@@ -26,6 +26,10 @@ public class Wolf : MonoBehaviour
     [SerializeField] private float fallbackMoveRadius = 10f;
     [SerializeField] private float fallbackMoveInterval = 5f;
 
+    [Header("Audio Behavior")]
+    [SerializeField] private float minGrowlInterval = 5f; // Minimum time between growls
+    [SerializeField] private float maxGrowlInterval = 20f; // Maximum time between growls
+
     private int currentHealth;
     private float lastAttackTime;
     private GameObject target;
@@ -35,12 +39,16 @@ public class Wolf : MonoBehaviour
     private float targetUpdateTimer = 0f;
     private float globalSearchTimer = 0f;
     private float fallbackMoveTimer = 0f;
+    private float growlTimer = 0f;
     private GameObject fallbackTarget;
     private readonly List<GameObject> cachedTargets = new List<GameObject>();
 
-    // Events for animation control
+    // Events for animation and audio control
     public event System.Action OnStartMoving;
     public event System.Action OnStopMoving;
+    public event System.Action OnAttack;
+    public event System.Action OnGrowl;
+    public event System.Action OnHurt;
     public event System.Action OnDeath;
 
     private void Awake()
@@ -62,6 +70,9 @@ public class Wolf : MonoBehaviour
         fallbackTarget.transform.position = transform.position;
         DontDestroyOnLoad(fallbackTarget);
 
+        // Initialize growl timer
+        growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
+
         Debug.Log($"🐺 Wolf {name} initialized at {transform.position}");
     }
 
@@ -71,7 +82,7 @@ public class Wolf : MonoBehaviour
         nightManager.RegisterWolf(this);
         Structure.RegisterWolf(this);
         flowFieldAgent.SetMoving(true);
-        OnStartMoving?.Invoke(); // Trigger initial movement event
+        OnStartMoving?.Invoke();
 
         CacheTargets();
         FindTargetWithPriority();
@@ -98,6 +109,15 @@ public class Wolf : MonoBehaviour
         targetUpdateTimer -= Time.deltaTime;
         globalSearchTimer -= Time.deltaTime;
         fallbackMoveTimer -= Time.deltaTime;
+        growlTimer -= Time.deltaTime;
+
+        // Random growling
+        if (growlTimer <= 0f)
+        {
+            OnGrowl?.Invoke();
+            growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
+            Debug.Log($"Wolf {name} triggered growl, next growl in {growlTimer:F1} seconds");
+        }
 
         if (targetUpdateTimer <= 0f)
         {
@@ -120,13 +140,13 @@ public class Wolf : MonoBehaviour
             if (distance <= effectiveAttackRange)
             {
                 flowFieldAgent.SetMoving(false);
-                OnStopMoving?.Invoke(); // Trigger stop moving event
+                OnStopMoving?.Invoke();
                 AttackTarget();
             }
             else
             {
                 flowFieldAgent.SetMoving(true);
-                OnStartMoving?.Invoke(); // Trigger start moving event
+                OnStartMoving?.Invoke();
                 flowFieldManager.SetTargetTransformWithPoint(target.transform, targetAttackPoint);
             }
         }
@@ -144,7 +164,7 @@ public class Wolf : MonoBehaviour
                     fallbackMoveTimer = fallbackMoveInterval;
                 }
                 flowFieldAgent.SetMoving(true);
-                OnStartMoving?.Invoke(); // Trigger start moving event
+                OnStartMoving?.Invoke();
                 flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
                 Debug.Log($"Wolf {name} no targets, moving to fallback target at {fallbackTarget.transform.position}");
             }
@@ -326,6 +346,8 @@ public class Wolf : MonoBehaviour
             return;
         }
 
+        OnAttack?.Invoke();
+
         try
         {
             if (target != null)
@@ -346,6 +368,8 @@ public class Wolf : MonoBehaviour
         currentHealth = Mathf.Max(0, currentHealth - amount);
         Debug.Log($"Wolf {name} took {amount} damage. Health: {currentHealth}/{maxHealth}");
 
+        OnHurt?.Invoke();
+
         if (currentHealth <= 0)
             Die();
     }
@@ -353,7 +377,7 @@ public class Wolf : MonoBehaviour
     private void Die()
     {
         flowFieldAgent.SetMoving(false);
-        OnDeath?.Invoke(); // Trigger death event
+        OnDeath?.Invoke();
         Debug.Log($"Wolf {name} died at {transform.position}");
         Destroy(gameObject);
     }

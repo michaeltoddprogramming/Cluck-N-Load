@@ -231,6 +231,8 @@ public class UnitSpawner : MonoBehaviour
         Vector3 spawnPosition = edgePositions[0];
 
         GameObject wolfInstance = Instantiate(wolfPrefab, spawnPosition, Quaternion.identity);
+
+        // Set up Animator
         Animator animator = wolfInstance.GetComponent<Animator>();
         if (animator == null)
         {
@@ -238,9 +240,29 @@ public class UnitSpawner : MonoBehaviour
             Destroy(wolfInstance);
             return null;
         }
-
-        // Set initial animation state (walking)
         animator.SetBool("isRunning", true);
+
+        // Get AudioSources (must be attached to prefab)
+        AudioSource[] audioSources = wolfInstance.GetComponents<AudioSource>();
+        if (audioSources.Length < 3)
+        {
+            Debug.LogError($"CRITICAL ERROR: Wolf prefab at {spawnPosition} requires at least 3 AudioSource components, found {audioSources.Length}");
+            Destroy(wolfInstance);
+            return null;
+        }
+
+        // Assign AudioSources in order: attack, growl, hurt
+        AudioSource attackAudioSource = audioSources[0];
+        AudioSource growlAudioSource = audioSources[1];
+        AudioSource hurtAudioSource = audioSources[2];
+
+        // Validate AudioSource clips
+        if (attackAudioSource.clip == null)
+            Debug.LogWarning($"Attack AudioSource on wolf at {spawnPosition} has no clip assigned");
+        if (growlAudioSource.clip == null)
+            Debug.LogWarning($"Growl AudioSource on wolf at {spawnPosition} has no clip assigned");
+        if (hurtAudioSource.clip == null)
+            Debug.LogWarning($"Hurt AudioSource on wolf at {spawnPosition} has no clip assigned");
 
         Debug.Log($"Wolf spawned at {spawnPosition}");
 
@@ -252,10 +274,34 @@ public class UnitSpawner : MonoBehaviour
             return null;
         }
 
-        // Subscribe to Wolf events to control animations
+        // Subscribe to Wolf events for animations and audio
         wolf.OnStartMoving += () => animator.SetBool("isRunning", false);
         wolf.OnStopMoving += () => animator.SetBool("isRunning", true);
         wolf.OnDeath += () => animator.SetBool("isRunning", true);
+        wolf.OnAttack += () =>
+        {
+            if (attackAudioSource != null && attackAudioSource.clip != null)
+            {
+                attackAudioSource.Play();
+                Debug.Log($"Wolf {wolf.name} played attack sound at {wolf.transform.position}");
+            }
+        };
+        wolf.OnGrowl += () =>
+        {
+            if (growlAudioSource != null && growlAudioSource.clip != null)
+            {
+                growlAudioSource.Play();
+                Debug.Log($"Wolf {wolf.name} played growl sound at {wolf.transform.position}");
+            }
+        };
+        wolf.OnHurt += () =>
+        {
+            if (hurtAudioSource != null && hurtAudioSource.clip != null)
+            {
+                hurtAudioSource.Play();
+                Debug.Log($"Wolf {wolf.name} played hurt sound at {wolf.transform.position}");
+            }
+        };
 
         return wolfInstance.GetComponent<Unit>();
     }

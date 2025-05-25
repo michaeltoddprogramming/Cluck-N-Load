@@ -938,11 +938,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverPanel: {fileID: 1077213407}
-  restartButton: {fileID: 0}
   quitGameButton: {fileID: 695836580}
   gameOverText: {fileID: 0}
-  mainSceneName: MainScene
-  mainMenuSceneName: MainMenu
 --- !u!4 &272689960
 Transform:
   m_ObjectHideFlags: 0
@@ -6415,6 +6412,7 @@ MonoBehaviour:
   _devSpawnCount: 5
   _militarySpawnRadius: 5
   _edgeInset: 2
+  wolfPrefab: {fileID: 0}
 --- !u!114 &1632256039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8039,6 +8037,7 @@ MonoBehaviour:
   _devSpawnCount: 5
   _militarySpawnRadius: 5
   _edgeInset: 1
+  wolfPrefab: {fileID: 5988654711165413027, guid: 424555a7a34736944bc97cecac3c60df, type: 3}
 --- !u!4 &1884560014
 Transform:
   m_ObjectHideFlags: 0

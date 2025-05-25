@@ -71,10 +71,10 @@ PrefabInstance:
       addedObject: {fileID: -447027639192360411}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2230586216513524332}
+      addedObject: {fileID: -2026081504546682731}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
       insertIndex: -1
-      addedObject: {fileID: -2026081504546682731}
+      addedObject: {fileID: 2470696661734099667}
   m_SourcePrefab: {fileID: 100100000, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
 --- !u!1 &4222961760227805080 stripped
 GameObject:
@@ -115,7 +115,7 @@ MonoBehaviour:
   structureCheckInterval: 5
   flagPlaceSound: {fileID: -8939814025457376216}
   flagPlaceSong: {fileID: -447027639192360411}
-  audioSource: {fileID: 2230586216513524332}
+  audioSource: {fileID: 2470696661734099667}
   backgroundNoise: {fileID: 8300000, guid: 634abd56cc9ca2b42b56d41b90790c46, type: 3}
   audioSourceRecruit: {fileID: -2026081504546682731}
   recruitSound: {fileID: 8300000, guid: e06cafbdbeaa7a74aa0b62f79346cae9, type: 3}
@@ -334,7 +334,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!82 &2230586216513524332
+--- !u!82 &-2026081504546682731
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -431,7 +431,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!82 &-2026081504546682731
+--- !u!82 &2470696661734099667
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -450,7 +450,7 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 85
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500

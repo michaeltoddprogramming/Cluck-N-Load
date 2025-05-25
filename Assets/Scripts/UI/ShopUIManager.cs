@@ -71,11 +71,7 @@ public class ShopUIManager : MonoBehaviour
         if (shopPanelUI != null)
         {
             shopPanelUI.OpenShop();
-            
-        }
-
-
-        
+        }      
 
     }
 

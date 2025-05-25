@@ -29,16 +29,4 @@ public class SynergyLineHover : MonoBehaviour
         collider.center = Vector3.zero;
         collider.size = new Vector3(0.3f, 0.3f, length);
     }
-    
-    void OnMouseEnter()
-    {
-        if (buildController != null && lineRenderer != null)
-            buildController.ShowLineTooltip(lineRenderer);
-    }
-    
-    void OnMouseExit()
-    {
-        if (buildController != null && lineRenderer != null)
-            buildController.HideLineTooltip(lineRenderer);
-    }
 }

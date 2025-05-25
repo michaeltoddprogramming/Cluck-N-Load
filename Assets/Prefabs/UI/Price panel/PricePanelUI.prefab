@@ -1799,8 +1799,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sunflower: {fileID: 6656950411924463976}
+  sunflowerBonus: {fileID: 8310669584664630256}
   wheat: {fileID: 5126247830968042749}
+  wheatBonus: {fileID: 105722042790019385}
   carrot: {fileID: 6246373009630478939}
+  carrotBonus: {fileID: 604811897718984736}
   eggs: {fileID: 5322352629737504062}
   eggsBonus: {fileID: 7101926183424409331}
   milk: {fileID: 5962820295845931428}

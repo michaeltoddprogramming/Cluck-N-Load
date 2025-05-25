@@ -197,8 +197,11 @@ public class PricePanelUI : MonoBehaviour
 {
     [Header("Crops")]
     [SerializeField] private TextMeshProUGUI sunflower;
+    [SerializeField] private TextMeshProUGUI sunflowerBonus;
     [SerializeField] private TextMeshProUGUI wheat;
+    [SerializeField] private TextMeshProUGUI wheatBonus;
     [SerializeField] private TextMeshProUGUI carrot;
+    [SerializeField] private TextMeshProUGUI carrotBonus;
 
     [Header("Produce")]
     [SerializeField] private TextMeshProUGUI eggs;
@@ -232,6 +235,7 @@ public class PricePanelUI : MonoBehaviour
     private string[] animals = { "Chicken", "Cow", "Sheep", "Pig", "Goat" };
     private int[] produceAmounts;
     private int[] boostedProducts;
+    private int[] boostedCrops;
 
     // private GameObject pricePanelInstance;
 
@@ -292,8 +296,33 @@ public class PricePanelUI : MonoBehaviour
         produceAmounts = AnimalStructure.getProductPrices(animals);
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
+        boostedCrops = AnimalStructure.whichProductsAreBoosted(animals);
         populateCrops();
         populateProduce();
+        getCropBoosts();
+    }
+
+    private void getCropBoosts()
+    {
+        // Assuming your crop types are "Sunflower", "Wheat", "Carrots"
+        string[] cropTypes = { "Sunflower", "Wheat", "Carrots" };
+        float[] cropMultipliers = CropStructure.GetAllCropHarvestMultipliers(cropTypes);
+
+        // Example: Debug log to see the multipliers
+        // for (int i = 0; i < cropTypes.Length; i++)
+        // {
+        //     Debug.Log($"{cropTypes[i]} multiplier: {cropMultipliers[i]}");
+        // }
+
+        // int sun = cropAmounts[0];
+        // int wheat = cropAmounts[1];
+        // int  = cropAmounts[2];
+
+        sunflowerBonus.text = $"{(cropMultipliers[0]*100)/3}%";
+        wheatBonus.text = $"{(cropMultipliers[1]*100)/3}%";
+        carrotBonus.text = $"{(cropMultipliers[2]*100)/3}%";
+
+
     }
 
     private void populateProduce()

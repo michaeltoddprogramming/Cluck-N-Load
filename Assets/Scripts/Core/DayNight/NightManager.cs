@@ -528,19 +528,19 @@ public class NightManager : MonoBehaviour
         {
             setSeason(1);
         }
-        else if (value == 1)
+        else if (value == 5)
         {
             setSeason(2);
         }
-        else if (value == 2)
+        else if (value == 10)
         {
             setSeason(3);
         }
-        else if (value == 3)
+        else if (value == 15)
         {
             setSeason(4);
         }
-        else if (value == 4)
+        else if (value == 20)
         {
             // StartNotification("Night starting soon!!", 5f);
 
@@ -562,7 +562,7 @@ public class NightManager : MonoBehaviour
             StartDay(0); // force reset to day state
             // setSeason(1); // reset season if needed
         }
-        else if (value == 5)
+        else if (value == 21)
         {
             Debug.Log("Resetting the full time loop!");
             years++;

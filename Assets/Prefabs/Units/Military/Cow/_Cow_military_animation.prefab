@@ -208,7 +208,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65f1e57da6ef4ea45a5182a8a0786265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animalType: 0
+  animalType: 1
   animalDatabase: {fileID: 11400000, guid: ac318da2cd3dd554f999d53a4d3bf7b1, type: 2}
   animator: {fileID: 6866236210417760387}
   walkAnimParam: IsWalking

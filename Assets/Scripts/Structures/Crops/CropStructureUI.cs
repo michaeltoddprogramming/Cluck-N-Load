@@ -31,6 +31,8 @@ public class CropStructureUI : BaseStructureUI
 
     public override void Initialize(Structure structure)
     {
+        
+    
         //make notification invisible
         notificationText.gameObject.SetActive(false);
 

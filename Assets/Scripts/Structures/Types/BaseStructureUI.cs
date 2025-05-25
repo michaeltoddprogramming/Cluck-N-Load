@@ -13,6 +13,12 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     public virtual void Initialize(Structure structure)
     {
+
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.sortingOrder = 1; // Lower than Shop UI
+        }
         this.structure = structure;
 
         // Set basic information

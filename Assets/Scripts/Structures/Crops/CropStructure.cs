@@ -286,6 +286,27 @@ public class CropStructure : Structure
             cropHarvestMultiplier = 1f;
     }
 
+    public static float[] GetAllCropHarvestMultipliers(string[] cropTypes)
+    {
+        float[] multipliers = new float[cropTypes.Length];
+        CropStructure[] allCrops = GameObject.FindObjectsOfType<CropStructure>();
+
+        for (int i = 0; i < cropTypes.Length; i++)
+        {
+            foreach (var crop in allCrops)
+            {
+                if (crop.CurrentCropType.ToString().Equals(cropTypes[i], System.StringComparison.OrdinalIgnoreCase))
+                {
+                    multipliers[i] = crop.cropHarvestMultiplier;
+                    break; // Found the crop type, move to next
+                }
+            }
+        }
+        return multipliers;
+    }
+
+    
+
     public void OnPlaced()
     {
         // base.OnPlaced();

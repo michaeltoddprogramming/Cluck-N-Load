@@ -697,6 +697,7 @@ public class NightManager : MonoBehaviour
         {
             string animal = determineAnimalProduct(product1);
             string fullAnimalName = getFullAnimalName(animal);
+            
             if (animal == "E")
             {
                 Debug.LogError("Invalid animal product determined.");

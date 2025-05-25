@@ -37,6 +37,7 @@ public class AnimalStructure : Structure
         public int moneyPerProduct = 10;
         public int baseFoodRequired = 2;
         public int costPerAnimal = 50;
+        public int boostedProduction = 0;
     }
 
     private NightManager nightManager;
@@ -334,6 +335,12 @@ public class AnimalStructure : Structure
         // Use the first letter(s) to match the type
         string thisType = GetAnimalType.ToString();
         bool matches = false;
+        bool doubleBoosted = false;
+
+        if (increasePercent == 2f)
+        {
+            doubleBoosted = true;
+        }
 
 
         switch (animalType)
@@ -365,9 +372,17 @@ public class AnimalStructure : Structure
 
         if (matches)
         {
-            productionSettings.moneyPerProduct = (int)(productionSettings.moneyPerProduct * increasePercent);
-        }
+            if (doubleBoosted)
+            {
+                productionSettings.boostedProduction = 2;
+                Debug.Log("eirgfuhbjluhijfewraiuehrfjfierhwuoeirhusf--------------+++++++++++");
+            }
 
+            Debug.Log("eirgfuhbjluhijfewraiuehrfjfierhwuoeirhusf--------------");
+
+            productionSettings.moneyPerProduct = (int)(productionSettings.moneyPerProduct * increasePercent);
+            productionSettings.boostedProduction = 1;
+        }
     }
 
     public void resetAnimalProductionAmount()
@@ -386,7 +401,7 @@ public class AnimalStructure : Structure
             audioSource.Play();
         }
     }
-    
+
 
     public void StopBackgroundNoise()
     {
@@ -395,4 +410,111 @@ public class AnimalStructure : Structure
             audioSource.Stop();
         }
     }
+
+    // public int[] getProductPrices(string[] animals)
+    // {
+    //     int[] prices = new int[animals.Length];
+
+    //     for (int k = 0; k < animals.Length; k++)
+    //     {
+    //         // Compare the requested animal type with this structure's animal type
+    //         if (GetAnimalType.ToString().Equals(animals[k], System.StringComparison.OrdinalIgnoreCase))
+    //         {
+    //             prices[k] = productionSettings.moneyPerProduct;
+    //             Debug.Log($"THis is the price: ---------------------------------------------- {animals[k]}" + prices[k]);
+    //         }
+    //         else
+    //         {
+    //             // If this structure doesn't match, you might want to return 0 or -1
+    //             // Debug.LogError("There was an error getting the animal produce price");
+    //             prices[k] = 0;
+    //         }
+    //     }
+
+
+
+    //     return prices;
+    // }
+
+    public static int[] getProductPrices(string[] animals)
+    {
+        int[] prices = new int[animals.Length];
+        AnimalStructure[] allStructures = GameObject.FindObjectsOfType<AnimalStructure>();
+
+        for (int i = 0; i < animals.Length; i++)
+        {
+            foreach (var structure in allStructures)
+            {
+                if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
+                {
+                    prices[i] = structure.productionSettings.moneyPerProduct;
+                    break; // Found the structure for this animal type, move to next animal
+                }
+            }
+        }
+        return prices;
+    }
+
+    // public int[] whichProductsAreBoosted(string[] animals)
+    // {
+    //     int[] boosted = new int[animals.Length];
+
+    //     for (int k = 0; k < animals.Length; k++)
+    //     {
+    //         // Compare the requested animal type with this structure's animal type
+    //         if (GetAnimalType.ToString().Equals(animals[k], System.StringComparison.OrdinalIgnoreCase))
+    //         {
+    //             if (productionSettings.boostedProduction == 0)
+    //             {
+    //                 boosted[k] = 0;
+    //             }
+    //             else if (productionSettings.boostedProduction == 1)
+    //             {
+    //                 boosted[k] = 50;
+    //             }
+    //             else
+    //             {
+    //                 boosted[k] = 100;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             // If this structure doesn't match, you might want to return 0 or -1
+    //             // Debug.LogError("There was an error getting the animal produce price");
+    //             boosted[k] = 0;
+    //         }
+    //     }
+
+    //     return boosted;
+    // }
+    
+    public static int[] whichProductsAreBoosted(string[] animals)
+{
+    int[] boosted = new int[animals.Length];
+    AnimalStructure[] allStructures = GameObject.FindObjectsOfType<AnimalStructure>();
+
+    for (int i = 0; i < animals.Length; i++)
+    {
+        foreach (var structure in allStructures)
+        {
+            if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (structure.productionSettings.boostedProduction == 0)
+                {
+                    boosted[i] = 0;
+                }
+                else if (structure.productionSettings.boostedProduction == 1)
+                {
+                    boosted[i] = 50;
+                }
+                else
+                {
+                    boosted[i] = 100;
+                }
+                break; // Found the structure for this animal type, move to next animal
+            }
+        }
+    }
+    return boosted;
+}
 }

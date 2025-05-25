@@ -63,13 +63,20 @@ public class ShopUIManager : MonoBehaviour
 
     public void OpenShop()
     {
+        shopPanel.transform.SetAsLastSibling();
+        
         isVisible = true;
         shopPanel.SetActive(true);
-        
+
         if (shopPanelUI != null)
         {
             shopPanelUI.OpenShop();
+            
         }
+
+
+        
+
     }
 
     public void CloseShop()

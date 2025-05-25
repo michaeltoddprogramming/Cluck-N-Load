@@ -24,6 +24,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void Awake()
     {
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.sortingOrder = 100; // Ensure Shop UI is on top
+        }
         // Ensure only one instance of ShopPanelUI exists
         if (Instance != null && Instance != this)
         {
@@ -110,27 +115,33 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     }
 
     public void OpenShop()
+{
+    isShopOpen = true;
+
+    // Move THIS UI panel (gameObject) to the top of the hierarchy
+    transform.SetAsLastSibling();
+
+    // Show this UI panel
+    gameObject.SetActive(true);
+
+    Debug.Log("Shop Panel: OnShopOpened event firing");
+    OnShopOpened.Invoke();
+
+    // Let the BuildController know the shop opened
+    if (buildController != null)
     {
-        isShopOpen = true;
-        gameObject.SetActive(true);
-        Debug.Log("Shop Panel: OnShopOpened event firing");
-        OnShopOpened.Invoke();
-        
-        // Directly find and call BuildController as a fallback
-        BuildController buildController = FindObjectOfType<BuildController>();
-        if (buildController != null)
-        {
-            Debug.Log("Shop Panel: Direct call to BuildController.HandleShopOpened");
-            buildController.HandleShopOpened();
-        }
-        else
-        {
-            Debug.LogWarning("Shop Panel: BuildController not found in scene!");
-        }
+        buildController.HandleShopOpened();
     }
+    else
+    {
+        Debug.LogWarning("Shop Panel: BuildController not found in scene!");
+    }
+}
 
     public void CloseShop()
     {
+        
+
         isShopOpen = false;
         
         // Make sure to re-enable controls before deactivating the panel

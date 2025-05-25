@@ -17,6 +17,8 @@ public class BarracksStructureUI : BaseStructureUI
     private bool isBarracksStructure = false;
     private bool isPlacingFlag = false;
 
+    // private BarracksStructure barrackStructure;
+
     public override void Initialize(Structure structure)
     {
         base.Initialize(structure);
@@ -71,6 +73,13 @@ public class BarracksStructureUI : BaseStructureUI
             flagPlacementIndicator.SetActive(false);
         }
 
+        UpdateUI();
+
+        barracksStructure.playBackgroundSound();
+    }
+
+    public void Update()
+    {
         UpdateUI();
     }
 
@@ -139,7 +148,7 @@ public class BarracksStructureUI : BaseStructureUI
             flagPlacementIndicator.SetActive(false);
         }
 
-        
+
     }
 
     private void UpdateUI()
@@ -209,6 +218,8 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void HideBarracksUI()
     {
+
+
         if (statusText != null)
         {
             statusText.text = "Not a barracks structure";
@@ -219,6 +230,8 @@ public class BarracksStructureUI : BaseStructureUI
         if (placeFlagButton != null) placeFlagButton.gameObject.SetActive(false);
         if (setFlagColorButton != null) setFlagColorButton.gameObject.SetActive(false);
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(false);
+
+
     }
 
     private void OnDestroy()
@@ -227,7 +240,9 @@ public class BarracksStructureUI : BaseStructureUI
         {
             barracksStructure.OnArmyChanged -= UpdateUI;
         }
+    barracksStructure.stopBackgroundSound();
     }
+    
 
     
 }

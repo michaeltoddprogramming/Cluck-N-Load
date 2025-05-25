@@ -42,7 +42,6 @@ public class BuildController : MonoBehaviour
     [SerializeField] private Material invalidSynergyMaterial;
     [SerializeField] private float synergyIndicatorHeight = 0.1f;
     [SerializeField] private GameObject synergyLineRendererPrefab;
-    [SerializeField] private GameObject tooltipPrefab;
     [SerializeField] private Canvas worldSpaceCanvas;
     [SerializeField] private float tooltipOffset = 1.0f;
     private List<GameObject> synergyIndicators = new List<GameObject>();
@@ -916,52 +915,6 @@ public class BuildController : MonoBehaviour
         }
         return "";
     }
-    
-    // Simple component to make text face camera
-
-
-    private void CreateTooltipForLine(LineRenderer line, Vector3 start, Vector3 end, Color color, string synergyType)
-    {
-        if (tooltipPrefab == null || worldSpaceCanvas == null)
-        {
-            Debug.LogWarning("Cannot create tooltip: tooltipPrefab or worldSpaceCanvas is null");
-            return;
-        }
-
-        string description = GetSynergyDescription(synergyType, color);
-        GameObject tooltip = Instantiate(tooltipPrefab, worldSpaceCanvas.transform);
-        tooltip.SetActive(false);
-
-        Vector3 midpoint = (start + end) / 2f;
-        midpoint.y += tooltipOffset;
-        tooltip.transform.position = midpoint;
-
-        TextMeshProUGUI tooltipText = tooltip.GetComponentInChildren<TextMeshProUGUI>();
-        if (tooltipText != null)
-        {
-            tooltipText.text = description;
-            tooltipText.color = Color.black;
-        }
-        else
-        {
-            Debug.LogWarning("Tooltip prefab missing TextMeshProUGUI component!");
-        }
-
-        RectTransform rectTransform = tooltip.GetComponent<RectTransform>();
-        if (rectTransform != null)
-        {
-            rectTransform.localRotation = Quaternion.identity;
-        }
-
-        lineTooltips[line] = new SynergyTooltip
-        {
-            tooltipObject = tooltip,
-            synergyType = synergyType,
-            description = description,
-            lineColor = color
-        };
-        Debug.Log($"Created tooltip for line: {description}");
-    }
 
     private string GetSynergyDescription(string synergyType, Color color)
     {
@@ -988,44 +941,6 @@ public class BuildController : MonoBehaviour
         return "Building Connection";
     }
 
-    public void ShowLineTooltip(LineRenderer line)
-{
-    Debug.Log($"ShowLineTooltip called for line: {line.gameObject.name}");
-    if (lineTooltips.ContainsKey(line))
-    {
-        var tooltip = lineTooltips[line];
-        if (tooltip.tooltipObject != null)
-        {
-            tooltip.tooltipObject.SetActive(true);
-            Vector3 worldPos = tooltip.tooltipObject.transform.position;
-            Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
-            RectTransform rect = tooltip.tooltipObject.GetComponent<RectTransform>();
-            Vector3 canvasScale = worldSpaceCanvas ? worldSpaceCanvas.transform.localScale : Vector3.zero;
-            Debug.Log($"Activated tooltip: {tooltip.description} at worldPos={worldPos}, screenPos={screenPos}, canvasScale={canvasScale}, tooltipScale={rect.localScale}");
-            if (worldSpaceCanvas == null)
-                Debug.LogWarning("worldSpaceCanvas is null!");
-            if (tooltip.tooltipObject.GetComponentInChildren<TextMeshProUGUI>() == null)
-                Debug.LogWarning("Tooltip missing TextMeshProUGUI component!");
-        }
-        else
-        {
-            Debug.LogWarning($"Tooltip object is null for line: {line.gameObject.name}");
-        }
-    }
-    else
-    {
-        Debug.LogWarning($"No tooltip found for line: {line.gameObject.name}");
-    }
-}
-
-    public void HideLineTooltip(LineRenderer line)
-    {
-        if (lineTooltips.ContainsKey(line))
-        {
-            lineTooltips[line].tooltipObject.SetActive(false);
-            Debug.Log($"Hiding tooltip for line");
-        }
-    }
 
     private void ClearSynergyVisualization()
     {

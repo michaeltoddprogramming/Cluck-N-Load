@@ -103,9 +103,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseAttackRange: 3
-  damage: 25
+  damage: 10
   attackCooldown: 2
-  maxHealth: 125
+  maxHealth: 100
   detectionRange: 20
   globalSearchInterval: 2
   chickenPriority: 10

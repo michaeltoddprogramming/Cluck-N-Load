@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eceed2a2932ec742a85bd63e277bd8a, type: 3}
+  m_Name: ChickenData
+  m_EditorClassIdentifier: 
+  animalType: 0
+  targetAnimalType: Chicken
+  moveSpeed: 3
+  rotationSpeed: 5
+  attackRange: 3
+  detectionRange: 20
+  damage: 10
+  attackCooldown: 1.2
+  debugAttacks: 1
+  maxHealth: 50
+  attackClips:
+  - {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}
+  moveClips:
+  - {fileID: 8300000, guid: b623210da8d20bc4a8beabd9a2e9cc6e, type: 3}
+  deathClip: {fileID: 8300000, guid: 422058f9ead24f6419886066baf41986, type: 3}
+  attackSoundChance: 0.8
+  moveSoundChance: 0.5
+  moveSoundDelay: 0.5
+  minPitch: 0.8
+  maxPitch: 1.2

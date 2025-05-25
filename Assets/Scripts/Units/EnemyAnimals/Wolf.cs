@@ -6,12 +6,12 @@ using System.Linq;
 public class Wolf : MonoBehaviour
 {
     [Header("Wolf Stats")]
-    [SerializeField] private float baseAttackRange = 2f;
-    [SerializeField] private int damage = 50;
+    [SerializeField] private float baseAttackRange = 3f;
+    [SerializeField] private int damage = 20;
     [SerializeField] private float attackCooldown = 2f;
     [SerializeField] private int maxHealth = 50;
     [SerializeField] private float detectionRange = 20f;
-    [SerializeField] private float globalSearchInterval = 0.5f;
+    [SerializeField] private float globalSearchInterval = 2f;
 
     [Header("Target Priorities (Higher = More Priority)")]
     [SerializeField] private int chickenPriority = 10;
@@ -21,9 +21,14 @@ public class Wolf : MonoBehaviour
 
     [Header("Components")]
     [SerializeField] private FlowFieldAgent flowFieldAgent;
-    [SerializeField] private Animator animator;
-    [SerializeField] private string walkAnimParam = "IsWalking";
-    [SerializeField] private string attackAnimParam = "Attack";
+
+    [Header("Fallback Behavior")]
+    [SerializeField] private float fallbackMoveRadius = 10f;
+    [SerializeField] private float fallbackMoveInterval = 5f;
+
+    [Header("Audio Behavior")]
+    [SerializeField] private float minGrowlInterval = 5f; // Minimum time between growls
+    [SerializeField] private float maxGrowlInterval = 20f; // Maximum time between growls
 
     private int currentHealth;
     private float lastAttackTime;
@@ -33,14 +38,23 @@ public class Wolf : MonoBehaviour
     private FlowFieldManager flowFieldManager;
     private float targetUpdateTimer = 0f;
     private float globalSearchTimer = 0f;
+    private float fallbackMoveTimer = 0f;
+    private float growlTimer = 0f;
+    private GameObject fallbackTarget;
     private readonly List<GameObject> cachedTargets = new List<GameObject>();
+
+    // Events for animation and audio control
+    public event System.Action OnStartMoving;
+    public event System.Action OnStopMoving;
+    public event System.Action OnAttack;
+    public event System.Action OnGrowl;
+    public event System.Action OnHurt;
+    public event System.Action OnDeath;
 
     private void Awake()
     {
         if (flowFieldAgent == null)
             flowFieldAgent = GetComponent<FlowFieldAgent>() ?? gameObject.AddComponent<FlowFieldAgent>();
-        if (animator == null)
-            animator = GetComponent<Animator>();
 
         flowFieldManager = FindObjectOfType<FlowFieldManager>();
         nightManager = NightManager.Instance;
@@ -52,6 +66,13 @@ public class Wolf : MonoBehaviour
             return;
         }
 
+        fallbackTarget = new GameObject($"FallbackTarget_{name}");
+        fallbackTarget.transform.position = transform.position;
+        DontDestroyOnLoad(fallbackTarget);
+
+        // Initialize growl timer
+        growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
+
         Debug.Log($"🐺 Wolf {name} initialized at {transform.position}");
     }
 
@@ -61,12 +82,11 @@ public class Wolf : MonoBehaviour
         nightManager.RegisterWolf(this);
         Structure.RegisterWolf(this);
         flowFieldAgent.SetMoving(true);
-
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
+        OnStartMoving?.Invoke();
 
         CacheTargets();
         FindTargetWithPriority();
+        UpdateFallbackTarget();
     }
 
     private void OnDestroy()
@@ -74,6 +94,8 @@ public class Wolf : MonoBehaviour
         if (nightManager != null)
             nightManager.UnregisterWolf(this);
         Structure.UnregisterWolf(this);
+        if (fallbackTarget != null)
+            Destroy(fallbackTarget);
     }
 
     private void Update()
@@ -86,6 +108,16 @@ public class Wolf : MonoBehaviour
 
         targetUpdateTimer -= Time.deltaTime;
         globalSearchTimer -= Time.deltaTime;
+        fallbackMoveTimer -= Time.deltaTime;
+        growlTimer -= Time.deltaTime;
+
+        // Random growling
+        if (growlTimer <= 0f)
+        {
+            OnGrowl?.Invoke();
+            growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
+            Debug.Log($"Wolf {name} triggered growl, next growl in {growlTimer:F1} seconds");
+        }
 
         if (targetUpdateTimer <= 0f)
         {
@@ -108,46 +140,60 @@ public class Wolf : MonoBehaviour
             if (distance <= effectiveAttackRange)
             {
                 flowFieldAgent.SetMoving(false);
-                if (animator != null)
-                    animator.SetBool(walkAnimParam, false);
+                OnStopMoving?.Invoke();
                 AttackTarget();
             }
             else
             {
                 flowFieldAgent.SetMoving(true);
-                if (animator != null)
-                    animator.SetBool(walkAnimParam, true);
+                OnStartMoving?.Invoke();
+                flowFieldManager.SetTargetTransformWithPoint(target.transform, targetAttackPoint);
             }
         }
         else
         {
-            flowFieldAgent.SetMoving(true);
-            if (animator != null)
-                animator.SetBool(walkAnimParam, true);
             target = null;
             cachedTargets.RemoveAll(go => go == null || !go);
             FindTargetWithPriority();
+
+            if (target == null)
+            {
+                if (fallbackMoveTimer <= 0f)
+                {
+                    UpdateFallbackTarget();
+                    fallbackMoveTimer = fallbackMoveInterval;
+                }
+                flowFieldAgent.SetMoving(true);
+                OnStartMoving?.Invoke();
+                flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
+                Debug.Log($"Wolf {name} no targets, moving to fallback target at {fallbackTarget.transform.position}");
+            }
         }
     }
 
     private void CacheTargets()
     {
         cachedTargets.Clear();
-        cachedTargets.AddRange(FindObjectsOfType<ArmyAnimal>()
+        var chickens = FindObjectsOfType<ArmyAnimal>()
             .Where(a => a != null && a.gameObject != null && a.gameObject.activeInHierarchy)
-            .Select(a => a.gameObject));
-        cachedTargets.AddRange(FindObjectsOfType<Structure>()
+            .Select(a => a.gameObject);
+        var structures = FindObjectsOfType<Structure>()
             .Where(s => s != null && s.gameObject != null && s.gameObject.activeInHierarchy && !s.isIndestructible)
-            .Select(s => s.gameObject));
-        Debug.Log($"Wolf {name} cached {cachedTargets.Count} potential targets");
+            .Select(s => s.gameObject);
+        cachedTargets.AddRange(chickens);
+        cachedTargets.AddRange(structures);
+        Debug.Log($"Wolf {name} cached {cachedTargets.Count} potential targets (Chickens={chickens.Count()}, Structures={structures.Count()})");
     }
 
     private void FindNearbyTarget()
     {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRange);
+        int layerMask = LayerMask.GetMask("Default", "Chicken", "Structure");
+        Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRange, layerMask);
         GameObject bestTarget = null;
         Vector3 bestAttackPoint = Vector3.zero;
         float bestScore = float.MinValue;
+
+        Debug.Log($"Wolf {name} checking nearby targets, found {colliders.Length} colliders");
 
         foreach (Collider col in colliders)
         {
@@ -161,11 +207,15 @@ public class Wolf : MonoBehaviour
                 bestTarget = go;
                 bestAttackPoint = attackPoint;
                 bestScore = score;
+                Debug.Log($"Wolf {name} considered {go.name} (Layer={LayerMask.LayerToName(go.layer)}, Score={score:F2})");
             }
         }
 
         if (bestTarget != null)
+        {
             SetTarget(bestTarget, bestAttackPoint);
+            Debug.Log($"Wolf {name} selected nearby target {bestTarget.name}");
+        }
     }
 
     private void FindTargetWithPriority()
@@ -190,14 +240,22 @@ public class Wolf : MonoBehaviour
         }
 
         if (bestTarget != null)
+        {
             SetTarget(bestTarget, bestAttackPoint);
+            Debug.Log($"Wolf {name} selected priority target {bestTarget.name}");
+        }
         else
+        {
             Debug.Log($"Wolf {name} found no valid targets");
+        }
     }
 
     private bool IsValidTarget(GameObject go)
     {
-        return go != null && go && go.activeInHierarchy;
+        bool valid = go != null && go && go.activeInHierarchy && !go.Equals(null);
+        if (!valid && go != null)
+            Debug.Log($"Wolf {name} rejected target {go.name}: Null={go == null}, Exists={!go}, Active={go.activeInHierarchy}, Destroyed={go.Equals(null)}");
+        return valid;
     }
 
     private float CalculateTargetScore(GameObject go, out Vector3 attackPoint)
@@ -231,7 +289,10 @@ public class Wolf : MonoBehaviour
         }
 
         if (priority <= 0)
+        {
+            Debug.Log($"Wolf {name} rejected {go.name}: Priority={priority} (No ArmyAnimal or valid Structure)");
             return float.MinValue;
+        }
 
         float distancePenalty = distance / detectionRange;
         float score = priority - distancePenalty + (healthWeight * healthFactor) + (animalCountWeight * animalCountFactor);
@@ -243,6 +304,7 @@ public class Wolf : MonoBehaviour
         Collider col = go.GetComponent<Collider>();
         if (col != null && col)
             return col.ClosestPoint(fromPosition);
+        Debug.LogWarning($"Wolf {name} target {go.name} has no collider, using position");
         return go.transform.position;
     }
 
@@ -276,25 +338,37 @@ public class Wolf : MonoBehaviour
 
         lastAttackTime = Time.time;
 
-        if (animator != null)
-            animator.SetTrigger(attackAnimParam);
-
-        // Double-check target validity
         if (target == null || !IsValidTarget(target))
         {
+            Debug.LogWarning($"Wolf {name} aborted attack: Target is invalid");
             target = null;
             FindTargetWithPriority();
             return;
         }
 
-        target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
-        Debug.Log($"Wolf {name} attacked {target.name} for {damage} damage at {transform.position}");
+        OnAttack?.Invoke();
+
+        try
+        {
+            if (target != null)
+                target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            else
+                Debug.LogWarning($"Wolf {name} aborted attack: Target null in try block");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"Wolf {name} failed to attack: {e.Message}");
+            target = null;
+            FindTargetWithPriority();
+        }
     }
 
     public void TakeDamage(int amount)
     {
         currentHealth = Mathf.Max(0, currentHealth - amount);
         Debug.Log($"Wolf {name} took {amount} damage. Health: {currentHealth}/{maxHealth}");
+
+        OnHurt?.Invoke();
 
         if (currentHealth <= 0)
             Die();
@@ -303,9 +377,7 @@ public class Wolf : MonoBehaviour
     private void Die()
     {
         flowFieldAgent.SetMoving(false);
-        if (animator != null)
-            animator.SetBool(walkAnimParam, false);
-
+        OnDeath?.Invoke();
         Debug.Log($"Wolf {name} died at {transform.position}");
         Destroy(gameObject);
     }
@@ -323,27 +395,40 @@ public class Wolf : MonoBehaviour
     {
         if (destroyedTarget == target)
         {
+            Debug.Log($"Wolf {name} current target {destroyedTarget?.name} destroyed, clearing target");
             target = null;
             targetAttackPoint = Vector3.zero;
-            FindTargetWithPriority(); // Immediately find a new target
+            FindTargetWithPriority();
         }
         cachedTargets.Remove(destroyedTarget);
         Debug.Log($"Wolf {name} removed destroyed target {destroyedTarget?.name ?? "null"} from cache");
     }
 
-    private void OnDrawGizmosSelected()
+    private void UpdateFallbackTarget()
+    {
+        Vector2 randomCircle = Random.insideUnitCircle * fallbackMoveRadius;
+        Vector3 newPosition = transform.position + new Vector3(randomCircle.x, 0, randomCircle.y);
+        fallbackTarget.transform.position = newPosition;
+        Debug.Log($"Wolf {name} updated fallback target to {newPosition}");
+    }
+
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, baseAttackRange);
-
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
-
         if (target != null && target)
         {
             Gizmos.color = Color.green;
             Gizmos.DrawLine(transform.position, targetAttackPoint);
             Gizmos.DrawWireSphere(targetAttackPoint, 0.5f);
+        }
+        if (target == null && fallbackTarget != null)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(transform.position, fallbackTarget.transform.position);
+            Gizmos.DrawWireSphere(fallbackTarget.transform.position, 0.5f);
         }
     }
 }

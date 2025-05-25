@@ -31,8 +31,13 @@ namespace FarmDefender.Core.AI.FlowField
         
         private Vector2 previousFlowDirection = Vector2.zero;
         private Vector3 currentVelocity = Vector3.zero;
-        private bool isMoving = true;
-        
+        public bool isMoving = true;
+
+        public bool IsMoving()
+        {
+            return isMoving;
+        }
+                
         private void Start()
         {
             if (flowFieldManager == null)

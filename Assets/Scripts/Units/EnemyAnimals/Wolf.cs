@@ -22,8 +22,7 @@ public class Wolf : MonoBehaviour
     [Header("Components")]
     [SerializeField] private FlowFieldAgent flowFieldAgent;
     [SerializeField] private Animator animator;
-    [SerializeField] private string walkAnimParam = "IsWalking";
-    [SerializeField] private string attackAnimParam = "Attack";
+    [SerializeField] private string movementParam = "isRunning";
 
     [Header("Fallback Behavior")]
     [SerializeField] private float fallbackMoveRadius = 10f;
@@ -40,6 +39,7 @@ public class Wolf : MonoBehaviour
     private float fallbackMoveTimer = 0f;
     private GameObject fallbackTarget;
     private readonly List<GameObject> cachedTargets = new List<GameObject>();
+
 
     private void Awake()
     {
@@ -72,8 +72,6 @@ public class Wolf : MonoBehaviour
         Structure.RegisterWolf(this);
         flowFieldAgent.SetMoving(true);
 
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
 
         CacheTargets();
         FindTargetWithPriority();
@@ -96,6 +94,8 @@ public class Wolf : MonoBehaviour
             Die();
             return;
         }
+
+        UpdateAnimations();
 
         targetUpdateTimer -= Time.deltaTime;
         globalSearchTimer -= Time.deltaTime;
@@ -123,14 +123,14 @@ public class Wolf : MonoBehaviour
             {
                 flowFieldAgent.SetMoving(false);
                 if (animator != null)
-                    animator.SetBool(walkAnimParam, false);
+                    animator.SetBool(movementParam, false);
                 AttackTarget();
             }
             else
             {
                 flowFieldAgent.SetMoving(true);
                 if (animator != null)
-                    animator.SetBool(walkAnimParam, true);
+                    animator.SetBool(movementParam, true);
                 flowFieldManager.SetTargetTransformWithPoint(target.transform, targetAttackPoint);
             }
         }
@@ -148,11 +148,20 @@ public class Wolf : MonoBehaviour
                     fallbackMoveTimer = fallbackMoveInterval;
                 }
                 flowFieldAgent.SetMoving(true);
-                if (animator != null)
-                    animator.SetBool(walkAnimParam, true);
+
                 flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
                 Debug.Log($"Wolf {name} no targets, moving to fallback target at {fallbackTarget.transform.position}");
             }
+        }
+    }
+
+    private void UpdateAnimations()
+    {
+        if (animator != null)
+        {
+            bool isMoving = flowFieldAgent.IsMoving();
+            animator.SetBool(movementParam, isMoving);
+            Debug.Log($"Wolf {name} animation: isRunning={isMoving}, Animator enabled={animator.enabled}");
         }
     }
 
@@ -323,9 +332,6 @@ public class Wolf : MonoBehaviour
 
         lastAttackTime = Time.time;
 
-        if (animator != null)
-            animator.SetTrigger(attackAnimParam);
-
         if (target == null || !IsValidTarget(target))
         {
             Debug.LogWarning($"Wolf {name} aborted attack: Target is invalid");
@@ -370,7 +376,7 @@ public class Wolf : MonoBehaviour
     {
         flowFieldAgent.SetMoving(false);
         if (animator != null)
-            animator.SetBool(walkAnimParam, false);
+            animator.SetBool(movementParam, false);
 
         Debug.Log($"Wolf {name} died at {transform.position}");
         Destroy(gameObject);

@@ -15,7 +15,7 @@ MonoBehaviour:
   UnitName: Wolf
   Type: 2
   HostileType: 0
-  Prefab: {fileID: 264810465737084052, guid: cc6efba3418c1ac4e8aba9910cebcaf2, type: 3}
+  Prefab: {fileID: 5988654711165413027, guid: 424555a7a34736944bc97cecac3c60df, type: 3}
   Icon: {fileID: 0}
   Health: 100
   AttackPower: 5

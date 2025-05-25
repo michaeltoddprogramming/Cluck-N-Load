@@ -126,7 +126,6 @@ public class Structure : MonoBehaviour
         {
             Deselect();
         }
-        Debug.Log($"SetAllowSelectionAndUI for {GetStructureName()}: {allow}");
     }
 
     protected virtual void OnDestroy()
@@ -135,7 +134,7 @@ public class Structure : MonoBehaviour
         {
             UnregisterFromGrid();
         }
-        GameLoopManager.Instance?.UnregisterStructure(this);
+        // Moved UnregisterStructure to Die to avoid delay
     }
 
     #endregion
@@ -165,10 +164,6 @@ public class Structure : MonoBehaviour
         }
 
         hasRegisteredWithGrid = true;
-        if (showDebugInfo)
-        {
-            Debug.Log($"Structure {gameObject.name} registered with grid for tracking {occupiedCells.Count} cells.");
-        }
     }
 
     public void UnregisterFromGrid()
@@ -193,10 +188,6 @@ public class Structure : MonoBehaviour
 
         hasRegisteredWithGrid = false;
         UpdateFlowField();
-        if (showDebugInfo)
-        {
-            Debug.Log($"Structure {gameObject.name} unregistered from grid.");
-        }
     }
 
     private void CalculateOccupiedCells()
@@ -265,10 +256,6 @@ public class Structure : MonoBehaviour
 
         currentHealth -= amount;
         OnDamaged?.Invoke(this);
-        if (showDebugInfo)
-        {
-            Debug.Log($"Structure {gameObject.name} took {amount} damage. Health: {currentHealth}/{structureData?.health ?? 100}");
-        }
         if (currentHealth <= 0)
         {
             Die();
@@ -291,11 +278,9 @@ public class Structure : MonoBehaviour
             Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
         }
 
+        // Unregister from GameLoopManager immediately
+        GameLoopManager.Instance?.UnregisterStructure(this);
         UnregisterFromGrid();
-        if (showDebugInfo)
-        {
-            Debug.Log($"Structure {gameObject.name} destroyed.");
-        }
 
         if (destroyOnZeroHealth)
         {
@@ -392,7 +377,6 @@ public class Structure : MonoBehaviour
         {
             selectionIndicator.SetActive(true);
         }
-        Debug.Log($"Selected structure: {GetStructureName()}, IsSelected: {isSelected}");
     }
 
     public virtual void Deselect()
@@ -402,14 +386,11 @@ public class Structure : MonoBehaviour
         {
             selectionIndicator.SetActive(false);
         }
-        // Ensure collider is enabled for reselection
         Collider col = GetComponent<Collider>();
         if (col != null && !col.enabled)
         {
             col.enabled = true;
-            Debug.Log($"Re-enabled collider for {GetStructureName()}");
         }
-        Debug.Log($"Deselected structure: {GetStructureName()}, IsSelected: {isSelected}");
     }
 
     private void AddColliderToStructure()
@@ -425,14 +406,12 @@ public class Structure : MonoBehaviour
             BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
             boxCollider.center = new Vector3(0, combinedBounds.size.y / 2, 0);
             boxCollider.size = combinedBounds.size;
-            Debug.Log($"Added BoxCollider to {gameObject.name} based on renderer bounds");
         }
         else
         {
             BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
             boxCollider.center = new Vector3(0, 0.5f, 0);
             boxCollider.size = new Vector3(1, 1, 1);
-            Debug.Log($"Added default BoxCollider to {gameObject.name}");
         }
     }
 

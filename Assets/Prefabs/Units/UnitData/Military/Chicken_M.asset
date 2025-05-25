@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Chicken
   Type: 1
-  Prefab: {fileID: 4478827579628080878, guid: 49151c3178d887340b25d4f7670d12ab, type: 3}
+  HostileType: 0
+  Prefab: {fileID: 4059874661627574406, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
   Icon: {fileID: 0}
   Health: 20
   AttackPower: 20
@@ -22,7 +23,7 @@ MonoBehaviour:
   AttackCooldown: 1
   MovementSpeed: 3
   Cost: 0
-  AttackSound: {fileID: 0}
+  AttackSound: {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}
   DeathSound: {fileID: 0}
   MoveSound: {fileID: 0}
   HurtSound: {fileID: 0}

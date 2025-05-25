@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using FarmDefender.Core.AI.FlowField; // Add this line for the new namespace
+using FarmDefender.Core.AI.FlowField;
 
 public class UnitSpawner : MonoBehaviour
 {
@@ -8,10 +8,9 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private Transform[] _spawnPoints;
     [SerializeField] private float _spawnHeightOffset = 0.1f;
 
-    // DEVELOPMENT-ONLY references for testing - will be refactored later
     [Header("Development Testing")]
     [Tooltip("TEMPORARY: Reference to the flow field generator for spawn positioning")]
-    [SerializeField] private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
+    [SerializeField] private FlowFieldManager flowFieldManager;
     [Tooltip("TEMPORARY: Reference to the grid data generator for spawn positioning")]
     [SerializeField] private GridDataGenerator _gridDataGenerator;
     [Tooltip("TEMPORARY: Number of units to spawn when using development shortcuts")]
@@ -20,17 +19,14 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private float _militarySpawnRadius = 5f;
     [Tooltip("TEMPORARY: Inset from grid edge for hostile spawning")]
     [SerializeField] private float _edgeInset = 1f;
+    [SerializeField] private GameObject wolfPrefab;
 
     private void Start()
     {
-        // Find required components if not assigned
         if (flowFieldManager == null)
             flowFieldManager = FindObjectOfType<FlowFieldManager>();
-
-        // Rest of Start method stays the same
     }
 
-    // Original methods
     public Unit SpawnUnitOfType(UnitType type, Vector3 position)
     {
         if (_unitDatabase == null)
@@ -62,31 +58,26 @@ public class UnitSpawner : MonoBehaviour
         }
     }
 
-    // DEVELOPMENT-ONLY methods for testing - will be refactored later
     private void Update()
     {
-        // TEMPORARY: Development shortcuts for spawning units
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
             if (Input.GetKeyDown(KeyCode.H))
             {
-                // Debug.Log($"[DEV] Spawning {_devSpawnCount} hostile units at grid edges");
                 SpawnHostileUnitsAtEdges(_devSpawnCount);
             }
             else if (Input.GetKeyDown(KeyCode.M))
             {
-                // Debug.Log($"[DEV] Spawning {_devSpawnCount} military units around target");
                 SpawnMilitaryUnitsAroundTarget(_devSpawnCount);
             }
         }
     }
 
-    // DEVELOPMENT-ONLY: Spawn hostile units at grid edges
     public void SpawnHostileUnitsAtEdges(int count)
     {
         if (_gridDataGenerator == null)
         {
-            // Debug.LogError("[DEV] Grid data generator reference missing for hostile spawning");
+            Debug.LogError("[DEV] Grid data generator reference missing for hostile spawning");
             return;
         }
 
@@ -97,7 +88,6 @@ public class UnitSpawner : MonoBehaviour
         }
     }
 
-    // DEVELOPMENT-ONLY: Spawn military units around flow field target
     public void SpawnMilitaryUnitsAroundTarget(int count)
     {
         if (flowFieldManager == null)
@@ -109,7 +99,6 @@ public class UnitSpawner : MonoBehaviour
         Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
         GridCell targetCell = null;
 
-        // Get the grid cell at target coordinates
         if (_gridDataGenerator != null &&
             targetCoord.x >= 0 && targetCoord.x < _gridDataGenerator.GetGridWidth() &&
             targetCoord.y >= 0 && targetCoord.y < _gridDataGenerator.GetGridHeight())
@@ -127,7 +116,6 @@ public class UnitSpawner : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            // Generate random position in circle around target
             float angle = Random.Range(0f, Mathf.PI * 2f);
             float radius = Random.Range(1f, _militarySpawnRadius);
             Vector3 offset = new Vector3(
@@ -138,20 +126,17 @@ public class UnitSpawner : MonoBehaviour
 
             Vector3 spawnPosition = targetPosition + offset;
 
-            // Check if position is valid on the grid
             if (IsValidSpawnPosition(spawnPosition))
             {
                 SpawnUnitOfType(UnitType.Military, spawnPosition);
             }
             else
             {
-                // Try again if position is invalid
                 i--;
             }
         }
     }
 
-    // DEVELOPMENT-ONLY: Get random positions on the grid edges
     private List<Vector3> GetRandomEdgePositions(int count)
     {
         List<Vector3> positions = new List<Vector3>();
@@ -164,7 +149,6 @@ public class UnitSpawner : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            // Choose which edge (0=top, 1=right, 2=bottom, 3=left)
             int edge = Random.Range(0, 4);
             int x, y;
 
@@ -192,14 +176,11 @@ public class UnitSpawner : MonoBehaviour
                     break;
             }
 
-            // Get the cell and use its position
             GridCell cell = _gridDataGenerator.GetCell(x, y);
             if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied)
             {
-                // Apply a small inset from the edge
                 Vector3 position = cell.worldPosition;
 
-                // Inset the position slightly from the edge
                 if (edge == 0) position.z -= _edgeInset;
                 else if (edge == 1) position.x -= _edgeInset;
                 else if (edge == 2) position.z += _edgeInset;
@@ -209,7 +190,6 @@ public class UnitSpawner : MonoBehaviour
             }
             else
             {
-                // Try again if the position is invalid
                 i--;
             }
         }
@@ -217,60 +197,112 @@ public class UnitSpawner : MonoBehaviour
         return positions;
     }
 
-    // DEVELOPMENT-ONLY: Check if a position is valid for spawning
     private bool IsValidSpawnPosition(Vector3 position)
     {
         if (_gridDataGenerator == null)
             return false;
 
-        // Convert world position to grid coordinates
         Vector2Int gridCoord = flowFieldManager.GridController.WorldToGridCoords(position);
 
-        // Check if coordinates are within grid bounds
         if (gridCoord.x < 0 || gridCoord.x >= _gridDataGenerator.GetGridWidth() ||
             gridCoord.y < 0 || gridCoord.y >= _gridDataGenerator.GetGridHeight())
             return false;
 
-        // Get the cell and check if it's valid for spawning
         GridCell cell = _gridDataGenerator.GetCell(gridCoord.x, gridCoord.y);
         return cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied;
     }
-    
-           // Fix the SpawnWolf method
-        public Unit SpawnWolf()
+
+    public Unit SpawnWolf()
+    {
+        GameObject wolfPrefab = Resources.Load<GameObject>("Prefabs/Wolf");
+        if (wolfPrefab == null)
         {
-            // Make sure we have a wolf prefab
-            GameObject wolfPrefab = Resources.Load<GameObject>("Prefabs/Wolf");
-            if (wolfPrefab == null)
-            {
-                Debug.LogError("CRITICAL ERROR: Wolf prefab not found at Resources/Prefabs/Wolf");
-                return null;
-            }
-        
-            // Get a spawn position at map edge - FIX HERE: Pass 1 as the count parameter
-            List<Vector3> edgePositions = GetRandomEdgePositions(1);
-            
-            if (edgePositions.Count == 0)
-            {
-                Debug.LogError("Failed to find valid edge position for wolf spawn");
-                return null;
-            }
-            
-            Vector3 spawnPosition = edgePositions[0];
-            
-            // Spawn the wolf
-            GameObject wolfInstance = Instantiate(wolfPrefab, spawnPosition, Quaternion.identity);
-            Debug.Log($"Wolf spawned at {spawnPosition}");
-            
-            // Make sure it has a Wolf component
-            Wolf wolf = wolfInstance.GetComponent<Wolf>();
-            if (wolf == null)
-            {
-                Debug.LogError("CRITICAL ERROR: Wolf prefab doesn't have Wolf component");
-                Destroy(wolfInstance);
-                return null;
-            }
-            
-            return wolfInstance.GetComponent<Unit>();
+            Debug.LogError("CRITICAL ERROR: Wolf prefab not found at Resources/Prefabs/Wolf");
+            return null;
         }
+
+        List<Vector3> edgePositions = GetRandomEdgePositions(1);
+        if (edgePositions.Count == 0)
+        {
+            Debug.LogError("Failed to find valid edge position for wolf spawn");
+            return null;
+        }
+
+        Vector3 spawnPosition = edgePositions[0];
+
+        GameObject wolfInstance = Instantiate(wolfPrefab, spawnPosition, Quaternion.identity);
+
+        // Set up Animator
+        Animator animator = wolfInstance.GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("CRITICAL ERROR: Wolf prefab missing Animator component");
+            Destroy(wolfInstance);
+            return null;
+        }
+        animator.SetBool("isRunning", true);
+
+        // Get AudioSources (must be attached to prefab)
+        AudioSource[] audioSources = wolfInstance.GetComponents<AudioSource>();
+        if (audioSources.Length < 3)
+        {
+            Debug.LogError($"CRITICAL ERROR: Wolf prefab at {spawnPosition} requires at least 3 AudioSource components, found {audioSources.Length}");
+            Destroy(wolfInstance);
+            return null;
+        }
+
+        // Assign AudioSources in order: attack, growl, hurt
+        AudioSource attackAudioSource = audioSources[0];
+        AudioSource growlAudioSource = audioSources[1];
+        AudioSource hurtAudioSource = audioSources[2];
+
+        // Validate AudioSource clips
+        if (attackAudioSource.clip == null)
+            Debug.LogWarning($"Attack AudioSource on wolf at {spawnPosition} has no clip assigned");
+        if (growlAudioSource.clip == null)
+            Debug.LogWarning($"Growl AudioSource on wolf at {spawnPosition} has no clip assigned");
+        if (hurtAudioSource.clip == null)
+            Debug.LogWarning($"Hurt AudioSource on wolf at {spawnPosition} has no clip assigned");
+
+        Debug.Log($"Wolf spawned at {spawnPosition}");
+
+        Wolf wolf = wolfInstance.GetComponent<Wolf>();
+        if (wolf == null)
+        {
+            Debug.LogError("CRITICAL ERROR: Wolf prefab doesn't have Wolf component");
+            Destroy(wolfInstance);
+            return null;
+        }
+
+        // Subscribe to Wolf events for animations and audio
+        wolf.OnStartMoving += () => animator.SetBool("isRunning", false);
+        wolf.OnStopMoving += () => animator.SetBool("isRunning", true);
+        wolf.OnDeath += () => animator.SetBool("isRunning", true);
+        wolf.OnAttack += () =>
+        {
+            if (attackAudioSource != null && attackAudioSource.clip != null)
+            {
+                attackAudioSource.Play();
+                Debug.Log($"Wolf {wolf.name} played attack sound at {wolf.transform.position}");
+            }
+        };
+        wolf.OnGrowl += () =>
+        {
+            if (growlAudioSource != null && growlAudioSource.clip != null)
+            {
+                growlAudioSource.Play();
+                Debug.Log($"Wolf {wolf.name} played growl sound at {wolf.transform.position}");
+            }
+        };
+        wolf.OnHurt += () =>
+        {
+            if (hurtAudioSource != null && hurtAudioSource.clip != null)
+            {
+                hurtAudioSource.Play();
+                Debug.Log($"Wolf {wolf.name} played hurt sound at {wolf.transform.position}");
+            }
+        };
+
+        return wolfInstance.GetComponent<Unit>();
+    }
 }

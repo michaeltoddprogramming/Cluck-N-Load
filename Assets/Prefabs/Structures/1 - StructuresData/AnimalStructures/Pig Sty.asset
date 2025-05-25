@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: Pig Sty
   m_EditorClassIdentifier: 
   structureName: Pig Sty
-  prefab: {fileID: 8904144573820400465, guid: 3ff220014c1945c45b78bf995798e90c, type: 3}
+  prefab: {fileID: 1494612050108861018, guid: f51b39235da009447aaf83678d2a01a2, type: 3}
   icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
   type: 8
   cost: 50
   health: 100
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
-  targetAnimalType: 
-  armyAnimalPrefabs: []
-  flagPrefab: {fileID: 7043309248494615266, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
+  targetAnimalType: Pig
+  armyAnimalPrefabs:
+  - {fileID: 4059874661627574406, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
+  flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
   protectionRadius: 5
-  backgroundNoise: {fileID: 0}

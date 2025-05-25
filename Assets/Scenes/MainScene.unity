@@ -6690,6 +6690,14 @@ MonoBehaviour:
   itemDeleteIcon: {fileID: 2119073778}
   cursorOffset: {x: 50, y: -60}
   enableLandBuying: 1
+  rangeIndicatorPrefab: {fileID: 0}
+  validSynergyMaterial: {fileID: 0}
+  potentialSynergyMaterial: {fileID: 0}
+  invalidSynergyMaterial: {fileID: 0}
+  synergyIndicatorHeight: 0.1
+  synergyLineRendererPrefab: {fileID: 0}
+  worldSpaceCanvas: {fileID: 0}
+  tooltipOffset: 1
 --- !u!114 &1632256037
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -20,7 +20,8 @@ MonoBehaviour:
   health: 100
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
   targetAnimalType: 
-  armyAnimalPrefabs: []
+  armyAnimalPrefabs:
+  - {fileID: 0}
   flagPrefab: {fileID: 7043309248494615266, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5

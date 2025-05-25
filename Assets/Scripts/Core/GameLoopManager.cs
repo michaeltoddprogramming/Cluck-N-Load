@@ -14,6 +14,7 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private Button quitGameButton;
     [SerializeField] private Text gameOverText;
+    [SerializeField] private float gameOverDelay = 2.5f; 
     
     [Header("Scene Management")]
     
@@ -79,57 +80,70 @@ public class GameLoopManager : MonoBehaviour
             CheckGameOverCondition();
         }
     }
-
-    // New method - explicitly check game over condition
-    public void CheckGameOverCondition()
-    {
-        // Remove any null entries that might have been left behind
-        activeStructures.RemoveAll(s => s == null);
-        
-        Debug.Log($"Checking game over condition. Active structures: {activeStructures.Count}");
-        
-        if (activeStructures.Count == 0 && !isGameOver)
+    
+        // New method - explicitly check game over condition
+        public void CheckGameOverCondition()
         {
-            Debug.Log("GAME OVER CONDITION MET! No structures remaining.");
-            TriggerGameOver();
-        }
-    }
-
-    private void TriggerGameOver()
-    {
-        if (isGameOver) return;
-        
-        Debug.Log("TRIGGERING GAME OVER!");
-        isGameOver = true;
-        
-        // Show game over UI with forced activation
-        if (gameOverPanel != null)
-        {
-            // Make sure it's active and visible in the hierarchy
-            Transform parent = gameOverPanel.transform.parent;
-            while (parent != null)
+            // Remove any null entries that might have been left behind
+            activeStructures.RemoveAll(s => s == null);
+            
+            Debug.Log($"Checking game over condition. Active structures: {activeStructures.Count}");
+            
+            if (activeStructures.Count == 0 && !isGameOver)
             {
-                parent.gameObject.SetActive(true);
-                parent = parent.parent;
+                Debug.Log("GAME OVER CONDITION MET! No structures remaining.");
+                TriggerGameOver();
+            }
+        }
+    
+        private void TriggerGameOver()
+        {
+            if (isGameOver) return;
+            
+            Debug.Log($"TRIGGERING GAME OVER! (with {gameOverDelay} second delay)");
+            isGameOver = true;
+            
+            // Start the delayed game over sequence
+            StartCoroutine(DelayedGameOver());
+        }
+        
+        // New coroutine to handle delayed game over
+        private IEnumerator DelayedGameOver()
+        {
+            // Wait for specified delay time
+            yield return new WaitForSeconds(gameOverDelay);
+            
+            Debug.Log("Showing game over UI after delay");
+            
+            // Show game over UI with forced activation
+            if (gameOverPanel != null)
+            {
+                // Make sure it's active and visible in the hierarchy
+                Transform parent = gameOverPanel.transform.parent;
+                while (parent != null)
+                {
+                    parent.gameObject.SetActive(true);
+                    parent = parent.parent;
+                }
+                
+                // Show the panel
+                gameOverPanel.SetActive(true);
+                
+                // Display game over text if available
+                if (gameOverText != null)
+                    gameOverText.text = "GAME OVER\nAll structures destroyed!";
+                    
+                Debug.Log("Game over panel activated");
+            }
+            else
+            {
+                Debug.LogError("Game over panel is missing! Cannot show game over UI.");
             }
             
-            // Show the panel
-            gameOverPanel.SetActive(true);
-            
-            // Display game over text if available
-            if (gameOverText != null)
-                gameOverText.text = "GAME OVER\nAll structures destroyed!";
-                
-            Debug.Log("Game over panel activated");
+            // Optional: Pause the game after showing the UI
+            Time.timeScale = 0f;
         }
-        else
-        {
-            Debug.LogError("Game over panel is missing! Cannot show game over UI.");
-        }
-        
-        // Optional: Pause the game
-        Time.timeScale = 0f;
-    }
+
     
     public void QuitGame()
     {

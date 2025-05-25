@@ -940,6 +940,7 @@ MonoBehaviour:
   gameOverPanel: {fileID: 1077213407}
   quitGameButton: {fileID: 695836580}
   gameOverText: {fileID: 0}
+  gameOverDelay: 2.5
 --- !u!4 &272689960
 Transform:
   m_ObjectHideFlags: 0

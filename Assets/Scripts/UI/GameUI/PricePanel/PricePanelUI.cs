@@ -221,9 +221,12 @@ public class PricePanelUI : MonoBehaviour
     [Header("SFX")]
     [SerializeField] public AudioSource audioSourceOpen;
     [SerializeField] public AudioSource audioSourceClose;
+    [SerializeField] public AudioClip audioClipClose;
+    [SerializeField] public AudioClip audioClipOpen;
 
     [Header("Prefab Reference")]
     [SerializeField] public GameObject pricePanelPrefab;
+    [SerializeField] public GameObject gameManger;
 
     private static GameObject activePricePanelInstance;
 
@@ -254,6 +257,9 @@ public class PricePanelUI : MonoBehaviour
         cropAmounts = new int[crops.Length];
         produceAmounts = new int[animals.Length];
         boostedProducts = new int[animals.Length];
+
+        audioSourceOpen.clip = audioClipOpen;
+            audioSourceOpen.Play();
 
         // if (closeButton != null)
         // closeButton.onClick.AddListener(ClosePanel);
@@ -318,9 +324,9 @@ public class PricePanelUI : MonoBehaviour
         // int wheat = cropAmounts[1];
         // int  = cropAmounts[2];
 
-        sunflowerBonus.text = $"{(cropMultipliers[0]*100)/3}%";
-        wheatBonus.text = $"{(cropMultipliers[1]*100)/3}%";
-        carrotBonus.text = $"{(cropMultipliers[2]*100)/3}%";
+        sunflowerBonus.text = $"{(cropMultipliers[0] * 100) / 3}%";
+        wheatBonus.text = $"{(cropMultipliers[1] * 100) / 3}%";
+        carrotBonus.text = $"{(cropMultipliers[2] * 100) / 3}%";
 
 
     }
@@ -453,33 +459,73 @@ public class PricePanelUI : MonoBehaviour
     //     }
     // }
 
-public void OpenPanel()
-    {
-        if (activePricePanelInstance == null)
+    public void OpenPanel()
         {
-            Canvas canvas = FindObjectOfType<Canvas>();
-            activePricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
-            var panelUI = activePricePanelInstance.GetComponent<PricePanelUI>();
-            panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
-            panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
-            panelUI.populatePricePanel();
+            if (activePricePanelInstance == null)
+            {
+                Canvas canvas = FindObjectOfType<Canvas>();
+                activePricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
+                var panelUI = activePricePanelInstance.GetComponent<PricePanelUI>();
+                panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
+                panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+                panelUI.populatePricePanel();
+                // audioSourceOpen.Play();
+            }
+
+            activePricePanelInstance.SetActive(true);
+            audioSourceOpen.clip = audioClipOpen;
+            audioSourceOpen.Play();
         }
 
-        activePricePanelInstance.SetActive(true);
-        audioSourceOpen?.Play();
-    }
+        public void ClosePanel()
+        {
+            if (activePricePanelInstance != null)
+            {
+                if (audioClipClose != null)
+                AudioSource.PlayClipAtPoint(audioClipClose, Camera.main.transform.position);
 
-    public void ClosePanel()
-    {
-        if (activePricePanelInstance != null)
-        {
-            audioSourceClose?.Play();
-            Destroy(activePricePanelInstance);
-            activePricePanelInstance = null;
+                Destroy(activePricePanelInstance);
+                activePricePanelInstance = null;
+
+                // audioSourceClose.Play();
+            }
+            else
+            {
+                Debug.LogWarning("ClosePanel called but no active panel instance.");
+            }
         }
-        else
-        {
-            Debug.LogWarning("ClosePanel called but no active panel instance.");
-        }
-    }
+
+// public void OpenPanel()
+// {
+//     if (activePricePanelInstance == null)
+//     {
+//         Canvas canvas = FindObjectOfType<Canvas>();
+//         activePricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
+//         var panelUI = activePricePanelInstance.GetComponent<PricePanelUI>();
+//         panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
+//         panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+//         panelUI.populatePricePanel();
+//     }
+
+//     activePricePanelInstance.SetActive(true);
+//     if (audioClipOpen != null)
+//         AudioSource.PlayClipAtPoint(audioClipOpen, Vector3.zero);
+// }
+
+// public void ClosePanel()
+// {
+//     if (activePricePanelInstance != null)
+//     {
+//             if (audioClipClose == null)
+//                 Debug.Log(":agesrdfhubijolhujio;gfsdohj;grsfeho;ujgeebhjuo;gobhjer;tus");
+//             audioSourceClose.PlayOneShot(audioClipClose);
+
+//         Destroy(activePricePanelInstance);
+//         activePricePanelInstance = null;
+//     }
+//     else
+//     {
+//         Debug.LogWarning("ClosePanel called but no active panel instance.");
+//     }
+// }
 }

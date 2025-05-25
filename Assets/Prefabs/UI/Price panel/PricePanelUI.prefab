@@ -1530,6 +1530,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 102900000, guid: e439df3fadabaec4a8f09d3b16c16a04, type: 3}
+        m_TargetAssemblyTypeName: PricePanelUI, Assembly-CSharp
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &3231338052545458181
 GameObject:
   m_ObjectHideFlags: 0
@@ -1815,9 +1827,12 @@ MonoBehaviour:
   wool: {fileID: 2984499615399771537}
   woolBonus: {fileID: 5322032406843832581}
   closeButton: {fileID: 7329568019247957829}
-  audioSourceOpen: {fileID: 7092828377106798990}
-  audioSourceClose: {fileID: 3312905127444176354}
+  audioSourceOpen: {fileID: 3312905127444176354}
+  audioSourceClose: {fileID: 7092828377106798990}
+  audioClipClose: {fileID: 8300000, guid: 21a85df303b094b428497b6b4a5ca424, type: 3}
+  audioClipOpen: {fileID: 8300000, guid: e3c5022150d38444dac29489895c83bc, type: 3}
   pricePanelPrefab: {fileID: 3724273108228962489}
+  gameManger: {fileID: 0}
   inventoryManager: {fileID: 0}
   animalStructure: {fileID: 0}
   cropAmounts: 
@@ -1831,8 +1846,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 21a85df303b094b428497b6b4a5ca424, type: 3}
-  m_Resource: {fileID: 8300000, guid: 21a85df303b094b428497b6b4a5ca424, type: 3}
+  m_audioClip: {fileID: 8300000, guid: e3c5022150d38444dac29489895c83bc, type: 3}
+  m_Resource: {fileID: 8300000, guid: e3c5022150d38444dac29489895c83bc, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1840,7 +1855,7 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 0
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500
@@ -1928,8 +1943,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: e3c5022150d38444dac29489895c83bc, type: 3}
-  m_Resource: {fileID: 8300000, guid: e3c5022150d38444dac29489895c83bc, type: 3}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1937,7 +1952,7 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 0
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500

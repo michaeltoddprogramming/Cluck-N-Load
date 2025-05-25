@@ -99,7 +99,7 @@ public class BarracksStructure : Structure
         }
         lastDayNightChangeTime = Time.time;
         isNightTime = isNight;
-        Debug.Log($"{GetStructureName()} OnDayNightChanged: isNight={isNight}, Time={Time.time:F2}, Animals={armyAnimals.Count}");
+        // Debug.Log($"{GetStructureName()} OnDayNightChanged: isNight={isNight}, Time={Time.time:F2}, Animals={armyAnimals.Count}");
         if (isNight)
         {
             DeployAnimals();
@@ -112,7 +112,7 @@ public class BarracksStructure : Structure
 
     private void DeployAnimals()
     {
-        Debug.Log($"{GetStructureName()} DeployAnimals called at Time={Time.time:F2}");
+        // Debug.Log($"{GetStructureName()} DeployAnimals called at Time={Time.time:F2}");
         foreach (GameObject armyAnimal in armyAnimals)
         {
             if (armyAnimal != null)
@@ -123,7 +123,7 @@ public class BarracksStructure : Structure
                 {
                     animalScript.SetTimeOfDay(true);
                     animalScript.MoveToFlag();
-                    Debug.Log($"{GetStructureName()} Activated {armyAnimal.name}, moving to flag at {GetFlagPosition}");
+                    // Debug.Log($"{GetStructureName()} Activated {armyAnimal.name}, moving to flag at {GetFlagPosition}");
                 }
                 else
                 {
@@ -135,28 +135,28 @@ public class BarracksStructure : Structure
                 Debug.LogWarning($"{GetStructureName()} Null armyAnimal in armyAnimals!");
             }
         }
-        Debug.Log($"{GetStructureName()} Deployed {armyAnimals.Count} animals to guard the flag.");
+        // Debug.Log($"{GetStructureName()} Deployed {armyAnimals.Count} animals to guard the flag.");
     }
 
     private void ReturnAnimalsToBarracks()
     {
-        Debug.Log($"{GetStructureName()} ReturnAnimalsToBarracks called at Time={Time.time:F2}");
+        // Debug.Log($"{GetStructureName()} ReturnAnimalsToBarracks called at Time={Time.time:F2}");
         foreach (GameObject armyAnimal in armyAnimals)
         {
             if (armyAnimal != null)
             {
                 armyAnimal.SetActive(false);
-                Debug.Log($"{GetStructureName()} Deactivated {armyAnimal.name}");
+                // Debug.Log($"{GetStructureName()} Deactivated {armyAnimal.name}");
             }
         }
-        Debug.Log($"{GetStructureName()} Returned {armyAnimals.Count} animals to barracks.");
+        // Debug.Log($"{GetStructureName()} Returned {armyAnimals.Count} animals to barracks.");
     }
 
     private void InitializeFlag()
     {
         if (flagPrefab == null)
         {
-            Debug.LogError($"{GetStructureName()} has no flag prefab assigned!");
+            // Debug.LogError($"{GetStructureName()} has no flag prefab assigned!");
             return;
         }
         guardPosition = transform.position + new Vector3(0, 2, 0);
@@ -178,7 +178,7 @@ public class BarracksStructure : Structure
         if (flagRenderer != null)
         {
             flagRenderer.material.color = newColor;
-            Debug.Log($"{GetStructureName()} flag color set to {newColor}");
+            // Debug.Log($"{GetStructureName()} flag color set to {newColor}");
         }
         UpdateArmyAnimalPositions();
     }
@@ -224,7 +224,7 @@ public class BarracksStructure : Structure
         }
         else
         {
-            Debug.Log($"{GetStructureName()} found target {targetAnimalType} structure: {targetAnimalStructure.GetStructureName()} at grid distance {minGridDistance:F2}");
+            // Debug.Log($"{GetStructureName()} found target {targetAnimalType} structure: {targetAnimalStructure.GetStructureName()} at grid distance {minGridDistance:F2}");
             OnArmyChanged?.Invoke();
         }
     }
@@ -257,7 +257,7 @@ public class BarracksStructure : Structure
             Debug.LogWarning($"{GetStructureName()}: Cannot recruit - Insufficient gold ({totalCost} needed)!");
             return false;
         }
-        Debug.Log($"{GetStructureName()}: Can recruit {amount} animals.");
+        // Debug.Log($"{GetStructureName()}: Can recruit {amount} animals.");
         return true;
     }
 
@@ -274,9 +274,9 @@ public class BarracksStructure : Structure
             Debug.LogWarning($"Failed to spend {totalCost} gold for recruitment.");
             return;
         }
-        Debug.Log($"Deducted {totalCost} gold for {amount} animals.");
+        // Debug.Log($"Deducted {totalCost} gold for {amount} animals.");
         targetAnimalStructure.RecruitAnimals(amount);
-        Debug.Log($"Recruited {amount} animals from {targetAnimalStructure.GetStructureName()}.");
+        // Debug.Log($"Recruited {amount} animals from {targetAnimalStructure.GetStructureName()}.");
         for (int i = 0; i < amount; i++)
         {
             GameObject prefab = GetArmyAnimalPrefab();
@@ -296,7 +296,7 @@ public class BarracksStructure : Structure
             spawnPosition.y = transform.position.y;
             GameObject armyAnimal = Instantiate(prefab, spawnPosition, Quaternion.identity);
             armyAnimals.Add(armyAnimal);
-            Debug.Log($"Spawned animal {armyAnimal.name} at {spawnPosition} at Time={Time.time:F2}");
+            // Debug.Log($"Spawned animal {armyAnimal.name} at {spawnPosition} at Time={Time.time:F2}");
             ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
             if (armyAnimalScript != null)
             {
@@ -311,11 +311,11 @@ public class BarracksStructure : Structure
                 if (!isNightTime)
                 {
                     armyAnimal.SetActive(false);
-                    Debug.Log($"Animal {armyAnimal.name} deactivated (daytime) at Time={Time.time:F2}");
+                    // Debug.Log($"Animal {armyAnimal.name} deactivated (daytime) at Time={Time.time:F2}");
                 }
                 else
                 {
-                    Debug.Log($"Animal {armyAnimal.name} activated (nighttime) at Time={Time.time:F2}");
+                    // Debug.Log($"Animal {armyAnimal.name} activated (nighttime) at Time={Time.time:F2}");
                 }
             }
             else
@@ -323,7 +323,7 @@ public class BarracksStructure : Structure
                 Debug.LogError($"Army animal prefab {armyAnimal.name} does not have ArmyAnimal component!");
             }
         }
-        Debug.Log($"{GetStructureName()} recruited {amount} army {targetAnimalType}s. Total army: {armyAnimals.Count}");
+        // Debug.Log($"{GetStructureName()} recruited {amount} army {targetAnimalType}s. Total army: {armyAnimals.Count}");
         OnArmyChanged?.Invoke();
         UpdateRecruitmentCostByDistance();
 
@@ -349,7 +349,7 @@ public class BarracksStructure : Structure
         }
         guardPosition = position;
         UpdateArmyAnimalPositions();
-        Debug.Log($"{GetStructureName()} placed flag at {position}. Animals guard this point.");
+        // Debug.Log($"{GetStructureName()} placed flag at {position}. Animals guard this point.");
     }
 
     private void UpdateArmyAnimalPositions()
@@ -405,18 +405,18 @@ public class BarracksStructure : Structure
 
     public void ClearBarracksArmy()
     {
-        Debug.Log($"{GetStructureName()} ClearBarracksArmy called at Time={Time.time:F2}");
+        // Debug.Log($"{GetStructureName()} ClearBarracksArmy called at Time={Time.time:F2}");
         foreach (GameObject armyAnimal in armyAnimals)
         {
             if (armyAnimal != null)
             {
-                Debug.Log($"{GetStructureName()} Destroying {armyAnimal.name}");
+                // Debug.Log($"{GetStructureName()} Destroying {armyAnimal.name}");
                 Destroy(armyAnimal);
             }
         }
         armyAnimals.Clear();
         OnArmyChanged?.Invoke();
-        Debug.Log($"{GetStructureName()} cleared barracks army.");
+        // Debug.Log($"{GetStructureName()} cleared barracks army.");
     }
 
     public void ReturnAnimal(ArmyAnimal animal) // CHANGED: Renamed from ReturnChicken
@@ -427,12 +427,12 @@ public class BarracksStructure : Structure
             return;
         }
         armyAnimals.Remove(animal.gameObject);
-        Debug.Log($"{GetStructureName()} Removed {animal.name} from army at Time={Time.time:F2}. Army size: {armyAnimals.Count}");
+        // Debug.Log($"{GetStructureName()} Removed {animal.name} from army at Time={Time.time:F2}. Army size: {armyAnimals.Count}");
         Destroy(animal.gameObject);
         if (targetAnimalStructure != null)
         {
             targetAnimalStructure.AddAnimals(1);
-            Debug.Log($"{GetStructureName()}: Returned 1 animal to {targetAnimalStructure.GetStructureName()} at Time={Time.time:F2}");
+            // Debug.Log($"{GetStructureName()}: Returned 1 animal to {targetAnimalStructure.GetStructureName()} at Time={Time.time:F2}");
         }
         else
         {

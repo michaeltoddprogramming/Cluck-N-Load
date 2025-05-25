@@ -113,7 +113,6 @@ public class CropStructure : Structure
             cropReady = true;
             isGrowing = false;
             growthProgress = productionSettings.growthTime;
-            Debug.Log($"{GetStructureName()} ({currentCropType}) has finished growing!");
         }
     }
 
@@ -154,7 +153,6 @@ public class CropStructure : Structure
             }
 
             // int totalCrops = Mathf.RoundToInt(10);
-            Debug.Log($"{GetStructureName()} is harvesting {totalCrops} {currentCropType}...");
 
             string cropName = currentCropType.ToString();
             InventoryManager.Instance.AddItem(cropName, totalCrops);
@@ -163,18 +161,14 @@ public class CropStructure : Structure
             {
                 case CropType.Sunflower:
                     sunflowerTotal += totalCrops;
-                    Debug.Log($"Added {totalCrops} Sunflowers to total: {sunflowerTotal}");
                     break;
                 case CropType.Wheat:
                     wheatTotal += totalCrops;
-                    Debug.Log($"Added {totalCrops} Wheat to total: {wheatTotal}");
                     break;
                 case CropType.Carrots:
                     carrotTotal += totalCrops;
-                    Debug.Log($"Added {totalCrops} Carrots to total: {carrotTotal}");
                     break;
                 default:
-                    Debug.LogError($"Unexpected crop type in Harvest: {currentCropType}");
                     break;
             }
 
@@ -189,7 +183,6 @@ public class CropStructure : Structure
         }
         else
         {
-            Debug.LogWarning($"{GetStructureName()} cannot harvest: Crop is not ready.");
             return "ready";
         }
     }
@@ -200,7 +193,6 @@ public class CropStructure : Structure
         {
             Destroy(currentCropInstance);
             currentCropInstance = null;
-            Debug.Log($"{GetStructureName()} crop destroyed.");
         }
         currentCropType = CropType.None;
         cropReady = false;
@@ -216,7 +208,6 @@ public class CropStructure : Structure
             {
                 Destroy(currentCropInstance);
                 currentCropInstance = null;
-                Debug.Log($"{GetStructureName()} cleared visuals (no crop planted).");
             }
             return;
         }
@@ -227,7 +218,6 @@ public class CropStructure : Structure
         {
             cropReady = true;
             isGrowing = false;
-            Debug.Log($"{GetStructureName()} is ready to harvest.");
         }
     }
 

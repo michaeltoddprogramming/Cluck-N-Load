@@ -170,12 +170,10 @@ public class InventoryManager : MonoBehaviour
     {
         if (currCapacity < totalCapacity && currCapacity + harvestAmount <= totalCapacity)
         {
-            Debug.Log("Can harvest: Silo has enough capacity.");
             return true;
         }
         else
         {
-            Debug.Log("Cannot harvest: Silo is full.");
             return false;
         }
     }

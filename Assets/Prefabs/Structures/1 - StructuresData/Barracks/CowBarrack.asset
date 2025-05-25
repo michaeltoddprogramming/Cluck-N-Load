@@ -21,7 +21,7 @@ MonoBehaviour:
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
   targetAnimalType: Cow
   armyAnimalPrefabs:
-  - {fileID: 1963215568946069723, guid: eee980f74c0e2ee4dac90448aaa8dc68, type: 3}
+  - {fileID: 8917997704576204703, guid: 8bb1ae4f766bcdc4783fc72ebe65fc6b, type: 3}
   flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5

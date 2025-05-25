@@ -45,7 +45,6 @@ namespace FarmDefender.Core.AI.FlowField
                 flowFieldManager = FindObjectOfType<FlowFieldManager>();
                 if (flowFieldManager == null)
                 {
-                    Debug.LogError("FlowFieldAgent requires a FlowFieldManager in the scene");
                     enabled = false;
                 }
             }

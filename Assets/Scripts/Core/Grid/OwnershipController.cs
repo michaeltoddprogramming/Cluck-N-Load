@@ -137,7 +137,6 @@ public class OwnershipController : MonoBehaviour
     {
         if (gridDataGenerator == null || !gridDataGenerator.IsInitialized)
         {
-            Debug.LogWarning("Grid not initialized yet. Ownership will be applied later.");
             Invoke("ApplyOwnership", 0.5f);
             return;
         }

@@ -106,6 +106,7 @@ public class NightManager : MonoBehaviour
         set => years = value;
     }
     private float tempSecond;
+    private bool yearsChanged = false;
 
     // Season icons
     [Header("Season Icons")]
@@ -160,7 +161,7 @@ public class NightManager : MonoBehaviour
         if (wolf != null && !activeWolves.Contains(wolf))
         {
             activeWolves.Add(wolf);
-            Debug.Log($"Registered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
+            // Debug.Log($"Registered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
         }
     }
 
@@ -168,7 +169,7 @@ public class NightManager : MonoBehaviour
     {
         if (wolf != null && activeWolves.Remove(wolf))
         {
-            Debug.Log($"Unregistered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
+            // Debug.Log($"Unregistered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
         }
     }
     
@@ -179,7 +180,7 @@ public class NightManager : MonoBehaviour
         int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
         int wolvesSpawned = 0;
         
-        Debug.Log($"🐺 NIGHT {days}: Planning to spawn {totalWolvesToSpawn} wolves tonight");
+        // Debug.Log($"🐺 NIGHT {days}: Planning to spawn {totalWolvesToSpawn} wolves tonight");
         
         // Initial delay before first spawn
         yield return new WaitForSeconds(3f);
@@ -195,7 +196,7 @@ public class NightManager : MonoBehaviour
                 {
                     unitSpawner.SpawnWolf();
                     wolvesSpawned++;
-                    Debug.Log($"🐺 Wolf {wolvesSpawned}/{totalWolvesToSpawn} spawned! Active wolves: {activeWolves.Count}");
+                    // Debug.Log($"🐺 Wolf {wolvesSpawned}/{totalWolvesToSpawn} spawned! Active wolves: {activeWolves.Count}");
                 }
                 else
                 {
@@ -205,14 +206,14 @@ public class NightManager : MonoBehaviour
             }
             else
             {
-                Debug.Log($"Maximum active wolves reached ({maxWolvesAtOnce}). Waiting for some to die before spawning more.");
+                // Debug.Log($"Maximum active wolves reached ({maxWolvesAtOnce}). Waiting for some to die before spawning more.");
             }
             
             // Wait before spawning next wolf
             yield return new WaitForSeconds(spawnInterval);
         }
         
-        Debug.Log($"🐺 Wolf spawning complete: {wolvesSpawned} wolves spawned");
+        // Debug.Log($"🐺 Wolf spawning complete: {wolvesSpawned} wolves spawned");
         wolfSpawnCoroutine = null;
     }
 
@@ -250,7 +251,7 @@ public class NightManager : MonoBehaviour
             doubleProductionSource = sources[5];
         }
 
-        chooseAnimalProductForSeason();
+        // chooseAnimalProductForSeason();
     }
 
     private void Update()
@@ -268,9 +269,20 @@ public class NightManager : MonoBehaviour
             Minutes += 1;
             tempSecond = 0;
         }
-        
+
         // Clean up any null references in the wolves list
         activeWolves.RemoveAll(wolf => wolf == null);
+
+        DebugAllAnimalProductionSettings();
+    }
+
+        public void DebugAllAnimalProductionSettings()
+    {
+        foreach (var animal in animalStructures)
+        {
+            if (animal != null)
+                animal.DebugProductionSettings();
+        }
     }
 
     public void pauseTime()
@@ -336,7 +348,7 @@ public class NightManager : MonoBehaviour
             }
             
             wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
-            Debug.Log($"Night {days}: Starting wolf spawning");
+            // Debug.Log($"Night {days}: Starting wolf spawning");
         }
         else
         {
@@ -474,7 +486,7 @@ public class NightManager : MonoBehaviour
             
             sceneLight.colorTemperature = 6000f;
         }
-        else if (value == 16)
+        else if (value == 15)
         {
             if (clockTickingSource != null)
             {
@@ -491,7 +503,7 @@ public class NightManager : MonoBehaviour
             
             sceneLight.colorTemperature = 2000f;
         }
-        else if (value == 20)
+        else if (value == 18)
         {
             if (clockTickingSource.isPlaying)
             {
@@ -512,36 +524,54 @@ public class NightManager : MonoBehaviour
 
     private void OnDayChange(int value)
     {
-        if (value >= 20)
+        if (value == 0)
         {
-            years++;
+            setSeason(1);
+        }
+        else if (value == 1)
+        {
+            setSeason(2);
+        }
+        else if (value == 2)
+        {
+            setSeason(3);
+        }
+        else if (value == 3)
+        {
+            setSeason(4);
+        }
+        else if (value == 4)
+        {
+            // StartNotification("Night starting soon!!", 5f);
+
             if (yearAudioSource != null)
             {
                 yearAudioSource.Play();
             }
+
+            Debug.Log("Resetting the full time loop!");
+            years++;
             days = 0;
             hours = 7;
             minutes = 0;
-            StartDay(0);
-            setSeason(1);
-            return;
-        }
+            yearsChanged = true;
 
-        int currentSeason;
-    
-        if (value < 5)
-            currentSeason = 1; // Spring
-        else if (value < 10)
-            currentSeason = 2; // Summer
-        else if (value < 15)
-            currentSeason = 3; // Fall
-        else
-            currentSeason = 4; // Winter
-            
-        // Only trigger season change on first day of the season
-        if (value % 5 == 0)
+            setSeason(1);
+
+
+            StartDay(0); // force reset to day state
+            // setSeason(1); // reset season if needed
+        }
+        else if (value == 5)
         {
-            setSeason(currentSeason);
+            Debug.Log("Resetting the full time loop!");
+            years++;
+            days = 0;
+            hours = 7;
+            minutes = 0;
+
+            StartDay(0); // force reset to day state
+            setSeason(1); // reset season if needed
         }
     }
 
@@ -569,11 +599,22 @@ public class NightManager : MonoBehaviour
         switch (season)
         {
             case 1:
-                text = "Spring!!";
-                seasonIcon.sprite = spring;
-                chooseAnimalProductForSeason();
-                break;
+                if (yearsChanged)
+                {
+                    text = $"Year {Years} done!!\nSpring!!!!";
+                    seasonIcon.sprite = spring;
+                    chooseAnimalProductForSeason();
+                    break;
+                }
+                else
+                {
+                    text = "Spring!!";
+                    seasonIcon.sprite = spring;
+                    chooseAnimalProductForSeason();
+                    break;                    
+                }
             case 2:
+                yearsChanged = false;
                 text = "Summer!!";
                 seasonIcon.sprite = summer;
                 chooseAnimalProductForSeason();
@@ -587,10 +628,7 @@ public class NightManager : MonoBehaviour
                 text = "Winter!!";
                 seasonIcon.sprite = winter;
                 chooseAnimalProductForSeason();
-                break;
-            case 5:
-                text = $"Year {Years} done!!";
-                break;
+                break;                
             default:
                 text = "";
                 break;
@@ -681,6 +719,7 @@ public class NightManager : MonoBehaviour
 
     public void chooseAnimalProductForSeason()
     {
+        Debug.Log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         float sameProduct = Random.Range(0f, 1f);
         int product1 = Random.Range(1, 6);
         int product2 = Random.Range(1, 6);
@@ -711,13 +750,13 @@ public class NightManager : MonoBehaviour
 
             string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
 
-            StartProductionNotification(message, 5);
-            
             // Play the sound for the lucky bonus case
             if (doubleProductionSource != null)
             {
                 doubleProductionSource.Play();
             }
+            StartProductionNotification(message, 5);
+            
         }
         else
         {
@@ -751,10 +790,10 @@ public class NightManager : MonoBehaviour
 
                 StartProductionNotification(message, 5);
 
-                if (doubleProductionSource != null)
-                {
-                    doubleProductionSource.Play();
-                }
+                // if (doubleProductionSource != null)
+                // {
+                //     doubleProductionSource.Play();
+                // }
             }
             else
             {
@@ -773,6 +812,11 @@ public class NightManager : MonoBehaviour
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
                 StartProductionNotification(message, 5);
+
+                // if (doubleProductionSource != null)
+                // {
+                //     doubleProductionSource.Play();
+                // }
             }
         }
     }

@@ -120,7 +120,6 @@ public class Structure : MonoBehaviour
 
         if (GetComponent<Collider>() == null)
         {
-            Debug.Log($"Adding collider to {gameObject.name} for clickability");
             AddColliderToStructure();
         }
     }

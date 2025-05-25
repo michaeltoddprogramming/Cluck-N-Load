@@ -42,6 +42,7 @@ public class AnimalStructureUI : BaseStructureUI
             return;
         }
 
+        animalStructure.PlayBackgroundNoise();
         SetupButtonListeners();
         UpdateUI();
 
@@ -317,9 +318,7 @@ public class AnimalStructureUI : BaseStructureUI
         if (isAnimalStructure && animalStructure != null)
         {
             animalStructure.OnAnimalCountChanged -= UpdateUI;
-        }
-
-        animalStructure.StopBackgroundNoise();
-        
+            animalStructure.StopBackgroundNoise();
+        }        
     }
 }

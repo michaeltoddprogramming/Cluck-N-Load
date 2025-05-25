@@ -62,7 +62,7 @@ public class AnimalStructure : Structure
     [SerializeField] private float normalFoodRequired = 1f; // food per animal when not in range
     [SerializeField] private float foodMultiplier = 1f; // food per animal when not in range
     [SerializeField] public int baseMoneyPerProduct = 10;
-    [SerializeField] public int baseProductAmount = 1;
+    [SerializeField] public int baseProductMultiplier = 1;
 
 
     protected override void Start()
@@ -114,6 +114,8 @@ public class AnimalStructure : Structure
 
     private void Update()
     {
+
+        Debug.Log("The animal");
         if (nightManager == null || !isProducing || productReady) return;
 
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
@@ -127,6 +129,18 @@ public class AnimalStructure : Structure
             Debug.Log($"{GetStructureName()} production progress complete, awaiting new day (05:00).");
         }
     }
+    
+    public void DebugProductionSettings()
+{
+    Debug.Log(
+        $"{GetStructureName()} ({GetAnimalType}): " +
+        $"moneyPerProduct={productionSettings.moneyPerProduct}, " +
+        $"boostedProduction={productionSettings.boostedProduction}, " +
+        $"productAmount={productionSettings.productAmount}"
+    );
+}
+
+
 
     public void Feed()
     {
@@ -332,6 +346,7 @@ public class AnimalStructure : Structure
 
     public void updateAnimalProductionAmount(string animalType, float increasePercent)
     {
+        Debug.Log("----------------------------------------------------------------------------------------------------------------");
         // Use the first letter(s) to match the type
         string thisType = GetAnimalType.ToString();
         bool matches = false;
@@ -372,24 +387,33 @@ public class AnimalStructure : Structure
 
         if (matches)
         {
+            // productionSettings.moneyPerProduct = (int)(productionSettings.moneyPerProduct * increasePercent);
+            productionSettings.moneyPerProduct = (int)(baseMoneyPerProduct * increasePercent);
+
+
             if (doubleBoosted)
             {
                 productionSettings.boostedProduction = 2;
                 Debug.Log("eirgfuhbjluhijfewraiuehrfjfierhwuoeirhusf--------------+++++++++++");
             }
+            else
+            {
+                productionSettings.boostedProduction = 1;
+            }
 
             Debug.Log("eirgfuhbjluhijfewraiuehrfjfierhwuoeirhusf--------------");
 
-            productionSettings.moneyPerProduct = (int)(productionSettings.moneyPerProduct * increasePercent);
-            productionSettings.boostedProduction = 1;
+            
         }
     }
 
     public void resetAnimalProductionAmount()
     {
+        Debug.Log($"----------------------------------------------------------------------------------------------per: {productionSettings.moneyPerProduct} boosted: {productionSettings.boostedProduction}, baseMult: {baseProductMultiplier}, basePer: {baseMoneyPerProduct}");
         // Reset to base value (adjust as needed)
         productionSettings.moneyPerProduct = baseMoneyPerProduct;
-        productionSettings.productAmount = baseProductAmount;
+        productionSettings.boostedProduction = baseProductMultiplier;
+        // productionSettings.productAmount = baseProductAmount;
     }
 
     public void PlayBackgroundNoise()

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Pig Sty
   prefab: {fileID: 1494612050108861018, guid: f51b39235da009447aaf83678d2a01a2, type: 3}
-  icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+  icon: {fileID: 21300000, guid: 0cbd4b51c610a634f88af29a7f3b9006, type: 3}
   type: 8
   cost: 50
   health: 100

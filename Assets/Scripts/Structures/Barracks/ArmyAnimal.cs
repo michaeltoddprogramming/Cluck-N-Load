@@ -11,8 +11,8 @@ public class ArmyAnimal : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
-    [SerializeField] private string walkAnimParam = "IsWalking";
-    [SerializeField] private string attackAnimParam = "Attack";
+    [SerializeField] private string walkAnimParam = "isWalking";
+    // [SerializeField] private string attackAnimParam = "Attack";
 
     [Header("Audio")]
     [SerializeField] private AudioSource attackAudioSource;
@@ -566,7 +566,7 @@ public class ArmyAnimal : MonoBehaviour
 
         Debug.Log($"{name} Attacking {enemy.name}");
         if (animator != null)
-            animator.SetTrigger(attackAnimParam);
+            // animator.SetTrigger(attackAnimParam);
 
         if (Random.value <= animalData.attackSoundChance && attackAudioSource != null && animalData.attackClips != null && animalData.attackClips.Length > 0)
         {

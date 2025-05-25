@@ -105,7 +105,7 @@ MonoBehaviour:
   showDebugInfo: 0
   targetAnimalType: Cow
   armyAnimalPrefabs:
-  - {fileID: 8917997704576204703, guid: 8bb1ae4f766bcdc4783fc72ebe65fc6b, type: 3}
+  - {fileID: 1963215568946069723, guid: eee980f74c0e2ee4dac90448aaa8dc68, type: 3}
   flagPrefab: {fileID: 7043309248494615266, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
@@ -391,7 +391,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0

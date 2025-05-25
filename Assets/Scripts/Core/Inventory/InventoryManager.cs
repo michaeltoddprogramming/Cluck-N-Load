@@ -179,4 +179,38 @@ public class InventoryManager : MonoBehaviour
             return false;
         }
     }
+
+    public int[] getInventory(string[] crops)
+    {
+        int[] amounts = new int[crops.Length];
+
+        for (int k = 0; k < crops.Length; k++)
+        {
+            string crop = crops[k];
+
+            switch (crop)
+            {
+                case "s":
+                    amounts[k] = GetItemCount("Sunflower");
+                    break;
+                case "w":
+                    amounts[k] = GetItemCount("Wheat");
+                    break;
+                case "c":
+                    amounts[k] = GetItemCount("Carrots");
+                    break;
+                default:
+                    Debug.LogError("THis crop type does not exist!!!!");
+                    amounts[k] = -10;
+                    break;
+            }
+        }
+
+        // Debug.Log("------------------------------------------------------" + amounts);
+
+        return amounts;
+        
+
+    }
+
 }

@@ -161,7 +161,7 @@ public class NightManager : MonoBehaviour
         if (wolf != null && !activeWolves.Contains(wolf))
         {
             activeWolves.Add(wolf);
-            Debug.Log($"Registered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
+            // Debug.Log($"Registered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
         }
     }
 
@@ -169,7 +169,7 @@ public class NightManager : MonoBehaviour
     {
         if (wolf != null && activeWolves.Remove(wolf))
         {
-            Debug.Log($"Unregistered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
+            // Debug.Log($"Unregistered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
         }
     }
     
@@ -180,7 +180,7 @@ public class NightManager : MonoBehaviour
         int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
         int wolvesSpawned = 0;
         
-        Debug.Log($"🐺 NIGHT {days}: Planning to spawn {totalWolvesToSpawn} wolves tonight");
+        // Debug.Log($"🐺 NIGHT {days}: Planning to spawn {totalWolvesToSpawn} wolves tonight");
         
         // Initial delay before first spawn
         yield return new WaitForSeconds(3f);
@@ -196,7 +196,7 @@ public class NightManager : MonoBehaviour
                 {
                     unitSpawner.SpawnWolf();
                     wolvesSpawned++;
-                    Debug.Log($"🐺 Wolf {wolvesSpawned}/{totalWolvesToSpawn} spawned! Active wolves: {activeWolves.Count}");
+                    // Debug.Log($"🐺 Wolf {wolvesSpawned}/{totalWolvesToSpawn} spawned! Active wolves: {activeWolves.Count}");
                 }
                 else
                 {
@@ -206,14 +206,14 @@ public class NightManager : MonoBehaviour
             }
             else
             {
-                Debug.Log($"Maximum active wolves reached ({maxWolvesAtOnce}). Waiting for some to die before spawning more.");
+                // Debug.Log($"Maximum active wolves reached ({maxWolvesAtOnce}). Waiting for some to die before spawning more.");
             }
             
             // Wait before spawning next wolf
             yield return new WaitForSeconds(spawnInterval);
         }
         
-        Debug.Log($"🐺 Wolf spawning complete: {wolvesSpawned} wolves spawned");
+        // Debug.Log($"🐺 Wolf spawning complete: {wolvesSpawned} wolves spawned");
         wolfSpawnCoroutine = null;
     }
 
@@ -251,7 +251,7 @@ public class NightManager : MonoBehaviour
             doubleProductionSource = sources[5];
         }
 
-        chooseAnimalProductForSeason();
+        // chooseAnimalProductForSeason();
     }
 
     private void Update()
@@ -269,9 +269,20 @@ public class NightManager : MonoBehaviour
             Minutes += 1;
             tempSecond = 0;
         }
-        
+
         // Clean up any null references in the wolves list
         activeWolves.RemoveAll(wolf => wolf == null);
+
+        DebugAllAnimalProductionSettings();
+    }
+
+        public void DebugAllAnimalProductionSettings()
+    {
+        foreach (var animal in animalStructures)
+        {
+            if (animal != null)
+                animal.DebugProductionSettings();
+        }
     }
 
     public void pauseTime()
@@ -337,7 +348,7 @@ public class NightManager : MonoBehaviour
             }
             
             wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
-            Debug.Log($"Night {days}: Starting wolf spawning");
+            // Debug.Log($"Night {days}: Starting wolf spawning");
         }
         else
         {
@@ -708,6 +719,7 @@ public class NightManager : MonoBehaviour
 
     public void chooseAnimalProductForSeason()
     {
+        Debug.Log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         float sameProduct = Random.Range(0f, 1f);
         int product1 = Random.Range(1, 6);
         int product2 = Random.Range(1, 6);
@@ -738,13 +750,13 @@ public class NightManager : MonoBehaviour
 
             string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
 
-            StartProductionNotification(message, 5);
-            
             // Play the sound for the lucky bonus case
             if (doubleProductionSource != null)
             {
                 doubleProductionSource.Play();
             }
+            StartProductionNotification(message, 5);
+            
         }
         else
         {
@@ -778,10 +790,10 @@ public class NightManager : MonoBehaviour
 
                 StartProductionNotification(message, 5);
 
-                if (doubleProductionSource != null)
-                {
-                    doubleProductionSource.Play();
-                }
+                // if (doubleProductionSource != null)
+                // {
+                //     doubleProductionSource.Play();
+                // }
             }
             else
             {
@@ -801,10 +813,10 @@ public class NightManager : MonoBehaviour
 
                 StartProductionNotification(message, 5);
 
-                if (doubleProductionSource != null)
-                {
-                    doubleProductionSource.Play();
-                }
+                // if (doubleProductionSource != null)
+                // {
+                //     doubleProductionSource.Play();
+                // }
             }
         }
     }

@@ -302,7 +302,7 @@ public class PricePanelUI : MonoBehaviour
         produceAmounts = AnimalStructure.getProductPrices(animals);
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
-        boostedCrops = AnimalStructure.whichProductsAreBoosted(animals);
+        // boostedCrops = inventoryManager.whichProductsAreBoosted(animals);
         populateCrops();
         populateProduce();
         getCropBoosts();
@@ -335,15 +335,15 @@ public class PricePanelUI : MonoBehaviour
     {
         eggs.text = $"$ {produceAmounts[0]}";
         milk.text = $"$ {produceAmounts[1]}";
-        bacon.text = $"$ {produceAmounts[2]}";
-        cheese.text = $"$ {produceAmounts[3]}";
-        wool.text = $"$ {produceAmounts[4]}";
+        wool.text = $"$ {produceAmounts[2]}";
+        bacon.text = $"$ {produceAmounts[3]}";
+        cheese.text = $"$ {produceAmounts[4]}";
 
         eggsBonus.text = $"{boostedProducts[0]}%";
         milkBonus.text = $"{boostedProducts[1]}%";
-        baconBonus.text = $"{boostedProducts[2]}%";
-        cheeseBonus.text = $"{boostedProducts[3]}%";
-        woolBonus.text = $"{boostedProducts[4]}%";
+        woolBonus.text = $"{boostedProducts[2]}%";
+        baconBonus.text = $"{boostedProducts[3]}%";
+        cheeseBonus.text = $"{boostedProducts[4]}%";
     }
 
     private void populateCrops()

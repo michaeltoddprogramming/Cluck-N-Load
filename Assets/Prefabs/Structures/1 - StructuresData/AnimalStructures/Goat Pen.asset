@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: Goat Pen
   m_EditorClassIdentifier: 
   structureName: Goat Pen
-  prefab: {fileID: 7128956907063885859, guid: 629b53e559cf9054ea0565905beb0f7b, type: 3}
-  icon: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+  prefab: {fileID: 1882975995869719288, guid: a1342f404deb5be4494ec25d81970d90, type: 3}
+  icon: {fileID: 21300000, guid: e3100582bcecd244b821eff7600afd72, type: 3}
   type: 5
   cost: 50
   health: 100
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
-  targetAnimalType: 
-  armyAnimalPrefabs: []
-  flagPrefab: {fileID: 0}
+  targetAnimalType: Chicken
+  armyAnimalPrefabs:
+  - {fileID: 4059874661627574406, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
+  flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
   protectionRadius: 5
-  backgroundNoise: {fileID: 0}

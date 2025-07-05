@@ -5953,10 +5953,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxAnts: 20
-  minStructuresPerAnt: 3
+  minStructuresPerAnt: 8
   baseFlowFieldDesirability: 0.3
   antSpeed: 0
   antLifetime: 60
+  timeBeforeFlowFieldIncrease: 2.5
+  flowFieldInfluenceGrowthRate: 0.05
+  maxSnoopingFlowFieldInfluence: 0.6
+  structureSearchRadius: 3
+  randomMovementFactor: 0.3
+  edgeDirectionWeight: 2
+  pheromoneAvoidanceWeight: 1.5
+  flowFieldAlignmentWeight: 1
+  returnPathRandomness: 0.2
+  pheromoneLayInterval: 0.2
+  basePheromoneStrength: 1
+  scalePheromonesByStructures: 1
+  maxPheromoneStrength: 5
+  pheromoneSpreadRadius: 1
+  defaultEnemyTypeIndex: 0
+  enablePheromoneVisualization: 1
   visualizeAnts: 1
   showDiscoveredStructures: 1
   discoveredStructureColor: {r: 0, g: 1, b: 1, a: 1}
@@ -5964,28 +5980,7 @@ MonoBehaviour:
   returningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   snoopingColor: {r: 1, g: 0, b: 1, a: 1}
   spawnDistanceFromEdge: 2
-  showStructureDebug: 0
-  timeBeforeFlowFieldIncrease: 5
-  flowFieldInfluenceGrowthRate: 0.8
-  maxSnoopingFlowFieldInfluence: 0.9
-  pheromoneLayInterval: 0.2
-  basePheromoneStrength: 2
-  scalePheromonesByStructures: 1
-  maxPheromoneStrength: 5
-  pheromoneSpreadRadius: 2
-  pheromoneSpreadFactors:
-  - 1
-  - 0.5
-  - 0.25
-  enablePheromoneVisualization: 1
-  edgeDirectionWeight: 2
-  pheromoneAvoidanceWeight: 1.94
-  flowFieldAlignmentWeight: 1
-  returnPathRandomness: 0.784
-  totalPheromonesLaid: 0
-  averageStrength: 0
-  highestStrength: 0
-  cellsWithPheromones: 0
+  showStructureDebug: 1
 --- !u!1 &1847462729
 GameObject:
   m_ObjectHideFlags: 0

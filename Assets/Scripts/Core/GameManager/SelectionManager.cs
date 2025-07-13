@@ -11,7 +11,6 @@ private void Update()
     {
         if (EventSystem.current.IsPointerOverGameObject())
         {
-            Debug.Log("Click ignored: Mouse is over a UI element");
             return;
         }
 
@@ -21,18 +20,15 @@ private void Update()
             Structure structure = hit.collider.GetComponentInParent<Structure>();
             if (structure != null && structure.gameObject.name != "BuildGhost" && structure.GetAllowSelectionAndUI())
             {
-                Debug.Log($"Structure clicked: {structure.GetStructureName()}, AllowSelectionAndUI: {structure.GetAllowSelectionAndUI()}");
                 SelectStructure(structure);
             }
             else
             {
-                Debug.Log("No valid structure clicked or selection not allowed");
                 DeselectCurrent();
             }
         }
         else
         {
-            Debug.Log("Raycast missed: Nothing clicked");
             DeselectCurrent();
         }
     }
@@ -51,7 +47,6 @@ private void SelectStructure(Structure structure)
         return;
     }
     
-    Debug.Log("Calling ShowStructureUI");
     StructureUIManager.Instance.ShowStructureUI(structure);
 }
 

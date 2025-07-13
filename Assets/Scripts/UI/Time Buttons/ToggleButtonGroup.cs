@@ -25,8 +25,6 @@ public class ToggleButtonGroup : MonoBehaviour
     }
 }
 
-
-
 // using System.Collections.Generic;
 // using UnityEngine;
 // using UnityEngine.EventSystems;
@@ -83,7 +81,6 @@ public class ToggleButtonGroup : MonoBehaviour
 //         }
 //     }
 // }
-
 
 // using UnityEngine;
 

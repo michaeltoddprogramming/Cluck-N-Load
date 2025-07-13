@@ -19,11 +19,14 @@ public class NightManager : MonoBehaviour
     [Header("Lighting stuff")]
     [SerializeField] private Light sceneLight;
     [SerializeField] private Color color = new Color32(0xAA, 0xBB, 0xDD, 0xFF);
-    [SerializeField] private float intensity = 0.3f;
     [SerializeField] private Gradient morningToDayGradient;
     [SerializeField] private Gradient DayToAfternoonGradient;
     [SerializeField] private Gradient AfternoonToNightGradient;
     [SerializeField] private Gradient nightToMorningGradient;
+    
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableLightingOptimizations = true;
+    [SerializeField] private float lightingUpdateInterval = 0.2f; // Reduce frequency for potato devices
 
     // Skyboxes
     [Header("Skyboxes")]
@@ -126,9 +129,6 @@ public class NightManager : MonoBehaviour
     [Header("Light intensity")]
     [SerializeField] private float nightIntensity = 0.03f;
     [SerializeField] private float dayIntensity = 2f;
-    [SerializeField] private float dayTemp = 6000f;
-    [SerializeField] private float morningTemp = 3000f;
-    [SerializeField] private float eveningTemp = 9000f;
 
     // Pause game manager
     [Header("Pause Game Manager")]
@@ -161,7 +161,6 @@ public class NightManager : MonoBehaviour
         if (wolf != null && !activeWolves.Contains(wolf))
         {
             activeWolves.Add(wolf);
-            // Debug.Log($"Registered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
         }
     }
 
@@ -169,7 +168,7 @@ public class NightManager : MonoBehaviour
     {
         if (wolf != null && activeWolves.Remove(wolf))
         {
-            // Debug.Log($"Unregistered wolf: {wolf.name}, Active wolves: {activeWolves.Count}");
+            // Wolf successfully removed from tracking
         }
     }
     
@@ -180,9 +179,7 @@ public class NightManager : MonoBehaviour
         int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
         int wolvesSpawned = 0;
         
-        // Debug.Log($"🐺 NIGHT {days}: Planning to spawn {totalWolvesToSpawn} wolves tonight");
-        
-        // Initial delay before first spawn
+        // // Initial delay before first spawn
         yield return new WaitForSeconds(3f);
         
         // Keep spawning wolves until we reach the limit or day breaks
@@ -196,7 +193,6 @@ public class NightManager : MonoBehaviour
                 {
                     unitSpawner.SpawnWolf();
                     wolvesSpawned++;
-                    // Debug.Log($"🐺 Wolf {wolvesSpawned}/{totalWolvesToSpawn} spawned! Active wolves: {activeWolves.Count}");
                 }
                 else
                 {
@@ -206,14 +202,13 @@ public class NightManager : MonoBehaviour
             }
             else
             {
-                // Debug.Log($"Maximum active wolves reached ({maxWolvesAtOnce}). Waiting for some to die before spawning more.");
+                // Maximum wolves reached, wait before checking again
             }
             
             // Wait before spawning next wolf
             yield return new WaitForSeconds(spawnInterval);
         }
         
-        // Debug.Log($"🐺 Wolf spawning complete: {wolvesSpawned} wolves spawned");
         wolfSpawnCoroutine = null;
     }
 
@@ -306,22 +301,19 @@ public class NightManager : MonoBehaviour
 
     private void cropGrowthOnAll(int stage)
     {
-        CropStructure[] allCrops = FindObjectsOfType<CropStructure>();
+        CropStructure[] allCrops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
         foreach (CropStructure crop in allCrops)
         {
             if (crop.IsGrowing && !crop.CropReady)
             {
                 crop.UpdateVisuals(stage);
-                Debug.Log($"Advanced {crop.GetStructureName()} ({crop.CurrentCropType}) to growth stage {stage}");
-            }
+                }
             else if (crop.CropReady)
             {
-                Debug.Log($"Skipped {crop.GetStructureName()} ({crop.CurrentCropType}): Already ready to harvest");
-            }
+                }
             else
             {
-                Debug.Log($"Skipped {crop.GetStructureName()}: No crop planted");
-            }
+                }
         }
     }
 
@@ -338,6 +330,12 @@ public class NightManager : MonoBehaviour
         isDay = false;
         buttonText.text = "End Night";
 
+        // Notify tutorial system about night starting
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
+        }
+
         // Start wolf spawning when night begins
         if (unitSpawner != null)
         {
@@ -348,7 +346,6 @@ public class NightManager : MonoBehaviour
             }
             
             wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
-            // Debug.Log($"Night {days}: Starting wolf spawning");
         }
         else
         {
@@ -549,7 +546,6 @@ public class NightManager : MonoBehaviour
                 yearAudioSource.Play();
             }
 
-            Debug.Log("Resetting the full time loop!");
             years++;
             days = 0;
             hours = 7;
@@ -558,13 +554,11 @@ public class NightManager : MonoBehaviour
 
             setSeason(1);
 
-
             StartDay(0); // force reset to day state
             // setSeason(1); // reset season if needed
         }
         else if (value == 21)
         {
-            Debug.Log("Resetting the full time loop!");
             years++;
             days = 0;
             hours = 7;
@@ -688,16 +682,14 @@ public class NightManager : MonoBehaviour
         if (structure != null && !animalStructures.Contains(structure))
         {
             animalStructures.Add(structure);
-            Debug.Log($"Registered animal structure: {structure.GetStructureName()}");
-        }
+            }
     }
 
     public void UnregisterAnimalStructure(AnimalStructure structure)
     {
         if (structure != null && animalStructures.Remove(structure))
         {
-            Debug.Log($"Unregistered animal structure: {structure.GetStructureName()}");
-        }
+            }
     }
 
     public void RegisterBarracksStructure(BarracksStructure barracks)
@@ -705,21 +697,18 @@ public class NightManager : MonoBehaviour
         if (barracks != null && !barracksStructures.Contains(barracks))
         {
             barracksStructures.Add(barracks);
-            Debug.Log($"Registered barracks: {barracks.GetStructureName()}");
-        }
+            }
     }
 
     public void UnregisterBarracksStructure(BarracksStructure barracks)
     {
         if (barracks != null && barracksStructures.Remove(barracks))
         {
-            Debug.Log($"Unregistered barracks: {barracks.GetStructureName()}");
-        }
+            }
     }
 
     public void chooseAnimalProductForSeason()
     {
-        Debug.Log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         float sameProduct = Random.Range(0f, 1f);
         int product1 = Random.Range(1, 6);
         int product2 = Random.Range(1, 6);

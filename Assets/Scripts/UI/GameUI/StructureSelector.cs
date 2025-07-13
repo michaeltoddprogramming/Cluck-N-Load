@@ -23,7 +23,6 @@ public class StructureSelector : MonoBehaviour
                        UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
         if (isOverUI)
         {
-            Debug.Log("Click over UI, skipping structure selection.");
             isProcessingClick = false;
             yield break;
         }
@@ -33,7 +32,6 @@ public class StructureSelector : MonoBehaviour
         int layerMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast")); // Fixed typo: NameToName → NameToLayer
         if (Physics.Raycast(ray, out hit, 1000f, layerMask))
         {
-            Debug.Log($"Raycast hit: {hit.transform.name}, Layer: {LayerMask.LayerToName(hit.transform.gameObject.layer)}");
             Transform hitTransform = hit.transform;
             while (hitTransform != null)
             {
@@ -47,8 +45,7 @@ public class StructureSelector : MonoBehaviour
                             structure.Deselect();
                             StructureUIManager.Instance?.HideStructureUI();
                             lastSelectedStructure = null;
-                            Debug.Log($"Deselected {structure.GetStructureName()}.");
-                        }
+                            }
                         else
                         {
                             if (lastSelectedStructure != null && lastSelectedStructure != structure)
@@ -59,15 +56,13 @@ public class StructureSelector : MonoBehaviour
                             structure.Select();
                             StructureUIManager.Instance?.ShowStructureUI(structure);
                             lastSelectedStructure = structure;
-                            Debug.Log($"Selected {structure.GetStructureName()}.");
-                        }
+                            }
                         isProcessingClick = false;
                         yield break;
                     }
                 }
                 hitTransform = hitTransform.parent;
             }
-            Debug.Log("No valid structure found under cursor.");
             if (lastSelectedStructure != null)
             {
                 lastSelectedStructure.Deselect();
@@ -77,7 +72,6 @@ public class StructureSelector : MonoBehaviour
         }
         else
         {
-            Debug.Log("Raycast missed: No hit detected.");
             if (lastSelectedStructure != null)
             {
                 lastSelectedStructure.Deselect();

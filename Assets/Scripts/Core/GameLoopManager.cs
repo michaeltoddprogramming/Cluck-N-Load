@@ -49,10 +49,7 @@ public class GameLoopManager : MonoBehaviour
             quitGameButton.onClick.AddListener(QuitGame);
             
         // Debug logging
-        Debug.Log("GameLoopManager initialized. Game over panel: " +
-                 (gameOverPanel != null ? "Found" : "MISSING") +
-                 ", Quit button: " + (quitGameButton != null ? "Found" : "MISSING"));
-    }
+        }
 
     public void RegisterStructure(Structure structure)
     {
@@ -63,8 +60,7 @@ public class GameLoopManager : MonoBehaviour
         if (!activeStructures.Contains(structure))
         {
             activeStructures.Add(structure);
-            Debug.Log($"Registered structure {structure.name}, total: {activeStructures.Count}");
-        }
+            }
     }
 
     public void UnregisterStructure(Structure structure)
@@ -74,8 +70,6 @@ public class GameLoopManager : MonoBehaviour
         if (activeStructures.Contains(structure))
         {
             activeStructures.Remove(structure);
-            Debug.Log($"Structure destroyed: {structure.name}, remaining: {activeStructures.Count}");
-            
             // Force immediate check for game over
             CheckGameOverCondition();
         }
@@ -87,11 +81,8 @@ public class GameLoopManager : MonoBehaviour
             // Remove any null entries that might have been left behind
             activeStructures.RemoveAll(s => s == null);
             
-            Debug.Log($"Checking game over condition. Active structures: {activeStructures.Count}");
-            
             if (activeStructures.Count == 0 && !isGameOver)
             {
-                Debug.Log("GAME OVER CONDITION MET! No structures remaining.");
                 TriggerGameOver();
             }
         }
@@ -100,7 +91,6 @@ public class GameLoopManager : MonoBehaviour
         {
             if (isGameOver) return;
             
-            Debug.Log($"TRIGGERING GAME OVER! (with {gameOverDelay} second delay)");
             isGameOver = true;
             
             // Start the delayed game over sequence
@@ -112,8 +102,6 @@ public class GameLoopManager : MonoBehaviour
         {
             // Wait for specified delay time
             yield return new WaitForSeconds(gameOverDelay);
-            
-            Debug.Log("Showing game over UI after delay");
             
             // Show game over UI with forced activation
             if (gameOverPanel != null)
@@ -133,8 +121,7 @@ public class GameLoopManager : MonoBehaviour
                 if (gameOverText != null)
                     gameOverText.text = "GAME OVER\nAll structures destroyed!";
                     
-                Debug.Log("Game over panel activated");
-            }
+                }
             else
             {
                 Debug.LogError("Game over panel is missing! Cannot show game over UI.");
@@ -144,17 +131,14 @@ public class GameLoopManager : MonoBehaviour
             Time.timeScale = 0f;
         }
 
-    
     public void QuitGame()
     {
-        Debug.Log("Quitting game");
         #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
         #else
         Application.Quit();
         #endif
     }
-
 
     public void ForceGameOver()
     {

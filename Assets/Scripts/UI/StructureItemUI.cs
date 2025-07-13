@@ -21,20 +21,31 @@ public class StructureItemUI : MonoBehaviour
         }
 
         data = structure;
+        Debug.Log($"Setting up shop item: {structure.structureName} - Cost: {structure.cost}");
 
+        // Set icon if available
         if (icon != null)
             icon.sprite = structure.icon;
         else
-            Debug.LogWarning("Icon Image is not assigned!");
+            Debug.LogWarning($"Icon component is missing for {structure.structureName}!");
 
+        // Set name text if available
         if (nameText != null)
+        {
             nameText.text = structure.structureName;
+            Debug.Log($"Set name text to: {structure.structureName}");
+        }
         else
-            Debug.LogWarning("Name Text is not assigned!");
+            Debug.LogWarning($"Name text component is missing for {structure.structureName}!");
 
         // Display cost if we have a cost text component
         if (costText != null)
+        {
             costText.text = $"{structure.cost} Gold";
+            Debug.Log($"Set cost text to: {structure.cost} Gold");
+        }
+        else
+            Debug.LogWarning($"Cost text component is missing for {structure.structureName}!");
 
         if (selectButton != null)
         {
@@ -42,8 +53,8 @@ public class StructureItemUI : MonoBehaviour
             selectButton.onClick.AddListener(() => SelectStructure());
         }
         else
-            Debug.LogWarning("Select Button is not assigned!");
-            
+            Debug.LogWarning($"Select button component is missing for {structure.structureName}!");
+
         // Check affordability when setting up
         UpdateAffordability();
         
@@ -52,15 +63,18 @@ public class StructureItemUI : MonoBehaviour
         {
             MoneyManager.Instance.OnMoneyChanged += OnMoneyChanged;
         }
+        else
+        {
+            Debug.LogWarning("MoneyManager.Instance is null when setting up shop item!");
+        }
     }
 
     public void SelectStructure()
     {
         if (data != null)
         {
-            Debug.Log($"Selected structure: {data.structureName}");
             // Pass the StructureData to the BuildController
-            BuildController controller = FindObjectOfType<BuildController>();
+            BuildController controller = FindFirstObjectByType<BuildController>();
             if (controller != null)
             {
                 controller.SetBuildTarget(data);
@@ -90,7 +104,7 @@ public class StructureItemUI : MonoBehaviour
         UpdateAffordability();
     }
 
-        // Add to the UpdateAffordability method:
+    // Update affordability based on current money
     public void UpdateAffordability()
     {
         // Make sure we have data and button

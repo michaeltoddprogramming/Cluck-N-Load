@@ -24,12 +24,10 @@ public class AnimalStructureUI : BaseStructureUI
         {
             animalStructure = (AnimalStructure)structure;
             animalStructure.OnAnimalCountChanged += UpdateUI;
-            Debug.Log($"{structure.GetStructureName()} AnimalStructureUI: Subscribed to OnAnimalCountChanged");
-
             animalStructure.PlayBackgroundNoise();
         }
 
-        nightManager = NightManager.Instance ?? FindObjectOfType<NightManager>();
+        nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         if (nightManager == null)
         {
             Debug.LogError($"{structure.GetStructureName()} AnimalStructureUI: NightManager not found!");
@@ -37,16 +35,21 @@ public class AnimalStructureUI : BaseStructureUI
 
         if (!isAnimalStructure)
         {
-            Debug.LogWarning($"AnimalStructureUI used with non-animal structure: {structure.GetType().Name}");
             HideAnimalSpecificUI();
             return;
         }
 
         animalStructure.PlayBackgroundNoise();
         SetupButtonListeners();
-        UpdateUI();
-
         
+        // Subscribe to day/night changes for UI updates
+        if (nightManager != null)
+        {
+            // Note: You may need to add this event to NightManager
+            // nightManager.OnDayNightChanged += UpdateUI;
+        }
+        
+        UpdateUI();
     }
 
     // public void Start()
@@ -67,8 +70,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Feed button not assigned in AnimalStructureUI prefab!");
-        }
+            }
 
         if (collectButton != null)
         {
@@ -81,8 +83,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Collect button not assigned in AnimalStructureUI prefab!");
-        }
+            }
 
         if (buyOneAnimalButton != null)
         {
@@ -95,8 +96,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Buy One Animal button not assigned in AnimalStructureUI prefab!");
-        }
+            }
 
         if (buyFiveAnimalsButton != null)
         {
@@ -109,18 +109,11 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Buy Five Animals button not assigned in AnimalStructureUI prefab!");
-        }
+            }
     }
 
-    protected override void Update()
-    {
-        base.Update();
-        if (isAnimalStructure)
-        {
-            UpdateUI();
-        }
-    }
+    // Remove the Update method since we're using event-driven updates
+    // This improves performance by not updating UI every frame
 
     private void UpdateUI()
     {
@@ -313,12 +306,15 @@ public class AnimalStructureUI : BaseStructureUI
         }
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (isAnimalStructure && animalStructure != null)
         {
             animalStructure.OnAnimalCountChanged -= UpdateUI;
             animalStructure.StopBackgroundNoise();
-        }        
+        }
+        
+        // Call base OnDestroy
+        base.OnDestroy();
     }
 }

@@ -39,8 +39,6 @@ public class GridDataGenerator : MonoBehaviour
         gridWidth = Mathf.RoundToInt(b.size.x / cellSize); // Use RoundToInt for better alignment
         gridHeight = Mathf.RoundToInt(b.size.z / cellSize);
 
-        Debug.Log($"Grid size: {gridWidth} x {gridHeight}");
-
         grid = new GridCell[gridWidth, gridHeight];
 
         // Initialize each grid cell with its center position and default flags.

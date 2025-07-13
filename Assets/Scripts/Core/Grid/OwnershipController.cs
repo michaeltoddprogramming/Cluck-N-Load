@@ -22,9 +22,12 @@ public class OwnershipController : MonoBehaviour
     [Header("Debug")]
     public bool visualizeInEditor = true;
     public Color gizmoColor = new Color(0, 1, 0, 0.3f);
-    [Range(0.1f, 5f)]
-    private float gizmoLineThickness = 2f;
-    public bool logDebugInfo = true;
+    public bool logDebugInfo = false; // Disabled by default for performance
+    
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableRealTimeUpdates = true; // Can disable for potato devices
+    [SerializeField] private float updateInterval = 0.1f; // Throttle updates
+    [SerializeField] private bool enableGizmos = false; // Disable gizmos by default for performance
     
     [Header("Grid Monitoring")]
     [SerializeField] private GridMonitor gridMonitor;
@@ -40,6 +43,9 @@ public class OwnershipController : MonoBehaviour
     
     // Used to track manually purchased cells
     private bool[,] manuallyOwnedCells;
+    
+    // Performance tracking
+    private float lastUpdateTime = 0f;
 
     private void Start()
     {
@@ -51,7 +57,7 @@ public class OwnershipController : MonoBehaviour
         
         // Find references if not assigned
         if (gridController == null)
-            gridController = FindObjectOfType<GridController>();
+            gridController = FindFirstObjectByType<GridController>();
             
         if (gridDataGenerator == null && gridController != null)
             gridDataGenerator = gridController.GetComponent<GridDataGenerator>();
@@ -63,7 +69,7 @@ public class OwnershipController : MonoBehaviour
         }
         
         // Connect to shop events
-        shopPanelUI = FindObjectOfType<ShopPanelUI>(true);
+        shopPanelUI = FindFirstObjectByType<ShopPanelUI>(FindObjectsInactive.Include);
         if (shopPanelUI != null)
         {
             shopPanelUI.OnShopOpened.AddListener(HandleShopOpened);
@@ -80,7 +86,7 @@ public class OwnershipController : MonoBehaviour
         
         // Find grid monitor if not assigned
         if (gridMonitor == null)
-            gridMonitor = FindObjectOfType<GridMonitor>();
+            gridMonitor = FindFirstObjectByType<GridMonitor>();
     }
     
     private void InitializeManualOwnership()
@@ -105,14 +111,19 @@ public class OwnershipController : MonoBehaviour
     private void HandleShopOpened()
     {
         if (logDebugInfo)
-            Debug.Log("Shop opened - ensuring ownership is visible");
-        
-        // Only refresh the grid texture without recalculating ownership
+            // Only refresh the grid texture without recalculating ownership
         RefreshGridTexture();
     }
     
     private void Update()
     {
+        // Performance optimization: Only update if real-time updates are enabled
+        if (!enableRealTimeUpdates) return;
+        
+        // Throttle updates based on updateInterval
+        if (Time.time - lastUpdateTime < updateInterval) return;
+        lastUpdateTime = Time.time;
+        
         // Check if any ownership parameters changed
         bool radiusChanged = lastRadius != ownershipRadius;
         bool shapeChanged = !Mathf.Approximately(lastShapeBlend, shapeBlend);
@@ -151,8 +162,8 @@ public class OwnershipController : MonoBehaviour
         // Convert to grid coordinates
         Vector2Int centerCell = gridController.WorldToGridCoords(center);
         if (logDebugInfo)
-            Debug.Log($"Applying ownership around cell: {centerCell}, radius: {ownershipRadius}, shape blend: {shapeBlend}");
-
+            Debug.Log($"Updating ownership around center: {center}");
+            
         int gridWidth = gridDataGenerator.GetGridWidth();
         int gridHeight = gridDataGenerator.GetGridHeight();
 
@@ -226,9 +237,7 @@ public class OwnershipController : MonoBehaviour
         }
 
         if (logDebugInfo)
-            Debug.Log($"Changed ownership for {cellsChanged} cells");
-
-        // After ownership is applied, update visibility
+            // After ownership is applied, update visibility
         UpdateCellVisibility();
         
         // Update the grid texture
@@ -263,15 +272,13 @@ public class OwnershipController : MonoBehaviour
             if (!cell.flags.isVisible)
             {
                 if (logDebugInfo)
-                    Debug.Log($"Cannot buy invisible land at grid position: ({cellCoords.x}, {cellCoords.y})");
-                return;
+                    return;
             }
             
             if (cell.flags.isOwned)
             {
                 if (logDebugInfo)
-                    Debug.Log($"Cell at ({cellCoords.x}, {cellCoords.y}) is already owned");
-                return;
+                    return;
             }
             
             // Set cell as owned and mark it as manually purchased
@@ -285,9 +292,7 @@ public class OwnershipController : MonoBehaviour
             }
             
             if (logDebugInfo)
-                Debug.Log($"Bought land at grid position: ({cellCoords.x}, {cellCoords.y})");
-            
-            // Update visibility after buying to expand the visible area
+                // Update visibility after buying to expand the visible area
             UpdateCellVisibility();
             
             // Update the grid texture

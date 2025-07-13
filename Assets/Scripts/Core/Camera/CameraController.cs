@@ -48,11 +48,6 @@ public class CameraController : MonoBehaviour
     [SerializeField] private CursorManager cursor; 
     [SerializeField] public bool devCamera; 
 
-
-
-
-
-
     void Start()
     {
         // Initialize target positions with current transform values
@@ -68,7 +63,6 @@ public class CameraController : MonoBehaviour
     // Set camera boundaries based on terrain size
     SetCameraBoundaries();
     }
-
 
     // Allow other scripts to temporarily disable mouse controls
     public void TemporarilyDisableMouseControls(bool disable)
@@ -90,8 +84,7 @@ public class CameraController : MonoBehaviour
             minZ = bounds.min.z + 5f;
             maxZ = bounds.max.z - 5f;
             
-            Debug.Log($"Camera boundaries set to: X({minX},{maxX}), Z({minZ},{maxZ})");
-        }
+            }
     }
 
     void LateUpdate()
@@ -341,7 +334,6 @@ public class CameraController : MonoBehaviour
             //     newZoom += Input.mouseScrollDelta.y * zoomAmount * 0.2f;
             // }
 
-
             // Mouse wheel zoom
             float scroll = Input.mouseScrollDelta.y;
 
@@ -452,8 +444,6 @@ public class CameraController : MonoBehaviour
 //     void Start()
 //     {
 //         maxZoom = 500f;
-
-
 
 //         newPosition = transform.position;
 //         Vector3 startEuler = transform.rotation.eulerAngles;

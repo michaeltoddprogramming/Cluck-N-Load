@@ -13,7 +13,6 @@ public class MoneyManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI moneyText;
 
-    
     private int _currentMoney;
     
     public event Action<int> OnMoneyChanged;
@@ -44,8 +43,7 @@ public class MoneyManager : MonoBehaviour
     private void Start()
     {
         UpdateMoneyUI();
-        Debug.Log($"Money initialized: {_currentMoney} {currencyName}");
-    }
+        }
     
     private void LoadMoney()
     {
@@ -53,13 +51,11 @@ public class MoneyManager : MonoBehaviour
         if (PlayerPrefs.HasKey("PlayerMoney"))
         {
             _currentMoney = PlayerPrefs.GetInt("PlayerMoney");
-            Debug.Log($"Loaded money from PlayerPrefs: {_currentMoney}");
-        }
+            }
         else
         {
             _currentMoney = startingMoney;
-            Debug.Log($"Using starting money: {_currentMoney}");
-        }
+            }
             
         // Notify listeners of initial amount
         OnMoneyChanged?.Invoke(_currentMoney);
@@ -131,6 +127,5 @@ public class MoneyManager : MonoBehaviour
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);
-        Debug.Log($"Money reset to: {_currentMoney}");
-    }
+        }
 }

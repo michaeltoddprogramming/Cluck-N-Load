@@ -6,7 +6,6 @@ public class StructureDatabase : ScriptableObject
 {
     public List<StructureData> allStructures;
 
-
     public StructureData GetStructureByName(string name)
     {
         foreach (var structure in allStructures)

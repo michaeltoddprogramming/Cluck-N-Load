@@ -27,7 +27,7 @@ namespace FarmDefender.Core.AI.FlowField
         [SerializeField] private int buildingDestructionThreshold = 3;
         
         [Tooltip("Minimum time (in seconds) between flow field updates")]
-        [SerializeField] private float updateThrottleTime = 0.5f;
+        [SerializeField] private float updateThrottleTime = 0.1f; // Reduced from 0.5f for more responsive wolves
         
         private FlowFieldAlgorithm algorithm;
         private GridMonitor gridMonitor;
@@ -61,8 +61,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (useGridMonitor && gridMonitor != null)
             {
                 gridMonitor.OnGridChanged += HandleGridChanged;
-                Debug.Log("FlowFieldManager connected to GridMonitor");
-            }
+                }
             
             // Generate initial flow field after a short delay
             Invoke("GenerateInitialFlowField", 0.5f);
@@ -82,19 +81,19 @@ namespace FarmDefender.Core.AI.FlowField
             // Process updates only when explicitly requested or target changed
             if (targetChanged || updateRequested)
             {
-                // Throttle updates based on time if needed
-                if (Time.time - lastUpdateTime < updateThrottleTime)
-                    return;
-                    
-                Vector2Int target = targetManager.GetTargetCoordinates();
-                if (targetManager.IsValidTarget(target))
+                // More responsive throttling - allow immediate updates for target changes
+                bool canUpdate = targetChanged || (Time.time - lastUpdateTime >= updateThrottleTime);
+                
+                if (canUpdate)
                 {
-                    GenerateFlowField(target);
-                    lastUpdateTime = Time.time;
-                    updateRequested = false;
-                    destroyedBuildingsCounter = 0;
-                    
-                    Debug.Log($"Flow field updated. Reason: {(targetChanged ? "Target changed" : "Building changes")}");
+                    Vector2Int target = targetManager.GetTargetCoordinates();
+                    if (targetManager.IsValidTarget(target))
+                    {
+                        GenerateFlowField(target);
+                        lastUpdateTime = Time.time;
+                        updateRequested = false;
+                        destroyedBuildingsCounter = 0;
+                    }
                 }
             }
         }
@@ -116,20 +115,19 @@ namespace FarmDefender.Core.AI.FlowField
             if (settings == null)
             {
                 settings = ScriptableObject.CreateInstance<FlowFieldSettings>();
-                Debug.LogWarning("No FlowFieldSettings assigned. Using default settings.");
-            }
+                }
             
             // Find GridController
             if (gridController == null)
-                gridController = FindObjectOfType<GridController>();
+                gridController = FindFirstObjectByType<GridController>();
                 
             // Find GridDataGenerator
             if (gridDataGenerator == null && gridController != null)
-                gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+                gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
                 
             // Find GridMonitor if needed
             if (useGridMonitor)
-                gridMonitor = FindObjectOfType<GridMonitor>();
+                gridMonitor = FindFirstObjectByType<GridMonitor>();
                 
             // Create target manager if not assigned
             if (targetManager == null)
@@ -165,8 +163,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (targetManager.IsValidTarget(target))
             {
                 GenerateFlowField(target);
-                Debug.Log($"Generated initial flow field to target: {target}");
-            }
+                }
             else
             {
                 Debug.LogWarning("Could not generate initial flow field: invalid target");
@@ -201,8 +198,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (buildModeActive && !isActive)
             {
                 updateRequested = true;
-                Debug.Log("Flow field update requested after exiting build mode");
-            }
+                }
             
             buildModeActive = isActive;
         }
@@ -219,8 +215,7 @@ namespace FarmDefender.Core.AI.FlowField
             {
                 // Request an update rather than updating immediately
                 updateRequested = true;
-                Debug.Log($"Flow field update requested after {destroyedBuildingsCounter} building destructions");
-            }
+                }
         }
         
         /// <summary>
@@ -285,8 +280,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (targetManager.IsValidTarget(target))
             {
                 GenerateFlowField(target);
-                Debug.Log($"Manually triggered flow field generation to {target}");
-            }
+                }
             else
             {
                 Debug.LogWarning("Invalid target for flow field generation");
@@ -326,8 +320,7 @@ namespace FarmDefender.Core.AI.FlowField
                 }
             }
             
-            Debug.Log($"Grid obstacles: {obstacleCount} obstacles, {occupiedCount} occupied, {bothCount} both");
-        }
+            }
 
         public Dictionary<Vector2Int, float> GetFlowStrengthMap()
         {

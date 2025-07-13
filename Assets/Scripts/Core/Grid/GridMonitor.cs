@@ -41,10 +41,10 @@ public class GridMonitor : MonoBehaviour
     {
         // Find references if not assigned
         if (gridController == null)
-            gridController = FindObjectOfType<GridController>();
+            gridController = FindFirstObjectByType<GridController>();
             
         if (gridDataGenerator == null && gridController != null)
-            gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+            gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
             
         if (gridController == null || gridDataGenerator == null)
         {
@@ -61,7 +61,7 @@ public class GridMonitor : MonoBehaviour
         
         // Find required components if not assigned
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
     }
     
     private IEnumerator InitializeWhenGridReady()
@@ -76,9 +76,10 @@ public class GridMonitor : MonoBehaviour
         TakeGridSnapshot();
         
         if (debugLogging)
-            Debug.Log("GridMonitor initialized and ready to track changes");
+        {
+            Debug.Log("GridMonitor initialized successfully");
+        }
     }
-    
     /// <summary>
     /// Creates a snapshot of the current grid state for comparison
     /// </summary>
@@ -129,9 +130,10 @@ public class GridMonitor : MonoBehaviour
         }
         
         if (debugLogging)
-            Debug.Log($"Grid change registered at ({x}, {y}): {changeType}");
+        {
+            Debug.Log($"Grid change detected: {changeType} at {cellPos}");
+        }
     }
-    
     /// <summary>
     /// Notifies the monitor that multiple cells have changed at once
     /// </summary>
@@ -160,7 +162,9 @@ public class GridMonitor : MonoBehaviour
             }
             
             if (debugLogging)
-                Debug.Log($"Multiple grid changes registered ({cells.Count} cells): {changeType}");
+            {
+                Debug.Log($"Multiple grid changes detected: {changeType}");
+            }
         }
     }
     
@@ -170,9 +174,7 @@ public class GridMonitor : MonoBehaviour
     public void ForceGridUpdate()
     {
         if (debugLogging)
-            Debug.Log("Forcing immediate grid update");
-            
-        StopAllCoroutines();
+            StopAllCoroutines();
         ProcessGridChanges();
     }
     
@@ -201,7 +203,7 @@ public class GridMonitor : MonoBehaviour
         
         if (debugLogging)
             Debug.Log($"Processing {changedCells.Count} grid changes");
-        
+            
         // Check for changes by comparing against snapshot
         List<Vector2Int> occupiedCells = new List<Vector2Int>();
         List<Vector2Int> clearedCells = new List<Vector2Int>();
@@ -244,7 +246,9 @@ public class GridMonitor : MonoBehaviour
                 }
                 
                 if (debugLogging)
+                {
                     Debug.Log($"Notified FlowFieldManager of {clearedCells.Count} destroyed buildings");
+                }
             }
         }
         

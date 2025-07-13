@@ -27,7 +27,7 @@ namespace FarmDefender.Core.AI.FlowField
         [SerializeField] private int buildingDestructionThreshold = 3;
         
         [Tooltip("Minimum time (in seconds) between flow field updates")]
-        [SerializeField] private float updateThrottleTime = 0.5f;
+        [SerializeField] private float updateThrottleTime = 0.1f; // Reduced from 0.5f for more responsive wolves
         
         private FlowFieldAlgorithm algorithm;
         private GridMonitor gridMonitor;
@@ -81,19 +81,20 @@ namespace FarmDefender.Core.AI.FlowField
             // Process updates only when explicitly requested or target changed
             if (targetChanged || updateRequested)
             {
-                // Throttle updates based on time if needed
-                if (Time.time - lastUpdateTime < updateThrottleTime)
-                    return;
-                    
-                Vector2Int target = targetManager.GetTargetCoordinates();
-                if (targetManager.IsValidTarget(target))
+                // More responsive throttling - allow immediate updates for target changes
+                bool canUpdate = targetChanged || (Time.time - lastUpdateTime >= updateThrottleTime);
+                
+                if (canUpdate)
                 {
-                    GenerateFlowField(target);
-                    lastUpdateTime = Time.time;
-                    updateRequested = false;
-                    destroyedBuildingsCounter = 0;
-                    
+                    Vector2Int target = targetManager.GetTargetCoordinates();
+                    if (targetManager.IsValidTarget(target))
+                    {
+                        GenerateFlowField(target);
+                        lastUpdateTime = Time.time;
+                        updateRequested = false;
+                        destroyedBuildingsCounter = 0;
                     }
+                }
             }
         }
         

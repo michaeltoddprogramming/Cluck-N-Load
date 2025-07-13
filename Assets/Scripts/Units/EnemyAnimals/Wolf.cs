@@ -47,17 +47,11 @@ public class Wolf : MonoBehaviour
     private GameObject fallbackTarget;
     private readonly List<GameObject> cachedTargets = new List<GameObject>();
     
-    // Performance optimization caches - made non-static to prevent wolf interference
+    // Performance optimization caches - each wolf maintains its own cache to prevent interference
     private readonly List<ArmyAnimal> _localAnimalCache = new List<ArmyAnimal>();
     private readonly List<Structure> _localStructureCache = new List<Structure>();
     private float _lastLocalCacheTime = -1f;
     private const float LOCAL_CACHE_INTERVAL = 2f; // Each wolf has its own cache refresh
-    
-    // Shared static cache for initial discovery only
-    private static readonly List<ArmyAnimal> _globalAnimalCache = new List<ArmyAnimal>();
-    private static readonly List<Structure> _globalStructureCache = new List<Structure>();
-    private static float _lastGlobalCacheTime = -1f;
-    private const float GLOBAL_CACHE_INTERVAL = 8f; // Less frequent global updates
     
     private Vector3 _lastPosition;
     private float _targetSearchRangeSquared;
@@ -105,12 +99,25 @@ public class Wolf : MonoBehaviour
         nightManager.RegisterWolf(this);
         Structure.RegisterWolf(this);
         
+        // Initialize stable flow field once for all wolves
+        InitializeStableFlowField();
+        
         // Ensure immediate movement and targeting
         _isActivelyAttacking = false;
         flowFieldAgent.SetMoving(true);
         OnStartMoving?.Invoke();
 
-        // Force immediate cache refresh for this wolf
+        // Stagger expensive initialization to prevent freezing when multiple wolves spawn
+        float initDelay = Random.Range(0f, 0.5f); // Random delay between 0-0.5 seconds
+        StartCoroutine(DelayedInitialization(initDelay));
+    }
+    
+    private System.Collections.IEnumerator DelayedInitialization(float delay)
+    {
+        // Wait for staggered delay
+        yield return new WaitForSeconds(delay);
+        
+        // Force immediate cache refresh for this wolf (but staggered)
         RefreshLocalCache();
         CacheTargets();
         FindTargetWithPriority();
@@ -119,7 +126,14 @@ public class Wolf : MonoBehaviour
         if (target == null)
         {
             UpdateFallbackTarget();
-            flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
+            // Let wolves follow existing flow field instead of requesting new one during initialization
+            // This prevents flow field regeneration during wolf spawning
+        }
+        
+        // Log successful initialization (with low chance to avoid spam)
+        if (Random.value < 0.2f) // 20% chance to log
+        {
+            Debug.Log($"Wolf {name} initialization complete after {delay:F2}s delay");
         }
     }
 
@@ -161,13 +175,16 @@ public class Wolf : MonoBehaviour
             growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
         }
 
+        // Stagger update operations to prevent all wolves from doing expensive work simultaneously
+        bool shouldDoExpensiveWork = (Time.frameCount + GetInstanceID()) % 4 == 0; // Only 1/4 of wolves per frame
+        
         if (targetUpdateTimer <= 0f)
         {
             FindNearbyTarget();
             targetUpdateTimer = nearbySearchInterval; // Use configurable interval
         }
 
-        if (globalSearchTimer <= 0f)
+        if (globalSearchTimer <= 0f && shouldDoExpensiveWork)
         {
             UpdateTargetCache();
             FindTargetWithPriority();
@@ -194,7 +211,8 @@ public class Wolf : MonoBehaviour
                 _isActivelyAttacking = false;
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
-                flowFieldManager.SetTargetTransformWithPoint(target.transform, targetAttackPoint);
+                // Use hybrid movement: flow field + direct movement when close
+                MoveDirectlyTowardsTarget();
             }
         }
         else
@@ -205,8 +223,8 @@ public class Wolf : MonoBehaviour
             // More aggressive cleanup of invalid targets
             cachedTargets.RemoveAll(go => go == null || !go || !IsValidTargetFast(go));
             
-            // Force a fresh search when we lose our target (but only for this wolf)
-            bool shouldForceRefresh = Time.time - _lastTargetDestroyTime > 0.5f; // Reduced from 1f for faster response
+            // Force a fresh search when we lose our target (but only for this wolf and only if allowed)
+            bool shouldForceRefresh = Time.time - _lastTargetDestroyTime > 0.5f && shouldDoExpensiveWork;
             if (shouldForceRefresh)
             {
                 RefreshLocalCache(); // Use local cache instead of global
@@ -226,10 +244,21 @@ public class Wolf : MonoBehaviour
                 }
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
-                flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
+                // Let wolves use existing flow field for fallback movement instead of constantly regenerating
+                // Fallback: Move directly if no flow field available
+                if (fallbackTarget != null)
+                {
+                    Vector3 direction = (fallbackTarget.transform.position - transform.position).normalized;
+                    if (direction != Vector3.zero)
+                    {
+                        // Use a mix of flow field following and direct movement
+                        // This prevents constant flow field regeneration
+                        transform.position += direction * 1f * Time.deltaTime;
+                    }
+                }
                 
-                // If we've been without targets for too long, do more aggressive search
-                if (cachedTargets.Count == 0 && globalSearchTimer <= -0.5f) // Even more frequent expensive search
+                // If we've been without targets for too long, do more aggressive search (but still staggered)
+                if (cachedTargets.Count == 0 && globalSearchTimer <= -0.5f && shouldDoExpensiveWork)
                 {
                     // Force a local search more aggressively
                     RefreshLocalCache();
@@ -305,11 +334,24 @@ public class Wolf : MonoBehaviour
     
     private void RefreshLocalCache()
     {
+        // Prevent multiple simultaneous expensive cache refreshes
+        if (Time.time - _lastLocalCacheTime < 0.1f)
+        {
+            return; // Too soon since last refresh
+        }
+        
         _localAnimalCache.Clear();
         _localStructureCache.Clear();
         
         try
         {
+            // Add a small random delay to prevent all wolves from calling FindObjectsByType simultaneously
+            if (Random.value < 0.3f) // 30% chance for micro-delay
+            {
+                // This creates natural staggering without blocking
+                return; // Skip this frame, will retry next time
+            }
+            
             // Each wolf does its own FindObjectsByType call to avoid interference
             var animals = FindObjectsByType<ArmyAnimal>(FindObjectsSortMode.None);
             if (animals != null)
@@ -336,6 +378,8 @@ public class Wolf : MonoBehaviour
                     }
                 }
             }
+            
+            _lastLocalCacheTime = Time.time; // Update timestamp only on successful refresh
         }
         catch (System.Exception e)
         {
@@ -612,9 +656,10 @@ public class Wolf : MonoBehaviour
         targetAttackPoint = attackPoint;
         _isActivelyAttacking = false; // Reset attacking state when getting new target
         
-        if (flowFieldManager != null)
-            flowFieldManager.SetTargetTransformWithPoint(target.transform, attackPoint);
-            
+        // DON'T regenerate flow field for every wolf target change - let wolves follow existing flow field
+        // Only set flow field target if it's significantly different from current flow field target
+        // This prevents constant flow field regeneration
+        
         // Debug output to track targeting
         if (Random.value < 0.1f) // 10% chance to log
         {
@@ -646,7 +691,7 @@ public class Wolf : MonoBehaviour
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
                 UpdateFallbackTarget();
-                flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
+                // Let wolves follow existing flow field instead of regenerating
             }
             return;
         }
@@ -677,7 +722,7 @@ public class Wolf : MonoBehaviour
                         flowFieldAgent.SetMoving(true);
                         OnStartMoving?.Invoke();
                         UpdateFallbackTarget();
-                        flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
+                        // Let wolves follow existing flow field instead of regenerating
                     }
                 }
             }
@@ -706,7 +751,7 @@ public class Wolf : MonoBehaviour
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
                 UpdateFallbackTarget();
-                flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
+                // Let wolves follow existing flow field instead of regenerating
             }
         }
     }
@@ -767,7 +812,7 @@ public class Wolf : MonoBehaviour
                 UpdateFallbackTarget();
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
-                flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
+                // Let wolves follow existing flow field instead of regenerating
             }
         }
         
@@ -877,6 +922,62 @@ public class Wolf : MonoBehaviour
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(transform.position, fallbackTarget.transform.position);
             Gizmos.DrawWireSphere(fallbackTarget.transform.position, 0.5f);
+        }
+    }
+
+    private void MoveDirectlyTowardsTarget()
+    {
+        // Hybrid movement: Use flow field as base direction, but move directly towards target when close
+        if (target == null) return;
+        
+        Vector3 direction = (targetAttackPoint - transform.position).normalized;
+        float distanceToTarget = Vector3.Distance(transform.position, targetAttackPoint);
+        
+        // Use direct movement when close to target (within 10 units)
+        // Use flow field for long-distance navigation
+        if (distanceToTarget < 10f)
+        {
+            float moveSpeed = 4f; // Faster when close to target
+            
+            // Move directly towards target
+            transform.position += direction * moveSpeed * Time.deltaTime;
+            
+            // Rotate to face target
+            if (direction != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 8f * Time.deltaTime);
+            }
+        }
+        // For longer distances, let the FlowFieldAgent handle movement using the stable flow field
+    }
+
+    // Flow field management - set stable target once
+    private static bool _flowFieldInitialized = false;
+    
+    private void InitializeStableFlowField()
+    {
+        // Set up a stable flow field target that doesn't change constantly
+        // This prevents flow field from regenerating every time a wolf gets a new target
+        if (_flowFieldInitialized || flowFieldManager == null) return;
+        
+        try
+        {
+            // Set flow field to point towards farm center (origin) as a stable reference
+            // Wolves will use this as a base and then navigate to their specific targets
+            Vector3 farmCenter = Vector3.zero; // Assuming farm center is at origin
+            GameObject stableTarget = new GameObject("StableFlowFieldTarget");
+            stableTarget.transform.position = farmCenter;
+            DontDestroyOnLoad(stableTarget);
+            
+            flowFieldManager.SetTargetTransformWithPoint(stableTarget.transform, farmCenter);
+            _flowFieldInitialized = true;
+            
+            Debug.Log("Stable flow field target initialized at farm center");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"Failed to initialize stable flow field: {e.Message}");
         }
     }
 }

@@ -25,14 +25,10 @@ public class StructureItemUI : MonoBehaviour
         if (icon != null)
             icon.sprite = structure.icon;
         else
-            Debug.LogWarning("Icon Image is not assigned!");
-
-        if (nameText != null)
+            if (nameText != null)
             nameText.text = structure.structureName;
         else
-            Debug.LogWarning("Name Text is not assigned!");
-
-        // Display cost if we have a cost text component
+            // Display cost if we have a cost text component
         if (costText != null)
             costText.text = $"{structure.cost} Gold";
 
@@ -42,9 +38,7 @@ public class StructureItemUI : MonoBehaviour
             selectButton.onClick.AddListener(() => SelectStructure());
         }
         else
-            Debug.LogWarning("Select Button is not assigned!");
-            
-        // Check affordability when setting up
+            // Check affordability when setting up
         UpdateAffordability();
         
         // Subscribe to money changes
@@ -58,7 +52,6 @@ public class StructureItemUI : MonoBehaviour
     {
         if (data != null)
         {
-            Debug.Log($"Selected structure: {data.structureName}");
             // Pass the StructureData to the BuildController
             BuildController controller = FindFirstObjectByType<BuildController>();
             if (controller != null)

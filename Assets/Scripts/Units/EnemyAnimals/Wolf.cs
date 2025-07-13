@@ -73,8 +73,7 @@ public class Wolf : MonoBehaviour
         // Initialize growl timer
         growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
 
-        Debug.Log($"🐺 Wolf {name} initialized at {transform.position}");
-    }
+        }
 
     private void Start()
     {
@@ -116,7 +115,6 @@ public class Wolf : MonoBehaviour
         {
             OnGrowl?.Invoke();
             growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
-            // Debug.Log($"Wolf {name} triggered growl, next growl in {growlTimer:F1} seconds");
         }
 
         if (targetUpdateTimer <= 0f)
@@ -158,6 +156,7 @@ public class Wolf : MonoBehaviour
 
             if (target == null)
             {
+                // If no targets found, move to fallback position
                 if (fallbackMoveTimer <= 0f)
                 {
                     UpdateFallbackTarget();
@@ -166,7 +165,18 @@ public class Wolf : MonoBehaviour
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
                 flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
-                // Debug.Log($"Wolf {name} no targets, moving to fallback target at {fallbackTarget.transform.position}");
+                
+                // If we've been without targets for too long and it's close to dawn, consider despawning
+                if (cachedTargets.Count == 0 && globalSearchTimer <= 0f)
+                {
+                    // Force a global search to make sure there really are no targets
+                    CacheTargets();
+                    if (cachedTargets.Count == 0)
+                    {
+                        // No targets found anywhere - move towards center of map or despawn if near dawn
+                        UpdateFallbackTargetTowardsCenter();
+                    }
+                }
             }
         }
     }
@@ -174,15 +184,14 @@ public class Wolf : MonoBehaviour
     private void CacheTargets()
     {
         cachedTargets.Clear();
-        var chickens = FindObjectsOfType<ArmyAnimal>()
+        var chickens = FindObjectsByType<ArmyAnimal>(FindObjectsSortMode.None)
             .Where(a => a != null && a.gameObject != null && a.gameObject.activeInHierarchy)
             .Select(a => a.gameObject);
-        var structures = FindObjectsOfType<Structure>()
+        var structures = FindObjectsByType<Structure>(FindObjectsSortMode.None)
             .Where(s => s != null && s.gameObject != null && s.gameObject.activeInHierarchy && !s.isIndestructible)
             .Select(s => s.gameObject);
         cachedTargets.AddRange(chickens);
         cachedTargets.AddRange(structures);
-        // Debug.Log($"Wolf {name} cached {cachedTargets.Count} potential targets (Chickens={chickens.Count()}, Structures={structures.Count()})");
     }
 
     private void FindNearbyTarget()
@@ -192,8 +201,6 @@ public class Wolf : MonoBehaviour
         GameObject bestTarget = null;
         Vector3 bestAttackPoint = Vector3.zero;
         float bestScore = float.MinValue;
-
-        // Debug.Log($"Wolf {name} checking nearby targets, found {colliders.Length} colliders");
 
         foreach (Collider col in colliders)
         {
@@ -207,14 +214,12 @@ public class Wolf : MonoBehaviour
                 bestTarget = go;
                 bestAttackPoint = attackPoint;
                 bestScore = score;
-                // Debug.Log($"Wolf {name} considered {go.name} (Layer={LayerMask.LayerToName(go.layer)}, Score={score:F2})");
             }
         }
 
         if (bestTarget != null)
         {
             SetTarget(bestTarget, bestAttackPoint);
-            // Debug.Log($"Wolf {name} selected nearby target {bestTarget.name}");
         }
     }
 
@@ -242,11 +247,10 @@ public class Wolf : MonoBehaviour
         if (bestTarget != null)
         {
             SetTarget(bestTarget, bestAttackPoint);
-            // Debug.Log($"Wolf {name} selected priority target {bestTarget.name}");
         }
         else
         {
-            // Debug.Log($"Wolf {name} found no valid targets");
+            target = null;
         }
     }
 
@@ -254,8 +258,9 @@ public class Wolf : MonoBehaviour
     {
         bool valid = go != null && go && go.activeInHierarchy && !go.Equals(null);
         if (!valid && go != null)
-            Debug.Log("");
-            // Debug.Log($"Wolf {name} rejected target {go.name}: Null={go == null}, Exists={!go}, Active={go.activeInHierarchy}, Destroyed={go.Equals(null)}");
+        {
+            cachedTargets.Remove(go);
+        }
         return valid;
     }
 
@@ -291,7 +296,6 @@ public class Wolf : MonoBehaviour
 
         if (priority <= 0)
         {
-            // Debug.Log($"Wolf {name} rejected {go.name}: Priority={priority} (No ArmyAnimal or valid Structure)");
             return float.MinValue;
         }
 
@@ -305,7 +309,6 @@ public class Wolf : MonoBehaviour
         Collider col = go.GetComponent<Collider>();
         if (col != null && col)
             return col.ClosestPoint(fromPosition);
-        // Debug.LogWarning($"Wolf {name} target {go.name} has no collider, using position");
         return go.transform.position;
     }
 
@@ -327,8 +330,6 @@ public class Wolf : MonoBehaviour
 
         target = newTarget;
         targetAttackPoint = attackPoint;
-        // Debug.Log($"Wolf {name} targeting {target.name} at attack point {targetAttackPoint}");
-
         if (flowFieldManager != null)
             flowFieldManager.SetTargetTransformWithPoint(target.transform, attackPoint);
     }
@@ -341,8 +342,7 @@ public class Wolf : MonoBehaviour
 
         if (target == null || !IsValidTarget(target))
         {
-            // Debug.LogWarning($"Wolf {name} aborted attack: Target is invalid");
-            target = null;
+                        target = null;
             FindTargetWithPriority();
             return;
         }
@@ -367,8 +367,6 @@ public class Wolf : MonoBehaviour
     public void TakeDamage(int amount)
     {
         currentHealth = Mathf.Max(0, currentHealth - amount);
-        // Debug.Log($"Wolf {name} took {amount} damage. Health: {currentHealth}/{maxHealth}");
-
         OnHurt?.Invoke();
 
         if (currentHealth <= 0)
@@ -379,7 +377,17 @@ public class Wolf : MonoBehaviour
     {
         flowFieldAgent.SetMoving(false);
         OnDeath?.Invoke();
-        // Debug.Log($"Wolf {name} died at {transform.position}");
+        
+        // Unregister from managers before destroying
+        if (nightManager != null)
+            nightManager.UnregisterWolf(this);
+        Structure.UnregisterWolf(this);
+        
+        // Clean up fallback target
+        if (fallbackTarget != null)
+            Destroy(fallbackTarget);
+            
+        // Actually destroy the wolf
         Destroy(gameObject);
     }
 
@@ -387,7 +395,7 @@ public class Wolf : MonoBehaviour
     {
         if (!isNight)
         {
-            // Debug.Log($"Wolf {name} dying due to day transition");
+            // Wolves should die/despawn when day comes
             Die();
         }
     }
@@ -396,13 +404,11 @@ public class Wolf : MonoBehaviour
     {
         if (destroyedTarget == target)
         {
-            // Debug.Log($"Wolf {name} current target {destroyedTarget?.name} destroyed, clearing target");
             target = null;
             targetAttackPoint = Vector3.zero;
             FindTargetWithPriority();
         }
         cachedTargets.Remove(destroyedTarget);
-        // Debug.Log($"Wolf {name} removed destroyed target {destroyedTarget?.name ?? "null"} from cache");
     }
 
     private void UpdateFallbackTarget()
@@ -410,7 +416,20 @@ public class Wolf : MonoBehaviour
         Vector2 randomCircle = Random.insideUnitCircle * fallbackMoveRadius;
         Vector3 newPosition = transform.position + new Vector3(randomCircle.x, 0, randomCircle.y);
         fallbackTarget.transform.position = newPosition;
-        // Debug.Log($"Wolf {name} updated fallback target to {newPosition}");
+    }
+
+    private void UpdateFallbackTargetTowardsCenter()
+    {
+        // Move towards the center of the map when no targets exist
+        Vector3 centerPosition = Vector3.zero; // Assuming map center is at origin
+        Vector3 directionToCenter = (centerPosition - transform.position).normalized;
+        Vector3 newPosition = transform.position + directionToCenter * fallbackMoveRadius;
+        fallbackTarget.transform.position = newPosition;
+        
+        if (Random.value < 0.1f) // 10% chance to log this behavior
+        {
+            Debug.Log($"Wolf {name} moving towards center - no targets found");
+        }
     }
 
     private void OnDrawGizmos()

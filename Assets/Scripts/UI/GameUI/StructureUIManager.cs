@@ -75,8 +75,6 @@ public class StructureUIManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"ShowStructureUI called for {structure.GetStructureName()}");
-
         HideStructureUI(); // Ensure previous UI is closed
 
         currentSelectedStructure = structure;
@@ -85,11 +83,9 @@ public class StructureUIManager : MonoBehaviour
         GameObject prefab = structure.structureData?.uiPrefab ?? defaultStructureUI;
         if (prefab == null)
         {
-            Debug.LogWarning("No UI prefab assigned, using default.");
             prefab = defaultStructureUI;
             if (prefab == null)
             {
-                Debug.LogWarning("No default structure UI prefab assigned!");
                 return;
             }
         }
@@ -116,8 +112,7 @@ public class StructureUIManager : MonoBehaviour
         if (structureUI != null)
         {
             structureUI.Initialize(structure);
-            Debug.Log("UI initialized successfully");
-        }
+            }
         else
         {
             Debug.LogWarning($"UI prefab for {structure.GetStructureName()} doesn't implement IStructureUI interface");
@@ -158,7 +153,6 @@ public class StructureUIManager : MonoBehaviour
     {
         if (destroyedStructure == currentSelectedStructure)
         {
-            Debug.Log($"Selected structure {destroyedStructure.GetStructureName()} was destroyed - hiding UI");
             if (activeUI != null)
             {
                 activeUI.SetActive(false);

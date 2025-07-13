@@ -35,8 +35,6 @@ public class LoadingScreenController : MonoBehaviour
 
         // Start loading the target scene
         string targetScene = PlayerPrefs.GetString("TargetScene", "MainScene");
-        Debug.Log("Starting async load of scene: " + targetScene);
-
         sceneLoadOperation = SceneManager.LoadSceneAsync(targetScene);
         sceneLoadOperation.allowSceneActivation = false;
     }
@@ -94,7 +92,6 @@ public class LoadingScreenController : MonoBehaviour
         if (sceneLoadOperation != null)
         {
             sceneLoadOperation.allowSceneActivation = true;
-            Debug.Log("Scene activated: " + PlayerPrefs.GetString("TargetScene", "MainScene"));
-        }
+            }
     }
 }

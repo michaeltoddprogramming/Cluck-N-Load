@@ -9,7 +9,6 @@
 //     [SerializeField] private TextMeshProUGUI carrotAmount;
 //     [SerializeField] private TextMeshProUGUI storageAmount;
 
-
 //     private InventoryManager inventoryManager; 
 //     private bool isSiloStructure = true;
 //     public override void Initialize(Structure structure)
@@ -25,7 +24,6 @@
 
 //         if (!isSiloStructure)
 //         {
-//             Debug.LogWarning($"AnimalStructureUI used with non-animal structure: {structure.GetType().Name}");
 //             HideAnimalSpecificUI();
 //             return;
 //         }
@@ -43,8 +41,7 @@
 //         }
 //         else
 //         {
-//             Debug.LogWarning("Feed button is not assigned in the AnimalStructureUI prefab!");
-//             if (feedButton != null) feedButton.gameObject.SetActive(false);
+//             //             if (feedButton != null) feedButton.gameObject.SetActive(false);
 //         }
 
 //         if (collectButton != null)
@@ -58,8 +55,7 @@
 //         }
 //         else
 //         {
-//             Debug.LogWarning("Collect button is not assigned in the AnimalStructureUI prefab!");
-//             if (collectButton != null) collectButton.gameObject.SetActive(false);
+//             //             if (collectButton != null) collectButton.gameObject.SetActive(false);
 //         }
 //     }
     
@@ -74,8 +70,6 @@
         
 //     }
 // }
-
-
 
 using UnityEngine;
 using TMPro;
@@ -111,7 +105,6 @@ public class SiloUI : BaseStructureUI
 
         if (!isSiloStructure)
         {
-            Debug.LogWarning($"SiloUI used with non-silo structure: {structure.GetType().Name}");
             HideSiloSpecificUI();
             return;
         }

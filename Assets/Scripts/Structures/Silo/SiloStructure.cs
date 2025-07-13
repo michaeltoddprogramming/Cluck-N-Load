@@ -8,14 +8,12 @@ public class SiloStructure : Structure
 
         if (structureData != null && structureData.type != StructureType.Silo)
         {
-            Debug.LogWarning($"{gameObject.name} has SiloStructure script but StructureData.type is {structureData.type}, expected Silo.");
-        }
+            }
 
         InventoryManager.Instance.RegisterSilo(this);
         CropStructure.UpdateAllCropSynergies();
         AnimalStructure.UpdateAllAnimalSynergies();
     }
-
 
     protected override void OnDestroy()
     {

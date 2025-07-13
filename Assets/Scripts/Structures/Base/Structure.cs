@@ -6,11 +6,8 @@ using System.Collections;
 
 public class Structure : MonoBehaviour
 {
-    
 
     public StructureData StructureData => structureData; // Public property for external access
-    
-
 
     [Header("Structure Properties")]
     [Tooltip("Reference to structure data asset")]

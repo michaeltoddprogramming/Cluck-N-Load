@@ -105,9 +105,7 @@ public class OwnershipController : MonoBehaviour
     private void HandleShopOpened()
     {
         if (logDebugInfo)
-            Debug.Log("Shop opened - ensuring ownership is visible");
-        
-        // Only refresh the grid texture without recalculating ownership
+            // Only refresh the grid texture without recalculating ownership
         RefreshGridTexture();
     }
     
@@ -151,8 +149,8 @@ public class OwnershipController : MonoBehaviour
         // Convert to grid coordinates
         Vector2Int centerCell = gridController.WorldToGridCoords(center);
         if (logDebugInfo)
-            Debug.Log($"Applying ownership around cell: {centerCell}, radius: {ownershipRadius}, shape blend: {shapeBlend}");
-
+            Debug.Log($"Updating ownership around center: {center}");
+            
         int gridWidth = gridDataGenerator.GetGridWidth();
         int gridHeight = gridDataGenerator.GetGridHeight();
 
@@ -226,9 +224,7 @@ public class OwnershipController : MonoBehaviour
         }
 
         if (logDebugInfo)
-            Debug.Log($"Changed ownership for {cellsChanged} cells");
-
-        // After ownership is applied, update visibility
+            // After ownership is applied, update visibility
         UpdateCellVisibility();
         
         // Update the grid texture
@@ -263,15 +259,13 @@ public class OwnershipController : MonoBehaviour
             if (!cell.flags.isVisible)
             {
                 if (logDebugInfo)
-                    Debug.Log($"Cannot buy invisible land at grid position: ({cellCoords.x}, {cellCoords.y})");
-                return;
+                    return;
             }
             
             if (cell.flags.isOwned)
             {
                 if (logDebugInfo)
-                    Debug.Log($"Cell at ({cellCoords.x}, {cellCoords.y}) is already owned");
-                return;
+                    return;
             }
             
             // Set cell as owned and mark it as manually purchased
@@ -285,9 +279,7 @@ public class OwnershipController : MonoBehaviour
             }
             
             if (logDebugInfo)
-                Debug.Log($"Bought land at grid position: ({cellCoords.x}, {cellCoords.y})");
-            
-            // Update visibility after buying to expand the visible area
+                // Update visibility after buying to expand the visible area
             UpdateCellVisibility();
             
             // Update the grid texture

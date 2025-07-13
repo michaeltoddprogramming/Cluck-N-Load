@@ -27,7 +27,6 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (!isBarracksStructure)
         {
-            Debug.LogWarning($"BarracksStructureUI used with non-barracks structure: {structure.GetType().Name}");
             HideBarracksUI();
             return;
         }
@@ -39,7 +38,6 @@ public class BarracksStructureUI : BaseStructureUI
             recruitButton.onClick.RemoveAllListeners();
             recruitButton.onClick.AddListener(() =>
             {
-                Debug.Log("Recruit button clicked!");
                 barracksStructure.RecruitAnimals(recruitAmount);
             });
         }
@@ -145,7 +143,6 @@ public class BarracksStructureUI : BaseStructureUI
             flagPlacementIndicator.SetActive(false);
         }
 
-
     }
 
     private void UpdateUI()
@@ -191,8 +188,7 @@ public class BarracksStructureUI : BaseStructureUI
                 int cost = barracksStructure.GetRecruitmentCost() * recruitAmount;
                 buttonText.text = $"Recruit ({cost} gold)";
             }
-            Debug.Log($"Recruit button interactable: {canRecruit}");
-        }
+            }
 
         if (placeFlagButton != null && !isPlacingFlag)
         {
@@ -216,7 +212,6 @@ public class BarracksStructureUI : BaseStructureUI
     private void HideBarracksUI()
     {
 
-
         if (statusText != null)
         {
             statusText.text = "Not a barracks structure";
@@ -227,7 +222,6 @@ public class BarracksStructureUI : BaseStructureUI
         if (placeFlagButton != null) placeFlagButton.gameObject.SetActive(false);
         if (setFlagColorButton != null) setFlagColorButton.gameObject.SetActive(false);
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(false);
-
 
     }
 
@@ -242,7 +236,5 @@ public class BarracksStructureUI : BaseStructureUI
         // Call base OnDestroy
         base.OnDestroy();
     }
-    
 
-    
 }

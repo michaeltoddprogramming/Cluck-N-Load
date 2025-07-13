@@ -71,8 +71,6 @@
 //         produceAmounts = new int[animals.Length];
 //         boostedProducts = new int[animals.Length];
 
-
-
 //         // if (openButton != null)
 //         //     openButton.onClick.AddListener(OpenPanel);
 //         if (closeButton != null)
@@ -98,7 +96,6 @@
 //         populatePricePanel();
 //     }
 
-
 //     public void populatePricePanel()
 //     {
 //         cropAmounts = inventoryManager.getInventory(crops);
@@ -117,7 +114,6 @@
 //         cheese.text = $"$ {produceAmounts[3]}";
 //         wool.text = $"$ {produceAmounts[4]}";
 
-
 //         eggsBonus.text = $"{boostedProducts[0]}%";
 //         milkBonus.text = $"{boostedProducts[1]}%";
 //         baconBonus.text = $"{boostedProducts[2]}%";
@@ -134,11 +130,9 @@
 
 //     // public void OpenPanel()
 //     // {
-//     //     Debug.Log("isdujrgjhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhssieuhtgiuhrestg");
-//     //     if (panelRoot != null)
+//     //     //     //     if (panelRoot != null)
 //     //     {
-//     //     Debug.Log("isdujrgjhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhssieuhtgiuhrestg");
-//     //         panelRoot.SetActive(true);
+//     //     //     //         panelRoot.SetActive(true);
 //     //         audioSourceOpen.Play();
 //     //     }
 //     // }
@@ -153,7 +147,6 @@
 //         //     pricePanelInstance = Instantiate(pricePanelPrefab, transform.parent); // Or use a Canvas as parent
 //         // }
 //         // pricePanelInstance.SetActive(true);
-
 
 //         if (pricePanelInstance == null)
 //         {
@@ -186,8 +179,6 @@
 //         }
 //     }
 // }
-
-
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -288,8 +279,7 @@ public class PricePanelUI : MonoBehaviour
     {
         if (activePricePanelInstance != null && activePricePanelInstance.activeInHierarchy)
         {
-            // Debug.Log("aewrgfiuhlbjofhuiarpgweiuoherfgouihgerohuiferg");
-            populatePricePanel();
+            // populatePricePanel();
         }
     }
 
@@ -317,8 +307,7 @@ public class PricePanelUI : MonoBehaviour
         // Example: Debug log to see the multipliers
         // for (int i = 0; i < cropTypes.Length; i++)
         // {
-        //     Debug.Log($"{cropTypes[i]} multiplier: {cropMultipliers[i]}");
-        // }
+        //     // }
 
         // int sun = cropAmounts[0];
         // int wheat = cropAmounts[1];
@@ -327,7 +316,6 @@ public class PricePanelUI : MonoBehaviour
         sunflowerBonus.text = $"{(cropMultipliers[0] * 100) / 3}%";
         wheatBonus.text = $"{(cropMultipliers[1] * 100) / 3}%";
         carrotBonus.text = $"{(cropMultipliers[2] * 100) / 3}%";
-
 
     }
 
@@ -375,8 +363,7 @@ public class PricePanelUI : MonoBehaviour
     //         Canvas canvas = FindFirstObjectByType<Canvas>();
     //         if (canvas == null)
     //         {
-    //             Debug.LogError("No Canvas found in scene.");
-    //             return;
+        //             return;
     //         }
 
     //         pricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
@@ -398,8 +385,7 @@ public class PricePanelUI : MonoBehaviour
     //         Canvas canvas = FindFirstObjectByType<Canvas>();
     //         if (canvas == null)
     //         {
-    //             Debug.LogError("No Canvas found in scene.");
-    //             return;
+        //             return;
     //         }
 
     //         pricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
@@ -410,8 +396,7 @@ public class PricePanelUI : MonoBehaviour
 
     //         if (panelUI.animalStructure == null)
     //         {
-    //             Debug.LogError("AnimalStructure not found in scene!");
-    //         }
+        //         }
 
     //         panelUI.populatePricePanel();
     //     }
@@ -419,7 +404,6 @@ public class PricePanelUI : MonoBehaviour
     //     pricePanelInstance.SetActive(true);
     //     audioSourceOpen?.Play();
     // }
-
 
     // public void ClosePanel()
     // {
@@ -432,11 +416,9 @@ public class PricePanelUI : MonoBehaviour
 
     //     public void ClosePanel()
     // {
-    //         Debug.Log("asilhjkbfgdr seduoghriouihjgertso;uhjegsrtouhegrtsuhoiepgrts");
-    //     if (pricePanelInstance != null)
+        //     if (pricePanelInstance != null)
     //         {
-    //         Debug.Log("asilhjkbfgdr seduoghriouihjgertso;uhjegsrtouhegrtsuhoiepgrts");
-    //             audioSourceClose?.Play();
+        //             audioSourceClose?.Play();
     //             Destroy(pricePanelInstance);
     //             pricePanelInstance = null;
     //         }
@@ -444,19 +426,15 @@ public class PricePanelUI : MonoBehaviour
 
     // public void ClosePanel()
     // {
-    //     Debug.Log("ClosePanel called. pricePanelInstance is " + (pricePanelInstance == null ? "null" : "not null"));
-
-    //     if (pricePanelInstance != null)
+    //     //     if (pricePanelInstance != null)
     //     {
-    //         Debug.Log("Closing panel and destroying instance.");
-    //         audioSourceClose?.Play();
+    //         //         audioSourceClose?.Play();
     //         Destroy(pricePanelInstance);
     //         pricePanelInstance = null;
     //     }
     //     else
     //     {
-    //         Debug.LogWarning("ClosePanel called but pricePanelInstance is null.");
-    //     }
+        //     }
     // }
 
     public void OpenPanel()
@@ -517,7 +495,6 @@ public class PricePanelUI : MonoBehaviour
 //     if (activePricePanelInstance != null)
 //     {
 //             if (audioClipClose == null)
-//                 Debug.Log(":agesrdfhubijolhujio;gfsdohj;grsfeho;ujgeebhjuo;gobhjer;tus");
 //             audioSourceClose.PlayOneShot(audioClipClose);
 
 //         Destroy(activePricePanelInstance);
@@ -525,7 +502,6 @@ public class PricePanelUI : MonoBehaviour
 //     }
 //     else
 //     {
-//         Debug.LogWarning("ClosePanel called but no active panel instance.");
 //     }
 // }
 }

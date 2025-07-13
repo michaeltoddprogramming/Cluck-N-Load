@@ -98,8 +98,7 @@ public class PerformanceMonitor : MonoBehaviour
         if (fpsText != null) fpsText.gameObject.SetActive(showPerformanceUI);
         if (memoryText != null) memoryText.gameObject.SetActive(showPerformanceUI);
 
-        Debug.Log($"Performance UI: {(showPerformanceUI ? "Enabled" : "Disabled")}");
-    }
+        }
 
     // Static methods for external use
     public static void LogPerformanceWarning(string message)
@@ -128,8 +127,7 @@ public class PerformanceMonitor : MonoBehaviour
     {
         if (enableProfiling)
         {
-            Debug.Log($"[METRIC] {metricName}: {value}");
-        }
+            }
     }
 
     private void OnDestroy()

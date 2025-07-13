@@ -61,8 +61,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (useGridMonitor && gridMonitor != null)
             {
                 gridMonitor.OnGridChanged += HandleGridChanged;
-                Debug.Log("FlowFieldManager connected to GridMonitor");
-            }
+                }
             
             // Generate initial flow field after a short delay
             Invoke("GenerateInitialFlowField", 0.5f);
@@ -94,8 +93,7 @@ namespace FarmDefender.Core.AI.FlowField
                     updateRequested = false;
                     destroyedBuildingsCounter = 0;
                     
-                    Debug.Log($"Flow field updated. Reason: {(targetChanged ? "Target changed" : "Building changes")}");
-                }
+                    }
             }
         }
         
@@ -116,8 +114,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (settings == null)
             {
                 settings = ScriptableObject.CreateInstance<FlowFieldSettings>();
-                Debug.LogWarning("No FlowFieldSettings assigned. Using default settings.");
-            }
+                }
             
             // Find GridController
             if (gridController == null)
@@ -165,8 +162,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (targetManager.IsValidTarget(target))
             {
                 GenerateFlowField(target);
-                Debug.Log($"Generated initial flow field to target: {target}");
-            }
+                }
             else
             {
                 Debug.LogWarning("Could not generate initial flow field: invalid target");
@@ -201,8 +197,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (buildModeActive && !isActive)
             {
                 updateRequested = true;
-                Debug.Log("Flow field update requested after exiting build mode");
-            }
+                }
             
             buildModeActive = isActive;
         }
@@ -219,8 +214,7 @@ namespace FarmDefender.Core.AI.FlowField
             {
                 // Request an update rather than updating immediately
                 updateRequested = true;
-                Debug.Log($"Flow field update requested after {destroyedBuildingsCounter} building destructions");
-            }
+                }
         }
         
         /// <summary>
@@ -285,8 +279,7 @@ namespace FarmDefender.Core.AI.FlowField
             if (targetManager.IsValidTarget(target))
             {
                 GenerateFlowField(target);
-                Debug.Log($"Manually triggered flow field generation to {target}");
-            }
+                }
             else
             {
                 Debug.LogWarning("Invalid target for flow field generation");
@@ -326,8 +319,7 @@ namespace FarmDefender.Core.AI.FlowField
                 }
             }
             
-            Debug.Log($"Grid obstacles: {obstacleCount} obstacles, {occupiedCount} occupied, {bothCount} both");
-        }
+            }
 
         public Dictionary<Vector2Int, float> GetFlowStrengthMap()
         {

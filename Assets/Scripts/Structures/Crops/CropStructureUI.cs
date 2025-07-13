@@ -31,8 +31,7 @@ public class CropStructureUI : BaseStructureUI
 
     public override void Initialize(Structure structure)
     {
-        
-    
+
         //make notification invisible
         notificationText.gameObject.SetActive(false);
 
@@ -51,7 +50,6 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning($"CropStructureUI used with non-crop structure: {structure.GetType().Name}");
             HideCropSpecificUI();
             return;
         }
@@ -62,13 +60,11 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Select Crop Panel is not assigned in the CropStructureUI prefab!");
-        }
+            }
 
         if (cropStatusText == null)
         {
-            Debug.LogWarning("Crop Status Text is not assigned in the CropStructureUI prefab!");
-        }
+            }
 
         if (nightManager == null)
         {
@@ -99,8 +95,7 @@ public class CropStructureUI : BaseStructureUI
         if (errorSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(errorSound);
-            Debug.Log("Crop Structure UI: Playing error sound");
-        }
+            }
     }
     
     // Add method to play success sounds
@@ -129,8 +124,7 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Plant Sunflower Button is not assigned!");
-        }
+            }
 
         if (plantWheatButton != null)
         {
@@ -147,8 +141,7 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Plant Wheat Button is not assigned!");
-        }
+            }
 
         if (plantCarrotsButton != null)
         {
@@ -165,8 +158,7 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Plant Carrots Button is not assigned!");
-        }
+            }
 
         if (harvestButton != null)
         {
@@ -183,8 +175,7 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Harvest Button is not assigned!");
-        }
+            }
 
         if (plantingClose != null)
         {
@@ -193,8 +184,7 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Planting Close Button is not assigned!");
-        }
+            }
     }
 
     // Add helper method to check if crops can be planted
@@ -240,8 +230,7 @@ public class CropStructureUI : BaseStructureUI
         {
             selectCropPanel.SetActive(true);
             UpdateUI();
-            Debug.Log("ShowSelectCropPanel: Panel opened");
-        }
+            }
         else
         {
             PlayErrorSound();
@@ -256,19 +245,16 @@ public class CropStructureUI : BaseStructureUI
         {
             selectCropPanel.SetActive(false);
             UpdateUI();
-            Debug.Log("closeSelectCropPanel: Panel closed");
-        }
+            }
         else
         {
-            Debug.LogWarning("Select Crop Panel is not assigned!");
-        }
+            }
     }
 
        public void plantCrop(int crop)
     {
         if (!isCropStructure || cropStructure == null)
         {
-            Debug.LogWarning("Cannot plant crop: No valid CropStructure assigned.");
             PlayErrorSound();
             return;
         }
@@ -299,7 +285,6 @@ public class CropStructureUI : BaseStructureUI
                 return;
         }
     
-        Debug.Log($"Attempting to plant {cropType} on {cropStructure.GetStructureName()}");
         cropStructure.Plant(cropType);
         PlaySound(plantSound); // Play planting sound on success
         closeSelectCropPanel();
@@ -324,27 +309,23 @@ public class CropStructureUI : BaseStructureUI
     {
         if (isCropStructure && cropStructure != null)
         {
-            Debug.Log($"Attempting to harvest {cropStructure.CurrentCropType} on {cropStructure.GetStructureName()}");
             string answer = cropStructure.Harvest();
 
             switch (answer)
             {
                 case "space":
-                    Debug.Log("Harvest unsuccessful there is no space in silo");
                     notificationText.gameObject.SetActive(true);
                     notificationText.color = Color.red;
                     notificationText.text = "Harvest unsuccessful: No space in silo";
                     PlayErrorSound();
                     break;
                 case "yes":
-                    Debug.Log("Harvest successful");
                     notificationText.gameObject.SetActive(true);
                     notificationText.color = Color.green;
                     notificationText.text = "Harvest successful";
                     PlaySound(harvestSound); // Play harvest sound on success
                     break;
                 case "ready":
-                    Debug.Log("Harvest unsuccessful: crop not ready");
                     notificationText.gameObject.SetActive(true);
                     notificationText.color = Color.red;
                     notificationText.text = "Harvest unsuccessful: Crop not ready";
@@ -420,33 +401,27 @@ public class CropStructureUI : BaseStructureUI
         {
             plantSunflowerButton.interactable = canPlant;
             UpdateButtonVisual(plantSunflowerButton, canPlant, "Sunflower");
-            Debug.Log($"SunflowerButton interactable: {canPlant}");
-        }
+            }
         if (plantWheatButton != null)
         {
             plantWheatButton.interactable = canPlant;
             UpdateButtonVisual(plantWheatButton, canPlant, "Wheat");
-            Debug.Log($"WheatButton interactable: {canPlant}");
-        }
+            }
         if (plantCarrotsButton != null)
         {
             plantCarrotsButton.interactable = canPlant;
             UpdateButtonVisual(plantCarrotsButton, canPlant, "Carrots");
-            Debug.Log($"CarrotsButton interactable: {canPlant}");
-        }
+            }
         if (harvestButton != null)
         {
             harvestButton.interactable = cropReady;
             UpdateButtonVisual(harvestButton, cropReady, "Harvest");
-            Debug.Log($"HarvestButton interactable: {cropReady}");
-        }
+            }
         if (selectCropPanel != null)
         {
             selectCropPanel.SetActive(canPlant && selectCropPanel.activeSelf);
-            Debug.Log($"SelectCropPanel active: {selectCropPanel.activeSelf}");
+            }
         }
-        Debug.Log($"UpdateUI: canPlant={canPlant}, IsDay={nightManager.IsDay}, IsGrowing={isGrowing}, CropReady={cropReady}, Hours={nightManager.Hours}");
-    }
 
                 private void UpdateButtonVisual(Button button, bool isInteractable, string action)
         {

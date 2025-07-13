@@ -110,7 +110,6 @@ public class GhostPlacer : MonoBehaviour
     {
         if (ghostMaterial == null)
         {
-            Debug.LogWarning("Ghost material not assigned! Using original materials.");
             return;
         }
 

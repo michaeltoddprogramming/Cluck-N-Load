@@ -64,8 +64,7 @@ public class ObjectPool : MonoBehaviour
             poolDictionary.Add(pool.tag, objectPool);
         }
 
-        Debug.Log($"ObjectPool initialized with {pools.Count} pool types");
-    }
+        }
 
     /// <summary>
     /// Spawns an object from the pool
@@ -177,8 +176,7 @@ public class ObjectPool : MonoBehaviour
         }
 
         poolDictionary.Add(tag, objectPool);
-        Debug.Log($"Created new pool: {tag} with {size} objects");
-    }
+        }
 
     /// <summary>
     /// Gets the current size of a pool

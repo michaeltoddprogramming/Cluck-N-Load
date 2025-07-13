@@ -258,13 +258,11 @@ public class UnitSpawner : MonoBehaviour
 
         // Validate AudioSource clips
         if (attackAudioSource.clip == null)
-            Debug.LogWarning($"Attack AudioSource on wolf at {spawnPosition} has no clip assigned");
+            Debug.LogWarning("Attack audio clip not assigned to Wolf");
         if (growlAudioSource.clip == null)
-            Debug.LogWarning($"Growl AudioSource on wolf at {spawnPosition} has no clip assigned");
+            Debug.LogWarning("Growl audio clip not assigned to Wolf");
         if (hurtAudioSource.clip == null)
-            Debug.LogWarning($"Hurt AudioSource on wolf at {spawnPosition} has no clip assigned");
-
-        Debug.Log($"Wolf spawned at {spawnPosition}");
+            Debug.LogWarning("Hurt audio clip not assigned to Wolf");
 
         Wolf wolf = wolfInstance.GetComponent<Wolf>();
         if (wolf == null)
@@ -283,24 +281,21 @@ public class UnitSpawner : MonoBehaviour
             if (attackAudioSource != null && attackAudioSource.clip != null)
             {
                 attackAudioSource.Play();
-                Debug.Log($"Wolf {wolf.name} played attack sound at {wolf.transform.position}");
-            }
+                }
         };
         wolf.OnGrowl += () =>
         {
             if (growlAudioSource != null && growlAudioSource.clip != null)
             {
                 growlAudioSource.Play();
-                Debug.Log($"Wolf {wolf.name} played growl sound at {wolf.transform.position}");
-            }
+                }
         };
         wolf.OnHurt += () =>
         {
             if (hurtAudioSource != null && hurtAudioSource.clip != null)
             {
                 hurtAudioSource.Play();
-                Debug.Log($"Wolf {wolf.name} played hurt sound at {wolf.transform.position}");
-            }
+                }
         };
 
         return wolfInstance.GetComponent<Unit>();

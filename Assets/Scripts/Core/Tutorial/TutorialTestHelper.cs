@@ -20,8 +20,7 @@ public class TutorialTestHelper : MonoBehaviour
             if (TutorialManager.Instance != null)
             {
                 TutorialManager.Instance.StartTutorial();
-                Debug.Log("Tutorial started manually");
-            }
+                }
         }
         
         if (Input.GetKeyDown(KeyCode.R))
@@ -30,8 +29,7 @@ public class TutorialTestHelper : MonoBehaviour
             if (FeatureUnlockManager.Instance != null)
             {
                 FeatureUnlockManager.Instance.ResetProgress();
-                Debug.Log("Tutorial progress reset");
-            }
+                }
         }
         
         if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -40,8 +38,7 @@ public class TutorialTestHelper : MonoBehaviour
             if (TutorialManager.Instance != null)
             {
                 TutorialManager.Instance.OnConditionMet(TutorialCondition.CameraMoved);
-                Debug.Log("Camera moved condition triggered");
-            }
+                }
         }
         
         if (Input.GetKeyDown(KeyCode.Alpha2))
@@ -50,8 +47,7 @@ public class TutorialTestHelper : MonoBehaviour
             if (TutorialManager.Instance != null)
             {
                 TutorialManager.Instance.OnConditionMet(TutorialCondition.ShopOpened);
-                Debug.Log("Shop opened condition triggered");
-            }
+                }
         }
         
         if (Input.GetKeyDown(KeyCode.Alpha3))
@@ -60,8 +56,7 @@ public class TutorialTestHelper : MonoBehaviour
             if (TutorialManager.Instance != null)
             {
                 TutorialManager.Instance.OnConditionMet(TutorialCondition.FirstStructurePlaced);
-                Debug.Log("First structure placed condition triggered");
-            }
+                }
         }
         
         if (Input.GetKeyDown(KeyCode.Alpha4))
@@ -70,8 +65,7 @@ public class TutorialTestHelper : MonoBehaviour
             if (TutorialManager.Instance != null)
             {
                 TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
-                Debug.Log("Night started condition triggered");
-            }
+                }
         }
     }
     

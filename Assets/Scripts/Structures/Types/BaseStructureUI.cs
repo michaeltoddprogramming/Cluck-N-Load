@@ -46,8 +46,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
         }
         else
         {
-            Debug.LogWarning("CloseButton not assigned in BaseStructureUI prefab!");
-        }
+            }
 
         // Set move button action
         if (moveButton != null)
@@ -60,8 +59,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
                 {
                     buildController.StartMoveModeForStructure(structure);
                     StructureUIManager.Instance?.HideStructureUI();
-                    Debug.Log($"Move button clicked for {structure.GetStructureName()}");
-                }
+                    }
                 else
                 {
                     Debug.LogError("BuildController not found, cannot start move mode!");
@@ -70,8 +68,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
         }
         else
         {
-            Debug.LogWarning("MoveButton not assigned in BaseStructureUI prefab!");
-        }
+            }
     }
 
     protected virtual void UpdateHealthDisplay()

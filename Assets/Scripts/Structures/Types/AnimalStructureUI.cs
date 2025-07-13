@@ -24,8 +24,6 @@ public class AnimalStructureUI : BaseStructureUI
         {
             animalStructure = (AnimalStructure)structure;
             animalStructure.OnAnimalCountChanged += UpdateUI;
-            Debug.Log($"{structure.GetStructureName()} AnimalStructureUI: Subscribed to OnAnimalCountChanged");
-
             animalStructure.PlayBackgroundNoise();
         }
 
@@ -37,7 +35,6 @@ public class AnimalStructureUI : BaseStructureUI
 
         if (!isAnimalStructure)
         {
-            Debug.LogWarning($"AnimalStructureUI used with non-animal structure: {structure.GetType().Name}");
             HideAnimalSpecificUI();
             return;
         }
@@ -73,8 +70,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Feed button not assigned in AnimalStructureUI prefab!");
-        }
+            }
 
         if (collectButton != null)
         {
@@ -87,8 +83,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Collect button not assigned in AnimalStructureUI prefab!");
-        }
+            }
 
         if (buyOneAnimalButton != null)
         {
@@ -101,8 +96,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Buy One Animal button not assigned in AnimalStructureUI prefab!");
-        }
+            }
 
         if (buyFiveAnimalsButton != null)
         {
@@ -115,8 +109,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
         else
         {
-            Debug.LogWarning("Buy Five Animals button not assigned in AnimalStructureUI prefab!");
-        }
+            }
     }
 
     // Remove the Update method since we're using event-driven updates

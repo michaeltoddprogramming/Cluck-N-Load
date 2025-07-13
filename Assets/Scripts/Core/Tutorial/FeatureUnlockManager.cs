@@ -151,8 +151,7 @@ public class FeatureUnlockManager : MonoBehaviour
                 break;
         }
 
-        Debug.Log($"Feature unlocked: {featureName}");
-    }
+        }
 
     private void AddPulseEffect(GameObject target)
     {

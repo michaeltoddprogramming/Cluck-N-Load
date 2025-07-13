@@ -81,8 +81,7 @@ public class TextureGenerator : MonoBehaviour
         targetMaterial.SetVector("_GridOrigin", gridData.GetGridOrigin());
         targetMaterial.SetVector("_GridWorldSize", gridData.GetGridWorldSize());
 
-        Debug.Log("Texture Generated: " + gridTexture.width + "x" + gridTexture.height);
-    }
+        }
 
     // In the UpdateTexture method, ensure invisible cells are transparent
     public void UpdateTexture()

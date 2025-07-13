@@ -21,16 +21,31 @@ public class StructureItemUI : MonoBehaviour
         }
 
         data = structure;
+        Debug.Log($"Setting up shop item: {structure.structureName} - Cost: {structure.cost}");
 
+        // Set icon if available
         if (icon != null)
             icon.sprite = structure.icon;
         else
-            if (nameText != null)
+            Debug.LogWarning($"Icon component is missing for {structure.structureName}!");
+
+        // Set name text if available
+        if (nameText != null)
+        {
             nameText.text = structure.structureName;
+            Debug.Log($"Set name text to: {structure.structureName}");
+        }
         else
-            // Display cost if we have a cost text component
+            Debug.LogWarning($"Name text component is missing for {structure.structureName}!");
+
+        // Display cost if we have a cost text component
         if (costText != null)
+        {
             costText.text = $"{structure.cost} Gold";
+            Debug.Log($"Set cost text to: {structure.cost} Gold");
+        }
+        else
+            Debug.LogWarning($"Cost text component is missing for {structure.structureName}!");
 
         if (selectButton != null)
         {
@@ -38,13 +53,19 @@ public class StructureItemUI : MonoBehaviour
             selectButton.onClick.AddListener(() => SelectStructure());
         }
         else
-            // Check affordability when setting up
+            Debug.LogWarning($"Select button component is missing for {structure.structureName}!");
+
+        // Check affordability when setting up
         UpdateAffordability();
         
         // Subscribe to money changes
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.OnMoneyChanged += OnMoneyChanged;
+        }
+        else
+        {
+            Debug.LogWarning("MoneyManager.Instance is null when setting up shop item!");
         }
     }
 
@@ -83,7 +104,7 @@ public class StructureItemUI : MonoBehaviour
         UpdateAffordability();
     }
 
-        // Add to the UpdateAffordability method:
+    // Update affordability based on current money
     public void UpdateAffordability()
     {
         // Make sure we have data and button

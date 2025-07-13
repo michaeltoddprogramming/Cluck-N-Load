@@ -22,9 +22,12 @@ public class OwnershipController : MonoBehaviour
     [Header("Debug")]
     public bool visualizeInEditor = true;
     public Color gizmoColor = new Color(0, 1, 0, 0.3f);
-    [Range(0.1f, 5f)]
-    private float gizmoLineThickness = 2f;
-    public bool logDebugInfo = true;
+    public bool logDebugInfo = false; // Disabled by default for performance
+    
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableRealTimeUpdates = true; // Can disable for potato devices
+    [SerializeField] private float updateInterval = 0.1f; // Throttle updates
+    [SerializeField] private bool enableGizmos = false; // Disable gizmos by default for performance
     
     [Header("Grid Monitoring")]
     [SerializeField] private GridMonitor gridMonitor;
@@ -40,6 +43,9 @@ public class OwnershipController : MonoBehaviour
     
     // Used to track manually purchased cells
     private bool[,] manuallyOwnedCells;
+    
+    // Performance tracking
+    private float lastUpdateTime = 0f;
 
     private void Start()
     {
@@ -111,6 +117,13 @@ public class OwnershipController : MonoBehaviour
     
     private void Update()
     {
+        // Performance optimization: Only update if real-time updates are enabled
+        if (!enableRealTimeUpdates) return;
+        
+        // Throttle updates based on updateInterval
+        if (Time.time - lastUpdateTime < updateInterval) return;
+        lastUpdateTime = Time.time;
+        
         // Check if any ownership parameters changed
         bool radiusChanged = lastRadius != ownershipRadius;
         bool shapeChanged = !Mathf.Approximately(lastShapeBlend, shapeBlend);

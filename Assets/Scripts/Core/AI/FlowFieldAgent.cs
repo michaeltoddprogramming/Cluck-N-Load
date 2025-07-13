@@ -11,7 +11,10 @@ namespace FarmDefender.Core.AI.FlowField
         [Header("Movement Settings")]
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float rotationSpeed = 10f;
-        [SerializeField] private float stoppingDistance = 0.1f;
+        
+        [Header("Performance Settings")]
+        [SerializeField] private float updateFrequency = 0.1f; // Reduce update frequency for potato devices
+        [SerializeField] private bool enableOptimizations = true;
         
         [Header("Interpolation Settings")]
         [SerializeField] private bool useInterpolation = true;

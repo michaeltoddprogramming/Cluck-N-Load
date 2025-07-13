@@ -21,10 +21,24 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private float _edgeInset = 1f;
     [SerializeField] private GameObject wolfPrefab;
 
+    [Header("Performance Settings")]
+    [SerializeField] private bool useObjectPooling = true; // Enable object pooling for wolves
+    [SerializeField] private GameObject wolfPrefabCached; // Cache the prefab instead of loading from Resources
+
     private void Start()
     {
         if (flowFieldManager == null)
             flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
+            
+        // Cache the wolf prefab on start to avoid Resources.Load during gameplay
+        if (wolfPrefabCached == null && wolfPrefab != null)
+        {
+            wolfPrefabCached = wolfPrefab;
+        }
+        else if (wolfPrefabCached == null)
+        {
+            wolfPrefabCached = Resources.Load<GameObject>("Prefabs/Wolf");
+        }
     }
 
     public Unit SpawnUnitOfType(UnitType type, Vector3 position)
@@ -214,10 +228,11 @@ public class UnitSpawner : MonoBehaviour
 
     public Unit SpawnWolf()
     {
-        GameObject wolfPrefab = Resources.Load<GameObject>("Prefabs/Wolf");
-        if (wolfPrefab == null)
+        // Use cached prefab instead of Resources.Load for performance
+        GameObject prefabToUse = wolfPrefabCached != null ? wolfPrefabCached : wolfPrefab;
+        if (prefabToUse == null)
         {
-            Debug.LogError("CRITICAL ERROR: Wolf prefab not found at Resources/Prefabs/Wolf");
+            Debug.LogError("CRITICAL ERROR: Wolf prefab not found - check wolfPrefab reference or Resources/Prefabs/Wolf");
             return null;
         }
 
@@ -230,7 +245,7 @@ public class UnitSpawner : MonoBehaviour
 
         Vector3 spawnPosition = edgePositions[0];
 
-        GameObject wolfInstance = Instantiate(wolfPrefab, spawnPosition, Quaternion.identity);
+        GameObject wolfInstance = Instantiate(prefabToUse, spawnPosition, Quaternion.identity);
 
         // Set up Animator
         Animator animator = wolfInstance.GetComponent<Animator>();

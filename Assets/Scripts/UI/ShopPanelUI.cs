@@ -17,6 +17,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public UnityEvent OnShopOpened = new UnityEvent();
     public UnityEvent OnShopClosed = new UnityEvent();
 
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableAnimations = true; // Can disable for potato devices
+    [SerializeField] private bool poolStructureItems = true; // Object pooling for performance
+    [SerializeField] private int maxVisibleItems = 20; // Limit visible items for performance
+
     private bool isShopOpen = false; // Tracks whether the shop is open
     private BuildController buildController;
     private CameraController cameraController;

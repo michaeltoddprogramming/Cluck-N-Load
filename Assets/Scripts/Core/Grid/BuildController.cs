@@ -23,7 +23,6 @@ public class BuildController : MonoBehaviour
     [SerializeField] private KeyCode previousItemKey = KeyCode.P;
     [SerializeField] private KeyCode removeModifierKey = KeyCode.LeftControl;
     [SerializeField] private KeyCode moveKey = KeyCode.M;
-    [SerializeField] private KeyCode buyLandKey = KeyCode.LeftShift;
 
     [Header("UI References")]
     [SerializeField] private RectTransform itemDeleteIcon;
@@ -43,9 +42,13 @@ public class BuildController : MonoBehaviour
     [SerializeField] private float synergyIndicatorHeight = 0.1f;
     [SerializeField] private GameObject synergyLineRendererPrefab;
     [SerializeField] private Canvas worldSpaceCanvas;
-    [SerializeField] private float tooltipOffset = 1.0f;
+    
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableSynergyVisuals = true; // Allow disabling for potato devices
+    [SerializeField] private int maxSynergyLines = 10; // Limit lines for performance
     private List<GameObject> synergyIndicators = new List<GameObject>();
     private List<LineRenderer> synergyLines = new List<LineRenderer>();
+    private List<GameObject> activeSynergyLines = new List<GameObject>(); // Track active synergy line GameObjects
     private Dictionary<LineRenderer, SynergyTooltip> lineTooltips = new Dictionary<LineRenderer, SynergyTooltip>();
 
     private class SynergyTooltip
@@ -141,6 +144,19 @@ public class BuildController : MonoBehaviour
     void Update()
     {
         if (!isBuildModeActive && !isMoveModeActive) return;
+
+        // Performance optimization: Skip frame if too many synergy lines
+        if (enableSynergyVisuals && activeSynergyLines.Count > maxSynergyLines)
+        {
+            // Remove excess synergy lines
+            while (activeSynergyLines.Count > maxSynergyLines)
+            {
+                var lineToRemove = activeSynergyLines[activeSynergyLines.Count - 1];
+                activeSynergyLines.RemoveAt(activeSynergyLines.Count - 1);
+                if (lineToRemove != null)
+                    Destroy(lineToRemove);
+            }
+        }
 
         bool deleteKeyPressed = Input.GetKey(removeModifierKey);
         if (deleteKeyPressed != isDeleteModeActive)
@@ -570,8 +586,8 @@ public class BuildController : MonoBehaviour
             AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
             foreach (var animal in animals)
             {
-                float distance = Vector3.Distance(currentGhost.transform.position, animal.transform.position);
-                if (distance <= 15f)
+                float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
+                if (sqrDistance <= 15f * 15f) // 225f
                 {
                     CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");
                 }
@@ -585,8 +601,9 @@ public class BuildController : MonoBehaviour
                 foreach (var structure in allStructures) {
                     if (structure is CropStructure) {
                         CropStructure crop = structure as CropStructure;
-                        float distance = Vector3.Distance(currentGhost.transform.position, crop.transform.position);
-                        if (distance <= 10f) {
+                        float sqrDistance = (currentGhost.transform.position - crop.transform.position).sqrMagnitude;
+                        if (sqrDistance <= 10f * 10f) // 100f
+                        {
                             // Make crop lines more visible with a bright color
                             CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
                         }
@@ -601,8 +618,8 @@ public class BuildController : MonoBehaviour
                         continue;
                     }
                     
-                    float distance = Vector3.Distance(currentGhost.transform.position, crop.transform.position);
-                    if (distance <= 10f)
+                    float sqrDistance = (currentGhost.transform.position - crop.transform.position).sqrMagnitude;
+                    if (sqrDistance <= 10f * 10f) // 100f
                     {
                         // Changed from Color.yellow to something more visible
                         CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
@@ -616,8 +633,8 @@ public class BuildController : MonoBehaviour
         SiloStructure[] silos = FindObjectsByType<SiloStructure>(FindObjectsSortMode.None);
         foreach (var silo in silos)
         {
-            float distance = Vector3.Distance(currentGhost.transform.position, silo.transform.position);
-            if (distance <= 15f)
+            float sqrDistance = (currentGhost.transform.position - silo.transform.position).sqrMagnitude;
+            if (sqrDistance <= 15f * 15f) // 225f
             {
                 CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Animal");
             }
@@ -629,9 +646,11 @@ public class BuildController : MonoBehaviour
             AnimalStructure animalStructure = currentGhost.GetComponent<AnimalStructure>();
             if (animalStructure != null && barrack.TargetAnimalType == animalStructure.GetAnimalType.ToString())
             {
-                float distance = Vector3.Distance(currentGhost.transform.position, barrack.transform.position);
-                if (distance <= barrack.synergyMaxDist)
+                float sqrDistance = (currentGhost.transform.position - barrack.transform.position).sqrMagnitude;
+                if (sqrDistance <= barrack.synergyMaxDist * barrack.synergyMaxDist)
                 {
+                    // Calculate actual distance only when needed for color comparison
+                    float distance = Mathf.Sqrt(sqrDistance);
                     Color lineColor = distance <= barrack.synergyMinDist ? Color.red : Color.green;
                     string synergyType = $"Barracks-{animalStructure.GetAnimalType}";
                     CreateSynergyLine(currentGhost.transform.position, barrack.transform.position, lineColor, synergyType);
@@ -655,9 +674,12 @@ public class BuildController : MonoBehaviour
         {
             if (animal.GetAnimalType.ToString() == targetType)
             {
-                float distance = Vector3.Distance(currentGhost.transform.position, animal.transform.position);
-                if (distance <= barracksStructure.synergyMaxDist)
+                float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
+                float synergyMaxDistSqr = barracksStructure.synergyMaxDist * barracksStructure.synergyMaxDist;
+                if (sqrDistance <= synergyMaxDistSqr)
                 {
+                    // For color comparison, still need actual distance
+                    float distance = Mathf.Sqrt(sqrDistance);
                     Color lineColor = distance <= barracksStructure.synergyMinDist ? Color.red : Color.green;
                     string synergyType = $"Barracks-{targetType}";
                     CreateSynergyLine(currentGhost.transform.position, animal.transform.position, lineColor, synergyType);
@@ -673,8 +695,8 @@ public class BuildController : MonoBehaviour
         {
             if (silo == null) continue;
             
-            float distance = Vector3.Distance(currentGhost.transform.position, silo.transform.position);
-            if (distance <= 10f)
+            float sqrDistance = (currentGhost.transform.position - silo.transform.position).sqrMagnitude;
+            if (sqrDistance <= 10f * 10f) // 100f
             {
                 CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Crop");
             }
@@ -764,6 +786,7 @@ public class BuildController : MonoBehaviour
         ShowSynergyText((start + end) / 2f, GetBonusSummary(synergyType, color), color);
         
         synergyLines.Add(line);
+        activeSynergyLines.Add(lineObj); // Track the GameObject for performance management
         return line;
     }
     
@@ -938,6 +961,7 @@ public class BuildController : MonoBehaviour
         }
         lineTooltips.Clear();
         synergyLines.Clear();
+        activeSynergyLines.Clear(); // Clear the performance tracking list
     }
 
     void UpdateGhostPositionForMove()

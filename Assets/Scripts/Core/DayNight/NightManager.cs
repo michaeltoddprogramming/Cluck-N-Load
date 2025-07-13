@@ -19,11 +19,14 @@ public class NightManager : MonoBehaviour
     [Header("Lighting stuff")]
     [SerializeField] private Light sceneLight;
     [SerializeField] private Color color = new Color32(0xAA, 0xBB, 0xDD, 0xFF);
-    [SerializeField] private float intensity = 0.3f;
     [SerializeField] private Gradient morningToDayGradient;
     [SerializeField] private Gradient DayToAfternoonGradient;
     [SerializeField] private Gradient AfternoonToNightGradient;
     [SerializeField] private Gradient nightToMorningGradient;
+    
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableLightingOptimizations = true;
+    [SerializeField] private float lightingUpdateInterval = 0.2f; // Reduce frequency for potato devices
 
     // Skyboxes
     [Header("Skyboxes")]
@@ -126,9 +129,6 @@ public class NightManager : MonoBehaviour
     [Header("Light intensity")]
     [SerializeField] private float nightIntensity = 0.03f;
     [SerializeField] private float dayIntensity = 2f;
-    [SerializeField] private float dayTemp = 6000f;
-    [SerializeField] private float morningTemp = 3000f;
-    [SerializeField] private float eveningTemp = 9000f;
 
     // Pause game manager
     [Header("Pause Game Manager")]

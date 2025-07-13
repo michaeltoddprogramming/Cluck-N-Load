@@ -41,10 +41,10 @@ public class GridMonitor : MonoBehaviour
     {
         // Find references if not assigned
         if (gridController == null)
-            gridController = FindObjectOfType<GridController>();
+            gridController = FindFirstObjectByType<GridController>();
             
         if (gridDataGenerator == null && gridController != null)
-            gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+            gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
             
         if (gridController == null || gridDataGenerator == null)
         {
@@ -61,7 +61,7 @@ public class GridMonitor : MonoBehaviour
         
         // Find required components if not assigned
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
     }
     
     private IEnumerator InitializeWhenGridReady()

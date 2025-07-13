@@ -42,7 +42,7 @@ namespace FarmDefender.Core.AI.FlowField
         {
             if (flowFieldManager == null)
             {
-                flowFieldManager = FindObjectOfType<FlowFieldManager>();
+                flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
                 if (flowFieldManager == null)
                 {
                     enabled = false;

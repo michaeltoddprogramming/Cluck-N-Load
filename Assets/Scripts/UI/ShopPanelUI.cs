@@ -64,8 +64,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         // Cache controller references
-        buildController = FindObjectOfType<BuildController>();
-        cameraController = FindObjectOfType<CameraController>();
+        buildController = FindFirstObjectByType<BuildController>();
+        cameraController = FindFirstObjectByType<CameraController>();
     }
 
     void PopulateShop()

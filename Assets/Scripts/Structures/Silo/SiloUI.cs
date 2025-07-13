@@ -119,14 +119,7 @@ public class SiloUI : BaseStructureUI
         UpdateUI();
     }
 
-    protected override void Update()
-    {
-        base.Update();
-        if (isSiloStructure)
-        {
-            UpdateUI();
-        }
-    }
+    // Removed Update() method for better performance - using event-driven updates instead
 
     private void UpdateUI()
     {

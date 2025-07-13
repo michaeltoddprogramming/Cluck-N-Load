@@ -20,7 +20,7 @@ namespace FarmDefender.Core.AI.FlowField
         private void Awake()
         {
             if (gridController == null)
-                gridController = FindObjectOfType<GridController>();
+                gridController = FindFirstObjectByType<GridController>();
 
             if (gridController == null)
                 Debug.LogError("GridController not found. FlowFieldTargetManager cannot function properly.");

@@ -78,10 +78,7 @@ public class BarracksStructureUI : BaseStructureUI
         barracksStructure.playBackgroundSound();
     }
 
-    public void Update()
-    {
-        UpdateUI();
-    }
+    // Removed Update() method for better performance - using event-driven updates instead
 
     private void StartFlagPlacement()
     {
@@ -234,13 +231,16 @@ public class BarracksStructureUI : BaseStructureUI
 
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (isBarracksStructure && barracksStructure != null)
         {
             barracksStructure.OnArmyChanged -= UpdateUI;
+            barracksStructure.stopBackgroundSound();
         }
-    barracksStructure.stopBackgroundSound();
+        
+        // Call base OnDestroy
+        base.OnDestroy();
     }
     
 

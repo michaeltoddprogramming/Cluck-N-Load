@@ -34,7 +34,7 @@ public class GridController : MonoBehaviour
         GridCellColorResolver.Colors = gridColors;
     
         if (gridDataGenerator == null)
-            gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+            gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
     
         if (gridDataGenerator == null)
         {

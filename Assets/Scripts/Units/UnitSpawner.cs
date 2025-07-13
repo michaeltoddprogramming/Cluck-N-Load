@@ -24,7 +24,7 @@ public class UnitSpawner : MonoBehaviour
     private void Start()
     {
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
     }
 
     public Unit SpawnUnitOfType(UnitType type, Vector3 position)

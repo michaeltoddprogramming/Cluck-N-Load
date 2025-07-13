@@ -75,7 +75,7 @@ public class CropStructureUI : BaseStructureUI
             nightManager = NightManager.Instance;
             if (nightManager == null)
             {
-                nightManager = FindObjectOfType<NightManager>();
+                nightManager = FindFirstObjectByType<NightManager>();
                 if (nightManager == null)
                 {
                     Debug.LogError("NightManager not found in scene!");
@@ -367,14 +367,7 @@ public class CropStructureUI : BaseStructureUI
         }
     }
 
-    protected override void Update()
-    {
-        base.Update();
-        if (isCropStructure)
-        {
-            UpdateUI();
-        }
-    }
+    // Remove Update() method for better performance - using event-driven updates instead
 
     private void UpdateUI()
     {

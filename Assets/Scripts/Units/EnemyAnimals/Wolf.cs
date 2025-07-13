@@ -56,7 +56,7 @@ public class Wolf : MonoBehaviour
         if (flowFieldAgent == null)
             flowFieldAgent = GetComponent<FlowFieldAgent>() ?? gameObject.AddComponent<FlowFieldAgent>();
 
-        flowFieldManager = FindObjectOfType<FlowFieldManager>();
+        flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
         nightManager = NightManager.Instance;
 
         if (flowFieldManager == null || nightManager == null)

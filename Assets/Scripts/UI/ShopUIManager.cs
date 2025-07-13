@@ -71,8 +71,13 @@ public class ShopUIManager : MonoBehaviour
         if (shopPanelUI != null)
         {
             shopPanelUI.OpenShop();
-        }      
+        }
 
+        // Notify tutorial system
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnConditionMet(TutorialCondition.ShopOpened);
+        }
     }
 
     public void CloseShop()
@@ -112,7 +117,7 @@ public class ShopUIManager : MonoBehaviour
         }
 
         // Find ghost placer to show placement preview
-        GhostPlacer ghostPlacer = FindObjectOfType<GhostPlacer>();
+        GhostPlacer ghostPlacer = FindFirstObjectByType<GhostPlacer>();
         if (ghostPlacer != null)
         {
             ghostPlacer.SetGhostPrefab(data.prefab);

@@ -85,7 +85,7 @@ public class CropStructure : Structure
             nightManager = NightManager.Instance;
             if (nightManager == null)
             {
-                nightManager = FindObjectOfType<NightManager>();
+                nightManager = FindFirstObjectByType<NightManager>();
                 if (nightManager == null)
                 {
                     Debug.LogError($"{GetStructureName()} cannot find NightManager!");
@@ -247,7 +247,7 @@ public class CropStructure : Structure
         float minGridDistance = float.MaxValue;
 
         // Get the grid controller (assumes only one in scene)
-        GridController gridController = FindObjectOfType<GridController>();
+        GridController gridController = FindFirstObjectByType<GridController>();
 
         if (gridController == null)
         {

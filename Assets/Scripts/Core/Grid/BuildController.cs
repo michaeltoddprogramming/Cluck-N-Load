@@ -77,7 +77,7 @@ public class BuildController : MonoBehaviour
     {
         if (gridController == null)
         {
-            gridController = FindObjectOfType<GridController>();
+            gridController = FindFirstObjectByType<GridController>();
             if (gridController == null)
             {
                 Debug.LogError("GridController not found. BuildController cannot function.");
@@ -87,18 +87,18 @@ public class BuildController : MonoBehaviour
         }
 
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
 
         if (ownershipController == null)
-            ownershipController = FindObjectOfType<OwnershipController>();
+            ownershipController = FindFirstObjectByType<OwnershipController>();
 
         if (gridMonitor == null)
-            gridMonitor = FindObjectOfType<GridMonitor>();
+            gridMonitor = FindFirstObjectByType<GridMonitor>();
 
         if (gridMonitor == null)
             Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
 
-        shopPanelUI = FindObjectOfType<ShopPanelUI>(true);
+        shopPanelUI = FindFirstObjectByType<ShopPanelUI>(FindObjectsInactive.Include);
         if (shopPanelUI != null)
         {
             Debug.Log("BuildController: Found ShopPanelUI, subscribing to events");
@@ -1145,6 +1145,19 @@ public class BuildController : MonoBehaviour
 
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayPlaceSound();
+
+        // Notify tutorial system about structure placement
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnConditionMet(TutorialCondition.FirstStructurePlaced);
+            
+            // Check if it's a barracks for defense tutorial
+            BarracksStructure barracks = placedItem.GetComponent<BarracksStructure>();
+            if (barracks != null)
+            {
+                TutorialManager.Instance.OnConditionMet(TutorialCondition.BarracksPlaced);
+            }
+        }
 
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0)

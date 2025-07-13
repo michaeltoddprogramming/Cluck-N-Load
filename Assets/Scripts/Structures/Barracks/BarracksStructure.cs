@@ -64,7 +64,7 @@ public class BarracksStructure : Structure
             recruitmentCostPerAnimal = structureData.recruitmentCostPerAnimal;
             protectionRadius = structureData.protectionRadius;
         }
-        nightManager = NightManager.Instance ?? FindObjectOfType<NightManager>();
+        nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         if (nightManager == null)
         {
             Debug.LogError($"{GetStructureName()} could not find NightManager!");
@@ -189,7 +189,7 @@ public class BarracksStructure : Structure
         float minGridDistance = float.MaxValue;
         AnimalStructure closestStructure = null;
 
-        GridController gridController = FindObjectOfType<GridController>();
+        GridController gridController = FindFirstObjectByType<GridController>();
         if (gridController == null)
         {
             Debug.LogWarning("No GridController found for FindTargetAnimalStructure.");
@@ -384,7 +384,7 @@ public class BarracksStructure : Structure
         return armyAnimalPrefabs.Count > 0 ? armyAnimalPrefabs[0] : null;
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (nightManager != null)
         {
@@ -395,6 +395,8 @@ public class BarracksStructure : Structure
             if (armyAnimal != null) Destroy(armyAnimal);
         }
         if (flag != null) Destroy(flag);
+        
+        // Call base OnDestroy
         base.OnDestroy();
     }
 
@@ -500,7 +502,7 @@ public class BarracksStructure : Structure
             return;
         }
 
-        GridController gridController = FindObjectOfType<GridController>();
+        GridController gridController = FindFirstObjectByType<GridController>();
         if (gridController == null)
         {
             Debug.LogWarning("No GridController found for barracks synergy check.");

@@ -17,11 +17,12 @@ public class SiloStructure : Structure
     }
 
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.UnregisterSilo(this);
         CropStructure.UpdateAllCropSynergies();
         AnimalStructure.UpdateAllAnimalSynergies();
+        base.OnDestroy();
     }
 }

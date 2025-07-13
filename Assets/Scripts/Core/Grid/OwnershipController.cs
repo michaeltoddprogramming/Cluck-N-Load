@@ -51,7 +51,7 @@ public class OwnershipController : MonoBehaviour
         
         // Find references if not assigned
         if (gridController == null)
-            gridController = FindObjectOfType<GridController>();
+            gridController = FindFirstObjectByType<GridController>();
             
         if (gridDataGenerator == null && gridController != null)
             gridDataGenerator = gridController.GetComponent<GridDataGenerator>();
@@ -63,7 +63,7 @@ public class OwnershipController : MonoBehaviour
         }
         
         // Connect to shop events
-        shopPanelUI = FindObjectOfType<ShopPanelUI>(true);
+        shopPanelUI = FindFirstObjectByType<ShopPanelUI>(FindObjectsInactive.Include);
         if (shopPanelUI != null)
         {
             shopPanelUI.OnShopOpened.AddListener(HandleShopOpened);
@@ -80,7 +80,7 @@ public class OwnershipController : MonoBehaviour
         
         // Find grid monitor if not assigned
         if (gridMonitor == null)
-            gridMonitor = FindObjectOfType<GridMonitor>();
+            gridMonitor = FindFirstObjectByType<GridMonitor>();
     }
     
     private void InitializeManualOwnership()

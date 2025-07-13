@@ -60,7 +60,7 @@ public class StructureItemUI : MonoBehaviour
         {
             Debug.Log($"Selected structure: {data.structureName}");
             // Pass the StructureData to the BuildController
-            BuildController controller = FindObjectOfType<BuildController>();
+            BuildController controller = FindFirstObjectByType<BuildController>();
             if (controller != null)
             {
                 controller.SetBuildTarget(data);

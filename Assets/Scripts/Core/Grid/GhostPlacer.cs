@@ -13,7 +13,7 @@ public class GhostPlacer : MonoBehaviour
 
     private void Start()
     {
-        gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+        gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
         if (gridDataGenerator == null)
         {
             Debug.LogError("No GridDataGenerator found in scene.");
@@ -21,7 +21,7 @@ public class GhostPlacer : MonoBehaviour
             return;
         }
 
-        shopPanel = FindObjectOfType<ShopPanelUI>();
+        shopPanel = FindFirstObjectByType<ShopPanelUI>();
         if (shopPanel == null)
         {
             Debug.LogWarning("No ShopPanelUI found in scene. Ghost placement may not respect shop state.");

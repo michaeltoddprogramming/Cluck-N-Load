@@ -44,11 +44,8 @@ public class InventoryManager : MonoBehaviour
         Debug.Log("Inventory initialized: Sunflower=20, Wheat=20, Carrots=20");
     }
 
-    private void Update()
-    {
-        totalCapacity = GetTotalSiloCapacity();
-        currCapacity = GetCurrentSiloCapacity();
-    }
+    // Removed Update() method - capacity is now calculated when silos are added/removed
+    // This improves performance by not calculating capacity every frame
 
 
     private void Start()
@@ -68,6 +65,9 @@ public class InventoryManager : MonoBehaviour
         if (!silos.Contains(silo))
         {
             silos.Add(silo);
+            // Update capacity when silo is added
+            totalCapacity = GetTotalSiloCapacity();
+            currCapacity = GetCurrentSiloCapacity();
             OnInventoryChanged?.Invoke();
             // CropStructure.OnPlaced();
             CropStructure.UpdateAllCropSynergies();
@@ -79,6 +79,9 @@ public class InventoryManager : MonoBehaviour
         if (silos.Contains(silo))
         {
             silos.Remove(silo);
+            // Update capacity when silo is removed
+            totalCapacity = GetTotalSiloCapacity();
+            currCapacity = GetCurrentSiloCapacity();
             OnInventoryChanged?.Invoke();
             CropStructure.UpdateAllCropSynergies();
         }

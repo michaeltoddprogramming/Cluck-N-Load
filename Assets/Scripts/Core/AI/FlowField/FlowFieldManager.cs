@@ -121,15 +121,15 @@ namespace FarmDefender.Core.AI.FlowField
             
             // Find GridController
             if (gridController == null)
-                gridController = FindObjectOfType<GridController>();
+                gridController = FindFirstObjectByType<GridController>();
                 
             // Find GridDataGenerator
             if (gridDataGenerator == null && gridController != null)
-                gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+                gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
                 
             // Find GridMonitor if needed
             if (useGridMonitor)
-                gridMonitor = FindObjectOfType<GridMonitor>();
+                gridMonitor = FindFirstObjectByType<GridMonitor>();
                 
             // Create target manager if not assigned
             if (targetManager == null)

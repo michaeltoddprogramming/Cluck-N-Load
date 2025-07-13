@@ -49,10 +49,10 @@
 
 //     private void Awake()
 //     {
-//         animalStructure = FindObjectOfType<AnimalStructure>();
-//         inventoryManager = FindObjectOfType<InventoryManager>();
-//         // AnimalStructure animalStructure = FindObjectOfType<AnimalStructure>();
-//         // InventoryManager inventoryManager = FindObjectOfType<InventoryManager>();
+//         animalStructure = FindFirstObjectByType<AnimalStructure>();
+//         inventoryManager = FindFirstObjectByType<InventoryManager>();
+//         // AnimalStructure animalStructure = FindFirstObjectByType<AnimalStructure>();
+//         // InventoryManager inventoryManager = FindFirstObjectByType<InventoryManager>();
 
 //         // if (animalStructure != null)
 //         // {
@@ -145,8 +145,8 @@
 
 //     public void OpenPanel()
 //     {
-//         // AnimalStructure animalStructure = FindObjectOfType<AnimalStructure>();
-//         // InventoryManager inventoryManager = FindObjectOfType<InventoryManager>();
+//         // AnimalStructure animalStructure = FindFirstObjectByType<AnimalStructure>();
+//         // InventoryManager inventoryManager = FindFirstObjectByType<InventoryManager>();
 
 //         // if (pricePanelInstance == null)
 //         // {
@@ -159,8 +159,8 @@
 //         {
 //             pricePanelInstance = Instantiate(pricePanelPrefab, transform.parent);
 //             var panelUI = pricePanelInstance.GetComponent<PricePanelUI>();
-//             panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
-//             panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+//             panelUI.inventoryManager = FindFirstObjectByType<InventoryManager>();
+//             panelUI.animalStructure = FindFirstObjectByType<AnimalStructure>();
 //             // panelUI.populatePricePanel(); // Call this after references are set
 //         }
 //         pricePanelInstance.SetActive(true);
@@ -267,8 +267,8 @@ public class PricePanelUI : MonoBehaviour
 
     private void Start()
     {
-        inventoryManager = FindObjectOfType<InventoryManager>();
-        animalStructure = FindObjectOfType<AnimalStructure>();
+        inventoryManager = FindFirstObjectByType<InventoryManager>();
+        animalStructure = FindFirstObjectByType<AnimalStructure>();
 
         if (inventoryManager != null && animalStructure != null)
         {
@@ -360,8 +360,8 @@ public class PricePanelUI : MonoBehaviour
     //         pricePanelInstance = Instantiate(pricePanelPrefab, transform.parent);
     //         var panelUI = pricePanelInstance.GetComponent<PricePanelUI>();
 
-    //         panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
-    //         panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+    //         panelUI.inventoryManager = FindFirstObjectByType<InventoryManager>();
+    //         panelUI.animalStructure = FindFirstObjectByType<AnimalStructure>();
     //     }
 
     //     pricePanelInstance.SetActive(true);
@@ -372,7 +372,7 @@ public class PricePanelUI : MonoBehaviour
     // {
     //     if (pricePanelInstance == null)
     //     {
-    //         Canvas canvas = FindObjectOfType<Canvas>();
+    //         Canvas canvas = FindFirstObjectByType<Canvas>();
     //         if (canvas == null)
     //         {
     //             Debug.LogError("No Canvas found in scene.");
@@ -381,8 +381,8 @@ public class PricePanelUI : MonoBehaviour
 
     //         pricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
     //         var panelUI = pricePanelInstance.GetComponent<PricePanelUI>();
-    //         panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
-    //         panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+    //         panelUI.inventoryManager = FindFirstObjectByType<InventoryManager>();
+    //         panelUI.animalStructure = FindFirstObjectByType<AnimalStructure>();
 
     //         panelUI.populatePricePanel(); // ensure it's populated immediately
     //     }
@@ -395,7 +395,7 @@ public class PricePanelUI : MonoBehaviour
     // {
     //     if (pricePanelInstance == null)
     //     {
-    //         Canvas canvas = FindObjectOfType<Canvas>();
+    //         Canvas canvas = FindFirstObjectByType<Canvas>();
     //         if (canvas == null)
     //         {
     //             Debug.LogError("No Canvas found in scene.");
@@ -405,8 +405,8 @@ public class PricePanelUI : MonoBehaviour
     //         pricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
     //         var panelUI = pricePanelInstance.GetComponent<PricePanelUI>();
 
-    //         panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
-    //         panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+    //         panelUI.inventoryManager = FindFirstObjectByType<InventoryManager>();
+    //         panelUI.animalStructure = FindFirstObjectByType<AnimalStructure>();
 
     //         if (panelUI.animalStructure == null)
     //         {
@@ -463,11 +463,11 @@ public class PricePanelUI : MonoBehaviour
         {
             if (activePricePanelInstance == null)
             {
-                Canvas canvas = FindObjectOfType<Canvas>();
+                Canvas canvas = FindFirstObjectByType<Canvas>();
                 activePricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
                 var panelUI = activePricePanelInstance.GetComponent<PricePanelUI>();
-                panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
-                panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+                panelUI.inventoryManager = FindFirstObjectByType<InventoryManager>();
+                panelUI.animalStructure = FindFirstObjectByType<AnimalStructure>();
                 panelUI.populatePricePanel();
                 // audioSourceOpen.Play();
             }
@@ -499,11 +499,11 @@ public class PricePanelUI : MonoBehaviour
 // {
 //     if (activePricePanelInstance == null)
 //     {
-//         Canvas canvas = FindObjectOfType<Canvas>();
+//         Canvas canvas = FindFirstObjectByType<Canvas>();
 //         activePricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
 //         var panelUI = activePricePanelInstance.GetComponent<PricePanelUI>();
-//         panelUI.inventoryManager = FindObjectOfType<InventoryManager>();
-//         panelUI.animalStructure = FindObjectOfType<AnimalStructure>();
+//         panelUI.inventoryManager = FindFirstObjectByType<InventoryManager>();
+//         panelUI.animalStructure = FindFirstObjectByType<AnimalStructure>();
 //         panelUI.populatePricePanel();
 //     }
 

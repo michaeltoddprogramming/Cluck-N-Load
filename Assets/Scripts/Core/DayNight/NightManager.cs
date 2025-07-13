@@ -338,6 +338,12 @@ public class NightManager : MonoBehaviour
         isDay = false;
         buttonText.text = "End Night";
 
+        // Notify tutorial system about night starting
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
+        }
+
         // Start wolf spawning when night begins
         if (unitSpawner != null)
         {

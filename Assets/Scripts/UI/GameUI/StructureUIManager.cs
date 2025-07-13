@@ -39,23 +39,32 @@ public class StructureUIManager : MonoBehaviour
 
     private void Update()
     {
-        if ((currentSelectedStructure == null && activeUI != null) ||
-            (currentSelectedStructure != null && currentSelectedStructure.GetCurrentHealth() <= 0))
+        // Only update if we have an active UI to manage
+        if (activeUI == null || isHidingUI) return;
+
+        // Check for destroyed structure less frequently for performance
+        if (currentSelectedStructure == null || 
+            (Time.frameCount % 10 == 0 && currentSelectedStructure.GetCurrentHealth() <= 0))
         {
             HideStructureUI();
             return;
         }
 
-        if (isHidingUI || currentSelectedStructure == null || activeUI == null || activeUIRect == null)
+        if (currentSelectedStructure == null || activeUIRect == null)
             return;
 
+        // Update UI position following the structure
         Vector3 screenPos = GetScreenPositionAboveStructure(currentSelectedStructure);
         screenPos += new Vector3(screenOffset.x, screenOffset.y, 0);
         activeUIRect.position = screenPos;
 
-        Vector3 viewportPos = Camera.main.WorldToViewportPoint(currentSelectedStructure.transform.position);
-        bool isOnScreen = viewportPos.x >= 0 && viewportPos.x <= 1 && viewportPos.y >= 0 && viewportPos.y <= 1 && viewportPos.z > 0;
-        activeUI.SetActive(isOnScreen);
+        // Only check visibility every few frames for performance
+        if (Time.frameCount % 5 == 0)
+        {
+            Vector3 viewportPos = Camera.main.WorldToViewportPoint(currentSelectedStructure.transform.position);
+            bool isOnScreen = viewportPos.x >= 0 && viewportPos.x <= 1 && viewportPos.y >= 0 && viewportPos.y <= 1 && viewportPos.z > 0;
+            activeUI.SetActive(isOnScreen);
+        }
     }
 
     public void ShowStructureUI(Structure structure)

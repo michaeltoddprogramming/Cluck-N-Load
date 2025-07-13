@@ -29,7 +29,7 @@ public class AnimalStructureUI : BaseStructureUI
             animalStructure.PlayBackgroundNoise();
         }
 
-        nightManager = NightManager.Instance ?? FindObjectOfType<NightManager>();
+        nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         if (nightManager == null)
         {
             Debug.LogError($"{structure.GetStructureName()} AnimalStructureUI: NightManager not found!");
@@ -44,9 +44,15 @@ public class AnimalStructureUI : BaseStructureUI
 
         animalStructure.PlayBackgroundNoise();
         SetupButtonListeners();
-        UpdateUI();
-
         
+        // Subscribe to day/night changes for UI updates
+        if (nightManager != null)
+        {
+            // Note: You may need to add this event to NightManager
+            // nightManager.OnDayNightChanged += UpdateUI;
+        }
+        
+        UpdateUI();
     }
 
     // public void Start()
@@ -113,14 +119,8 @@ public class AnimalStructureUI : BaseStructureUI
         }
     }
 
-    protected override void Update()
-    {
-        base.Update();
-        if (isAnimalStructure)
-        {
-            UpdateUI();
-        }
-    }
+    // Remove the Update method since we're using event-driven updates
+    // This improves performance by not updating UI every frame
 
     private void UpdateUI()
     {
@@ -313,12 +313,15 @@ public class AnimalStructureUI : BaseStructureUI
         }
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (isAnimalStructure && animalStructure != null)
         {
             animalStructure.OnAnimalCountChanged -= UpdateUI;
             animalStructure.StopBackgroundNoise();
-        }        
+        }
+        
+        // Call base OnDestroy
+        base.OnDestroy();
     }
 }

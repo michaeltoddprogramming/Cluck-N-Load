@@ -58,6 +58,9 @@ public class Structure : MonoBehaviour
     public event StructureEvent OnDestroyed;
     public delegate void StructureDestroyedEventHandler(Structure destroyedStructure);
     public event StructureDestroyedEventHandler OnStructureDestroyed;
+    
+    // Health changed event for UI updates
+    public event System.Action OnHealthChanged;
 
     // Wolf notifications
     private static readonly List<Wolf> registeredWolves = new List<Wolf>();
@@ -101,9 +104,9 @@ public class Structure : MonoBehaviour
             return;
         }
 
-        gridController = FindObjectOfType<GridController>();
+        gridController = FindFirstObjectByType<GridController>();
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
 
         if (gridController == null)
         {
@@ -227,7 +230,7 @@ public class Structure : MonoBehaviour
     {
         if (flowFieldManager != null)
         {
-            BuildController buildController = FindObjectOfType<BuildController>();
+            BuildController buildController = FindFirstObjectByType<BuildController>();
             if (buildController != null && buildController.IsBuildModeActive())
             {
                 return;
@@ -261,6 +264,8 @@ public class Structure : MonoBehaviour
 
         currentHealth -= amount;
         OnDamaged?.Invoke(this);
+        OnHealthChanged?.Invoke(); // Trigger health changed event for UI
+        
         if (currentHealth <= 0)
         {
             Die();

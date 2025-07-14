@@ -31,6 +31,7 @@ public class BarracksStructure : Structure
     private bool isNightTime = false;
     private float nextStructureCheckTime;
     private float lastDayNightChangeTime;
+    private float nextWarningTime; // To prevent warning spam
 
     public string TargetAnimalType => targetAnimalType;
     public int ArmyAnimalCount => armyAnimals.Count;
@@ -54,8 +55,7 @@ public class BarracksStructure : Structure
         {
             if (structureData.type != StructureType.Barracks)
             {
-                Debug.LogWarning($"{gameObject.name} has BarracksStructure script but StructureData.type is {structureData.type}, expected Barracks.");
-            }
+                }
             targetAnimalType = structureData.targetAnimalType ?? "Chicken";
             armyAnimalPrefabs = structureData.armyAnimalPrefabs ?? new List<GameObject>();
             flagPrefab = structureData.flagPrefab;
@@ -64,7 +64,7 @@ public class BarracksStructure : Structure
             recruitmentCostPerAnimal = structureData.recruitmentCostPerAnimal;
             protectionRadius = structureData.protectionRadius;
         }
-        nightManager = NightManager.Instance ?? FindObjectOfType<NightManager>();
+        nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         if (nightManager == null)
         {
             Debug.LogError($"{GetStructureName()} could not find NightManager!");
@@ -99,7 +99,6 @@ public class BarracksStructure : Structure
         }
         lastDayNightChangeTime = Time.time;
         isNightTime = isNight;
-        // Debug.Log($"{GetStructureName()} OnDayNightChanged: isNight={isNight}, Time={Time.time:F2}, Animals={armyAnimals.Count}");
         if (isNight)
         {
             DeployAnimals();
@@ -112,7 +111,6 @@ public class BarracksStructure : Structure
 
     private void DeployAnimals()
     {
-        // Debug.Log($"{GetStructureName()} DeployAnimals called at Time={Time.time:F2}");
         foreach (GameObject armyAnimal in armyAnimals)
         {
             if (armyAnimal != null)
@@ -123,7 +121,6 @@ public class BarracksStructure : Structure
                 {
                     animalScript.SetTimeOfDay(true);
                     animalScript.MoveToFlag();
-                    // Debug.Log($"{GetStructureName()} Activated {armyAnimal.name}, moving to flag at {GetFlagPosition}");
                 }
                 else
                 {
@@ -135,29 +132,24 @@ public class BarracksStructure : Structure
                 Debug.LogWarning($"{GetStructureName()} Null armyAnimal in armyAnimals!");
             }
         }
-        // Debug.Log($"{GetStructureName()} Deployed {armyAnimals.Count} animals to guard the flag.");
     }
 
     private void ReturnAnimalsToBarracks()
     {
-        // Debug.Log($"{GetStructureName()} ReturnAnimalsToBarracks called at Time={Time.time:F2}");
         foreach (GameObject armyAnimal in armyAnimals)
         {
             if (armyAnimal != null)
             {
                 armyAnimal.SetActive(false);
-                // Debug.Log($"{GetStructureName()} Deactivated {armyAnimal.name}");
             }
         }
-        // Debug.Log($"{GetStructureName()} Returned {armyAnimals.Count} animals to barracks.");
     }
 
     private void InitializeFlag()
     {
         if (flagPrefab == null)
         {
-            // Debug.LogError($"{GetStructureName()} has no flag prefab assigned!");
-            return;
+                        return;
         }
         guardPosition = transform.position + new Vector3(0, 2, 0);
         flag = Instantiate(flagPrefab, guardPosition, Quaternion.identity, transform);
@@ -178,18 +170,17 @@ public class BarracksStructure : Structure
         if (flagRenderer != null)
         {
             flagRenderer.material.color = newColor;
-            // Debug.Log($"{GetStructureName()} flag color set to {newColor}");
         }
         UpdateArmyAnimalPositions();
     }
 
     public void FindTargetAnimalStructure()
     {
-        AnimalStructure[] animalStructures = FindObjectsOfType<AnimalStructure>();
+        AnimalStructure[] animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
         float minGridDistance = float.MaxValue;
         AnimalStructure closestStructure = null;
 
-        GridController gridController = FindObjectOfType<GridController>();
+        GridController gridController = FindFirstObjectByType<GridController>();
         if (gridController == null)
         {
             Debug.LogWarning("No GridController found for FindTargetAnimalStructure.");
@@ -220,16 +211,46 @@ public class BarracksStructure : Structure
 
         if (targetAnimalStructure == null)
         {
-            Debug.LogWarning($"{GetStructureName()} could not find a {targetAnimalType} structure in the scene.");
+            // Only log warning once every 30 seconds to avoid spam
+            if (Time.time >= nextWarningTime)
+            {
+                Debug.LogWarning($"{GetStructureName()} could not find a {targetAnimalType} structure in the scene.");
+                nextWarningTime = Time.time + 30f; // Wait 30 seconds before next warning
+            }
         }
         else
         {
-            // Debug.Log($"{GetStructureName()} found target {targetAnimalType} structure: {targetAnimalStructure.GetStructureName()} at grid distance {minGridDistance:F2}");
-            OnArmyChanged?.Invoke();
+            // Reset warning timer when we find a target
+            nextWarningTime = 0f;
+            // OnArmyChanged?.Invoke();
         }
     }
 
     public bool CanRecruit(int amount)
+    {
+        return CanRecruitSilent(amount);
+    }
+
+    // Silent version for UI checks - no logging
+    private bool CanRecruitSilent(int amount)
+    {
+        if (targetAnimalStructure == null)
+            return false;
+            
+        if (MoneyManager.Instance == null)
+            return false;
+            
+        if (armyAnimals.Count + amount > maxArmyAnimals)
+            return false;
+            
+        if (!targetAnimalStructure.CanRecruit(amount))
+            return false;
+
+        return true;
+    }
+
+    // Version with logging for actual recruitment attempts
+    private bool CanRecruitWithLogging(int amount)
     {
         if (targetAnimalStructure == null)
         {
@@ -257,16 +278,14 @@ public class BarracksStructure : Structure
             Debug.LogWarning($"{GetStructureName()}: Cannot recruit - Insufficient gold ({totalCost} needed)!");
             return false;
         }
-        // Debug.Log($"{GetStructureName()}: Can recruit {amount} animals.");
         return true;
     }
 
     public void RecruitAnimals(int amount)
     {
-        if (!CanRecruit(amount))
+        if (!CanRecruitWithLogging(amount))
         {
-            Debug.LogWarning($"Cannot recruit {amount} animals. CanRecruit check failed.");
-            return;
+            return; // Logging already handled in CanRecruitWithLogging
         }
         int totalCost = amount * recruitmentCostPerAnimal;
         if (!MoneyManager.Instance.SpendMoney(totalCost))
@@ -274,9 +293,7 @@ public class BarracksStructure : Structure
             Debug.LogWarning($"Failed to spend {totalCost} gold for recruitment.");
             return;
         }
-        // Debug.Log($"Deducted {totalCost} gold for {amount} animals.");
         targetAnimalStructure.RecruitAnimals(amount);
-        // Debug.Log($"Recruited {amount} animals from {targetAnimalStructure.GetStructureName()}.");
         for (int i = 0; i < amount; i++)
         {
             GameObject prefab = GetArmyAnimalPrefab();
@@ -296,7 +313,6 @@ public class BarracksStructure : Structure
             spawnPosition.y = transform.position.y;
             GameObject armyAnimal = Instantiate(prefab, spawnPosition, Quaternion.identity);
             armyAnimals.Add(armyAnimal);
-            // Debug.Log($"Spawned animal {armyAnimal.name} at {spawnPosition} at Time={Time.time:F2}");
             ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
             if (armyAnimalScript != null)
             {
@@ -311,11 +327,10 @@ public class BarracksStructure : Structure
                 if (!isNightTime)
                 {
                     armyAnimal.SetActive(false);
-                    // Debug.Log($"Animal {armyAnimal.name} deactivated (daytime) at Time={Time.time:F2}");
                 }
                 else
                 {
-                    // Debug.Log($"Animal {armyAnimal.name} activated (nighttime) at Time={Time.time:F2}");
+                    armyAnimal.SetActive(true);
                 }
             }
             else
@@ -323,7 +338,6 @@ public class BarracksStructure : Structure
                 Debug.LogError($"Army animal prefab {armyAnimal.name} does not have ArmyAnimal component!");
             }
         }
-        // Debug.Log($"{GetStructureName()} recruited {amount} army {targetAnimalType}s. Total army: {armyAnimals.Count}");
         OnArmyChanged?.Invoke();
         UpdateRecruitmentCostByDistance();
 
@@ -349,7 +363,6 @@ public class BarracksStructure : Structure
         }
         guardPosition = position;
         UpdateArmyAnimalPositions();
-        // Debug.Log($"{GetStructureName()} placed flag at {position}. Animals guard this point.");
     }
 
     private void UpdateArmyAnimalPositions()
@@ -384,7 +397,7 @@ public class BarracksStructure : Structure
         return armyAnimalPrefabs.Count > 0 ? armyAnimalPrefabs[0] : null;
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (nightManager != null)
         {
@@ -395,6 +408,8 @@ public class BarracksStructure : Structure
             if (armyAnimal != null) Destroy(armyAnimal);
         }
         if (flag != null) Destroy(flag);
+        
+        // Call base OnDestroy
         base.OnDestroy();
     }
 
@@ -405,18 +420,15 @@ public class BarracksStructure : Structure
 
     public void ClearBarracksArmy()
     {
-        // Debug.Log($"{GetStructureName()} ClearBarracksArmy called at Time={Time.time:F2}");
         foreach (GameObject armyAnimal in armyAnimals)
         {
             if (armyAnimal != null)
             {
-                // Debug.Log($"{GetStructureName()} Destroying {armyAnimal.name}");
                 Destroy(armyAnimal);
             }
         }
         armyAnimals.Clear();
         OnArmyChanged?.Invoke();
-        // Debug.Log($"{GetStructureName()} cleared barracks army.");
     }
 
     public void ReturnAnimal(ArmyAnimal animal) // CHANGED: Renamed from ReturnChicken
@@ -427,12 +439,10 @@ public class BarracksStructure : Structure
             return;
         }
         armyAnimals.Remove(animal.gameObject);
-        // Debug.Log($"{GetStructureName()} Removed {animal.name} from army at Time={Time.time:F2}. Army size: {armyAnimals.Count}");
         Destroy(animal.gameObject);
         if (targetAnimalStructure != null)
         {
             targetAnimalStructure.AddAnimals(1);
-            // Debug.Log($"{GetStructureName()}: Returned 1 animal to {targetAnimalStructure.GetStructureName()} at Time={Time.time:F2}");
         }
         else
         {
@@ -443,7 +453,7 @@ public class BarracksStructure : Structure
 
     public static void UpdateAllNearbyChickenCoops()
     {
-        foreach (var barrack in FindObjectsOfType<BarracksStructure>())
+        foreach (var barrack in FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None))
         {
             barrack.FindTargetAnimalStructure();
         }
@@ -500,7 +510,7 @@ public class BarracksStructure : Structure
             return;
         }
 
-        GridController gridController = FindObjectOfType<GridController>();
+        GridController gridController = FindFirstObjectByType<GridController>();
         if (gridController == null)
         {
             Debug.LogWarning("No GridController found for barracks synergy check.");

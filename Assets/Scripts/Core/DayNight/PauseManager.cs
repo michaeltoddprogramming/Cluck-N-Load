@@ -7,7 +7,6 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private ShopUIManager shopManager;
     private bool isPaused = false;
 
-
     void Start()
     {
         

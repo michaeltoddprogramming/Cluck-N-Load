@@ -11,13 +11,11 @@ public class SceneTransitionManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            Debug.Log("SceneTransitionManager initialized: " + gameObject.name);
-        }
+            }
         else
         {
             Destroy(gameObject);
-            Debug.Log("Duplicate SceneTransitionManager destroyed: " + gameObject.name);
-        }
+            }
     }
 
     public void LoadSceneWithLoading(string targetScene)

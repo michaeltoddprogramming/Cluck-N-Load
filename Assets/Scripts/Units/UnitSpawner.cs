@@ -21,10 +21,24 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private float _edgeInset = 1f;
     [SerializeField] private GameObject wolfPrefab;
 
+    [Header("Performance Settings")]
+    [SerializeField] private bool useObjectPooling = true; // Enable object pooling for wolves
+    [SerializeField] private GameObject wolfPrefabCached; // Cache the prefab instead of loading from Resources
+
     private void Start()
     {
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
+            
+        // Cache the wolf prefab on start to avoid Resources.Load during gameplay
+        if (wolfPrefabCached == null && wolfPrefab != null)
+        {
+            wolfPrefabCached = wolfPrefab;
+        }
+        else if (wolfPrefabCached == null)
+        {
+            wolfPrefabCached = Resources.Load<GameObject>("Prefabs/Wolf");
+        }
     }
 
     public Unit SpawnUnitOfType(UnitType type, Vector3 position)
@@ -214,10 +228,11 @@ public class UnitSpawner : MonoBehaviour
 
     public Unit SpawnWolf()
     {
-        GameObject wolfPrefab = Resources.Load<GameObject>("Prefabs/Wolf");
-        if (wolfPrefab == null)
+        // Use cached prefab instead of Resources.Load for performance
+        GameObject prefabToUse = wolfPrefabCached != null ? wolfPrefabCached : wolfPrefab;
+        if (prefabToUse == null)
         {
-            Debug.LogError("CRITICAL ERROR: Wolf prefab not found at Resources/Prefabs/Wolf");
+            Debug.LogError("CRITICAL ERROR: Wolf prefab not found - check wolfPrefab reference or Resources/Prefabs/Wolf");
             return null;
         }
 
@@ -230,7 +245,7 @@ public class UnitSpawner : MonoBehaviour
 
         Vector3 spawnPosition = edgePositions[0];
 
-        GameObject wolfInstance = Instantiate(wolfPrefab, spawnPosition, Quaternion.identity);
+        GameObject wolfInstance = Instantiate(prefabToUse, spawnPosition, Quaternion.identity);
 
         // Set up Animator
         Animator animator = wolfInstance.GetComponent<Animator>();
@@ -258,13 +273,11 @@ public class UnitSpawner : MonoBehaviour
 
         // Validate AudioSource clips
         if (attackAudioSource.clip == null)
-            Debug.LogWarning($"Attack AudioSource on wolf at {spawnPosition} has no clip assigned");
+            Debug.LogWarning("Attack audio clip not assigned to Wolf");
         if (growlAudioSource.clip == null)
-            Debug.LogWarning($"Growl AudioSource on wolf at {spawnPosition} has no clip assigned");
+            Debug.LogWarning("Growl audio clip not assigned to Wolf");
         if (hurtAudioSource.clip == null)
-            Debug.LogWarning($"Hurt AudioSource on wolf at {spawnPosition} has no clip assigned");
-
-        Debug.Log($"Wolf spawned at {spawnPosition}");
+            Debug.LogWarning("Hurt audio clip not assigned to Wolf");
 
         Wolf wolf = wolfInstance.GetComponent<Wolf>();
         if (wolf == null)
@@ -283,24 +296,21 @@ public class UnitSpawner : MonoBehaviour
             if (attackAudioSource != null && attackAudioSource.clip != null)
             {
                 attackAudioSource.Play();
-                Debug.Log($"Wolf {wolf.name} played attack sound at {wolf.transform.position}");
-            }
+                }
         };
         wolf.OnGrowl += () =>
         {
             if (growlAudioSource != null && growlAudioSource.clip != null)
             {
                 growlAudioSource.Play();
-                Debug.Log($"Wolf {wolf.name} played growl sound at {wolf.transform.position}");
-            }
+                }
         };
         wolf.OnHurt += () =>
         {
             if (hurtAudioSource != null && hurtAudioSource.clip != null)
             {
                 hurtAudioSource.Play();
-                Debug.Log($"Wolf {wolf.name} played hurt sound at {wolf.transform.position}");
-            }
+                }
         };
 
         return wolfInstance.GetComponent<Unit>();

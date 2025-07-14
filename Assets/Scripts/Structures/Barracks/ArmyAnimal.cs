@@ -91,15 +91,10 @@ public class ArmyAnimal : MonoBehaviour
         deathAudioSource.clip = animalData.deathClip;
 
         if (attackAudioSource.clip == null)
-            Debug.LogWarning($"Attack AudioSource on {name} has no clip assigned. Check AnimalData for {animalType}.");
-        if (moveAudioSource.clip == null)
-            Debug.LogWarning($"Move AudioSource on {name} has no clip assigned. Check AnimalData for {animalType}.");
-        if (deathAudioSource.clip == null)
-            Debug.LogWarning($"Death AudioSource on {name} has no clip assigned. Check AnimalData for {animalType}.");
-        if (animalData.ambientClips == null || animalData.ambientClips.Length == 0)
-            Debug.LogWarning($"Ambient AudioSource on {name} has no clips assigned. Check AnimalData for {animalType}.");
-
-        if (animator == null)
+            if (moveAudioSource.clip == null)
+            if (deathAudioSource.clip == null)
+            if (animalData.ambientClips == null || animalData.ambientClips.Length == 0)
+            if (animator == null)
         {
             animator = GetComponent<Animator>();
             if (animator == null)
@@ -116,8 +111,7 @@ public class ArmyAnimal : MonoBehaviour
         source.volume = 1f;
         source.minDistance = 1f;
         source.maxDistance = 20f;
-        Debug.Log($"{name} Configured {sourceName} AudioSource: Volume={source.volume}, SpatialBlend={source.spatialBlend}");
-    }
+        }
 
     private void Start()
     {
@@ -127,7 +121,29 @@ public class ArmyAnimal : MonoBehaviour
         MoveToFlag();
         SetTimeOfDay(true);
         nextAmbientSoundTime = Time.time + Random.Range(animalData.ambientSoundDelayMin, animalData.ambientSoundDelayMax);
-        Debug.Log($"{name} Started: Type={animalData.animalType}, NightTime={isNightTime}");
+        }
+
+    // Helper method to safely set animator parameters without errors
+    private void SafeSetAnimatorBool(string paramName, bool value)
+    {
+        if (animator == null) return;
+        
+        // Try both variations of the parameter name (lowercase and capitalized)
+        string[] paramVariations = { paramName, char.ToUpper(paramName[0]) + paramName.Substring(1) };
+        
+        foreach (string variation in paramVariations)
+        {
+            // Check if parameter exists in the animator controller
+            foreach (AnimatorControllerParameter param in animator.parameters)
+            {
+                if (param.name == variation && param.type == AnimatorControllerParameterType.Bool)
+                {
+                    animator.SetBool(variation, value);
+                    return; // Successfully set parameter, exit
+                }
+            }
+        }
+        // Silently skip if parameter doesn't exist in any variation - no error logging needed
     }
 
     private void Update()
@@ -184,18 +200,14 @@ public class ArmyAnimal : MonoBehaviour
 
     private IEnumerator AttackEnemyRoutine(GameObject enemy)
     {
-        Debug.Log($"{name} Started attacking {enemy.name}");
         while (enemy != null && enemy.activeInHierarchy)
         {
             float distance = Vector3.Distance(transform.position, enemy.transform.position);
             if (animalData.debugAttacks)
-                Debug.Log($"{name} Distance to {enemy.name}: {distance:F2}, AttackRange={animalData.attackRange}, DetectionRange={animalData.detectionRange}");
-
-            if (distance > animalData.attackRange)
+                if (distance > animalData.attackRange)
             {
                 isMoving = true;
-                if (animator != null)
-                    animator.SetBool(walkAnimParam, true);
+                SafeSetAnimatorBool(walkAnimParam, true);
                 PlayMoveSound();
 
                 // Add offset to enemy position to avoid clustering
@@ -224,8 +236,7 @@ public class ArmyAnimal : MonoBehaviour
             if (enemy == null || !enemy.activeInHierarchy || distance > animalData.detectionRange * 1.5f)
             {
                 if (animalData.debugAttacks)
-                    Debug.Log($"{name} Lost enemy: Null={enemy == null}, Active={enemy?.activeInHierarchy ?? false}, Distance={distance:F2}");
-                break;
+                    break;
             }
 
             yield return null;
@@ -235,14 +246,12 @@ public class ArmyAnimal : MonoBehaviour
         currentEnemy = null;
         MoveToFlag();
         attackCoroutine = null;
-        Debug.Log($"{name} Stopped attacking");
-    }
+        }
 
     private void StopMovement()
     {
         isMoving = false;
-        if (animator != null)
-            animator.SetBool(walkAnimParam, false);
+        SafeSetAnimatorBool(walkAnimParam, false);
     }
 
     public void SetBarracks(BarracksStructure barracksStructure)
@@ -258,8 +267,7 @@ public class ArmyAnimal : MonoBehaviour
             guardRadius = 5f;
             Debug.LogWarning($"BarracksStructure {barracks?.name} has no valid StructureData or protectionRadius, using default guardRadius={guardRadius}");
         }
-        Debug.Log($"{name} SetBarracks: {barracks?.GetStructureName()}, GuardRadius={guardRadius}");
-    }
+        }
 
     public void SetGuardPosition(Vector3 position, float radius)
     {
@@ -285,8 +293,7 @@ public class ArmyAnimal : MonoBehaviour
                 currentEnemy = null;
             }
             nextAmbientSoundTime = Time.time + Random.Range(animalData.ambientSoundDelayMin, animalData.ambientSoundDelayMax);
-            Debug.Log($"{name} Set to night");
-        }
+            }
         else
         {
             if (attackCoroutine != null)
@@ -298,8 +305,7 @@ public class ArmyAnimal : MonoBehaviour
             currentEnemy = null;
             gameObject.SetActive(false);
             isReturningToBarracks = false;
-            Debug.Log($"{name} Set to day");
-        }
+            }
     }
 
     public void StartReturnToBarracks()
@@ -326,8 +332,7 @@ public class ArmyAnimal : MonoBehaviour
         targetPosition = barracks.transform.position;
         isMoving = true;
 
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
+        SafeSetAnimatorBool(walkAnimParam, true);
     }
 
     private void ReturnToBarracks()
@@ -363,11 +368,9 @@ public class ArmyAnimal : MonoBehaviour
         Vector2 offset = Random.insideUnitCircle * targetOffsetRadius;
         targetPosition = guardPosition + new Vector3(offset.x, 0, offset.y);
         isMoving = true;
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
+        SafeSetAnimatorBool(walkAnimParam, true);
         PlayMoveSound();
-        Debug.Log($"{name} Moving to flag at {targetPosition} with offset ({offset.x:F2}, {offset.y:F2})");
-    }
+        }
 
     private void PickNewTargetPosition()
     {
@@ -384,11 +387,9 @@ public class ArmyAnimal : MonoBehaviour
         Vector2 offset = Random.insideUnitCircle * targetOffsetRadius;
         targetPosition += new Vector3(offset.x, 0, offset.y);
         isMoving = true;
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
+        SafeSetAnimatorBool(walkAnimParam, true);
         PlayMoveSound();
-        Debug.Log($"{name} Picked new target at {targetPosition} with offset ({offset.x:F2}, {offset.y:F2})");
-    }
+        }
 
     private void MoveToTarget()
     {
@@ -400,8 +401,7 @@ public class ArmyAnimal : MonoBehaviour
         if (direction.magnitude < 0.3f)
         {
             isMoving = false;
-            if (animator != null)
-                animator.SetBool(walkAnimParam, false);
+            SafeSetAnimatorBool(walkAnimParam, false);
             return;
         }
 
@@ -440,8 +440,7 @@ public class ArmyAnimal : MonoBehaviour
         {
             separation /= nearbyCount;
             separation *= separationForce;
-            Debug.Log($"{name} Applying separation force: {separation.magnitude:F2} from {nearbyCount} neighbors");
-        }
+            }
 
         return separation;
     }
@@ -474,20 +473,15 @@ public class ArmyAnimal : MonoBehaviour
         moveAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
         moveAudioSource.Play();
         lastMoveSoundTime = Time.time;
-        Debug.Log($"{name} Playing move sound: {clip.name}, Pitch={moveAudioSource.pitch}");
-    }
-
-    private void PlayAmbientSound()
+        }    private void PlayAmbientSound()
     {
         if (ambientAudioSource == null)
         {
-            Debug.LogWarning($"{name} Ambient AudioSource is null");
-            return;
+            return; // Just skip ambient sound if no audio source
         }
         if (animalData.ambientClips == null || animalData.ambientClips.Length == 0)
         {
-            Debug.LogWarning($"{name} No ambient clips assigned in AnimalData for {animalType}");
-            return;
+            return; // Just skip ambient sound if no clips
         }
         if (Random.value > animalData.ambientSoundChance)
             return;
@@ -495,14 +489,12 @@ public class ArmyAnimal : MonoBehaviour
         AudioClip clip = animalData.ambientClips[Random.Range(0, animalData.ambientClips.Length)];
         if (clip == null)
         {
-            Debug.LogWarning($"{name} Selected ambient clip is null for {animalType}");
-            return;
+            return; // Just skip if clip is null
         }
 
         ambientAudioSource.clip = clip;
         ambientAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
         ambientAudioSource.Play();
-        Debug.Log($"{name} Playing ambient sound: {clip.name}, Pitch={ambientAudioSource.pitch}");
     }
 
     private GameObject FindNearestEnemy()
@@ -512,9 +504,7 @@ public class ArmyAnimal : MonoBehaviour
         float closestDistance = animalData.detectionRange;
 
         if (animalData.debugAttacks)
-            Debug.Log($"{name} Checking enemies in {animalData.detectionRange} range. Found {colliders.Length} colliders");
-
-        foreach (Collider col in colliders)
+            foreach (Collider col in colliders)
         {
             if (col == null) continue;
 
@@ -524,8 +514,7 @@ public class ArmyAnimal : MonoBehaviour
                 float distance = Vector3.Distance(transform.position, wolf.transform.position);
                 int assignedCount = CountAnimalsTargeting(wolf.gameObject);
                 if (animalData.debugAttacks)
-                    Debug.Log($"{name} Found wolf {wolf.name} at distance {distance:F2}, Assigned={assignedCount}, Layer={LayerMask.LayerToName(col.gameObject.layer)}");
-                if (distance < closestDistance && assignedCount < maxAnimalsPerEnemy)
+                    if (distance < closestDistance && assignedCount < maxAnimalsPerEnemy)
                 {
                     closestDistance = distance;
                     closestEnemy = wolf.gameObject;
@@ -535,12 +524,7 @@ public class ArmyAnimal : MonoBehaviour
 
         if (closestEnemy != null)
         {
-            if (animalData.debugAttacks)
-                Debug.Log($"{name} Selected closest wolf: {closestEnemy.name} at {closestDistance:F2}");
-        }
-        else if (animalData.debugAttacks)
-        {
-            Debug.Log($"{name} No wolves found in range or all targets assigned");
+            // Enemy found - proceed with attack logic
         }
 
         return closestEnemy;
@@ -549,7 +533,7 @@ public class ArmyAnimal : MonoBehaviour
     private int CountAnimalsTargeting(GameObject enemy)
     {
         int count = 0;
-        ArmyAnimal[] animals = FindObjectsOfType<ArmyAnimal>();
+        ArmyAnimal[] animals = FindObjectsByType<ArmyAnimal>(FindObjectsSortMode.None);
         foreach (ArmyAnimal animal in animals)
         {
             if (animal != this && animal.currentEnemy == enemy)
@@ -564,7 +548,6 @@ public class ArmyAnimal : MonoBehaviour
     {
         if (enemy == null || !enemy.activeInHierarchy) return;
 
-        Debug.Log($"{name} Attacking {enemy.name}");
         if (animator != null)
             // animator.SetTrigger(attackAnimParam);
 
@@ -576,8 +559,7 @@ public class ArmyAnimal : MonoBehaviour
                 attackAudioSource.clip = clip;
                 attackAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
                 attackAudioSource.Play();
-                Debug.Log($"{name} Playing attack sound: {clip.name}, Pitch={attackAudioSource.pitch}");
-            }
+                }
             else
             {
                 Debug.LogWarning($"{name} Selected attack clip is null for {animalType}");
@@ -588,22 +570,16 @@ public class ArmyAnimal : MonoBehaviour
         if (wolf != null)
         {
             wolf.TakeDamage(animalData.damage);
-            if (animalData.debugAttacks)
-                Debug.Log($"⚔️ {name} Hit {wolf.name} for {animalData.damage} damage (direct)");
         }
         else
         {
             enemy.SendMessage("TakeDamage", animalData.damage, SendMessageOptions.DontRequireReceiver);
-            if (animalData.debugAttacks)
-                Debug.Log($"⚔️ {name} Hit {enemy.name} for {animalData.damage} damage (SendMessage)");
         }
     }
 
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
-        Debug.Log($"{name} Took {amount} damage. Health: {currentHealth}/{animalData.maxHealth}");
-
         if (currentHealth > 0 && attackAudioSource != null && animalData.attackClips != null && animalData.attackClips.Length > 0)
         {
             if (Random.value <= animalData.attackSoundChance)
@@ -614,8 +590,7 @@ public class ArmyAnimal : MonoBehaviour
                     attackAudioSource.clip = clip;
                     attackAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
                     attackAudioSource.Play();
-                    Debug.Log($"{name} Playing pain sound: {clip.name}, Pitch={attackAudioSource.pitch}");
-                }
+                    }
                 else
                 {
                     Debug.LogWarning($"{name} Selected pain clip is null for {animalType}");
@@ -637,14 +612,11 @@ public class ArmyAnimal : MonoBehaviour
             deathAudioSource.clip = animalData.deathClip;
             deathAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
             deathAudioSource.Play();
-            Debug.Log($"{name} Playing death sound: {animalData.deathClip.name}, Pitch={deathAudioSource.pitch}");
-        }
+            }
         else
         {
-            Debug.LogWarning($"{name} Cannot play death sound: deathAudioSource={deathAudioSource}, deathClip={(animalData.deathClip != null ? animalData.deathClip.name : "null")}");
-        }
+            }
 
-        Debug.Log($"{name} Died");
         Destroy(gameObject);
     }
 

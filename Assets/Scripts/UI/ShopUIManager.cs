@@ -14,7 +14,6 @@ public class ShopUIManager : MonoBehaviour
     private Color nightShop = Color.grey * 0.9f;
     public Image shopIcon;
 
-
     private ShopPanelUI shopPanelUI;
     private bool isVisible = false;
 
@@ -44,10 +43,6 @@ public class ShopUIManager : MonoBehaviour
         {
             closeButton.onClick.AddListener(CloseShop);
         }
-        else
-        {
-            Debug.LogWarning("Close button is not assigned in the inspector!");
-        }
 
         // Initially hide shop
         shopPanel.SetActive(false);
@@ -71,8 +66,13 @@ public class ShopUIManager : MonoBehaviour
         if (shopPanelUI != null)
         {
             shopPanelUI.OpenShop();
-        }      
+        }
 
+        // Notify tutorial system
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnConditionMet(TutorialCondition.ShopOpened);
+        }
     }
 
     public void CloseShop()
@@ -99,20 +99,17 @@ public class ShopUIManager : MonoBehaviour
         // Only allow building when shop is open
         if (!isVisible)
         {
-            Debug.LogWarning("Cannot place structures while the shop is closed!");
             return;
         }
 
-        Debug.Log($"🏗️ Spawning: {data.structureName}");
-
         if (data.prefab == null)
         {
-            Debug.LogError($"❌ No prefab assigned to {data.structureName}!");
+            Debug.LogError($"No prefab assigned to {data.structureName}!");
             return;
         }
 
         // Find ghost placer to show placement preview
-        GhostPlacer ghostPlacer = FindObjectOfType<GhostPlacer>();
+        GhostPlacer ghostPlacer = FindFirstObjectByType<GhostPlacer>();
         if (ghostPlacer != null)
         {
             ghostPlacer.SetGhostPrefab(data.prefab);

@@ -17,6 +17,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public UnityEvent OnShopOpened = new UnityEvent();
     public UnityEvent OnShopClosed = new UnityEvent();
 
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableAnimations = true; // Can disable for potato devices
+    [SerializeField] private bool poolStructureItems = true; // Object pooling for performance
+    [SerializeField] private int maxVisibleItems = 20; // Limit visible items for performance
+
     private bool isShopOpen = false; // Tracks whether the shop is open
     private BuildController buildController;
     private CameraController cameraController;
@@ -58,61 +63,52 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 }
             });
         }
-        else
-        {
-            Debug.LogWarning("Close button is not assigned in the inspector!");
-        }
 
         // Cache controller references
-        buildController = FindObjectOfType<BuildController>();
-        cameraController = FindObjectOfType<CameraController>();
+        buildController = FindFirstObjectByType<BuildController>();
+        cameraController = FindFirstObjectByType<CameraController>();
     }
 
     void PopulateShop()
     {
         if (database == null)
         {
-            Debug.LogError("💥 StructureDatabase is NOT assigned in the inspector!");
+            Debug.LogError("StructureDatabase is not assigned in the inspector!");
             return;
         }
 
         if (database.allStructures == null || database.allStructures.Count == 0)
         {
-            Debug.LogWarning("🫠 StructureDatabase is empty. No structures to display.");
+            Debug.LogWarning("StructureDatabase is empty. No structures to display.");
             return;
         }
-
-        Debug.Log($"🔍 Populating shop with {database.allStructures.Count} structures...");
 
         foreach (StructureData data in database.allStructures)
         {
             if (data == null)
             {
-                Debug.LogError("🚨 StructureData entry is NULL in the database! Skipping...");
+                Debug.LogError("StructureData entry is NULL in the database! Skipping...");
                 continue;
             }
-
-            Debug.Log($"✅ Creating UI for structure: {data.structureName}");
 
             GameObject item = Instantiate(itemPrefab, contentParent);
             if (item == null)
             {
-                Debug.LogError("❌ Failed to instantiate itemPrefab!");
+                Debug.LogError("Failed to instantiate itemPrefab!");
                 continue;
             }
 
             StructureItemUI itemUI = item.GetComponent<StructureItemUI>();
             if (itemUI == null)
             {
-                Debug.LogError($"🧨 StructureItemUI script is missing on prefab: {item.name}");
+                Debug.LogError($"StructureItemUI script is missing on prefab: {item.name}");
                 continue;
             }
 
             itemUI.Setup(data);
         }
 
-        Debug.Log("🎉 Shop population complete!");
-    }
+        }
 
     public void OpenShop()
 {
@@ -124,23 +120,24 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     // Show this UI panel
     gameObject.SetActive(true);
 
-    Debug.Log("Shop Panel: OnShopOpened event firing");
     OnShopOpened.Invoke();
 
     // Let the BuildController know the shop opened
+    if (buildController == null)
+    {
+        // Try to find it again in case it wasn't available earlier
+        buildController = FindFirstObjectByType<BuildController>();
+    }
+    
     if (buildController != null)
     {
         buildController.HandleShopOpened();
     }
-    else
-    {
-        Debug.LogWarning("Shop Panel: BuildController not found in scene!");
-    }
+    // Remove the warning as it's not critical - shop can work without BuildController
 }
 
     public void CloseShop()
     {
-        
 
         isShopOpen = false;
         

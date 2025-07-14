@@ -27,7 +27,6 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (!isBarracksStructure)
         {
-            Debug.LogWarning($"BarracksStructureUI used with non-barracks structure: {structure.GetType().Name}");
             HideBarracksUI();
             return;
         }
@@ -39,7 +38,6 @@ public class BarracksStructureUI : BaseStructureUI
             recruitButton.onClick.RemoveAllListeners();
             recruitButton.onClick.AddListener(() =>
             {
-                Debug.Log("Recruit button clicked!");
                 barracksStructure.RecruitAnimals(recruitAmount);
             });
         }
@@ -78,10 +76,7 @@ public class BarracksStructureUI : BaseStructureUI
         barracksStructure.playBackgroundSound();
     }
 
-    public void Update()
-    {
-        UpdateUI();
-    }
+    // Removed Update() method for better performance - using event-driven updates instead
 
     private void StartFlagPlacement()
     {
@@ -148,7 +143,6 @@ public class BarracksStructureUI : BaseStructureUI
             flagPlacementIndicator.SetActive(false);
         }
 
-
     }
 
     private void UpdateUI()
@@ -194,8 +188,7 @@ public class BarracksStructureUI : BaseStructureUI
                 int cost = barracksStructure.GetRecruitmentCost() * recruitAmount;
                 buttonText.text = $"Recruit ({cost} gold)";
             }
-            Debug.Log($"Recruit button interactable: {canRecruit}");
-        }
+            }
 
         if (placeFlagButton != null && !isPlacingFlag)
         {
@@ -219,7 +212,6 @@ public class BarracksStructureUI : BaseStructureUI
     private void HideBarracksUI()
     {
 
-
         if (statusText != null)
         {
             statusText.text = "Not a barracks structure";
@@ -231,18 +223,18 @@ public class BarracksStructureUI : BaseStructureUI
         if (setFlagColorButton != null) setFlagColorButton.gameObject.SetActive(false);
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(false);
 
-
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (isBarracksStructure && barracksStructure != null)
         {
             barracksStructure.OnArmyChanged -= UpdateUI;
+            barracksStructure.stopBackgroundSound();
         }
-    barracksStructure.stopBackgroundSound();
+        
+        // Call base OnDestroy
+        base.OnDestroy();
     }
-    
 
-    
 }

@@ -11,7 +11,10 @@ namespace FarmDefender.Core.AI.FlowField
         [Header("Movement Settings")]
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float rotationSpeed = 10f;
-        [SerializeField] private float stoppingDistance = 0.1f;
+        
+        [Header("Performance Settings")]
+        [SerializeField] private float updateFrequency = 0.1f; // Reduce update frequency for potato devices
+        [SerializeField] private bool enableOptimizations = true;
         
         [Header("Interpolation Settings")]
         [SerializeField] private bool useInterpolation = true;
@@ -42,7 +45,7 @@ namespace FarmDefender.Core.AI.FlowField
         {
             if (flowFieldManager == null)
             {
-                flowFieldManager = FindObjectOfType<FlowFieldManager>();
+                flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
                 if (flowFieldManager == null)
                 {
                     enabled = false;
@@ -105,9 +108,17 @@ namespace FarmDefender.Core.AI.FlowField
                 flowDirection = GetInterpolatedDirection(position2D, 1.0f);
             }
             
-            // Skip movement if no valid direction
+            // Skip movement if no valid direction - BUT keep previous velocity for a while
             if (flowDirection == Vector2.zero)
+            {
+                // If we have previous velocity, decay it slowly to prevent sudden stops
+                if (currentVelocity.magnitude > 0.1f)
+                {
+                    currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, Time.deltaTime * 0.5f);
+                    transform.position += currentVelocity * Time.deltaTime;
+                }
                 return;
+            }
                 
             // Apply direction persistence
             if (previousFlowDirection != Vector2.zero)
@@ -256,7 +267,14 @@ namespace FarmDefender.Core.AI.FlowField
                 
             GridCell cell = dataGenerator.GetCell(coords.x, coords.y);
             if (cell == null || cell.flowDirection == Vector2.zero || cell.integrationCost == int.MaxValue)
+            {
+                // Fallback: Use previous direction or target-based direction when flow field is unavailable
+                if (previousFlowDirection != Vector2.zero)
+                {
+                    return previousFlowDirection; // Keep moving in last known direction
+                }
                 return Vector2.zero;
+            }
                 
             return cell.flowDirection;
         }

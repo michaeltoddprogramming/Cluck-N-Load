@@ -23,7 +23,6 @@ public class BuildController : MonoBehaviour
     [SerializeField] private KeyCode previousItemKey = KeyCode.P;
     [SerializeField] private KeyCode removeModifierKey = KeyCode.LeftControl;
     [SerializeField] private KeyCode moveKey = KeyCode.M;
-    [SerializeField] private KeyCode buyLandKey = KeyCode.LeftShift;
 
     [Header("UI References")]
     [SerializeField] private RectTransform itemDeleteIcon;
@@ -43,9 +42,13 @@ public class BuildController : MonoBehaviour
     [SerializeField] private float synergyIndicatorHeight = 0.1f;
     [SerializeField] private GameObject synergyLineRendererPrefab;
     [SerializeField] private Canvas worldSpaceCanvas;
-    [SerializeField] private float tooltipOffset = 1.0f;
+    
+    [Header("Performance Settings")]
+    [SerializeField] private bool enableSynergyVisuals = true; // Allow disabling for potato devices
+    [SerializeField] private int maxSynergyLines = 10; // Limit lines for performance
     private List<GameObject> synergyIndicators = new List<GameObject>();
     private List<LineRenderer> synergyLines = new List<LineRenderer>();
+    private List<GameObject> activeSynergyLines = new List<GameObject>(); // Track active synergy line GameObjects
     private Dictionary<LineRenderer, SynergyTooltip> lineTooltips = new Dictionary<LineRenderer, SynergyTooltip>();
 
     private class SynergyTooltip
@@ -77,7 +80,7 @@ public class BuildController : MonoBehaviour
     {
         if (gridController == null)
         {
-            gridController = FindObjectOfType<GridController>();
+            gridController = FindFirstObjectByType<GridController>();
             if (gridController == null)
             {
                 Debug.LogError("GridController not found. BuildController cannot function.");
@@ -87,21 +90,20 @@ public class BuildController : MonoBehaviour
         }
 
         if (flowFieldManager == null)
-            flowFieldManager = FindObjectOfType<FlowFieldManager>();
+            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
 
         if (ownershipController == null)
-            ownershipController = FindObjectOfType<OwnershipController>();
+            ownershipController = FindFirstObjectByType<OwnershipController>();
 
         if (gridMonitor == null)
-            gridMonitor = FindObjectOfType<GridMonitor>();
+            gridMonitor = FindFirstObjectByType<GridMonitor>();
 
         if (gridMonitor == null)
             Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
 
-        shopPanelUI = FindObjectOfType<ShopPanelUI>(true);
+        shopPanelUI = FindFirstObjectByType<ShopPanelUI>(FindObjectsInactive.Include);
         if (shopPanelUI != null)
         {
-            Debug.Log("BuildController: Found ShopPanelUI, subscribing to events");
             shopPanelUI.OnShopOpened.AddListener(HandleShopOpened);
             shopPanelUI.OnShopClosed.AddListener(HandleShopClosed);
         }
@@ -116,9 +118,7 @@ public class BuildController : MonoBehaviour
         if (itemDeleteIcon != null && itemDeleteIcon.GetComponent<Graphic>() != null)
             itemDeleteIcon.GetComponent<Graphic>().raycastTarget = false;
 
-        Debug.Log($"BuildController started. Grid controller reference: {(gridController != null ? "Valid" : "NULL")}");
-        Debug.Log($"Available prefabs: {buildablePrefabs.Length}");
-    }
+        }
 
     void OnDestroy()
     {
@@ -131,7 +131,6 @@ public class BuildController : MonoBehaviour
 
     public void HandleShopOpened()
     {
-        Debug.Log("BuildController: HandleShopOpened called");
         gridController.ShowGrid();
         EnableBuildMode();
     }
@@ -145,6 +144,19 @@ public class BuildController : MonoBehaviour
     void Update()
     {
         if (!isBuildModeActive && !isMoveModeActive) return;
+
+        // Performance optimization: Skip frame if too many synergy lines
+        if (enableSynergyVisuals && activeSynergyLines.Count > maxSynergyLines)
+        {
+            // Remove excess synergy lines
+            while (activeSynergyLines.Count > maxSynergyLines)
+            {
+                var lineToRemove = activeSynergyLines[activeSynergyLines.Count - 1];
+                activeSynergyLines.RemoveAt(activeSynergyLines.Count - 1);
+                if (lineToRemove != null)
+                    Destroy(lineToRemove);
+            }
+        }
 
         bool deleteKeyPressed = Input.GetKey(removeModifierKey);
         if (deleteKeyPressed != isDeleteModeActive)
@@ -198,8 +210,7 @@ public class BuildController : MonoBehaviour
         if (flowFieldManager != null)
         {
             flowFieldManager.SetBuildModeActive(false);
-            Debug.Log("Build mode deactivated - notified flow field manager");
-        }
+            }
         if (itemDeleteIcon != null)
             itemDeleteIcon.gameObject.SetActive(false);
     }
@@ -232,8 +243,7 @@ public class BuildController : MonoBehaviour
                 Destroy(currentGhost);
                 currentGhost = null;
             }
-            Debug.Log("Entered Move Mode: Click a structure to select it for moving.");
-        }
+            }
     }
 
                public void StartMoveModeForStructure(Structure structure)
@@ -319,8 +329,7 @@ public class BuildController : MonoBehaviour
             structure.UnregisterFromGrid();
             structure.gameObject.SetActive(false);
             gridController.ShowGrid();
-            Debug.Log($"Started move mode for {structure.GetStructureName()}.");
-        }
+            }
 
     public void HideGhostTemporarily()
     {
@@ -453,15 +462,13 @@ public class BuildController : MonoBehaviour
                         CreateGhost(currentBuildTargetPrefab);
                         structure.UnregisterFromGrid();
                         structure.gameObject.SetActive(false);
-                        Debug.Log($"Selected {structure.GetStructureName()} for moving.");
                         return;
                     }
                 }
                 hitTransform = hitTransform.parent;
             }
         }
-        Debug.Log("No structure selected for moving.");
-    }
+        }
 
     void PlaceMovedStructure(int x, int y)
     {
@@ -491,8 +498,7 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         DisableBuildMode();
-        Debug.Log("Structure moved successfully.");
-    }
+        }
 
     void CancelMove()
     {
@@ -512,8 +518,7 @@ public class BuildController : MonoBehaviour
         }
         gridController.HideGrid();
         DisableBuildMode();
-        Debug.Log("Move cancelled.");
-    }
+        }
 
     void UpdateGhostPosition()
     {
@@ -578,29 +583,27 @@ public class BuildController : MonoBehaviour
             CreateRangeIndicator(currentGhost.transform.position, 10f, potentialSynergyMaterial, "Crop Synergy Range");
             
             // Find animals in range
-            AnimalStructure[] animals = FindObjectsOfType<AnimalStructure>();
+            AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
             foreach (var animal in animals)
             {
-                float distance = Vector3.Distance(currentGhost.transform.position, animal.transform.position);
-                if (distance <= 15f)
+                float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
+                if (sqrDistance <= 15f * 15f) // 225f
                 {
                     CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");
                 }
             }
             
             // Find crops in range with improved detection
-            CropStructure[] crops = FindObjectsOfType<CropStructure>();
-            Debug.Log($"Found {crops.Length} crop structures in scene");
-            
+            CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
             if (crops.Length == 0) {
-                // Alternative search method if no crops found through FindObjectsOfType
-                var allStructures = FindObjectsOfType<Structure>();
+                // Alternative search method if no crops found through FindObjectsByType
+                var allStructures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
                 foreach (var structure in allStructures) {
                     if (structure is CropStructure) {
-                        Debug.Log($"Found crop via Structure search: {structure.name}");
                         CropStructure crop = structure as CropStructure;
-                        float distance = Vector3.Distance(currentGhost.transform.position, crop.transform.position);
-                        if (distance <= 10f) {
+                        float sqrDistance = (currentGhost.transform.position - crop.transform.position).sqrMagnitude;
+                        if (sqrDistance <= 10f * 10f) // 100f
+                        {
                             // Make crop lines more visible with a bright color
                             CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
                         }
@@ -615,12 +618,9 @@ public class BuildController : MonoBehaviour
                         continue;
                     }
                     
-                    float distance = Vector3.Distance(currentGhost.transform.position, crop.transform.position);
-                    Debug.Log($"Crop at {crop.transform.position}, distance: {distance} (limit: 10f)");
-                    
-                    if (distance <= 10f)
+                    float sqrDistance = (currentGhost.transform.position - crop.transform.position).sqrMagnitude;
+                    if (sqrDistance <= 10f * 10f) // 100f
                     {
-                        Debug.Log($"Creating synergy line to crop at {crop.transform.position}");
                         // Changed from Color.yellow to something more visible
                         CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
                     }
@@ -630,25 +630,27 @@ public class BuildController : MonoBehaviour
 
     private void ShowAnimalSynergyPreview()
     {
-        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
+        SiloStructure[] silos = FindObjectsByType<SiloStructure>(FindObjectsSortMode.None);
         foreach (var silo in silos)
         {
-            float distance = Vector3.Distance(currentGhost.transform.position, silo.transform.position);
-            if (distance <= 15f)
+            float sqrDistance = (currentGhost.transform.position - silo.transform.position).sqrMagnitude;
+            if (sqrDistance <= 15f * 15f) // 225f
             {
                 CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Animal");
             }
         }
 
-        BarracksStructure[] barracks = FindObjectsOfType<BarracksStructure>();
+        BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
         foreach (var barrack in barracks)
         {
             AnimalStructure animalStructure = currentGhost.GetComponent<AnimalStructure>();
             if (animalStructure != null && barrack.TargetAnimalType == animalStructure.GetAnimalType.ToString())
             {
-                float distance = Vector3.Distance(currentGhost.transform.position, barrack.transform.position);
-                if (distance <= barrack.synergyMaxDist)
+                float sqrDistance = (currentGhost.transform.position - barrack.transform.position).sqrMagnitude;
+                if (sqrDistance <= barrack.synergyMaxDist * barrack.synergyMaxDist)
                 {
+                    // Calculate actual distance only when needed for color comparison
+                    float distance = Mathf.Sqrt(sqrDistance);
                     Color lineColor = distance <= barrack.synergyMinDist ? Color.red : Color.green;
                     string synergyType = $"Barracks-{animalStructure.GetAnimalType}";
                     CreateSynergyLine(currentGhost.transform.position, barrack.transform.position, lineColor, synergyType);
@@ -667,14 +669,17 @@ public class BuildController : MonoBehaviour
         CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMinDist, validSynergyMaterial, "Optimal Synergy Range");
         CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMaxDist, potentialSynergyMaterial, "Maximum Synergy Range");
 
-        AnimalStructure[] animals = FindObjectsOfType<AnimalStructure>();
+        AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
         foreach (var animal in animals)
         {
             if (animal.GetAnimalType.ToString() == targetType)
             {
-                float distance = Vector3.Distance(currentGhost.transform.position, animal.transform.position);
-                if (distance <= barracksStructure.synergyMaxDist)
+                float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
+                float synergyMaxDistSqr = barracksStructure.synergyMaxDist * barracksStructure.synergyMaxDist;
+                if (sqrDistance <= synergyMaxDistSqr)
                 {
+                    // For color comparison, still need actual distance
+                    float distance = Mathf.Sqrt(sqrDistance);
                     Color lineColor = distance <= barracksStructure.synergyMinDist ? Color.red : Color.green;
                     string synergyType = $"Barracks-{targetType}";
                     CreateSynergyLine(currentGhost.transform.position, animal.transform.position, lineColor, synergyType);
@@ -685,19 +690,14 @@ public class BuildController : MonoBehaviour
         private void ShowCropSynergyPreview()
     {    
         // Find silos in range (reverse of the silo->crop relationship)
-        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
-        Debug.Log($"[CROP DEBUG] Found {silos.Length} silo structures when placing a crop");
-        
+        SiloStructure[] silos = FindObjectsByType<SiloStructure>(FindObjectsSortMode.None);
         foreach (var silo in silos)
         {
             if (silo == null) continue;
             
-            float distance = Vector3.Distance(currentGhost.transform.position, silo.transform.position);
-            Debug.Log($"[CROP DEBUG] Distance to silo: {distance} (limit: 10f)");
-            
-            if (distance <= 10f)
+            float sqrDistance = (currentGhost.transform.position - silo.transform.position).sqrMagnitude;
+            if (sqrDistance <= 10f * 10f) // 100f
             {
-                Debug.Log($"[CROP DEBUG] Creating crop->silo synergy line to {silo.name}");
                 CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Crop");
             }
         }
@@ -785,8 +785,8 @@ public class BuildController : MonoBehaviour
         // Create simple floating text at the midpoint of the line
         ShowSynergyText((start + end) / 2f, GetBonusSummary(synergyType, color), color);
         
-        Debug.Log($"Created {synergyType} line from {start} to {end} with color {color}");
         synergyLines.Add(line);
+        activeSynergyLines.Add(lineObj); // Track the GameObject for performance management
         return line;
     }
     
@@ -818,8 +818,7 @@ public class BuildController : MonoBehaviour
         // Add to synergy indicators for cleanup
         synergyIndicators.Add(textObj);
         
-        Debug.Log($"Created floating text: '{text}' at {position}");
-    }
+        }
     
     // New method to create visible bonus labels
         private void CreateVisibleBonusLabel(Vector3 start, Vector3 end, Color color, string synergyType)
@@ -834,8 +833,6 @@ public class BuildController : MonoBehaviour
         if (string.IsNullOrEmpty(bonusText)) return;
         
         // Log for debugging
-        Debug.Log($"Creating bonus label: '{bonusText}' for {synergyType} at midpoint between {start} and {end}");
-        
         try {
             // Create a new TextMeshProUGUI component in a way that works reliably
             GameObject labelObj = new GameObject($"BonusLabel_{synergyType}_{Random.Range(0, 1000)}");
@@ -884,8 +881,7 @@ public class BuildController : MonoBehaviour
             // Add to synergy indicators for cleanup
             synergyIndicators.Add(labelObj);
             
-            Debug.Log($"Successfully created bonus label at {midpoint}");
-        }
+            }
         catch (System.Exception e) {
             Debug.LogError($"Failed to create bonus label: {e.Message}\n{e.StackTrace}");
         }
@@ -941,7 +937,6 @@ public class BuildController : MonoBehaviour
         return "Building Connection";
     }
 
-
     private void ClearSynergyVisualization()
     {
         foreach (var indicator in synergyIndicators)
@@ -966,6 +961,7 @@ public class BuildController : MonoBehaviour
         }
         lineTooltips.Clear();
         synergyLines.Clear();
+        activeSynergyLines.Clear(); // Clear the performance tracking list
     }
 
     void UpdateGhostPositionForMove()
@@ -1008,7 +1004,6 @@ public class BuildController : MonoBehaviour
     {
         if (ghostMaterial == null)
         {
-            Debug.LogWarning("Ghost material not assigned! Creating a simple translucent material.");
             ghostMaterial = new Material(Shader.Find("Standard"));
             ghostMaterial.color = new Color(0, 1, 0, 0.5f);
             ghostMaterial.SetFloat("_Mode", 3);
@@ -1038,16 +1033,16 @@ public class BuildController : MonoBehaviour
 
         if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(data.cost))
         {
-            Debug.Log($"Cannot afford {data.structureName} (Cost: {data.cost})");
             return;
         }
 
-        Debug.Log($"Setting build target to: {data.structureName}");
         currentBuildTargetPrefab = data.prefab;
         currentStructureData = data;
 
-        if (isBuildModeActive && !isMoveModeActive)
-            CreateGhost(currentBuildTargetPrefab);
+        // Enable build mode and create new ghost
+        EnableBuildMode();
+        // Force create new ghost even if one already exists
+        CreateGhost(currentBuildTargetPrefab);
     }
 
     public void SetBuildTarget(GameObject prefab)
@@ -1060,8 +1055,10 @@ public class BuildController : MonoBehaviour
 
         currentBuildTargetPrefab = prefab;
 
-        if (isBuildModeActive && !isMoveModeActive)
-            CreateGhost(currentBuildTargetPrefab);
+        // Enable build mode and create new ghost
+        EnableBuildMode();
+        // Force create new ghost even if one already exists
+        CreateGhost(currentBuildTargetPrefab);
     }
 
     private List<Vector2Int> GetStructureFootprint(GameObject obj)
@@ -1120,7 +1117,6 @@ public class BuildController : MonoBehaviour
 
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
         {
-            Debug.Log("Not enough money to place structure");
             return;
         }
 
@@ -1145,6 +1141,19 @@ public class BuildController : MonoBehaviour
 
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayPlaceSound();
+
+        // Notify tutorial system about structure placement
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnConditionMet(TutorialCondition.FirstStructurePlaced);
+            
+            // Check if it's a barracks for defense tutorial
+            BarracksStructure barracks = placedItem.GetComponent<BarracksStructure>();
+            if (barracks != null)
+            {
+                TutorialManager.Instance.OnConditionMet(TutorialCondition.BarracksPlaced);
+            }
+        }
 
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0)
@@ -1266,7 +1275,6 @@ public class BuildController : MonoBehaviour
             }
         }
 
-        Debug.Log($"Found {occupiedCells.Count} occupied cells in extended footprint");
         return occupiedCells;
     }
 
@@ -1326,8 +1334,7 @@ public class BuildController : MonoBehaviour
     public void SetRemovalModifierKey(KeyCode newKey)
     {
         removeModifierKey = newKey;
-        Debug.Log($"Removal modifier key changed to: {newKey}");
-    }
+        }
 
     public KeyCode GetRemovalModifierKey()
     {

@@ -15,13 +15,11 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] public int currCapacity = 0;
     private List<SiloStructure> silos = new List<SiloStructure>();
 
-
     // Event that fires whenever inventory changes
     public System.Action OnInventoryChanged;
 
     private Dictionary<string, int> inventory = new Dictionary<string, int>();
     private Dictionary<string, TextMeshProUGUI> itemTextComponents = new Dictionary<string, TextMeshProUGUI>();
-
 
     private void Awake()
     {
@@ -41,15 +39,10 @@ public class InventoryManager : MonoBehaviour
         inventory["Sunflower"] = 20;
         inventory["Wheat"] = 20;
         inventory["Carrots"] = 20;
-        Debug.Log("Inventory initialized: Sunflower=20, Wheat=20, Carrots=20");
-    }
+        }
 
-    private void Update()
-    {
-        totalCapacity = GetTotalSiloCapacity();
-        currCapacity = GetCurrentSiloCapacity();
-    }
-
+    // Removed Update() method - capacity is now calculated when silos are added/removed
+    // This improves performance by not calculating capacity every frame
 
     private void Start()
     {
@@ -68,6 +61,9 @@ public class InventoryManager : MonoBehaviour
         if (!silos.Contains(silo))
         {
             silos.Add(silo);
+            // Update capacity when silo is added
+            totalCapacity = GetTotalSiloCapacity();
+            currCapacity = GetCurrentSiloCapacity();
             OnInventoryChanged?.Invoke();
             // CropStructure.OnPlaced();
             CropStructure.UpdateAllCropSynergies();
@@ -79,6 +75,9 @@ public class InventoryManager : MonoBehaviour
         if (silos.Contains(silo))
         {
             silos.Remove(silo);
+            // Update capacity when silo is removed
+            totalCapacity = GetTotalSiloCapacity();
+            currCapacity = GetCurrentSiloCapacity();
             OnInventoryChanged?.Invoke();
             CropStructure.UpdateAllCropSynergies();
         }
@@ -91,8 +90,6 @@ public class InventoryManager : MonoBehaviour
             inventory[itemName] = 0;
         }
         inventory[itemName] += amount;
-        Debug.Log($"Added {amount} {itemName} to inventory. New total: {inventory[itemName]}");
-
         // Update UI
         UpdateItemUI(itemName);
 
@@ -114,8 +111,6 @@ public class InventoryManager : MonoBehaviour
         if (HasItem(itemName, amount))
         {
             inventory[itemName] -= amount;
-            Debug.Log($"Removed {amount} {itemName} from inventory. New total: {inventory[itemName]}");
-
             // Update UI
             UpdateItemUI(itemName);
 
@@ -138,8 +133,7 @@ public class InventoryManager : MonoBehaviour
         if (itemTextComponents.ContainsKey(itemName) && itemTextComponents[itemName] != null)
         {
             itemTextComponents[itemName].text = inventory[itemName].ToString();
-            Debug.Log($"Updated UI for {itemName}: {inventory[itemName]}");
-        }
+            }
         else
         {
             Debug.LogWarning($"No TextMeshProUGUI assigned for {itemName}");
@@ -198,17 +192,13 @@ public class InventoryManager : MonoBehaviour
                     amounts[k] = GetItemCount("Carrots");
                     break;
                 default:
-                    Debug.LogError("THis crop type does not exist!!!!");
+                    Debug.LogError("This crop type does not exist!");
                     amounts[k] = -10;
                     break;
             }
         }
 
-        // Debug.Log("------------------------------------------------------" + amounts);
-
         return amounts;
-        
-
     }
 
 }

@@ -34,7 +34,7 @@ public class GridController : MonoBehaviour
         GridCellColorResolver.Colors = gridColors;
     
         if (gridDataGenerator == null)
-            gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+            gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
     
         if (gridDataGenerator == null)
         {
@@ -135,12 +135,10 @@ public class GridController : MonoBehaviour
     // Methods for grid visibility control
     public void ShowGrid()
     {
-        Debug.Log($"GridController: ShowGrid called, gridOverlayInstance={gridOverlayInstance != null}");
         if (gridOverlayInstance != null)
         {
             gridOverlayInstance.SetActive(true);
-            Debug.Log("Grid is now visible");
-        }
+            }
     }
 
     public void HideGrid()

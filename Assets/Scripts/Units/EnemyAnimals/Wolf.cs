@@ -5,13 +5,17 @@ using System.Linq;
 
 public class Wolf : MonoBehaviour
 {
+    [Header("Performance Settings")]
+    [SerializeField] private float targetCacheInterval = 3f; // Reduced from 5f for more responsive targeting
+    [SerializeField] private float nearbySearchInterval = 1.5f; // Reduced from 3f for better responsiveness
+    [SerializeField] private int maxTargetsToConsider = 30; // Increased from 20 to find more targets
+    
     [Header("Wolf Stats")]
     [SerializeField] private float baseAttackRange = 3f;
     [SerializeField] private int damage = 20;
     [SerializeField] private float attackCooldown = 2f;
     [SerializeField] private int maxHealth = 50;
     [SerializeField] private float detectionRange = 20f;
-    [SerializeField] private float globalSearchInterval = 2f;
 
     [Header("Target Priorities (Higher = More Priority)")]
     [SerializeField] private int chickenPriority = 10;
@@ -42,6 +46,17 @@ public class Wolf : MonoBehaviour
     private float growlTimer = 0f;
     private GameObject fallbackTarget;
     private readonly List<GameObject> cachedTargets = new List<GameObject>();
+    
+    // Performance optimization caches - each wolf maintains its own cache to prevent interference
+    private readonly List<ArmyAnimal> _localAnimalCache = new List<ArmyAnimal>();
+    private readonly List<Structure> _localStructureCache = new List<Structure>();
+    private float _lastLocalCacheTime = -1f;
+    private const float LOCAL_CACHE_INTERVAL = 2f; // Each wolf has its own cache refresh
+    
+    private Vector3 _lastPosition;
+    private float _targetSearchRangeSquared;
+    private float _lastTargetDestroyTime = 0f; // Track when targets are destroyed
+    private bool _isActivelyAttacking = false; // Track if this wolf is currently attacking
 
     // Events for animation and audio control
     public event System.Action OnStartMoving;
@@ -56,7 +71,7 @@ public class Wolf : MonoBehaviour
         if (flowFieldAgent == null)
             flowFieldAgent = GetComponent<FlowFieldAgent>() ?? gameObject.AddComponent<FlowFieldAgent>();
 
-        flowFieldManager = FindObjectOfType<FlowFieldManager>();
+        flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
         nightManager = NightManager.Instance;
 
         if (flowFieldManager == null || nightManager == null)
@@ -72,8 +87,10 @@ public class Wolf : MonoBehaviour
 
         // Initialize growl timer
         growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
-
-        Debug.Log($"🐺 Wolf {name} initialized at {transform.position}");
+        
+        // Performance optimizations
+        _targetSearchRangeSquared = detectionRange * detectionRange;
+        _lastPosition = transform.position;
     }
 
     private void Start()
@@ -81,12 +98,48 @@ public class Wolf : MonoBehaviour
         currentHealth = maxHealth;
         nightManager.RegisterWolf(this);
         Structure.RegisterWolf(this);
+        
+        // Initialize stable flow field once for all wolves
+        InitializeStableFlowField();
+        
+        // Ensure immediate movement and targeting
+        _isActivelyAttacking = false;
         flowFieldAgent.SetMoving(true);
         OnStartMoving?.Invoke();
 
+        // Stagger expensive initialization to prevent freezing when multiple wolves spawn
+        float initDelay = Random.Range(0f, 0.5f); // Random delay between 0-0.5 seconds
+        StartCoroutine(DelayedInitialization(initDelay));
+    }
+    
+    private System.Collections.IEnumerator DelayedInitialization(float delay)
+    {
+        // Wait for staggered delay
+        yield return new WaitForSeconds(delay);
+        
+        // Force immediate cache refresh for this wolf (but staggered)
+        RefreshLocalCache();
         CacheTargets();
         FindTargetWithPriority();
-        UpdateFallbackTarget();
+        
+        // If no target found immediately, start moving towards potential targets
+        if (target == null)
+        {
+            UpdateFallbackTarget();
+            // Let wolves follow existing flow field instead of requesting new one during initialization
+            // This prevents flow field regeneration during wolf spawning
+        }
+        
+        // Log successful initialization (with low chance to avoid spam)
+        if (Random.value < 0.2f) // 20% chance to log
+        {        // Wolf initialization complete
+    }
+    }
+
+    private void CacheTargets()
+    {
+        // Legacy method for compatibility - now uses the optimized UpdateTargetCache
+        UpdateTargetCache();
     }
 
     private void OnDestroy()
@@ -96,6 +149,9 @@ public class Wolf : MonoBehaviour
         Structure.UnregisterWolf(this);
         if (fallbackTarget != null)
             Destroy(fallbackTarget);
+            
+        // Clear cached targets to prevent memory leaks
+        cachedTargets.Clear();
     }
 
     private void Update()
@@ -116,105 +172,269 @@ public class Wolf : MonoBehaviour
         {
             OnGrowl?.Invoke();
             growlTimer = Random.Range(minGrowlInterval, maxGrowlInterval);
-            // Debug.Log($"Wolf {name} triggered growl, next growl in {growlTimer:F1} seconds");
         }
 
+        // Stagger update operations to prevent all wolves from doing expensive work simultaneously
+        bool shouldDoExpensiveWork = (Time.frameCount + GetInstanceID()) % 4 == 0; // Only 1/4 of wolves per frame
+        
         if (targetUpdateTimer <= 0f)
         {
             FindNearbyTarget();
-            targetUpdateTimer = 2f;
+            targetUpdateTimer = nearbySearchInterval; // Use configurable interval
         }
 
-        if (globalSearchTimer <= 0f)
+        if (globalSearchTimer <= 0f && shouldDoExpensiveWork)
         {
-            CacheTargets();
+            UpdateTargetCache();
             FindTargetWithPriority();
-            globalSearchTimer = globalSearchInterval;
+            globalSearchTimer = targetCacheInterval; // Use configurable interval
         }
 
-        if (target != null && IsValidTarget(target))
+        if (target != null && IsValidTargetFast(target))
         {
-            float distance = Vector3.Distance(transform.position, targetAttackPoint);
+            // Use squared distance for performance
+            Vector3 diff = transform.position - targetAttackPoint;
+            float sqrDistance = diff.sqrMagnitude;
             float effectiveAttackRange = GetEffectiveAttackRange(target);
+            float sqrAttackRange = effectiveAttackRange * effectiveAttackRange;
 
-            if (distance <= effectiveAttackRange)
+            if (sqrDistance <= sqrAttackRange)
             {
+                _isActivelyAttacking = true;
                 flowFieldAgent.SetMoving(false);
                 OnStopMoving?.Invoke();
                 AttackTarget();
             }
             else
             {
+                _isActivelyAttacking = false;
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
-                flowFieldManager.SetTargetTransformWithPoint(target.transform, targetAttackPoint);
+                // Use hybrid movement: flow field + direct movement when close
+                MoveDirectlyTowardsTarget();
             }
         }
         else
         {
+            _isActivelyAttacking = false;
             target = null;
-            cachedTargets.RemoveAll(go => go == null || !go);
+            
+            // More aggressive cleanup of invalid targets
+            cachedTargets.RemoveAll(go => go == null || !go || !IsValidTargetFast(go));
+            
+            // Force a fresh search when we lose our target (but only for this wolf and only if allowed)
+            bool shouldForceRefresh = Time.time - _lastTargetDestroyTime > 0.5f && shouldDoExpensiveWork;
+            if (shouldForceRefresh)
+            {
+                RefreshLocalCache(); // Use local cache instead of global
+                UpdateTargetCache();
+                _lastTargetDestroyTime = Time.time;
+            }
+            
             FindTargetWithPriority();
 
             if (target == null)
             {
+                // If no targets found, move to fallback position more aggressively
                 if (fallbackMoveTimer <= 0f)
                 {
                     UpdateFallbackTarget();
-                    fallbackMoveTimer = fallbackMoveInterval;
+                    fallbackMoveTimer = fallbackMoveInterval * 0.5f; // Faster fallback updates
                 }
                 flowFieldAgent.SetMoving(true);
                 OnStartMoving?.Invoke();
-                flowFieldManager.SetTargetTransformWithPoint(fallbackTarget.transform, fallbackTarget.transform.position);
-                // Debug.Log($"Wolf {name} no targets, moving to fallback target at {fallbackTarget.transform.position}");
+                // Let wolves use existing flow field for fallback movement instead of constantly regenerating
+                // Fallback: Move directly if no flow field available
+                if (fallbackTarget != null)
+                {
+                    Vector3 direction = (fallbackTarget.transform.position - transform.position).normalized;
+                    if (direction != Vector3.zero)
+                    {
+                        // Use a mix of flow field following and direct movement
+                        // This prevents constant flow field regeneration
+                        transform.position += direction * 1f * Time.deltaTime;
+                    }
+                }
+                
+                // If we've been without targets for too long, do more aggressive search (but still staggered)
+                if (cachedTargets.Count == 0 && globalSearchTimer <= -0.5f && shouldDoExpensiveWork)
+                {
+                    // Force a local search more aggressively
+                    RefreshLocalCache();
+                    UpdateTargetCache();
+                    if (cachedTargets.Count == 0)
+                    {
+                        // No targets found anywhere - move towards center of map
+                        UpdateFallbackTargetTowardsCenter();
+                        globalSearchTimer = targetCacheInterval * 0.25f; // Reset timer very aggressively
+                    }
+                    else
+                    {
+                        // Found targets, reset timer normally
+                        globalSearchTimer = targetCacheInterval;
+                    }
+                }
             }
         }
     }
 
-    private void CacheTargets()
+    private void UpdateTargetCache()
     {
+        // Each wolf maintains its own cache to prevent interference
+        bool forceRefresh = Time.time - _lastLocalCacheTime > LOCAL_CACHE_INTERVAL;
+        bool targetWasDestroyed = Time.time - _lastTargetDestroyTime < 2f;
+        
+        if (forceRefresh || targetWasDestroyed)
+        {
+            RefreshLocalCache();
+            _lastLocalCacheTime = Time.time;
+        }
+        
+        // Update local cached targets from this wolf's cache
         cachedTargets.Clear();
-        var chickens = FindObjectsOfType<ArmyAnimal>()
-            .Where(a => a != null && a.gameObject != null && a.gameObject.activeInHierarchy)
-            .Select(a => a.gameObject);
-        var structures = FindObjectsOfType<Structure>()
-            .Where(s => s != null && s.gameObject != null && s.gameObject.activeInHierarchy && !s.isIndestructible)
-            .Select(s => s.gameObject);
-        cachedTargets.AddRange(chickens);
-        cachedTargets.AddRange(structures);
-        // Debug.Log($"Wolf {name} cached {cachedTargets.Count} potential targets (Chickens={chickens.Count()}, Structures={structures.Count()})");
+        Vector3 currentPos = transform.position;
+        
+        // Add animals from local cache
+        int animalCount = 0;
+        for (int i = 0; i < _localAnimalCache.Count && animalCount < maxTargetsToConsider; i++)
+        {
+            var animal = _localAnimalCache[i];
+            if (animal != null && animal.gameObject != null && animal.gameObject.activeInHierarchy)
+            {
+                // Quick squared distance check (faster than Vector3.Distance)
+                Vector3 diff = animal.transform.position - currentPos;
+                if (diff.sqrMagnitude <= _targetSearchRangeSquared * 9f) // Increased range for better detection
+                {
+                    cachedTargets.Add(animal.gameObject);
+                    animalCount++;
+                }
+            }
+        }
+        
+        // Add structures from local cache
+        int structureCount = 0;
+        for (int i = 0; i < _localStructureCache.Count && structureCount < maxTargetsToConsider; i++)
+        {
+            var structure = _localStructureCache[i];
+            if (structure != null && structure.gameObject != null && structure.gameObject.activeInHierarchy && !structure.isIndestructible)
+            {
+                Vector3 diff = structure.transform.position - currentPos;
+                if (diff.sqrMagnitude <= _targetSearchRangeSquared * 9f) // Increased range
+                {
+                    cachedTargets.Add(structure.gameObject);
+                    structureCount++;
+                }
+            }
+        }
+        
+        // Clean up any null references that slipped through
+        cachedTargets.RemoveAll(go => go == null || !go.activeInHierarchy);
+    }
+    
+    private void RefreshLocalCache()
+    {
+        // Prevent multiple simultaneous expensive cache refreshes
+        if (Time.time - _lastLocalCacheTime < 0.1f)
+        {
+            return; // Too soon since last refresh
+        }
+        
+        _localAnimalCache.Clear();
+        _localStructureCache.Clear();
+        
+        try
+        {
+            // Add a small random delay to prevent all wolves from calling FindObjectsByType simultaneously
+            if (Random.value < 0.3f) // 30% chance for micro-delay
+            {
+                // This creates natural staggering without blocking
+                return; // Skip this frame, will retry next time
+            }
+            
+            // Each wolf does its own FindObjectsByType call to avoid interference
+            var animals = FindObjectsByType<ArmyAnimal>(FindObjectsSortMode.None);
+            if (animals != null)
+            {
+                foreach (var animal in animals)
+                {
+                    if (animal != null && animal.gameObject != null && animal.gameObject.activeInHierarchy)
+                    {
+                        _localAnimalCache.Add(animal);
+                    }
+                }
+            }
+            
+            var structures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
+            if (structures != null)
+            {
+                foreach (var structure in structures)
+                {
+                    if (structure != null && structure.gameObject != null && 
+                        structure.gameObject.activeInHierarchy && !structure.isIndestructible &&
+                        structure.GetCurrentHealth() > 0)
+                    {
+                        _localStructureCache.Add(structure);
+                    }
+                }
+            }
+            
+            _lastLocalCacheTime = Time.time; // Update timestamp only on successful refresh
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"Wolf {name} failed to refresh cache: {e.Message}");
+            // Continue with whatever cache we have
+        }
     }
 
     private void FindNearbyTarget()
     {
-        int layerMask = LayerMask.GetMask("Default", "Chicken", "Structure");
-        Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRange, layerMask);
+        // Skip movement check if we just lost a target - always search for new ones
+        Vector3 currentPos = transform.position;
+        bool justLostTarget = Time.time - _lastTargetDestroyTime < 3f;
+        
+        if (!justLostTarget && Vector3.SqrMagnitude(currentPos - _lastPosition) < 1f && target != null)
+        {
+            return;
+        }
+        _lastPosition = currentPos;
+        
+        // Use cached targets instead of Physics.OverlapSphere for better performance
         GameObject bestTarget = null;
         Vector3 bestAttackPoint = Vector3.zero;
         float bestScore = float.MinValue;
-
-        // Debug.Log($"Wolf {name} checking nearby targets, found {colliders.Length} colliders");
-
-        foreach (Collider col in colliders)
+        
+        // Increase search range if we just lost a target
+        float searchRangeMultiplier = justLostTarget ? 2f : 1f;
+        float currentSearchRange = _targetSearchRangeSquared * searchRangeMultiplier;
+        
+        // Limit iterations for performance
+        int checkedCount = 0;
+        foreach (GameObject go in cachedTargets)
         {
-            if (col == null || col.gameObject == null) continue;
-            GameObject go = col.gameObject;
-            if (!IsValidTarget(go)) continue;
-
-            float score = CalculateTargetScore(go, out Vector3 attackPoint);
-            if (score > bestScore)
+            if (checkedCount++ > maxTargetsToConsider) break;
+            
+            if (!IsValidTargetFast(go)) continue;
+            
+            // Use squared distance for performance
+            Vector3 diff = go.transform.position - currentPos;
+            float sqrDistance = diff.sqrMagnitude;
+            
+            if (sqrDistance <= currentSearchRange)
             {
-                bestTarget = go;
-                bestAttackPoint = attackPoint;
-                bestScore = score;
-                // Debug.Log($"Wolf {name} considered {go.name} (Layer={LayerMask.LayerToName(go.layer)}, Score={score:F2})");
+                float score = CalculateTargetScoreFast(go, sqrDistance, out Vector3 attackPoint);
+                if (score > bestScore)
+                {
+                    bestTarget = go;
+                    bestAttackPoint = attackPoint;
+                    bestScore = score;
+                }
             }
         }
 
         if (bestTarget != null)
         {
             SetTarget(bestTarget, bestAttackPoint);
-            // Debug.Log($"Wolf {name} selected nearby target {bestTarget.name}");
         }
     }
 
@@ -242,27 +462,135 @@ public class Wolf : MonoBehaviour
         if (bestTarget != null)
         {
             SetTarget(bestTarget, bestAttackPoint);
-            // Debug.Log($"Wolf {name} selected priority target {bestTarget.name}");
         }
         else
         {
-            // Debug.Log($"Wolf {name} found no valid targets");
+            target = null;
         }
+    }
+
+    private bool IsValidTargetFast(GameObject go)
+    {
+        // Fast null check without expensive operations, but still thorough
+        if (go == null) return false;
+        
+        try
+        {
+            // Quick check if object exists and is active
+            return !go.Equals(null) && go.activeInHierarchy;
+        }
+        catch (System.Exception)
+        {
+            // Object was destroyed between checks
+            return false;
+        }
+    }
+    
+    private float CalculateTargetScoreFast(GameObject go, float sqrDistance, out Vector3 attackPoint)
+    {
+        attackPoint = go.transform.position;
+        int priority = 0;
+        float healthFactor = 0f;
+        float animalCountFactor = 0f;
+
+        // Cache component lookups to avoid repeated GetComponent calls
+        ArmyAnimal chicken = go.GetComponent<ArmyAnimal>();
+        if (chicken != null)
+        {
+            priority = chickenPriority;
+            attackPoint = GetNearestPointOnBoundsFast(go, transform.position);
+        }
+        else
+        {
+            Structure structure = go.GetComponent<Structure>();
+            if (structure != null && !structure.isIndestructible)
+            {
+                priority = structurePriority;
+                attackPoint = GetNearestPointOnBoundsFast(go, transform.position);
+                
+                // Only calculate health factors for structures (more expensive)
+                int currentHealth = structure.GetCurrentHealth();
+                int maxHealth = structure.GetMaxHealth();
+                healthFactor = maxHealth > 0 ? (1f - (float)currentHealth / maxHealth) : 1f;
+                
+                AnimalStructure animalStructure = structure as AnimalStructure;
+                if (animalStructure != null)
+                    animalCountFactor = Mathf.Clamp01((float)animalStructure.AnimalCount / 10f);
+            }
+        }
+
+        if (priority <= 0)
+        {
+            return float.MinValue;
+        }
+
+        // Use squared distance to avoid expensive sqrt calculation
+        float distancePenalty = sqrDistance / (_targetSearchRangeSquared);
+        float score = priority - distancePenalty + (healthWeight * healthFactor) + (animalCountWeight * animalCountFactor);
+        return score;
+    }
+    
+    private Vector3 GetNearestPointOnBoundsFast(GameObject go, Vector3 fromPosition)
+    {
+        Collider col = go.GetComponent<Collider>();
+        if (col != null && col.enabled)
+            return col.ClosestPoint(fromPosition);
+        return go.transform.position;
     }
 
     private bool IsValidTarget(GameObject go)
     {
-        bool valid = go != null && go && go.activeInHierarchy && !go.Equals(null);
-        if (!valid && go != null)
-            Debug.Log("");
-            // Debug.Log($"Wolf {name} rejected target {go.name}: Null={go == null}, Exists={!go}, Active={go.activeInHierarchy}, Destroyed={go.Equals(null)}");
-        return valid;
+        if (go == null) return false;
+        
+        try
+        {
+            // Check if object still exists and is active
+            if (go.Equals(null) || !go.activeInHierarchy) 
+            {
+                if (go != null) cachedTargets.Remove(go);
+                return false;
+            }
+            
+            // Check if it's a valid target type
+            ArmyAnimal animal = go.GetComponent<ArmyAnimal>();
+            if (animal != null)
+            {
+                return true; // Animals are always valid targets if alive
+            }
+            
+            Structure structure = go.GetComponent<Structure>();
+            if (structure != null)
+            {
+                // Check if structure is still valid and not indestructible
+                if (structure.isIndestructible) return false;
+                
+                // Check if structure is still alive
+                if (structure.GetCurrentHealth() <= 0)
+                {
+                    cachedTargets.Remove(go);
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // If we get here, it's not a recognized target type
+            cachedTargets.Remove(go);
+            return false;
+        }
+        catch (System.Exception)
+        {
+            // If any exception occurs (destroyed object, etc.), it's not valid
+            if (go != null) cachedTargets.Remove(go);
+            return false;
+        }
     }
 
     private float CalculateTargetScore(GameObject go, out Vector3 attackPoint)
     {
         attackPoint = go.transform.position;
-        float distance = Vector3.Distance(transform.position, go.transform.position);
+        Vector3 diff = go.transform.position - transform.position;
+        float sqrDistance = diff.sqrMagnitude; // Use squared distance for performance
         int priority = 0;
         float healthFactor = 0f;
         float animalCountFactor = 0f;
@@ -291,11 +619,10 @@ public class Wolf : MonoBehaviour
 
         if (priority <= 0)
         {
-            // Debug.Log($"Wolf {name} rejected {go.name}: Priority={priority} (No ArmyAnimal or valid Structure)");
             return float.MinValue;
         }
 
-        float distancePenalty = distance / detectionRange;
+        float distancePenalty = sqrDistance / _targetSearchRangeSquared; // Use squared values
         float score = priority - distancePenalty + (healthWeight * healthFactor) + (animalCountWeight * animalCountFactor);
         return score;
     }
@@ -305,7 +632,6 @@ public class Wolf : MonoBehaviour
         Collider col = go.GetComponent<Collider>();
         if (col != null && col)
             return col.ClosestPoint(fromPosition);
-        // Debug.LogWarning($"Wolf {name} target {go.name} has no collider, using position");
         return go.transform.position;
     }
 
@@ -327,10 +653,11 @@ public class Wolf : MonoBehaviour
 
         target = newTarget;
         targetAttackPoint = attackPoint;
-        // Debug.Log($"Wolf {name} targeting {target.name} at attack point {targetAttackPoint}");
-
-        if (flowFieldManager != null)
-            flowFieldManager.SetTargetTransformWithPoint(target.transform, attackPoint);
+        _isActivelyAttacking = false; // Reset attacking state when getting new target
+        
+        // DON'T regenerate flow field for every wolf target change - let wolves follow existing flow field
+        // Only set flow field target if it's significantly different from current flow field target
+        // This prevents constant flow field regeneration
     }
 
     private void AttackTarget()
@@ -341,9 +668,23 @@ public class Wolf : MonoBehaviour
 
         if (target == null || !IsValidTarget(target))
         {
-            // Debug.LogWarning($"Wolf {name} aborted attack: Target is invalid");
             target = null;
+            _isActivelyAttacking = false;
+            _lastTargetDestroyTime = Time.time; // Mark target as lost
+            
+            // Force immediate cache refresh and new target search
+            RefreshLocalCache();
+            UpdateTargetCache();
             FindTargetWithPriority();
+            
+            // If no new target, start moving immediately
+            if (target == null)
+            {
+                flowFieldAgent.SetMoving(true);
+                OnStartMoving?.Invoke();
+                UpdateFallbackTarget();
+                // Let wolves follow existing flow field instead of regenerating
+            }
             return;
         }
 
@@ -352,23 +693,64 @@ public class Wolf : MonoBehaviour
         try
         {
             if (target != null)
+            {
                 target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+                
+                // Check if target was destroyed by our attack
+                if (!IsValidTarget(target))
+                {
+                    target = null;
+                    _isActivelyAttacking = false;
+                    _lastTargetDestroyTime = Time.time;
+                    
+                    // Immediate search for new target
+                    RefreshLocalCache();
+                    UpdateTargetCache();
+                    FindTargetWithPriority();
+                    
+                    // If no new target found, start moving
+                    if (target == null)
+                    {
+                        flowFieldAgent.SetMoving(true);
+                        OnStartMoving?.Invoke();
+                        UpdateFallbackTarget();
+                        // Let wolves follow existing flow field instead of regenerating
+                    }
+                }
+            }
             else
+            {
                 Debug.LogWarning($"Wolf {name} aborted attack: Target null in try block");
+                target = null;
+                _isActivelyAttacking = false;
+                FindTargetWithPriority();
+            }
         }
         catch (System.Exception e)
         {
             Debug.LogWarning($"Wolf {name} failed to attack: {e.Message}");
             target = null;
+            _isActivelyAttacking = false;
+            _lastTargetDestroyTime = Time.time;
+            
+            // Force fresh search after attack failure
+            RefreshLocalCache();
+            UpdateTargetCache();
             FindTargetWithPriority();
+            
+            if (target == null)
+            {
+                flowFieldAgent.SetMoving(true);
+                OnStartMoving?.Invoke();
+                UpdateFallbackTarget();
+                // Let wolves follow existing flow field instead of regenerating
+            }
         }
     }
 
     public void TakeDamage(int amount)
     {
         currentHealth = Mathf.Max(0, currentHealth - amount);
-        // Debug.Log($"Wolf {name} took {amount} damage. Health: {currentHealth}/{maxHealth}");
-
         OnHurt?.Invoke();
 
         if (currentHealth <= 0)
@@ -379,7 +761,17 @@ public class Wolf : MonoBehaviour
     {
         flowFieldAgent.SetMoving(false);
         OnDeath?.Invoke();
-        // Debug.Log($"Wolf {name} died at {transform.position}");
+        
+        // Unregister from managers before destroying
+        if (nightManager != null)
+            nightManager.UnregisterWolf(this);
+        Structure.UnregisterWolf(this);
+        
+        // Clean up fallback target
+        if (fallbackTarget != null)
+            Destroy(fallbackTarget);
+            
+        // Actually destroy the wolf
         Destroy(gameObject);
     }
 
@@ -387,7 +779,7 @@ public class Wolf : MonoBehaviour
     {
         if (!isNight)
         {
-            // Debug.Log($"Wolf {name} dying due to day transition");
+            // Wolves should die/despawn when day comes
             Die();
         }
     }
@@ -396,21 +788,110 @@ public class Wolf : MonoBehaviour
     {
         if (destroyedTarget == target)
         {
-            // Debug.Log($"Wolf {name} current target {destroyedTarget?.name} destroyed, clearing target");
             target = null;
             targetAttackPoint = Vector3.zero;
+            _lastTargetDestroyTime = Time.time; // Mark when target was destroyed
+            _isActivelyAttacking = false;
+            
+            // Force immediate local cache refresh and target search
+            RefreshLocalCache();
+            UpdateTargetCache();
             FindTargetWithPriority();
+            
+            // If still no target, start moving immediately
+            if (target == null)
+            {
+                UpdateFallbackTarget();
+                flowFieldAgent.SetMoving(true);
+                OnStartMoving?.Invoke();
+                // Let wolves follow existing flow field instead of regenerating
+            }
         }
+        
+        // Remove from cache regardless
         cachedTargets.Remove(destroyedTarget);
-        // Debug.Log($"Wolf {name} removed destroyed target {destroyedTarget?.name ?? "null"} from cache");
     }
 
     private void UpdateFallbackTarget()
     {
-        Vector2 randomCircle = Random.insideUnitCircle * fallbackMoveRadius;
-        Vector3 newPosition = transform.position + new Vector3(randomCircle.x, 0, randomCircle.y);
+        // More aggressive search pattern - move towards areas that might have targets
+        Vector3 bestDirection = Vector3.zero;
+        float bestScore = 0f;
+        
+        // Try multiple directions to find the best one
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = i * 45f * Mathf.Deg2Rad;
+            Vector3 direction = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+            Vector3 testPosition = transform.position + direction * fallbackMoveRadius;
+            
+            // Score this direction based on potential target density
+            float score = ScoreFallbackDirection(testPosition);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestDirection = direction;
+            }
+        }
+        
+        // If no good direction found, use random
+        if (bestDirection == Vector3.zero)
+        {
+            Vector2 randomCircle = Random.insideUnitCircle * fallbackMoveRadius;
+            bestDirection = new Vector3(randomCircle.x, 0, randomCircle.y);
+        }
+        
+        Vector3 newPosition = transform.position + bestDirection * fallbackMoveRadius;
         fallbackTarget.transform.position = newPosition;
-        // Debug.Log($"Wolf {name} updated fallback target to {newPosition}");
+    }
+    
+    private float ScoreFallbackDirection(Vector3 position)
+    {
+        float score = 0f;
+        
+        // Check for nearby targets in this direction using local cache
+        foreach (var structure in _localStructureCache)
+        {
+            if (structure != null && structure.gameObject != null && structure.gameObject.activeInHierarchy && !structure.isIndestructible)
+            {
+                Vector3 diff = structure.transform.position - position;
+                float sqrDistance = diff.sqrMagnitude;
+                
+                // Closer targets give higher score
+                if (sqrDistance < _targetSearchRangeSquared * 4f)
+                {
+                    score += 1f / (1f + sqrDistance * 0.01f);
+                }
+            }
+        }
+        
+        foreach (var animal in _localAnimalCache)
+        {
+            if (animal != null && animal.gameObject != null && animal.gameObject.activeInHierarchy)
+            {
+                Vector3 diff = animal.transform.position - position;
+                float sqrDistance = diff.sqrMagnitude;
+                
+                // Animals are higher priority
+                if (sqrDistance < _targetSearchRangeSquared * 4f)
+                {
+                    score += 2f / (1f + sqrDistance * 0.01f);
+                }
+            }
+        }
+        
+        return score;
+    }
+
+    private void UpdateFallbackTargetTowardsCenter()
+    {
+        // Move towards the center of the map when no targets exist
+        Vector3 centerPosition = Vector3.zero; // Assuming map center is at origin
+        Vector3 directionToCenter = (centerPosition - transform.position).normalized;
+        Vector3 newPosition = transform.position + directionToCenter * fallbackMoveRadius;
+        fallbackTarget.transform.position = newPosition;
+        
+        // Wolf is moving towards center when no targets are found
     }
 
     private void OnDrawGizmos()
@@ -430,6 +911,61 @@ public class Wolf : MonoBehaviour
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(transform.position, fallbackTarget.transform.position);
             Gizmos.DrawWireSphere(fallbackTarget.transform.position, 0.5f);
+        }
+    }
+
+    private void MoveDirectlyTowardsTarget()
+    {
+        // Hybrid movement: Use flow field as base direction, but move directly towards target when close
+        if (target == null) return;
+        
+        Vector3 direction = (targetAttackPoint - transform.position).normalized;
+        float distanceToTarget = Vector3.Distance(transform.position, targetAttackPoint);
+        
+        // Use direct movement when close to target (within 10 units)
+        // Use flow field for long-distance navigation
+        if (distanceToTarget < 10f)
+        {
+            float moveSpeed = 4f; // Faster when close to target
+            
+            // Move directly towards target
+            transform.position += direction * moveSpeed * Time.deltaTime;
+            
+            // Rotate to face target
+            if (direction != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 8f * Time.deltaTime);
+            }
+        }
+        // For longer distances, let the FlowFieldAgent handle movement using the stable flow field
+    }
+
+    // Flow field management - set stable target once
+    private static bool _flowFieldInitialized = false;
+    
+    private void InitializeStableFlowField()
+    {
+        // Set up a stable flow field target that doesn't change constantly
+        // This prevents flow field from regenerating every time a wolf gets a new target
+        if (_flowFieldInitialized || flowFieldManager == null) return;
+        
+        try
+        {
+            // Set flow field to point towards farm center (origin) as a stable reference
+            // Wolves will use this as a base and then navigate to their specific targets
+            Vector3 farmCenter = Vector3.zero; // Assuming farm center is at origin
+            GameObject stableTarget = new GameObject("StableFlowFieldTarget");
+            stableTarget.transform.position = farmCenter;
+            DontDestroyOnLoad(stableTarget);
+            
+            flowFieldManager.SetTargetTransformWithPoint(stableTarget.transform, farmCenter);
+            _flowFieldInitialized = true;
+                  // Stable flow field target initialized
+    }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"Failed to initialize stable flow field: {e.Message}");
         }
     }
 }

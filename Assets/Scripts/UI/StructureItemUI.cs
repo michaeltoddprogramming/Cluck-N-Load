@@ -22,19 +22,21 @@ public class StructureItemUI : MonoBehaviour
 
         data = structure;
 
+        // Set icon if available
         if (icon != null)
             icon.sprite = structure.icon;
-        else
-            Debug.LogWarning("Icon Image is not assigned!");
 
+        // Set name text if available
         if (nameText != null)
+        {
             nameText.text = structure.structureName;
-        else
-            Debug.LogWarning("Name Text is not assigned!");
+        }
 
         // Display cost if we have a cost text component
         if (costText != null)
+        {
             costText.text = $"{structure.cost} Gold";
+        }
 
         if (selectButton != null)
         {
@@ -42,8 +44,16 @@ public class StructureItemUI : MonoBehaviour
             selectButton.onClick.AddListener(() => SelectStructure());
         }
         else
-            Debug.LogWarning("Select Button is not assigned!");
-            
+        {
+            // If no button is assigned, try to find one on this GameObject or its children
+            selectButton = GetComponentInChildren<Button>();
+            if (selectButton != null)
+            {
+                selectButton.onClick.RemoveAllListeners();
+                selectButton.onClick.AddListener(() => SelectStructure());
+            }
+        }
+
         // Check affordability when setting up
         UpdateAffordability();
         
@@ -56,23 +66,21 @@ public class StructureItemUI : MonoBehaviour
 
     public void SelectStructure()
     {
-        if (data != null)
+        if (data == null)
         {
-            Debug.Log($"Selected structure: {data.structureName}");
-            // Pass the StructureData to the BuildController
-            BuildController controller = FindObjectOfType<BuildController>();
-            if (controller != null)
-            {
-                controller.SetBuildTarget(data);
-            }
-            else
-            {
-                Debug.LogError("BuildController not found in scene!");
-            }
+            Debug.LogError("StructureData is null when selecting structure!");
+            return;
+        }
+
+        // Pass the StructureData to the BuildController
+        BuildController controller = FindFirstObjectByType<BuildController>();
+        if (controller != null)
+        {
+            controller.SetBuildTarget(data);
         }
         else
         {
-            Debug.LogError("StructureData is null when selecting structure!");
+            Debug.LogError("BuildController not found in scene!");
         }
     }
 
@@ -90,7 +98,7 @@ public class StructureItemUI : MonoBehaviour
         UpdateAffordability();
     }
 
-        // Add to the UpdateAffordability method:
+    // Update affordability based on current money
     public void UpdateAffordability()
     {
         // Make sure we have data and button

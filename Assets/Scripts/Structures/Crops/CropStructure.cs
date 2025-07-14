@@ -54,7 +54,6 @@ public class CropStructure : Structure
     public float ProductionMultiplier => productionMultiplier;
     public CropType CurrentCropType => currentCropType;
 
-
     //synergies
     [Header("Mechanic variations")]
     [Header("Base synergies (increase crop closer to silo)")]
@@ -62,7 +61,6 @@ public class CropStructure : Structure
     [SerializeField] private float cropHarvestMultiplierIncrease = 1.5f;
     [SerializeField] private float multiplierRange = 10f;
     [SerializeField] private float baseCropHarvestAmount = 10f;
-
 
     protected override void Start()
     {
@@ -76,8 +74,7 @@ public class CropStructure : Structure
 
         if (structureData != null && structureData.type != StructureType.CropPlot)
         {
-            Debug.LogWarning($"{gameObject.name} has CropStructure script but StructureData.type is {structureData.type}, expected CropPlot.");
-        }
+            }
 
         // Prefer singleton access
         if (nightManager == null)
@@ -85,7 +82,7 @@ public class CropStructure : Structure
             nightManager = NightManager.Instance;
             if (nightManager == null)
             {
-                nightManager = FindObjectOfType<NightManager>();
+                nightManager = FindFirstObjectByType<NightManager>();
                 if (nightManager == null)
                 {
                     Debug.LogError($"{GetStructureName()} cannot find NightManager!");
@@ -130,7 +127,6 @@ public class CropStructure : Structure
             isGrowing = true;
             growthProgress = 0f;
             lastCheckedHour = nightManager?.Hours ?? 7;
-            Debug.Log($"{GetStructureName()} is planting {currentCropType}...");
             UpdateCropVisual(cropType, 0);
         }
         else
@@ -233,8 +229,7 @@ public class CropStructure : Structure
         {
             currentCropInstance = Instantiate(prefabToSpawn, transform);
             currentCropInstance.transform.localPosition = Vector3.zero;
-            Debug.Log($"{GetStructureName()} spawned visual for {cropType} stage {growthStage}.");
-        }
+            }
         else
         {
             Debug.LogWarning($"No prefab found for {cropType} stage {growthStage} on {GetStructureName()}");
@@ -243,11 +238,11 @@ public class CropStructure : Structure
 
     public void UpdateSiloSynergy()
     {
-        SiloStructure[] silos = FindObjectsOfType<SiloStructure>();
+        SiloStructure[] silos = FindObjectsByType<SiloStructure>(FindObjectsSortMode.None);
         float minGridDistance = float.MaxValue;
 
         // Get the grid controller (assumes only one in scene)
-        GridController gridController = FindObjectOfType<GridController>();
+        GridController gridController = FindFirstObjectByType<GridController>();
 
         if (gridController == null)
         {
@@ -268,8 +263,6 @@ public class CropStructure : Structure
             }
         }
 
-
-
         if (minGridDistance <= multiplierRange)
             cropHarvestMultiplier = cropHarvestMultiplierIncrease; // or whatever bonus you want
         else
@@ -279,7 +272,7 @@ public class CropStructure : Structure
     public static float[] GetAllCropHarvestMultipliers(string[] cropTypes)
     {
         float[] multipliers = new float[cropTypes.Length];
-        CropStructure[] allCrops = GameObject.FindObjectsOfType<CropStructure>();
+        CropStructure[] allCrops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
 
         for (int i = 0; i < cropTypes.Length; i++)
         {
@@ -295,8 +288,6 @@ public class CropStructure : Structure
         return multipliers;
     }
 
-    
-
     public void OnPlaced()
     {
         // base.OnPlaced();
@@ -305,7 +296,7 @@ public class CropStructure : Structure
 
     public static void UpdateAllCropSynergies()
     {
-        foreach (var crop in GameObject.FindObjectsOfType<CropStructure>())
+        foreach (var crop in FindObjectsByType<CropStructure>(FindObjectsSortMode.None))
         {
             crop.UpdateSiloSynergy();
 

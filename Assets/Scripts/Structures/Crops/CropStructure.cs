@@ -325,4 +325,19 @@ public class CropStructure : Structure
         }
         return null;
     }
+
+    /// <summary>
+    /// Tutorial-only method to instantly complete crop growth
+    /// </summary>
+    public void InstantGrowForTutorial()
+    {
+        if (isGrowing && !cropReady)
+        {
+            growthProgress = productionSettings.growthTime;
+            cropReady = true;
+            isGrowing = false;
+            UpdateCropVisual(currentCropType, 2); // Stage 2 = fully grown
+            Debug.Log($"TUTORIAL: Instantly completed growth for {currentCropType}");
+        }
+    }
 }

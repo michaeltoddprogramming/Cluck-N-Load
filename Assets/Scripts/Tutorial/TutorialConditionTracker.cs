@@ -1,5 +1,22 @@
-using UnityEngine;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+
+/// <summary>
+/// Data structure for defense readiness reporting
+/// </summary>
+[System.Serializable]
+public struct DefenseReadinessReport
+{
+    public bool hasBarracks;
+    public bool hasFlag;
+    public bool hasArmy;
+    public int barracksCount;
+    public int totalArmyCount;
+    public bool isReady;
+}
 
 public class TutorialConditionTracker : MonoBehaviour
 {
@@ -243,13 +260,31 @@ public class TutorialConditionTracker : MonoBehaviour
             {
                 hasPlantedFirstCrop = true;
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropPlanted);
+                
+                // TUTORIAL: Instantly grow the crop for demonstration purposes
+                if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+                {
+                    StartCoroutine(InstantGrowCropForTutorial(crop));
+                }
             }
 
-            // Track if inventory has increased (indicating harvest)
-            if (hasPlantedFirstCrop && !hasHarvestedFirstCrop)
+            // Track if crops are ready for harvest
+            if (crop.CropReady && hasPlantedFirstCrop && !hasHarvestedFirstCrop)
             {
+                Debug.Log("Crop is ready for harvest!");
                 CheckInventoryForHarvest();
             }
+        }
+    }
+
+    private IEnumerator InstantGrowCropForTutorial(CropStructure crop)
+    {
+        yield return new WaitForSeconds(2f); // Wait 2 seconds after planting
+        
+        if (crop != null && !crop.CropReady)
+        {
+            // Use the new tutorial method for instant growth
+            crop.InstantGrowForTutorial();
         }
     }
 
@@ -282,10 +317,46 @@ public class TutorialConditionTracker : MonoBehaviour
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstChickenBought);
             }
 
-            // Check if animals are producing
-            if (animal.ProductReady && hasBoughtFirstAnimal)
+            // Check if animals are producing (trigger when they start production cycle)
+            if (animal.IsProducing && hasBoughtFirstAnimal)
             {
+                Debug.Log("Animals are now producing after being fed!");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickensStartedProducing);
+                
+                // TUTORIAL: Speed up production for demonstration
+                if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+                {
+                    StartCoroutine(InstantCompleteAnimalProductionForTutorial(animal));
+                }
+            }
+
+            // Check if products are ready to collect
+            if (animal.ProductReady && hasBoughtFirstAnimal && !hasCollectedFirstProduct)
+            {
+                Debug.Log("Animal products are ready for collection!");
+                TutorialManager.Instance?.OnConditionMet(TutorialCondition.AnimalProductsReady);
+            }
+        }
+    }
+
+    private IEnumerator FastTrackAnimalProductionForTutorial(AnimalStructure animal)
+    {
+        yield return new WaitForSeconds(5f); // Wait 5 seconds after feeding
+        
+        if (animal != null && animal.IsProducing && !animal.ProductReady)
+        {
+            // Force production to complete for tutorial
+            var animalType = animal.GetType();
+            var productionProgressField = animalType.GetField("productionProgress", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var productReadyField = animalType.GetField("productReady", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var isProducingField = animalType.GetField("isProducing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            if (productionProgressField != null && productReadyField != null && isProducingField != null)
+            {
+                productionProgressField.SetValue(animal, animal.ProductionSettings.productionTime);
+                productReadyField.SetValue(animal, true);
+                isProducingField.SetValue(animal, false);
+                Debug.Log("TUTORIAL: Instantly completed animal production for demonstration!");
             }
         }
     }
@@ -400,5 +471,158 @@ public class TutorialConditionTracker : MonoBehaviour
         }
         
         return false;
+    }
+
+    /// <summary>
+    /// Public method for other systems to check if tutorial should prevent enemy spawning
+    /// Enhanced to include comprehensive defense readiness checks
+    /// </summary>
+    public bool ShouldPreventEnemySpawning()
+    {
+        if (TutorialManager.Instance == null) return false;
+        
+        // Allow enemies if tutorial is completed
+        if (TutorialManager.Instance.IsTutorialCompleted()) return false;
+        
+        // During tutorial, check comprehensive defense readiness
+        bool tutorialActive = TutorialManager.Instance.IsTutorialActive();
+        bool defensesReady = AreDefensesReadyForTutorial();
+        
+        if (tutorialActive && !defensesReady)
+        {
+            Debug.Log("Tutorial: Preventing enemy spawning - defenses not ready");
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// Comprehensive check for defense readiness during tutorial
+    /// </summary>
+    private bool AreDefensesReadyForTutorial()
+    {
+        // Must have built barracks first
+        if (!hasBarracksPlaced)
+        {
+            Debug.Log("Tutorial Defense Check: No barracks placed yet");
+            return false;
+        }
+        
+        // Must have placed flag
+        if (!hasPlacedFlag)
+        {
+            Debug.Log("Tutorial Defense Check: No flag placed yet");
+            return false;
+        }
+        
+        // Must have recruited army
+        if (!hasRecruitedArmy)
+        {
+            Debug.Log("Tutorial Defense Check: No army recruited yet");
+            return false;
+        }
+        
+        // Verify barracks actually exist and have army
+        BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+        if (barracks.Length == 0)
+        {
+            Debug.Log("Tutorial Defense Check: No barracks found");
+            return false;
+        }
+        
+        bool hasActiveBarracksWithArmy = false;
+        foreach (BarracksStructure barrack in barracks)
+        {
+            // Check if barracks has army and flag
+            if (barrack.ArmyAnimalCount > 0 && barrack.GetFlagPosition != Vector3.zero)
+            {
+                hasActiveBarracksWithArmy = true;
+                break;
+            }
+        }
+        
+        if (!hasActiveBarracksWithArmy)
+        {
+            Debug.Log("Tutorial Defense Check: No active barracks with army and flag");
+            return false;
+        }
+        
+        Debug.Log("Tutorial Defense Check: Defenses are ready! (Barracks + Flag + Army)");
+        return true;
+    }
+
+    private IEnumerator InstantCompleteAnimalProductionForTutorial(AnimalStructure animal)
+    {
+        yield return new WaitForSeconds(2f); // Wait 2 seconds
+        
+        if (animal != null && animal.AnimalCount > 0)
+        {
+            // Use the new tutorial method for instant production
+            animal.InstantCompleteProductionForTutorial();
+        }
+    }
+
+    /// <summary>
+    /// Debug method to log current defense status - useful for troubleshooting tutorial progression
+    /// </summary>
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public void LogDefenseStatus()
+    {
+        Debug.Log("=== TUTORIAL DEFENSE STATUS ===");
+        Debug.Log($"Barracks Placed: {hasBarracksPlaced}");
+        Debug.Log($"Flag Placed: {hasPlacedFlag}");
+        Debug.Log($"Army Recruited: {hasRecruitedArmy}");
+        
+        BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+        Debug.Log($"Barracks Found: {barracks.Length}");
+        
+        foreach (BarracksStructure barrack in barracks)
+        {
+            Debug.Log($"Barracks Army Count: {barrack.ArmyAnimalCount}");
+            Debug.Log($"Barracks Flag Position: {barrack.GetFlagPosition}");
+            Debug.Log($"Barracks Has Active Defense: {barrack.ArmyAnimalCount > 0 && barrack.GetFlagPosition != Vector3.zero}");
+        }
+        
+        bool defensesReady = AreDefensesReadyForTutorial();
+        Debug.Log($"Overall Defenses Ready: {defensesReady}");
+        Debug.Log($"Should Prevent Enemy Spawning: {ShouldPreventEnemySpawning()}");
+        Debug.Log("================================");
+    }
+    
+    /// <summary>
+    /// Public method for external systems to check if tutorial defenses are ready
+    /// Useful for UI indicators, night manager, etc.
+    /// </summary>
+    public bool AreDefensesReady()
+    {
+        return AreDefensesReadyForTutorial();
+    }
+    
+    /// <summary>
+    /// Get a detailed defense readiness report for UI or debugging
+    /// </summary>
+    public DefenseReadinessReport GetDefenseReadinessReport()
+    {
+        return new DefenseReadinessReport
+        {
+            hasBarracks = hasBarracksPlaced,
+            hasFlag = hasPlacedFlag,
+            hasArmy = hasRecruitedArmy,
+            barracksCount = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None).Length,
+            totalArmyCount = GetTotalArmyCount(),
+            isReady = AreDefensesReadyForTutorial()
+        };
+    }
+    
+    private int GetTotalArmyCount()
+    {
+        int totalArmy = 0;
+        BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+        foreach (BarracksStructure barrack in barracks)
+        {
+            totalArmy += barrack.ArmyAnimalCount;
+        }
+        return totalArmy;
     }
 }

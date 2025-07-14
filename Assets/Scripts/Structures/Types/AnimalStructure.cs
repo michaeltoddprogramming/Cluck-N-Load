@@ -500,4 +500,18 @@ public class AnimalStructure : Structure
     }
     return boosted;
 }
+
+/// <summary>
+    /// Tutorial-only method to instantly complete animal production
+    /// </summary>
+    public void InstantCompleteProductionForTutorial()
+    {
+        if (isProducing && !productReady && animalCount > 0)
+        {
+            productionProgress = productionSettings.productionTime;
+            productReady = true;
+            isProducing = false;
+            Debug.Log($"TUTORIAL: Instantly completed production for {animalType} with {animalCount} animals");
+        }
+    }
 }

@@ -175,6 +175,15 @@ public class NightManager : MonoBehaviour
     // Fix the SpawnWolvesOverTime coroutine
     private IEnumerator SpawnWolvesOverTime()
     {
+        // Check if tutorial should prevent enemy spawning
+        TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+        {
+            Debug.Log("Tutorial: Preventing wolf spawning - defenses not ready");
+            wolfSpawnCoroutine = null;
+            yield break;
+        }
+
         // Calculate how many wolves to spawn tonight (increasing difficulty)
         int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
         int wolvesSpawned = 0;
@@ -185,6 +194,13 @@ public class NightManager : MonoBehaviour
         // Keep spawning wolves until we reach the limit or day breaks
         while (wolvesSpawned < totalWolvesToSpawn && !isDay)
         {
+            // Check again for tutorial prevention during spawning
+            if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+            {
+                Debug.Log("Tutorial: Stopping wolf spawning mid-night - tutorial still active");
+                break;
+            }
+
             // Don't spawn more if we're at max concurrent wolves
             if (activeWolves.Count < maxWolvesAtOnce)
             {

@@ -26,6 +26,7 @@ public enum TutorialCondition
     ChickenCoopPlaced,
     FirstChickenBought,
     ChickensStartedProducing,
+    AnimalProductsReady,
     AnimalProductsCollected,
     
     // Defense Mechanics
@@ -282,31 +283,67 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 12: Feed Animals
+        // Step 12: Watch Crops Grow
+        tutorialSteps.Add(new TutorialStep
+        {
+            stepId = "watch_crop_growth",
+            title = "Watch Your Crops Grow",
+            description = "Perfect! Your sunflowers are growing. Normally crops take 24 hours to grow, but for this tutorial, I'll speed things up for you! Watch as they grow quickly right before your eyes!",
+            triggerCondition = TutorialCondition.FirstCropPlanted,
+            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropPlanted },
+            displayDuration = 6f,
+            pauseGame = true
+        });
+
+        // Step 13: Harvest Your Crops
+        tutorialSteps.Add(new TutorialStep
+        {
+            stepId = "harvest_crops",
+            title = "Harvest Your Sunflowers",
+            description = "Look at that! Your sunflowers grew super fast for the tutorial. Now they're ready to harvest! Click on the crop plot and harvest your sunflowers. You'll need these to feed your chickens!",
+            triggerCondition = TutorialCondition.FirstCropHarvested,
+            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
+            displayDuration = 6f,
+            pauseGame = true
+        });
+
+        // Step 14: Feed Animals
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "feed_animals",
-            title = "Feed Your Animals",
-            description = "Your chickens are getting hungry! Click on the chicken coop and feed them. Well-fed animals produce more goods. Make sure to keep them fed regularly!",
+            title = "Feed Your Chickens",
+            description = "Now that you have sunflowers, your chickens are hungry! Click on the chicken coop and feed them with your harvested sunflowers. Well-fed animals will start producing eggs!",
             triggerCondition = TutorialCondition.FirstCropHarvested,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
-            displayDuration = 5f,
+            displayDuration = 6f,
             pauseGame = true
         });
 
-        // Step 13: Collect Products
+        // Step 15: Watch Production Start
+        tutorialSteps.Add(new TutorialStep
+        {
+            stepId = "watch_production",
+            title = "Production Starting",
+            description = "Excellent! Your chickens are now fed and producing. Normally this takes 24 hours, but I'll speed this up too for the tutorial. Watch as they quickly start producing eggs!",
+            triggerCondition = TutorialCondition.ChickensStartedProducing,
+            prerequisites = new TutorialCondition[] { TutorialCondition.ChickensStartedProducing },
+            displayDuration = 6f,
+            pauseGame = true
+        });
+
+        // Step 16: Collect Products
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "collect_products",
-            title = "Collect Animal Products",
-            description = "Excellent! Your chickens have started producing eggs. Click on the chicken coop and collect the eggs to earn money. This is how you'll fund your expansion and defenses!",
-            triggerCondition = TutorialCondition.ChickensStartedProducing,
-            prerequisites = new TutorialCondition[] { TutorialCondition.ChickensStartedProducing },
-            displayDuration = 5f,
+            title = "Collect Your Eggs",
+            description = "Perfect! Your chickens have finished producing eggs. Click on the chicken coop and collect the eggs to earn money. This is how you'll fund your expansion and defenses!",
+            triggerCondition = TutorialCondition.AnimalProductsReady,
+            prerequisites = new TutorialCondition[] { TutorialCondition.AnimalProductsReady },
+            displayDuration = 6f,
             pauseGame = true
         });
 
-        // Step 14: Build Barracks for Defense
+        // Step 17: Build Barracks for Defense
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "build_barracks",
@@ -318,7 +355,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 15: Place Defense Flag
+        // Step 18: Place Defense Flag
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "place_flag",
@@ -330,7 +367,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 16: Recruit Army
+        // Step 19: Recruit Army
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "recruit_army",
@@ -342,7 +379,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 17: First Night
+        // Step 20: First Night
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "first_night",
@@ -354,7 +391,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 18: Night Defense
+        // Step 21: Night Defense
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "night_defense",
@@ -366,7 +403,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 19: Show Synergies
+        // Step 22: Show Synergies
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "synergy_explanation",
@@ -378,7 +415,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 20: Complete Tutorial
+        // Step 23: Complete Tutorial
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "tutorial_complete",

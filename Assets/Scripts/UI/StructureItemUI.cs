@@ -21,31 +21,22 @@ public class StructureItemUI : MonoBehaviour
         }
 
         data = structure;
-        Debug.Log($"Setting up shop item: {structure.structureName} - Cost: {structure.cost}");
 
         // Set icon if available
         if (icon != null)
             icon.sprite = structure.icon;
-        else
-            Debug.LogWarning($"Icon component is missing for {structure.structureName}!");
 
         // Set name text if available
         if (nameText != null)
         {
             nameText.text = structure.structureName;
-            Debug.Log($"Set name text to: {structure.structureName}");
         }
-        else
-            Debug.LogWarning($"Name text component is missing for {structure.structureName}!");
 
         // Display cost if we have a cost text component
         if (costText != null)
         {
             costText.text = $"{structure.cost} Gold";
-            Debug.Log($"Set cost text to: {structure.cost} Gold");
         }
-        else
-            Debug.LogWarning($"Cost text component is missing for {structure.structureName}!");
 
         if (selectButton != null)
         {
@@ -53,7 +44,15 @@ public class StructureItemUI : MonoBehaviour
             selectButton.onClick.AddListener(() => SelectStructure());
         }
         else
-            Debug.LogWarning($"Select button component is missing for {structure.structureName}!");
+        {
+            // If no button is assigned, try to find one on this GameObject or its children
+            selectButton = GetComponentInChildren<Button>();
+            if (selectButton != null)
+            {
+                selectButton.onClick.RemoveAllListeners();
+                selectButton.onClick.AddListener(() => SelectStructure());
+            }
+        }
 
         // Check affordability when setting up
         UpdateAffordability();
@@ -63,30 +62,25 @@ public class StructureItemUI : MonoBehaviour
         {
             MoneyManager.Instance.OnMoneyChanged += OnMoneyChanged;
         }
-        else
-        {
-            Debug.LogWarning("MoneyManager.Instance is null when setting up shop item!");
-        }
     }
 
     public void SelectStructure()
     {
-        if (data != null)
+        if (data == null)
         {
-            // Pass the StructureData to the BuildController
-            BuildController controller = FindFirstObjectByType<BuildController>();
-            if (controller != null)
-            {
-                controller.SetBuildTarget(data);
-            }
-            else
-            {
-                Debug.LogError("BuildController not found in scene!");
-            }
+            Debug.LogError("StructureData is null when selecting structure!");
+            return;
+        }
+
+        // Pass the StructureData to the BuildController
+        BuildController controller = FindFirstObjectByType<BuildController>();
+        if (controller != null)
+        {
+            controller.SetBuildTarget(data);
         }
         else
         {
-            Debug.LogError("StructureData is null when selecting structure!");
+            Debug.LogError("BuildController not found in scene!");
         }
     }
 

@@ -43,9 +43,6 @@ public class ShopUIManager : MonoBehaviour
         {
             closeButton.onClick.AddListener(CloseShop);
         }
-        else
-        {
-            }
 
         // Initially hide shop
         shopPanel.SetActive(false);
@@ -107,7 +104,7 @@ public class ShopUIManager : MonoBehaviour
 
         if (data.prefab == null)
         {
-            Debug.LogError($"❌ No prefab assigned to {data.structureName}!");
+            Debug.LogError($"No prefab assigned to {data.structureName}!");
             return;
         }
 

@@ -1039,8 +1039,10 @@ public class BuildController : MonoBehaviour
         currentBuildTargetPrefab = data.prefab;
         currentStructureData = data;
 
-        if (isBuildModeActive && !isMoveModeActive)
-            CreateGhost(currentBuildTargetPrefab);
+        // Enable build mode and create new ghost
+        EnableBuildMode();
+        // Force create new ghost even if one already exists
+        CreateGhost(currentBuildTargetPrefab);
     }
 
     public void SetBuildTarget(GameObject prefab)
@@ -1053,8 +1055,10 @@ public class BuildController : MonoBehaviour
 
         currentBuildTargetPrefab = prefab;
 
-        if (isBuildModeActive && !isMoveModeActive)
-            CreateGhost(currentBuildTargetPrefab);
+        // Enable build mode and create new ghost
+        EnableBuildMode();
+        // Force create new ghost even if one already exists
+        CreateGhost(currentBuildTargetPrefab);
     }
 
     private List<Vector2Int> GetStructureFootprint(GameObject obj)

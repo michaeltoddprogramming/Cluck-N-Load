@@ -63,9 +63,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 }
             });
         }
-        else
-        {
-            }
 
         // Cache controller references
         buildController = FindFirstObjectByType<BuildController>();
@@ -76,13 +73,13 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (database == null)
         {
-            Debug.LogError("💥 StructureDatabase is NOT assigned in the inspector!");
+            Debug.LogError("StructureDatabase is not assigned in the inspector!");
             return;
         }
 
         if (database.allStructures == null || database.allStructures.Count == 0)
         {
-            Debug.LogWarning("🫠 StructureDatabase is empty. No structures to display.");
+            Debug.LogWarning("StructureDatabase is empty. No structures to display.");
             return;
         }
 
@@ -90,21 +87,21 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             if (data == null)
             {
-                Debug.LogError("🚨 StructureData entry is NULL in the database! Skipping...");
+                Debug.LogError("StructureData entry is NULL in the database! Skipping...");
                 continue;
             }
 
             GameObject item = Instantiate(itemPrefab, contentParent);
             if (item == null)
             {
-                Debug.LogError("❌ Failed to instantiate itemPrefab!");
+                Debug.LogError("Failed to instantiate itemPrefab!");
                 continue;
             }
 
             StructureItemUI itemUI = item.GetComponent<StructureItemUI>();
             if (itemUI == null)
             {
-                Debug.LogError($"🧨 StructureItemUI script is missing on prefab: {item.name}");
+                Debug.LogError($"StructureItemUI script is missing on prefab: {item.name}");
                 continue;
             }
 

@@ -132,9 +132,8 @@ public class Wolf : MonoBehaviour
         
         // Log successful initialization (with low chance to avoid spam)
         if (Random.value < 0.2f) // 20% chance to log
-        {
-            Debug.Log($"Wolf {name} initialization complete after {delay:F2}s delay");
-        }
+        {        // Wolf initialization complete
+    }
     }
 
     private void CacheTargets()
@@ -659,13 +658,6 @@ public class Wolf : MonoBehaviour
         // DON'T regenerate flow field for every wolf target change - let wolves follow existing flow field
         // Only set flow field target if it's significantly different from current flow field target
         // This prevents constant flow field regeneration
-        
-        // Debug output to track targeting
-        if (Random.value < 0.1f) // 10% chance to log
-        {
-            string targetType = target.GetComponent<ArmyAnimal>() != null ? "Animal" : "Structure";
-            Debug.Log($"Wolf {name} acquired new target: {target.name} ({targetType})");
-        }
     }
 
     private void AttackTarget()
@@ -899,10 +891,7 @@ public class Wolf : MonoBehaviour
         Vector3 newPosition = transform.position + directionToCenter * fallbackMoveRadius;
         fallbackTarget.transform.position = newPosition;
         
-        if (Random.value < 0.1f) // 10% chance to log this behavior
-        {
-            Debug.Log($"Wolf {name} moving towards center - no targets found");
-        }
+        // Wolf is moving towards center when no targets are found
     }
 
     private void OnDrawGizmos()
@@ -972,9 +961,8 @@ public class Wolf : MonoBehaviour
             
             flowFieldManager.SetTargetTransformWithPoint(stableTarget.transform, farmCenter);
             _flowFieldInitialized = true;
-            
-            Debug.Log("Stable flow field target initialized at farm center");
-        }
+                  // Stable flow field target initialized
+    }
         catch (System.Exception e)
         {
             Debug.LogWarning($"Failed to initialize stable flow field: {e.Message}");

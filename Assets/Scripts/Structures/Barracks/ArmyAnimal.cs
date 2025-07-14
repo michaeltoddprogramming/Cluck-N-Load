@@ -123,6 +123,29 @@ public class ArmyAnimal : MonoBehaviour
         nextAmbientSoundTime = Time.time + Random.Range(animalData.ambientSoundDelayMin, animalData.ambientSoundDelayMax);
         }
 
+    // Helper method to safely set animator parameters without errors
+    private void SafeSetAnimatorBool(string paramName, bool value)
+    {
+        if (animator == null) return;
+        
+        // Try both variations of the parameter name (lowercase and capitalized)
+        string[] paramVariations = { paramName, char.ToUpper(paramName[0]) + paramName.Substring(1) };
+        
+        foreach (string variation in paramVariations)
+        {
+            // Check if parameter exists in the animator controller
+            foreach (AnimatorControllerParameter param in animator.parameters)
+            {
+                if (param.name == variation && param.type == AnimatorControllerParameterType.Bool)
+                {
+                    animator.SetBool(variation, value);
+                    return; // Successfully set parameter, exit
+                }
+            }
+        }
+        // Silently skip if parameter doesn't exist in any variation - no error logging needed
+    }
+
     private void Update()
     {
         if (isReturningToBarracks)
@@ -184,8 +207,7 @@ public class ArmyAnimal : MonoBehaviour
                 if (distance > animalData.attackRange)
             {
                 isMoving = true;
-                if (animator != null)
-                    animator.SetBool(walkAnimParam, true);
+                SafeSetAnimatorBool(walkAnimParam, true);
                 PlayMoveSound();
 
                 // Add offset to enemy position to avoid clustering
@@ -229,8 +251,7 @@ public class ArmyAnimal : MonoBehaviour
     private void StopMovement()
     {
         isMoving = false;
-        if (animator != null)
-            animator.SetBool(walkAnimParam, false);
+        SafeSetAnimatorBool(walkAnimParam, false);
     }
 
     public void SetBarracks(BarracksStructure barracksStructure)
@@ -311,8 +332,7 @@ public class ArmyAnimal : MonoBehaviour
         targetPosition = barracks.transform.position;
         isMoving = true;
 
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
+        SafeSetAnimatorBool(walkAnimParam, true);
     }
 
     private void ReturnToBarracks()
@@ -348,8 +368,7 @@ public class ArmyAnimal : MonoBehaviour
         Vector2 offset = Random.insideUnitCircle * targetOffsetRadius;
         targetPosition = guardPosition + new Vector3(offset.x, 0, offset.y);
         isMoving = true;
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
+        SafeSetAnimatorBool(walkAnimParam, true);
         PlayMoveSound();
         }
 
@@ -368,8 +387,7 @@ public class ArmyAnimal : MonoBehaviour
         Vector2 offset = Random.insideUnitCircle * targetOffsetRadius;
         targetPosition += new Vector3(offset.x, 0, offset.y);
         isMoving = true;
-        if (animator != null)
-            animator.SetBool(walkAnimParam, true);
+        SafeSetAnimatorBool(walkAnimParam, true);
         PlayMoveSound();
         }
 
@@ -383,8 +401,7 @@ public class ArmyAnimal : MonoBehaviour
         if (direction.magnitude < 0.3f)
         {
             isMoving = false;
-            if (animator != null)
-                animator.SetBool(walkAnimParam, false);
+            SafeSetAnimatorBool(walkAnimParam, false);
             return;
         }
 
@@ -456,19 +473,15 @@ public class ArmyAnimal : MonoBehaviour
         moveAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
         moveAudioSource.Play();
         lastMoveSoundTime = Time.time;
-        }
-
-    private void PlayAmbientSound()
+        }    private void PlayAmbientSound()
     {
         if (ambientAudioSource == null)
         {
-            Debug.LogWarning($"{name} Ambient AudioSource is null");
-            return;
+            return; // Just skip ambient sound if no audio source
         }
         if (animalData.ambientClips == null || animalData.ambientClips.Length == 0)
         {
-            Debug.LogWarning($"{name} No ambient clips assigned in AnimalData for {animalType}");
-            return;
+            return; // Just skip ambient sound if no clips
         }
         if (Random.value > animalData.ambientSoundChance)
             return;
@@ -476,14 +489,13 @@ public class ArmyAnimal : MonoBehaviour
         AudioClip clip = animalData.ambientClips[Random.Range(0, animalData.ambientClips.Length)];
         if (clip == null)
         {
-            Debug.LogWarning($"{name} Selected ambient clip is null for {animalType}");
-            return;
+            return; // Just skip if clip is null
         }
 
         ambientAudioSource.clip = clip;
         ambientAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
         ambientAudioSource.Play();
-        }
+    }
 
     private GameObject FindNearestEnemy()
     {
@@ -512,12 +524,7 @@ public class ArmyAnimal : MonoBehaviour
 
         if (closestEnemy != null)
         {
-            if (animalData.debugAttacks)
-                Debug.Log($"{name} found closest enemy: {closestEnemy.name}");
-        }
-        else if (animalData.debugAttacks)
-        {
-            Debug.Log($"{name} no enemies found in range");
+            // Enemy found - proceed with attack logic
         }
 
         return closestEnemy;
@@ -563,14 +570,10 @@ public class ArmyAnimal : MonoBehaviour
         if (wolf != null)
         {
             wolf.TakeDamage(animalData.damage);
-            if (animalData.debugAttacks)
-                Debug.Log($"{name} dealt {animalData.damage} damage to wolf {wolf.name}");
         }
         else
         {
             enemy.SendMessage("TakeDamage", animalData.damage, SendMessageOptions.DontRequireReceiver);
-            if (animalData.debugAttacks)
-                Debug.Log($"{name} dealt {animalData.damage} damage to {enemy.name}");
         }
     }
 

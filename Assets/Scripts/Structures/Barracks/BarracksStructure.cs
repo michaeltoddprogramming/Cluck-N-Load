@@ -228,6 +228,30 @@ public class BarracksStructure : Structure
 
     public bool CanRecruit(int amount)
     {
+        return CanRecruitSilent(amount);
+    }
+
+    // Silent version for UI checks - no logging
+    private bool CanRecruitSilent(int amount)
+    {
+        if (targetAnimalStructure == null)
+            return false;
+            
+        if (MoneyManager.Instance == null)
+            return false;
+            
+        if (armyAnimals.Count + amount > maxArmyAnimals)
+            return false;
+            
+        if (!targetAnimalStructure.CanRecruit(amount))
+            return false;
+
+        return true;
+    }
+
+    // Version with logging for actual recruitment attempts
+    private bool CanRecruitWithLogging(int amount)
+    {
         if (targetAnimalStructure == null)
         {
             Debug.LogWarning($"{GetStructureName()}: Cannot recruit - No target AnimalStructure found!");
@@ -259,10 +283,9 @@ public class BarracksStructure : Structure
 
     public void RecruitAnimals(int amount)
     {
-        if (!CanRecruit(amount))
+        if (!CanRecruitWithLogging(amount))
         {
-            Debug.LogWarning($"Cannot recruit {amount} animals. CanRecruit check failed.");
-            return;
+            return; // Logging already handled in CanRecruitWithLogging
         }
         int totalCost = amount * recruitmentCostPerAnimal;
         if (!MoneyManager.Instance.SpendMoney(totalCost))

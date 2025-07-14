@@ -1010,13 +1010,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 272689958}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6eeae8482eb59f7458131ed1c2a0fa15, type: 3}
+  m_Script: {fileID: 11500000, guid: 7d48cc7dd68c1a14fb60c1e373842f9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameOverPanel: {fileID: 1077213407}
-  quitGameButton: {fileID: 695836580}
-  gameOverText: {fileID: 0}
-  gameOverDelay: 2.5
+  isGameOver: 0
+  isPaused: 0
+  allStructures: []
+  totalStructuresBuilt: 0
+  checkFarmHouseDestruction: 1
+  checkAllStructuresDestroyed: 0
 --- !u!4 &272689960
 Transform:
   m_ObjectHideFlags: 0
@@ -1542,6 +1544,9 @@ MonoBehaviour:
   OnShopClosed:
     m_PersistentCalls:
       m_Calls: []
+  enableAnimations: 1
+  poolStructureItems: 1
+  maxVisibleItems: 20
 --- !u!1 &369685982
 GameObject:
   m_ObjectHideFlags: 0
@@ -2782,6 +2787,9 @@ MonoBehaviour:
   visualizeInEditor: 0
   gizmoColor: {r: 1, g: 0.9813726, b: 0, a: 1}
   logDebugInfo: 1
+  enableRealTimeUpdates: 1
+  updateInterval: 0.1
+  enableGizmos: 0
   gridMonitor: {fileID: 0}
 --- !u!1 &539507485
 GameObject:
@@ -3193,7 +3201,7 @@ GameObject:
   - component: {fileID: 760890656}
   m_Layer: 5
   m_Name: ShopButton
-  m_TagString: Untagged
+  m_TagString: TutorialShopButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4711,7 +4719,7 @@ GameObject:
   - component: {fileID: 1132780139}
   m_Layer: 5
   m_Name: CropPanel
-  m_TagString: Untagged
+  m_TagString: TutorialInventory
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6487,7 +6495,6 @@ MonoBehaviour:
   buttonText: {fileID: 890192120}
   sceneLight: {fileID: 410087040}
   color: {r: 0.6666667, g: 0.73333335, b: 0.8666667, a: 0}
-  intensity: 0.3
   morningToDayGradient:
     serializedVersion: 2
     key0: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
@@ -6608,6 +6615,8 @@ MonoBehaviour:
     m_ColorSpace: -1
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
+  enableLightingOptimizations: 1
+  lightingUpdateInterval: 0.2
   skyboxMorning: {fileID: 2800000, guid: c15e36d3819e8d14ab21ab119e3fd4a7, type: 3}
   skyboxDay: {fileID: 2800000, guid: 0a08e110b5185334f8652754a6cf06e5, type: 3}
   skyboxAfternoon: {fileID: 2800000, guid: 846cce7d90ad21b4b80fcb937193081e, type: 3}
@@ -6640,9 +6649,6 @@ MonoBehaviour:
   nightFog: 0.009
   nightIntensity: 0.03
   dayIntensity: 2
-  dayTemp: 6000
-  morningTemp: 3000
-  eveningTemp: 9000
   pauseManager: {fileID: 1632256040}
   cropStructure: {fileID: 0}
   unitSpawner: {fileID: 1884560013}
@@ -6688,7 +6694,6 @@ MonoBehaviour:
   previousItemKey: 112
   removeModifierKey: 306
   moveKey: 109
-  buyLandKey: 304
   itemDeleteIcon: {fileID: 2119073778}
   cursorOffset: {x: 50, y: -60}
   enableLandBuying: 1
@@ -6699,7 +6704,8 @@ MonoBehaviour:
   synergyIndicatorHeight: 0.1
   synergyLineRendererPrefab: {fileID: 0}
   worldSpaceCanvas: {fileID: 0}
-  tooltipOffset: 1
+  enableSynergyVisuals: 1
+  maxSynergyLines: 10
 --- !u!114 &1632256037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6736,6 +6742,8 @@ MonoBehaviour:
   _militarySpawnRadius: 5
   _edgeInset: 2
   wolfPrefab: {fileID: 0}
+  useObjectPooling: 1
+  wolfPrefabCached: {fileID: 0}
 --- !u!114 &1632256039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7172,6 +7180,93 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &1656515258
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1656515261}
+  - component: {fileID: 1656515260}
+  - component: {fileID: 1656515259}
+  m_Layer: 0
+  m_Name: TutorialSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1656515259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656515258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f484723f0e0546d45bd2ca03ec49bd1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoSetupOnStart: 1
+  createMissingPrefabs: 1
+  setupUITags: 1
+  oldManPortrait: {fileID: 0}
+  voiceClips: []
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  dialogueBackgroundColor: {r: 0, g: 0, b: 0, a: 0.8}
+--- !u!114 &1656515260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656515258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64e11c6cde1ccb94aa6dd43adccbe8e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tutorialManager: {fileID: 0}
+  conditionTracker: {fileID: 0}
+  progressTracker: {fileID: 0}
+  highlighter: {fileID: 0}
+  uiSetup: {fileID: 0}
+  autoCreateComponents: 1
+  startTutorialOnGameStart: 1
+  startDelay: 3
+  tutorialUIPrefab: {fileID: 1323876942442514190, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+  worldPointerPrefab: {fileID: 2263791218397969870, guid: a0d116b1f1d5b58439ad58a42532a869, type: 3}
+  uiArrowPrefab: {fileID: 292227764893978924, guid: fafef38dd50062145ad726c188dc7f09, type: 3}
+  highlightMaterial: {fileID: 15303, guid: 0000000000000000f000000000000000, type: 0}
+  oldManPortrait: {fileID: 0}
+  oldManVoiceClips: []
+  OnTutorialStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTutorialCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTutorialSkipped:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1656515261
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656515258}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 420, y: 420, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1674221620
 GameObject:
   m_ObjectHideFlags: 0
@@ -7249,7 +7344,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 10
@@ -7287,7 +7382,7 @@ GameObject:
   - component: {fileID: 1683679577}
   m_Layer: 5
   m_Name: StructureList
-  m_TagString: Untagged
+  m_TagString: TutorialBuildButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8596,6 +8691,8 @@ MonoBehaviour:
   _militarySpawnRadius: 5
   _edgeInset: 1
   wolfPrefab: {fileID: 5988654711165413027, guid: 424555a7a34736944bc97cecac3c60df, type: 3}
+  useObjectPooling: 1
+  wolfPrefabCached: {fileID: 0}
 --- !u!4 &1884560014
 Transform:
   m_ObjectHideFlags: 0
@@ -9021,7 +9118,7 @@ GameObject:
   - component: {fileID: 2084042130}
   m_Layer: 5
   m_Name: GoldPanel
-  m_TagString: Untagged
+  m_TagString: TutorialMoney
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9416,3 +9513,4 @@ SceneRoots:
   - {fileID: 272689960}
   - {fileID: 2067110732}
   - {fileID: 1674221624}
+  - {fileID: 1656515261}

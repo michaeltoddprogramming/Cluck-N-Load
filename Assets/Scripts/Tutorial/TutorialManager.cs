@@ -56,7 +56,7 @@ public class TutorialStep
     public TutorialCondition[] prerequisites;
     public bool isCompleted;
     public bool isOptional;
-    public float displayDuration = 5f;
+    public float displayDuration = 999f; // Always wait for user input
     public Vector3 worldPosition = Vector3.zero;
     public bool pointToWorldPosition;
     public bool pauseGame;
@@ -91,6 +91,7 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private NightManager nightManager;
     [SerializeField] private ShopUIManager shopManager;
     [SerializeField] private MoneyManager moneyManager;
+    [SerializeField] private PauseManager pauseManager; // Reference to the game's pause manager
     
     private HashSet<TutorialCondition> completedConditions = new HashSet<TutorialCondition>();
     private Queue<TutorialStep> pendingSteps = new Queue<TutorialStep>();
@@ -99,6 +100,9 @@ public class TutorialManager : MonoBehaviour
     private bool tutorialCompleted = false;
     private Coroutine currentTutorialCoroutine;
 
+    // Tutorial-specific pause management
+    private bool wasPausedBeforeTutorial = false;
+    
     public event Action<TutorialCondition> OnConditionCompleted;
     public event Action OnTutorialCompleted;
 
@@ -165,7 +169,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.GameStarted,
             prerequisites = new TutorialCondition[] { },
             displayDuration = 6f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 3: Opening the Shop
@@ -177,7 +181,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.GameStarted,
             prerequisites = new TutorialCondition[] { },
             displayDuration = 5f,
-            pauseGame = false,
+            pauseGame = true,
             highlightUI = true,
             highlightUITag = "ShopButton"
         });
@@ -191,7 +195,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.ShopOpened,
             prerequisites = new TutorialCondition[] { TutorialCondition.ShopOpened },
             displayDuration = 6f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 5: Place Crop Plot
@@ -203,7 +207,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.FarmHousePlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.FarmHousePlaced },
             displayDuration = 5f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 6: Plant First Crop
@@ -215,7 +219,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.CropPlotPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.CropPlotPlaced },
             displayDuration = 5f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 7: Build Silo for Storage
@@ -227,7 +231,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.FirstCropPlanted,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropPlanted },
             displayDuration = 7f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 8: Explain Day/Night & Time Controls
@@ -251,7 +255,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.SiloPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.SiloPlaced },
             displayDuration = 7f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 10: Buy Chickens
@@ -263,7 +267,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.ChickenCoopPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.ChickenCoopPlaced },
             displayDuration = 5f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 11: Harvest & Feed Cycle
@@ -275,7 +279,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.FirstChickenBought,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstChickenBought },
             displayDuration = 6f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 12: Feed Animals
@@ -287,7 +291,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.FirstCropHarvested,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
             displayDuration = 5f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 13: Collect Products
@@ -299,7 +303,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.ChickensStartedProducing,
             prerequisites = new TutorialCondition[] { TutorialCondition.ChickensStartedProducing },
             displayDuration = 5f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 14: Build Barracks for Defense
@@ -311,7 +315,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.AnimalProductsCollected,
             prerequisites = new TutorialCondition[] { TutorialCondition.AnimalProductsCollected },
             displayDuration = 8f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 15: Place Defense Flag
@@ -323,7 +327,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.BarracksPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.BarracksPlaced },
             displayDuration = 6f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 16: Recruit Army
@@ -335,7 +339,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.FlagPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.FlagPlaced },
             displayDuration = 7f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 17: First Night
@@ -359,7 +363,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.NightStarted,
             prerequisites = new TutorialCondition[] { TutorialCondition.NightStarted },
             displayDuration = 6f,
-            pauseGame = false
+            pauseGame = true
         });
 
         // Step 19: Show Synergies
@@ -447,31 +451,21 @@ public class TutorialManager : MonoBehaviour
 
         if (completedConditions.Contains(condition)) return;
 
+        Debug.Log($"Tutorial condition met: {condition}");
         completedConditions.Add(condition);
         OnConditionCompleted?.Invoke(condition);
 
-        // Check for tutorial steps that can now be triggered
+        // Check for tutorial steps that can now be triggered with strict validation
         foreach (var step in tutorialSteps)
         {
-            if (step.isCompleted) continue;
-            
-            if (step.triggerCondition == condition)
+            if (CanTriggerStep(step, condition))
             {
-                // Check if all prerequisites are met
-                bool canTrigger = true;
-                foreach (var prereq in step.prerequisites)
-                {
-                    if (!completedConditions.Contains(prereq))
-                    {
-                        canTrigger = false;
-                        break;
-                    }
-                }
-
-                if (canTrigger)
-                {
-                    pendingSteps.Enqueue(step);
-                }
+                Debug.Log($"Tutorial step {step.stepId} can be triggered by condition {condition}");
+                pendingSteps.Enqueue(step);
+            }
+            else if (step.triggerCondition == condition)
+            {
+                Debug.LogWarning($"Tutorial step {step.stepId} matched condition {condition} but failed strict validation");
             }
         }
 
@@ -505,7 +499,7 @@ public class TutorialManager : MonoBehaviour
         // Pause game if required
         if (step.pauseGame)
         {
-            Time.timeScale = 0f;
+            PauseForTutorial();
         }
 
         // Setup UI
@@ -549,11 +543,9 @@ public class TutorialManager : MonoBehaviour
             }
         }
 
-        // Wait for step duration or manual progression
-        float timer = 0f;
-        while (timer < step.displayDuration && currentStep == step)
+        // Wait for manual progression ONLY (no auto-advance)
+        while (currentStep == step && isTutorialActive)
         {
-            timer += (step.pauseGame ? Time.unscaledDeltaTime : Time.deltaTime);
             yield return null;
         }
 
@@ -586,7 +578,7 @@ public class TutorialManager : MonoBehaviour
         }
 
         // Unpause game
-        Time.timeScale = 1f;
+        ResumeFromTutorial();
 
         isTutorialActive = false;
         currentStep = null;
@@ -597,9 +589,15 @@ public class TutorialManager : MonoBehaviour
 
     public void NextTutorialStep()
     {
+        Debug.Log("NextTutorialStep called!");
         if (currentStep != null)
         {
+            Debug.Log($"Completing current step: {currentStep.stepId}");
             CompleteCurrentStep();
+        }
+        else
+        {
+            Debug.LogWarning("NextTutorialStep called but currentStep is null!");
         }
     }
 
@@ -633,8 +631,8 @@ public class TutorialManager : MonoBehaviour
             worldPointer.SetActive(false);
         }
 
-        // Unpause game
-        Time.timeScale = 1f;
+        // Resume game using our pause management
+        ResumeFromTutorial();
 
         OnTutorialCompleted?.Invoke();
         
@@ -768,5 +766,88 @@ public class TutorialManager : MonoBehaviour
         {
             step.isCompleted = false;
         }
+    }
+
+    /// <summary>
+    /// Pause the game for tutorial steps - integrates with PauseManager if available
+    /// </summary>
+    private void PauseForTutorial()
+    {
+        // Store the current pause state
+        if (pauseManager != null)
+        {
+            wasPausedBeforeTutorial = Time.timeScale == 0f;
+            pauseManager.pauseGame();
+        }
+        else
+        {
+            // Fallback to direct Time.timeScale manipulation
+            wasPausedBeforeTutorial = Time.timeScale == 0f;
+            Time.timeScale = 0f;
+        }
+        
+        Debug.Log("Tutorial: Game paused for tutorial step");
+    }
+    
+    /// <summary>
+    /// Resume game after tutorial step - only if it wasn't paused before
+    /// </summary>
+    private void ResumeFromTutorial()
+    {
+        // Only resume if the game wasn't already paused before the tutorial
+        if (!wasPausedBeforeTutorial)
+        {
+            if (pauseManager != null)
+            {
+                pauseManager.playGame();
+            }
+            else
+            {
+                // Fallback to direct Time.timeScale manipulation
+                Time.timeScale = 1f;
+            }
+            
+            Debug.Log("Tutorial: Game resumed after tutorial step");
+        }
+        else
+        {
+            Debug.Log("Tutorial: Game remains paused (was paused before tutorial step)");
+        }
+    }
+    
+    /// <summary>
+    /// Check if all prerequisites are strictly met before allowing progression
+    /// </summary>
+    private bool ArePrerequisitesStrictlyMet(TutorialStep step)
+    {
+        foreach (var prereq in step.prerequisites)
+        {
+            if (!completedConditions.Contains(prereq))
+            {
+                Debug.LogWarning($"Tutorial step {step.stepId} blocked: Missing prerequisite {prereq}");
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /// <summary>
+    /// Enhanced condition checking with strict ordering
+    /// </summary>
+    private bool CanTriggerStep(TutorialStep step, TutorialCondition condition)
+    {
+        // Must match trigger condition
+        if (step.triggerCondition != condition)
+            return false;
+            
+        // Must not be already completed
+        if (step.isCompleted)
+            return false;
+            
+        // Must have all prerequisites
+        if (!ArePrerequisitesStrictlyMet(step))
+            return false;
+            
+        return true;
     }
 }

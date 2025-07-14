@@ -13,6 +13,14 @@ public class TutorialConditionTracker : MonoBehaviour
     private bool nightHasStarted = false;
     private bool hasDefeatedFirstWolf = false;
     private bool hasStartedSecondDay = false;
+    private bool hasOpenedShop = false;
+    
+    // Structure-specific tracking
+    private bool hasFarmHousePlaced = false;
+    private bool hasSiloPlaced = false;
+    private bool hasCropPlotPlaced = false;
+    private bool hasChickenCoopPlaced = false;
+    private bool hasBarracksPlaced = false;
 
     private int structurePlacementCount = 0;
     private int currentDay = 0;
@@ -54,6 +62,7 @@ public class TutorialConditionTracker : MonoBehaviour
             TrackAnimalStatus();
             TrackDefenseStatus();
             TrackNightStatus();
+            TrackShopStatus();
         }
     }
 
@@ -69,11 +78,18 @@ public class TutorialConditionTracker : MonoBehaviour
                 bool currentIsNight = !NightManager.Instance.IsDay;
                 int currentDay = NightManager.Instance.Days;
 
-                // Night started
+                // Night started - but only trigger if not blocked by tutorial
                 if (currentIsNight && !wasNight && !nightHasStarted)
                 {
-                    nightHasStarted = true;
-                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.NightStarted);
+                    if (!ShouldBlockNightProgression())
+                    {
+                        nightHasStarted = true;
+                        TutorialManager.Instance?.OnConditionMet(TutorialCondition.NightStarted);
+                    }
+                    else
+                    {
+                        Debug.Log("Tutorial: Night start condition blocked - tutorial in progress");
+                    }
                 }
 
                 // Day changed
@@ -97,22 +113,42 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackStructurePlacements()
     {
-        // Count all structures in the scene
+        // Count all structures in the scene (excluding BuildGhost)
         Structure[] allStructures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
+        int actualStructureCount = 0;
         
-        if (allStructures.Length > structurePlacementCount)
+        foreach (Structure structure in allStructures)
         {
-            structurePlacementCount = allStructures.Length;
+            // Only count non-BuildGhost structures
+            if (structure.gameObject.name != "BuildGhost")
+            {
+                actualStructureCount++;
+            }
+        }
+        
+        if (actualStructureCount > structurePlacementCount)
+        {
+            Debug.Log($"New structure placed! Total structures: {actualStructureCount}");
+            structurePlacementCount = actualStructureCount;
 
             if (!hasPlacedFirstStructure)
             {
                 hasPlacedFirstStructure = true;
+                Debug.Log("First structure placed - triggering tutorial condition!");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstStructurePlaced);
             }
 
             // Check for specific structure types
+            Debug.Log($"Checking {actualStructureCount} structures for specific types...");
             foreach (Structure structure in allStructures)
             {
+                // Skip BuildGhost objects (they're just previews)
+                if (structure.gameObject.name == "BuildGhost")
+                {
+                    continue;
+                }
+                
+                Debug.Log($"Found structure in scene: {structure.name} with StructureData: {(structure.structureData != null ? structure.structureData.structureName : "NULL")} (Type: {(structure.structureData != null ? structure.structureData.type.ToString() : "NULL")})");
                 CheckSpecificStructureType(structure);
             }
         }
@@ -120,29 +156,78 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void CheckSpecificStructureType(Structure structure)
     {
-        if (structure.structureData == null) return;
+        if (structure.structureData == null) 
+        {
+            Debug.LogWarning($"Structure {structure.name} has no structureData!");
+            return;
+        }
+
+        // Skip BuildGhost objects (they're just previews)
+        if (structure.gameObject.name == "BuildGhost")
+        {
+            return;
+        }
+
+        Debug.Log($"Checking structure: {structure.name}, Type: {structure.structureData.type}");
+
+        // Check for farmhouse first (by name or type)
+        if (!hasFarmHousePlaced && (structure.name.ToLower().Contains("farmhouse") || 
+            structure.name.ToLower().Contains("farm house") ||
+            structure.name.ToLower().Contains("mainbuilding") ||
+            structure.structureData.type == StructureType.Building))
+        {
+            Debug.Log("Farm House placed - triggering tutorial condition!");
+            hasFarmHousePlaced = true;
+            TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
+            return; // Exit early since we found the farmhouse
+        }
 
         switch (structure.structureData.type)
         {
             case StructureType.Building:
-                TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
+                // Building type already handled above in farmhouse check
+                // No need to log as unknown
                 break;
-            
+                
             case StructureType.Silo:
-                TutorialManager.Instance?.OnConditionMet(TutorialCondition.SiloPlaced);
+                if (!hasSiloPlaced)
+                {
+                    Debug.Log("Silo placed - triggering tutorial condition!");
+                    hasSiloPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.SiloPlaced);
+                }
                 break;
             
             case StructureType.CropPlot:
-                TutorialManager.Instance?.OnConditionMet(TutorialCondition.CropPlotPlaced);
+                if (!hasCropPlotPlaced)
+                {
+                    Debug.Log("Crop Plot placed - triggering tutorial condition!");
+                    hasCropPlotPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.CropPlotPlaced);
+                }
                 break;
             
             case StructureType.Animal:
             case StructureType.AnimalPlot:
-                TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickenCoopPlaced);
+                if (!hasChickenCoopPlaced)
+                {
+                    Debug.Log("Animal structure placed - triggering tutorial condition!");
+                    hasChickenCoopPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickenCoopPlaced);
+                }
                 break;
             
             case StructureType.Barracks:
-                TutorialManager.Instance?.OnConditionMet(TutorialCondition.BarracksPlaced);
+                if (!hasBarracksPlaced)
+                {
+                    Debug.Log("Barracks placed - triggering tutorial condition!");
+                    hasBarracksPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.BarracksPlaced);
+                }
+                break;
+                
+            default:
+                Debug.LogWarning($"Unknown structure type: {structure.structureData.type}");
                 break;
         }
     }
@@ -243,10 +328,30 @@ public class TutorialConditionTracker : MonoBehaviour
         }
     }
 
+    private void TrackShopStatus()
+    {
+        if (!hasOpenedShop)
+        {
+            // Find the shop UI manager
+            ShopUIManager shopManager = FindObjectOfType<ShopUIManager>();
+            if (shopManager != null)
+            {
+                // Check if shop panel is active
+                GameObject shopPanel = shopManager.GetShopPanel();
+                if (shopPanel != null && shopPanel.activeSelf)
+                {
+                    Debug.Log("Shop opened detected!");
+                    hasOpenedShop = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.ShopOpened);
+                }
+            }
+        }
+    }
+
     private void OnMoneyChanged(int newAmount)
     {
-        // Trigger money earned condition
-        TutorialManager.Instance?.OnConditionMet(TutorialCondition.MoneyEarned);
+        // Note: MoneyEarned condition disabled for now - not needed for core tutorial flow
+        // TutorialManager.Instance?.OnConditionMet(TutorialCondition.MoneyEarned);
     }
 
     public void OnProductCollected()
@@ -275,5 +380,25 @@ public class TutorialConditionTracker : MonoBehaviour
         {
             MoneyManager.Instance.OnMoneyChanged -= OnMoneyChanged;
         }
+    }
+
+    /// <summary>
+    /// Check if tutorial is currently active and should block night progression
+    /// </summary>
+    private bool ShouldBlockNightProgression()
+    {
+        if (TutorialManager.Instance == null) return false;
+        
+        // Block night if tutorial is active and we haven't completed the army recruitment step yet
+        bool tutorialActive = TutorialManager.Instance.IsTutorialActive();
+        bool armyNotReady = !hasRecruitedArmy;
+        
+        if (tutorialActive && armyNotReady)
+        {
+            Debug.Log("Tutorial: Blocking night progression - player not ready for night phase");
+            return true;
+        }
+        
+        return false;
     }
 }

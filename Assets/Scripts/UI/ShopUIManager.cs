@@ -68,6 +68,7 @@ public class ShopUIManager : MonoBehaviour
             shopPanelUI.OpenShop();
         }
 
+        Debug.Log("Shop opened! Notifying tutorial system...");
         // Notify tutorial system
         if (TutorialManager.Instance != null)
         {
@@ -92,6 +93,11 @@ public class ShopUIManager : MonoBehaviour
     public bool IsShopOpen()
     {
         return isVisible;
+    }
+
+    public GameObject GetShopPanel()
+    {
+        return shopPanel;
     }
 
     public void SetBuildTarget(StructureData data)

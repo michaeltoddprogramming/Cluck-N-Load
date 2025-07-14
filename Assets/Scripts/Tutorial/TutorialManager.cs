@@ -21,6 +21,7 @@ public enum TutorialCondition
     FirstCropPlanted,
     FirstCropHarvested,
     StorageExplained,
+    TimeControlsExplained,
     
     // Animals & Production
     ChickenCoopPlaced,
@@ -247,14 +248,14 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 9: Chicken Coop for Production
+        // Step 9: Chicken Coop for Production (after time controls explanation)
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "build_chicken_coop",
             title = "Start Animal Production",
             description = "Now let's add some livestock! Build a Chicken Coop. Chickens will lay eggs that you can collect and sell for money. Place it near your silo for better efficiency - animals eat less food when they're close to storage!",
-            triggerCondition = TutorialCondition.SiloPlaced,
-            prerequisites = new TutorialCondition[] { TutorialCondition.SiloPlaced },
+            triggerCondition = TutorialCondition.TimeControlsExplained,
+            prerequisites = new TutorialCondition[] { TutorialCondition.TimeControlsExplained },
             displayDuration = 7f,
             pauseGame = true
         });
@@ -271,67 +272,45 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 11: Harvest & Feed Cycle
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "harvest_crops",
-            title = "Harvest Your First Crops",
-            description = "Look at that! Your crops are ready to harvest. Click on the crop plot and harvest them. The food will go to your silo automatically. You'll need this food to feed your animals!",
-            triggerCondition = TutorialCondition.FirstChickenBought,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FirstChickenBought },
-            displayDuration = 6f,
-            pauseGame = true
-        });
+        // Step 11: Watch Crops Grow (REMOVED - this was causing overlap with step 7)
 
-        // Step 12: Watch Crops Grow
+        // Step 11: Harvest Your Crops (when they're ready)
         tutorialSteps.Add(new TutorialStep
         {
-            stepId = "watch_crop_growth",
-            title = "Watch Your Crops Grow",
-            description = "Perfect! Your sunflowers are growing. Normally crops take 24 hours to grow, but for this tutorial, I'll speed things up for you! Watch as they grow quickly right before your eyes!",
-            triggerCondition = TutorialCondition.FirstCropPlanted,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropPlanted },
-            displayDuration = 6f,
-            pauseGame = true
-        });
-
-        // Step 13: Harvest Your Crops
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "harvest_crops",
+            stepId = "harvest_first_crops",
             title = "Harvest Your Sunflowers",
-            description = "Look at that! Your sunflowers grew super fast for the tutorial. Now they're ready to harvest! Click on the crop plot and harvest your sunflowers. You'll need these to feed your chickens!",
+            description = "Look at that! Your sunflowers are ready to harvest! Click on the crop plot and harvest your sunflowers. You'll need these to feed your animals!",
             triggerCondition = TutorialCondition.FirstCropHarvested,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
             displayDuration = 6f,
             pauseGame = true
         });
 
-        // Step 14: Feed Animals
+        // Step 12: Feed Animals (after harvest AND chickens bought)
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "feed_animals",
             title = "Feed Your Chickens",
             description = "Now that you have sunflowers, your chickens are hungry! Click on the chicken coop and feed them with your harvested sunflowers. Well-fed animals will start producing eggs!",
             triggerCondition = TutorialCondition.FirstCropHarvested,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
+            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested, TutorialCondition.FirstChickenBought },
             displayDuration = 6f,
             pauseGame = true
         });
 
-        // Step 15: Watch Production Start
+        // Step 13: Watch Production Start
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "watch_production",
             title = "Production Starting",
-            description = "Excellent! Your chickens are now fed and producing. Normally this takes 24 hours, but I'll speed this up too for the tutorial. Watch as they quickly start producing eggs!",
+            description = "Excellent! Your chickens are now fed and producing. Just wait a moment and they'll quickly produce eggs for the tutorial!",
             triggerCondition = TutorialCondition.ChickensStartedProducing,
             prerequisites = new TutorialCondition[] { TutorialCondition.ChickensStartedProducing },
             displayDuration = 6f,
             pauseGame = true
         });
 
-        // Step 16: Collect Products
+        // Step 14: Collect Products
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "collect_products",
@@ -343,7 +322,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 17: Build Barracks for Defense
+        // Step 15: Build Barracks for Defense
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "build_barracks",
@@ -355,7 +334,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 18: Place Defense Flag
+        // Step 16: Place Defense Flag
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "place_flag",
@@ -367,7 +346,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 19: Recruit Army
+        // Step 17: Recruit Army
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "recruit_army",
@@ -379,7 +358,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 20: First Night
+        // Step 18: First Night
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "first_night",
@@ -391,7 +370,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 21: Night Defense
+        // Step 19: Night Defense
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "night_defense",
@@ -403,7 +382,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 22: Show Synergies
+        // Step 20: Show Synergies
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "synergy_explanation",
@@ -415,7 +394,7 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 23: Complete Tutorial
+        // Step 21: Complete Tutorial
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "tutorial_complete",
@@ -595,6 +574,12 @@ public class TutorialManager : MonoBehaviour
         if (currentStep != null)
         {
             currentStep.isCompleted = true;
+            
+            // Trigger special conditions when certain steps complete
+            if (currentStep.stepId == "time_controls")
+            {
+                OnConditionMet(TutorialCondition.TimeControlsExplained);
+            }
             
             // Check if this was the final step
             if (currentStep.stepId == "tutorial_complete")
@@ -869,7 +854,7 @@ public class TutorialManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Enhanced condition checking with strict ordering
+    /// Enhanced condition checking that prevents multiple steps from triggering simultaneously
     /// </summary>
     private bool CanTriggerStep(TutorialStep step, TutorialCondition condition)
     {
@@ -885,6 +870,24 @@ public class TutorialManager : MonoBehaviour
         if (!ArePrerequisitesStrictlyMet(step))
             return false;
             
+        // CRITICAL: Prevent multiple steps from triggering on the same condition
+        // Only allow if no other step with the same trigger condition is already queued or active
+        foreach (var pendingStep in pendingSteps)
+        {
+            if (pendingStep.triggerCondition == condition && pendingStep.stepId != step.stepId)
+            {
+                Debug.Log($"Tutorial step {step.stepId} blocked: Another step with same trigger condition is already queued");
+                return false;
+            }
+        }
+        
+        // Check if a step with the same trigger is currently active
+        if (currentStep != null && currentStep.triggerCondition == condition && currentStep.stepId != step.stepId)
+        {
+            Debug.Log($"Tutorial step {step.stepId} blocked: Another step with same trigger condition is currently active");
+            return false;
+        }
+        
         return true;
     }
 }

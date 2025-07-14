@@ -156,19 +156,64 @@ public class TutorialSystem : MonoBehaviour
 
     private void ConnectUIToTutorialManager()
     {
-        // Find the auto-created tutorial UI
-        GameObject tutorialUI = GameObject.Find("TutorialUI");
+        // Try multiple ways to find the tutorial UI
+        GameObject tutorialUI = null;
+        
+        // First, try to find TutorialDialoguePanel (your prefab structure)
+        tutorialUI = GameObject.Find("TutorialDialoguePanel");
+        
         if (tutorialUI == null)
         {
-            Debug.LogWarning("TutorialUI not found! Make sure auto-setup ran correctly.");
+            // Try finding TutorialUI (auto-generated)
+            tutorialUI = GameObject.Find("TutorialUI");
+        }
+        
+        if (tutorialUI == null)
+        {
+            // Try finding it under TutorialCanvas
+            GameObject tutorialCanvas = GameObject.Find("TutorialCanvas");
+            if (tutorialCanvas == null)
+            {
+                tutorialCanvas = GameObject.Find("TutorialCanvas(Clone)");
+            }
+            
+            if (tutorialCanvas != null)
+            {
+                // Look for TutorialDialoguePanel under the canvas
+                Transform dialoguePanel = tutorialCanvas.transform.Find("TutorialDialoguePanel");
+                if (dialoguePanel != null)
+                {
+                    tutorialUI = dialoguePanel.gameObject;
+                }
+            }
+        }
+        
+        if (tutorialUI == null)
+        {
+            Debug.LogWarning("Could not find tutorial UI! Checked TutorialDialoguePanel, TutorialUI, and TutorialCanvas structures.");
             return;
+        }
+
+        Debug.Log($"Found tutorial UI: {tutorialUI.name}");
+        
+        // Make sure it's visible
+        tutorialUI.SetActive(true);
+        
+        // Fix the alpha issue
+        var canvasGroup = tutorialUI.GetComponent<CanvasGroup>();
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 1f;
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+            Debug.Log("Fixed CanvasGroup alpha to 1");
         }
 
         // Get UI components and connect them to TutorialManager
         var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
         if (uiScript != null && tutorialManager != null)
         {
-            // Use reflection or direct assignment to connect UI elements
+            // Use reflection to connect UI elements
             var tutorialManagerType = typeof(TutorialManager);
             
             // Set tutorial panel
@@ -177,6 +222,7 @@ public class TutorialSystem : MonoBehaviour
             if (tutorialPanelField != null)
             {
                 tutorialPanelField.SetValue(tutorialManager, tutorialUI);
+                Debug.Log("Connected tutorialPanel");
             }
 
             // Set dialogue text
@@ -185,6 +231,7 @@ public class TutorialSystem : MonoBehaviour
             if (tutorialDescriptionField != null && uiScript.dialogueText != null)
             {
                 tutorialDescriptionField.SetValue(tutorialManager, uiScript.dialogueText);
+                Debug.Log("Connected dialogueText");
             }
 
             // Set title text (character name)
@@ -193,6 +240,7 @@ public class TutorialSystem : MonoBehaviour
             if (tutorialTitleField != null && uiScript.characterNameText != null)
             {
                 tutorialTitleField.SetValue(tutorialManager, uiScript.characterNameText);
+                Debug.Log("Connected characterNameText");
             }
 
             // Set next button
@@ -201,14 +249,16 @@ public class TutorialSystem : MonoBehaviour
             if (nextButtonField != null && uiScript.nextButton != null)
             {
                 nextButtonField.SetValue(tutorialManager, uiScript.nextButton);
+                Debug.Log("Connected nextButton");
             }
 
             // Set skip button
             var skipButtonField = tutorialManagerType.GetField("skipButton", 
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (skipButtonField != null && uiScript.skipButton != null)
+            if (skipButtonField != null && uiScript.skipAllButton != null)
             {
-                skipButtonField.SetValue(tutorialManager, uiScript.skipButton);
+                skipButtonField.SetValue(tutorialManager, uiScript.skipAllButton);
+                Debug.Log("Connected skipButton");
             }
 
             // Set character portrait
@@ -217,13 +267,17 @@ public class TutorialSystem : MonoBehaviour
             if (characterPortraitField != null && uiScript.characterPortrait != null)
             {
                 characterPortraitField.SetValue(tutorialManager, uiScript.characterPortrait);
+                Debug.Log("Connected characterPortrait");
             }
 
             Debug.Log("UI components connected to TutorialManager!");
+            
+            // Force the UI to be visible after connection
+            tutorialManager.ForceShowTutorialUI();
         }
         else
         {
-            Debug.LogWarning("Could not find TutorialUIPrefab component on auto-created UI!");
+            Debug.LogWarning("Could not find TutorialUIPrefab component on tutorial UI, or TutorialManager is null!");
         }
     }
 

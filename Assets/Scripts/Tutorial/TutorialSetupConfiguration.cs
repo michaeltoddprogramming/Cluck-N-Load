@@ -123,7 +123,8 @@ public class TutorialSetupConfiguration : MonoBehaviour
         // Add RectTransform
         RectTransform rect = tutorialUI.AddComponent<RectTransform>();
         rect.anchorMin = new Vector2(0, 0);
-        rect.anchorMax = new Vector2(1, 0.3f);
+        rect.anchorMax = new Vector2(1, 0.25f);
+        rect.anchoredPosition = Vector2.zero;
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
         
@@ -151,6 +152,9 @@ public class TutorialSetupConfiguration : MonoBehaviour
         
         // Configure the script
         uiScript.ConfigureForTutorial();
+        
+        // Connect button events properly
+        ConnectButtonEvents(uiScript);
         
         Debug.Log("Tutorial dialogue UI created.");
     }
@@ -186,8 +190,8 @@ public class TutorialSetupConfiguration : MonoBehaviour
         rect.offsetMax = Vector2.zero;
         
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
-        text.text = "Welcome to the tutorial!";
-        text.fontSize = 18;
+        text.text = "Well hello there, young farmer! I'm Old Pete, and I'll be your guide.";
+        text.fontSize = 16;
         text.color = Color.white;
         text.alignment = TextAlignmentOptions.TopLeft;
     }
@@ -328,5 +332,47 @@ public class TutorialSetupConfiguration : MonoBehaviour
         highlightMat.SetFloat("_Glossiness", 0.5f);
         
         Debug.Log("Tutorial materials created.");
+    }
+    
+    private void ConnectButtonEvents(TutorialUIPrefab uiScript)
+    {
+        if (uiScript.nextButton != null)
+        {
+            uiScript.nextButton.onClick.RemoveAllListeners();
+            uiScript.nextButton.onClick.AddListener(() => {
+                var tutorialManager = TutorialManager.Instance;
+                if (tutorialManager != null)
+                {
+                    tutorialManager.NextTutorialStep();
+                    Debug.Log("Next button clicked!");
+                }
+            });
+        }
+
+        if (uiScript.skipButton != null)
+        {
+            uiScript.skipButton.onClick.RemoveAllListeners();
+            uiScript.skipButton.onClick.AddListener(() => {
+                var tutorialManager = TutorialManager.Instance;
+                if (tutorialManager != null)
+                {
+                    tutorialManager.NextTutorialStep();
+                    Debug.Log("Skip button clicked!");
+                }
+            });
+        }
+
+        if (uiScript.skipAllButton != null)
+        {
+            uiScript.skipAllButton.onClick.RemoveAllListeners();
+            uiScript.skipAllButton.onClick.AddListener(() => {
+                var tutorialManager = TutorialManager.Instance;
+                if (tutorialManager != null)
+                {
+                    tutorialManager.SkipTutorial();
+                    Debug.Log("Skip All button clicked!");
+                }
+            });
+        }
     }
 }

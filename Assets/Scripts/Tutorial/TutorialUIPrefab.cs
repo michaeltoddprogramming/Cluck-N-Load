@@ -45,9 +45,17 @@ public class TutorialUIPrefab : MonoBehaviour
             
         if (skipButton == null)
             skipButton = transform.Find("SkipButton")?.GetComponent<Button>();
+        
+        // Also check for SkipTutorialButton as that seems to be in your hierarchy
+        if (skipButton == null)
+            skipButton = transform.Find("SkipTutorialButton")?.GetComponent<Button>();
             
         if (skipAllButton == null)
             skipAllButton = transform.Find("SkipAllButton")?.GetComponent<Button>();
+        
+        // Also check for SkipTutorialButton for skipAllButton
+        if (skipAllButton == null)
+            skipAllButton = transform.Find("SkipTutorialButton")?.GetComponent<Button>();
             
         if (progressSlider == null)
             progressSlider = transform.Find("ProgressSlider")?.GetComponent<Slider>();

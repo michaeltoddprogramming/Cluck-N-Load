@@ -148,11 +148,11 @@ public class TutorialManager : MonoBehaviour
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "welcome",
-            title = "Welcome to Cluck N Load!",
+            title = "Old Pete",
             description = "Well hello there, young farmer! I'm Old Pete, and I'll be your guide. This here's your new farm, and boy do we have work to do! Those wolves have been causing trouble, but don't you worry - I'll teach you everything you need to know about farming and defending your land!",
             triggerCondition = TutorialCondition.GameStarted,
             prerequisites = new TutorialCondition[] { },
-            displayDuration = 8f,
+            displayDuration = 999f, // Wait for user input instead of auto-progressing
             pauseGame = true
         });
 
@@ -678,6 +678,73 @@ public class TutorialManager : MonoBehaviour
         {
             Debug.LogWarning($"Tag '{tag}' is not defined. Skipping highlight. Error: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Force the tutorial UI to be visible - for debugging
+    /// </summary>
+    public void ForceShowTutorialUI()
+    {
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(true);
+            
+            // Force alpha to 1
+            var canvasGroup = tutorialPanel.GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+                Debug.Log("Forced tutorial UI alpha to 1");
+            }
+            
+            // Also check parent canvas
+            Transform parent = tutorialPanel.transform.parent;
+            while (parent != null)
+            {
+                var parentCanvasGroup = parent.GetComponent<CanvasGroup>();
+                if (parentCanvasGroup != null)
+                {
+                    parentCanvasGroup.alpha = 1f;
+                    Debug.Log($"Set parent {parent.name} alpha to 1");
+                }
+                parent = parent.parent;
+            }
+            
+            Debug.Log("Tutorial UI forced visible");
+        }
+        else
+        {
+            Debug.LogError("Tutorial panel is null!");
+        }
+    }
+    
+    /// <summary>
+    /// Debug method to test tutorial display
+    /// </summary>
+    [ContextMenu("Test Tutorial Display")]
+    public void TestTutorialDisplay()
+    {
+        if (tutorialSteps.Count > 0)
+        {
+            ForceShowTutorialUI();
+            DisplayTutorialStep(tutorialSteps[0]);
+        }
+    }
+    
+    /// <summary>
+    /// Debug method to check UI connections
+    /// </summary>
+    [ContextMenu("Debug UI Connections")]
+    public void DebugUIConnections()
+    {
+        Debug.Log($"Tutorial Panel: {(tutorialPanel != null ? tutorialPanel.name : "NULL")}");
+        Debug.Log($"Tutorial Title: {(tutorialTitle != null ? tutorialTitle.name : "NULL")}");
+        Debug.Log($"Tutorial Description: {(tutorialDescription != null ? tutorialDescription.name : "NULL")}");
+        Debug.Log($"Next Button: {(nextButton != null ? nextButton.name : "NULL")}");
+        Debug.Log($"Skip Button: {(skipButton != null ? skipButton.name : "NULL")}");
+        Debug.Log($"Character Portrait: {(characterPortrait != null ? characterPortrait.name : "NULL")}");
     }
 
     // Public methods for external systems to call

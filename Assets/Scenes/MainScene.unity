@@ -414,7 +414,7 @@ GameObject:
   - component: {fileID: 122739292}
   m_Layer: 5
   m_Name: PAUSE BG
-  m_TagString: Untagged
+  m_TagString: ShopButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7190,7 +7190,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1656515261}
   - component: {fileID: 1656515260}
-  - component: {fileID: 1656515259}
   m_Layer: 0
   m_Name: TutorialSystem
   m_TagString: Untagged
@@ -7198,25 +7197,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1656515259
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1656515258}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f484723f0e0546d45bd2ca03ec49bd1d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  autoSetupOnStart: 1
-  createMissingPrefabs: 1
-  setupUITags: 1
-  oldManPortrait: {fileID: 0}
-  voiceClips: []
-  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  dialogueBackgroundColor: {r: 0, g: 0, b: 0, a: 0.8}
 --- !u!114 &1656515260
 MonoBehaviour:
   m_ObjectHideFlags: 0

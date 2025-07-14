@@ -261,14 +261,14 @@ public class TutorialConditionTracker : MonoBehaviour
                 hasPlantedFirstCrop = true;
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropPlanted);
                 
-                // TUTORIAL: Instantly grow the crop for demonstration purposes
+                // TUTORIAL: Mark crop for future instant growth, but don't do it immediately
                 if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
                 {
-                    StartCoroutine(InstantGrowCropForTutorial(crop));
+                    Debug.Log("Tutorial: Crop planted, will grow when tutorial asks for it");
                 }
             }
 
-            // Track if crops are ready for harvest
+            // Track if crops are ready for harvest - but only when tutorial is asking for it
             if (crop.CropReady && hasPlantedFirstCrop && !hasHarvestedFirstCrop)
             {
                 Debug.Log("Crop is ready for harvest!");
@@ -624,5 +624,30 @@ public class TutorialConditionTracker : MonoBehaviour
             totalArmy += barrack.ArmyAnimalCount;
         }
         return totalArmy;
+    }
+
+    /// <summary>
+    /// Manually trigger crop growth for tutorial timing control
+    /// Call this when the tutorial step specifically asks for crop growth
+    /// </summary>
+    public void TriggerCropGrowthForTutorial()
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+        {
+            Debug.LogWarning("TriggerCropGrowthForTutorial called but tutorial is not active!");
+            return;
+        }
+        
+        CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        
+        foreach (CropStructure crop in cropStructures)
+        {
+            if (crop.CurrentCropType != CropStructure.CropType.None && !crop.CropReady)
+            {
+                Debug.Log("Tutorial: Manually growing crop for tutorial step!");
+                StartCoroutine(InstantGrowCropForTutorial(crop));
+                break; // Only grow the first planted crop
+            }
+        }
     }
 }

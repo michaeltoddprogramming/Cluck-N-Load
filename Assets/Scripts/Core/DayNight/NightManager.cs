@@ -68,8 +68,8 @@ public class NightManager : MonoBehaviour
     [SerializeField] private float speedUp = 1f;
     [SerializeField] private float speedOfFast = 5f;
 
-    [Tooltip("How many in-game minutes per real life second (0.0625f -> 1 in-game minute = 0.0625 seconds (1 day ≈ 12 minutes))")]
-    [SerializeField] private float inGameMinVSSec = 0.0625f;
+    [Tooltip("How many in-game minutes per real life second (0.02f -> 1 in-game minute = 0.02 seconds (1 day ≈ 36 minutes))")]
+    [SerializeField] private float inGameMinVSSec = 0.02f;
     private bool isPaused = false;
     [SerializeField] private bool isFast = false;
     [SerializeField] private TextMeshProUGUI timeText;
@@ -275,7 +275,10 @@ public class NightManager : MonoBehaviour
         tempSecond += Time.deltaTime * speedUp;
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
 
-        if (tempSecond >= inGameMinVSSec) // 1 in-game minute = 0.0625 seconds (1 day ≈ 12 minutes)
+        // Use even slower time during tutorial for stress-free learning
+        float currentTimeRate = IsInTutorialMode() ? inGameMinVSSec * 0.5f : inGameMinVSSec;
+        
+        if (tempSecond >= currentTimeRate)
         {
             Minutes += 1;
             tempSecond = 0;
@@ -871,5 +874,15 @@ public class NightManager : MonoBehaviour
         yield return new WaitForSeconds(time);
         productionNotification.gameObject.SetActive(false);
         productionNotificationCoroutine = null;
+    }
+
+    /// <summary>
+    /// Check if we're currently in tutorial mode and should use extended day timing
+    /// </summary>
+    private bool IsInTutorialMode()
+    {
+        return TutorialManager.Instance != null && 
+               !TutorialManager.Instance.IsTutorialCompleted() && 
+               TutorialManager.Instance.enabled;
     }
 }

@@ -95,12 +95,16 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private MoneyManager moneyManager;
     [SerializeField] private PauseManager pauseManager; // Reference to the game's pause manager
     
+    [Header("Tutorial Polling")]
+    [SerializeField] private float conditionCheckInterval = 1.0f; // Check every second
+    
     private HashSet<TutorialCondition> completedConditions = new HashSet<TutorialCondition>();
     private Queue<TutorialStep> pendingSteps = new Queue<TutorialStep>();
     private TutorialStep currentStep;
     private bool isTutorialActive = false;
     private bool tutorialCompleted = false;
     private Coroutine currentTutorialCoroutine;
+    private Coroutine conditionPollingCoroutine;
 
     // Tutorial-specific pause management
     private bool wasPausedBeforeTutorial = false;
@@ -162,25 +166,25 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 2: Camera Controls
+        // Step 2: Camera Controls (triggers when welcome step completes)
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "camera_controls",
             title = "Look Around Your Farm",
             description = "First things first - let's learn to look around! Use WASD to move the camera, QE to rotate, and your mouse wheel to zoom in and out. Take a moment to explore your land, get familiar with the lay of the land!",
-            triggerCondition = TutorialCondition.GameStarted,
+            triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered
             prerequisites = new TutorialCondition[] { },
             displayDuration = 6f,
             pauseGame = true
         });
 
-        // Step 3: Opening the Shop
+        // Step 3: Opening the Shop (triggers when camera step completes)
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "open_shop",
             title = "Open the Build Shop",
             description = "Now, see that hammer icon on your screen? That's your build shop! Click on it to see what structures you can build. We'll need to construct some buildings to get this farm running properly!",
-            triggerCondition = TutorialCondition.GameStarted,
+            triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered  
             prerequisites = new TutorialCondition[] { },
             displayDuration = 5f,
             pauseGame = true,
@@ -193,7 +197,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "build_farmhouse",
             title = "Build Your Farm House",
-            description = "Every farm needs a proper house! Find the Farm House in the shop and place it somewhere central on your land. This will be the heart of your operation. Click on it in the shop, then click on the ground to place it!",
+            description = "Perfect! Now you can see all the buildings you can construct. Every farm needs a proper house! Look for the 'Farm House' in the shop and click on it, then click somewhere on your land to place it. This will be the heart of your operation!",
             triggerCondition = TutorialCondition.ShopOpened,
             prerequisites = new TutorialCondition[] { TutorialCondition.ShopOpened },
             displayDuration = 6f,
@@ -241,7 +245,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "time_controls",
             title = "Day, Night & Time Controls",
-            description = "See those time controls? You can pause time, play normally, or speed things up! Your crops grow over time, and there's a day-night cycle. During the day, you farm and build. At night... well, that's when the wolves come. But don't worry about that yet!",
+            description = "See those time controls? You can pause time, play normally, or speed things up! Your crops grow over time, and there's a day-night cycle. During the day, you farm and build. At night... well, that's when the wolves come. But don't worry - I've made the days extra long for this tutorial so you have plenty of time to learn!",
             triggerCondition = TutorialCondition.SiloPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.SiloPlaced },
             displayDuration = 8f,
@@ -265,7 +269,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "buy_chickens",
             title = "Buy Your First Chickens",
-            description = "An empty coop won't do you much good! Click on your chicken coop and buy some chickens. Start with just a few - you can always buy more later when you have more money.",
+            description = "An empty coop won't do you much good! Click on your chicken coop and buy some chickens. Start with just a few - you can always buy more later. Take your time, no rush! When you click Next, your crops will be ready to harvest.",
             triggerCondition = TutorialCondition.ChickenCoopPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.ChickenCoopPlaced },
             displayDuration = 5f,
@@ -303,7 +307,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "watch_production",
             title = "Production Starting",
-            description = "Excellent! Your chickens are now fed and producing. Just wait a moment and they'll quickly produce eggs for the tutorial!",
+            description = "Excellent! Your chickens are now fed and producing. Take your time - when you're ready to continue, they'll quickly produce eggs for the tutorial! No rush, just click Next when you want to proceed.",
             triggerCondition = TutorialCondition.ChickensStartedProducing,
             prerequisites = new TutorialCondition[] { TutorialCondition.ChickensStartedProducing },
             displayDuration = 6f,
@@ -458,6 +462,12 @@ public class TutorialManager : MonoBehaviour
     {
         if (tutorialCompleted) return;
 
+        // Start the backup condition polling system
+        if (conditionPollingCoroutine == null)
+        {
+            conditionPollingCoroutine = StartCoroutine(PollForMissedConditions());
+        }
+
         OnConditionMet(TutorialCondition.GameStarted);
     }
 
@@ -581,6 +591,38 @@ public class TutorialManager : MonoBehaviour
                 OnConditionMet(TutorialCondition.TimeControlsExplained);
             }
             
+            // SEQUENTIAL TUTORIAL FLOW: Manually trigger next steps to avoid conflicts
+            if (currentStep.stepId == "welcome")
+            {
+                // After welcome, show camera controls
+                Debug.Log("Tutorial: Welcome completed, showing camera controls");
+                StartCoroutine(ShowNextStepAfterDelay("camera_controls", 0.5f));
+            }
+            else if (currentStep.stepId == "camera_controls")
+            {
+                // After camera controls, show shop instruction
+                Debug.Log("Tutorial: Camera controls completed, showing shop instruction");
+                StartCoroutine(ShowNextStepAfterDelay("open_shop", 0.5f));
+            }
+            else if (currentStep.stepId == "open_shop")
+            {
+                // After shop instruction, wait for them to actually open the shop
+                Debug.Log("Tutorial: Shop instruction completed, waiting for shop to be opened");
+                // ShopOpened condition will trigger the farmhouse step
+            }
+            
+            // TUTORIAL TIMING FIX: Only grow crops when we're ready for harvest step
+            if (currentStep.stepId == "buy_chickens")
+            {
+                // User just bought chickens, now trigger crop growth so they'll be ready for harvest step
+                var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
+                if (conditionTracker != null)
+                {
+                    Debug.Log("Tutorial: Triggering crop growth after buying chickens");
+                    conditionTracker.TriggerCropGrowthForTutorial();
+                }
+            }
+            
             // Check if this was the final step
             if (currentStep.stepId == "tutorial_complete")
             {
@@ -631,6 +673,13 @@ public class TutorialManager : MonoBehaviour
     private void CompleteTutorial()
     {
         tutorialCompleted = true;
+        
+        // Stop the polling coroutine
+        if (conditionPollingCoroutine != null)
+        {
+            StopCoroutine(conditionPollingCoroutine);
+            conditionPollingCoroutine = null;
+        }
         
         // Mark all steps as completed
         foreach (var step in tutorialSteps)
@@ -767,6 +816,59 @@ public class TutorialManager : MonoBehaviour
         Debug.Log($"Character Portrait: {(characterPortrait != null ? characterPortrait.name : "NULL")}");
     }
 
+    /// <summary>
+    /// Debug method to force the next logical tutorial step (for recovery from stuck states)
+    /// </summary>
+    [ContextMenu("Force Next Tutorial Step")]
+    public void ForceNextTutorialStep()
+    {
+        if (tutorialCompleted)
+        {
+            Debug.Log("Tutorial already completed");
+            return;
+        }
+        
+        // Find the next incomplete step
+        foreach (var step in tutorialSteps)
+        {
+            if (!step.isCompleted)
+            {
+                Debug.Log($"Forcing tutorial step: {step.stepId} ({step.triggerCondition})");
+                
+                // Mark the trigger condition as met
+                OnConditionMet(step.triggerCondition);
+                break;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Debug method to show current tutorial state
+    /// </summary>
+    [ContextMenu("Show Tutorial State")]
+    public void ShowTutorialState()
+    {
+        Debug.Log("=== TUTORIAL STATE ===");
+        Debug.Log($"Tutorial Active: {isTutorialActive}");
+        Debug.Log($"Tutorial Completed: {tutorialCompleted}");
+        Debug.Log($"Current Step: {(currentStep != null ? currentStep.stepId : "None")}");
+        Debug.Log($"Pending Steps: {pendingSteps.Count}");
+        Debug.Log($"Completed Conditions: {string.Join(", ", completedConditions)}");
+        
+        Debug.Log("Next incomplete steps:");
+        int count = 0;
+        foreach (var step in tutorialSteps)
+        {
+            if (!step.isCompleted)
+            {
+                Debug.Log($"  {step.stepId} (waiting for: {step.triggerCondition})");
+                count++;
+                if (count >= 3) break; // Show max 3 upcoming steps
+            }
+        }
+        Debug.Log("=====================");
+    }
+    
     // Public methods for external systems to call
     public bool IsTutorialActive()
     {
@@ -889,5 +991,256 @@ public class TutorialManager : MonoBehaviour
         }
         
         return true;
+    }
+    
+    /// <summary>
+    /// Backup polling system to catch missed conditions and prevent tutorial from getting stuck
+    /// </summary>
+    private IEnumerator PollForMissedConditions()
+    {
+        while (!tutorialCompleted)
+        {
+            yield return new WaitForSeconds(conditionCheckInterval);
+            
+            if (!enableTutorial || tutorialCompleted) 
+                continue;
+                
+            CheckForMissedConditions();
+        }
+    }
+    
+    /// <summary>
+    /// Check for conditions that might have been missed by the event system
+    /// </summary>
+    private void CheckForMissedConditions()
+    {
+        try
+        {
+            // Shop opened check
+            if (!completedConditions.Contains(TutorialCondition.ShopOpened))
+            {
+                if (shopManager != null && shopManager.gameObject.activeInHierarchy)
+                {
+                    // Check if shop UI is visible/active
+                    var shopCanvas = shopManager.GetComponent<Canvas>();
+                    if (shopCanvas != null && shopCanvas.enabled)
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed ShopOpened condition");
+                        OnConditionMet(TutorialCondition.ShopOpened);
+                    }
+                }
+            }
+            
+            // Farm house placed check
+            if (!completedConditions.Contains(TutorialCondition.FarmHousePlaced))
+            {
+                var farmHouses = FindObjectsByType<Structure>(FindObjectsSortMode.None);
+                foreach (var structure in farmHouses)
+                {
+                    if (structure.name.ToLower().Contains("farmhouse") || structure.name.ToLower().Contains("farm house"))
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed FarmHousePlaced condition");
+                        OnConditionMet(TutorialCondition.FarmHousePlaced);
+                        break;
+                    }
+                }
+            }
+            
+            // Crop plot placed check
+            if (!completedConditions.Contains(TutorialCondition.CropPlotPlaced))
+            {
+                var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+                if (cropStructures.Length > 0)
+                {
+                    Debug.Log("Tutorial Polling: Detected missed CropPlotPlaced condition");
+                    OnConditionMet(TutorialCondition.CropPlotPlaced);
+                }
+            }
+            
+            // First crop planted check
+            if (!completedConditions.Contains(TutorialCondition.FirstCropPlanted))
+            {
+                var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+                foreach (var crop in cropStructures)
+                {
+                    if (crop.CurrentCropType != CropStructure.CropType.None)
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed FirstCropPlanted condition");
+                        OnConditionMet(TutorialCondition.FirstCropPlanted);
+                        break;
+                    }
+                }
+            }
+            
+            // Silo placed check
+            if (!completedConditions.Contains(TutorialCondition.SiloPlaced))
+            {
+                var structures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
+                foreach (var structure in structures)
+                {
+                    if (structure.name.ToLower().Contains("silo"))
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed SiloPlaced condition");
+                        OnConditionMet(TutorialCondition.SiloPlaced);
+                        break;
+                    }
+                }
+            }
+            
+            // Chicken coop placed check
+            if (!completedConditions.Contains(TutorialCondition.ChickenCoopPlaced))
+            {
+                var animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+                foreach (var animal in animalStructures)
+                {
+                    if (animal.name.ToLower().Contains("chicken") || animal.name.ToLower().Contains("coop"))
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed ChickenCoopPlaced condition");
+                        OnConditionMet(TutorialCondition.ChickenCoopPlaced);
+                        break;
+                    }
+                }
+            }
+            
+            // First chicken bought check
+            if (!completedConditions.Contains(TutorialCondition.FirstChickenBought))
+            {
+                var animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+                foreach (var animal in animalStructures)
+                {
+                    if (animal.AnimalCount > 0)
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed FirstChickenBought condition");
+                        OnConditionMet(TutorialCondition.FirstChickenBought);
+                        break;
+                    }
+                }
+            }
+            
+            // Crop harvested check
+            if (!completedConditions.Contains(TutorialCondition.FirstCropHarvested))
+            {
+                var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+                foreach (var crop in cropStructures)
+                {
+                    if (crop.CropReady)
+                    {
+                        Debug.Log("Tutorial Polling: Detected crop ready for FirstCropHarvested condition");
+                        OnConditionMet(TutorialCondition.FirstCropHarvested);
+                        break;
+                    }
+                }
+            }
+            
+            // Barracks placed check
+            if (!completedConditions.Contains(TutorialCondition.BarracksPlaced))
+            {
+                var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+                if (barracks.Length > 0)
+                {
+                    Debug.Log("Tutorial Polling: Detected missed BarracksPlaced condition");
+                    OnConditionMet(TutorialCondition.BarracksPlaced);
+                }
+            }
+            
+            // Flag placed check
+            if (!completedConditions.Contains(TutorialCondition.FlagPlaced))
+            {
+                var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+                foreach (var barrack in barracks)
+                {
+                    if (barrack.GetFlagPosition != Vector3.zero)
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed FlagPlaced condition");
+                        OnConditionMet(TutorialCondition.FlagPlaced);
+                        break;
+                    }
+                }
+            }
+            
+            // Army recruited check
+            if (!completedConditions.Contains(TutorialCondition.ArmyRecruited))
+            {
+                var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+                foreach (var barrack in barracks)
+                {
+                    if (barrack.ArmyAnimalCount > 0)
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed ArmyRecruited condition");
+                        OnConditionMet(TutorialCondition.ArmyRecruited);
+                        break;
+                    }
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"Tutorial polling error: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Public method for external systems to manually check if they should trigger tutorial conditions
+    /// Call this when placing structures, changing game state, etc.
+    /// </summary>
+    public void CheckTutorialConditions()
+    {
+        if (!enableTutorial || tutorialCompleted) return;
+        
+        CheckForMissedConditions();
+    }
+    
+    /// <summary>
+    /// Specific method for structure placement events
+    /// </summary>
+    public void OnStructurePlaced(GameObject structure)
+    {
+        if (!enableTutorial || tutorialCompleted) return;
+        
+        string structureName = structure.name.ToLower();
+        
+        if (structureName.Contains("farmhouse") || structureName.Contains("farm house"))
+        {
+            OnConditionMet(TutorialCondition.FarmHousePlaced);
+        }
+        else if (structureName.Contains("silo"))
+        {
+            OnConditionMet(TutorialCondition.SiloPlaced);
+        }
+        else if (structureName.Contains("crop") || structure.GetComponent<CropStructure>() != null)
+        {
+            OnConditionMet(TutorialCondition.CropPlotPlaced);
+        }
+        else if (structureName.Contains("chicken") || structureName.Contains("coop") || structure.GetComponent<AnimalStructure>() != null)
+        {
+            OnConditionMet(TutorialCondition.ChickenCoopPlaced);
+        }
+        else if (structureName.Contains("barracks") || structure.GetComponent<BarracksStructure>() != null)
+        {
+            OnConditionMet(TutorialCondition.BarracksPlaced);
+        }
+        
+        Debug.Log($"Tutorial: Structure placed - {structureName}");
+    }
+    
+    /// <summary>
+    /// Helper method to show a specific tutorial step after a delay
+    /// Used for sequential tutorial flow
+    /// </summary>
+    private IEnumerator ShowNextStepAfterDelay(string stepId, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Find the step by ID and show it directly
+        foreach (var step in tutorialSteps)
+        {
+            if (step.stepId == stepId && !step.isCompleted)
+            {
+                Debug.Log($"Tutorial: Manually showing step {stepId}");
+                pendingSteps.Enqueue(step);
+                ProcessPendingSteps();
+                break;
+            }
+        }
     }
 }

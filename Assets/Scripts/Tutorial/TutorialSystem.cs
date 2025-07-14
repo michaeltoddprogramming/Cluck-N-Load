@@ -10,24 +10,14 @@ public class TutorialSystem : MonoBehaviour
     [Header("Tutorial Components")]
     [SerializeField] private TutorialManager tutorialManager;
     [SerializeField] private TutorialConditionTracker conditionTracker;
-    [SerializeField] private TutorialProgressTracker progressTracker;
-    [SerializeField] private TutorialHighlighter highlighter;
-    [SerializeField] private TutorialUISetup uiSetup;
+    
+    [Header("Tutorial UI")]
+    [SerializeField] private GameObject tutorialCanvasPrefab;
     
     [Header("Auto Setup")]
     [SerializeField] private bool autoCreateComponents = true;
     [SerializeField] private bool startTutorialOnGameStart = true;
     [SerializeField] private float startDelay = 1f;
-    
-    [Header("Tutorial Assets")]
-    [SerializeField] private GameObject tutorialUIPrefab;
-    [SerializeField] private GameObject worldPointerPrefab;
-    [SerializeField] private GameObject uiArrowPrefab;
-    [SerializeField] private Material highlightMaterial;
-    
-    [Header("Old Man Character")]
-    [SerializeField] private Sprite oldManPortrait;
-    [SerializeField] private AudioClip[] oldManVoiceClips;
     
     [Header("Events")]
     public UnityEvent OnTutorialStarted;
@@ -77,9 +67,7 @@ public class TutorialSystem : MonoBehaviour
             tutorialManager = FindFirstObjectByType<TutorialManager>();
             if (tutorialManager == null)
             {
-                GameObject managerObj = new GameObject("TutorialManager");
-                managerObj.transform.SetParent(transform);
-                tutorialManager = managerObj.AddComponent<TutorialManager>();
+                tutorialManager = gameObject.AddComponent<TutorialManager>();
             }
         }
 
@@ -89,65 +77,23 @@ public class TutorialSystem : MonoBehaviour
             conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
             if (conditionTracker == null)
             {
-                GameObject trackerObj = new GameObject("TutorialConditionTracker");
-                trackerObj.transform.SetParent(transform);
-                conditionTracker = trackerObj.AddComponent<TutorialConditionTracker>();
+                conditionTracker = gameObject.AddComponent<TutorialConditionTracker>();
             }
         }
 
-        // Setup Progress Tracker
-        if (progressTracker == null)
-        {
-            progressTracker = FindFirstObjectByType<TutorialProgressTracker>();
-            if (progressTracker == null)
-            {
-                GameObject progressObj = new GameObject("TutorialProgressTracker");
-                progressObj.transform.SetParent(transform);
-                progressTracker = progressObj.AddComponent<TutorialProgressTracker>();
-            }
-        }
-
-        // Setup Highlighter
-        if (highlighter == null)
-        {
-            highlighter = FindFirstObjectByType<TutorialHighlighter>();
-            if (highlighter == null)
-            {
-                GameObject highlighterObj = new GameObject("TutorialHighlighter");
-                highlighterObj.transform.SetParent(transform);
-                highlighter = highlighterObj.AddComponent<TutorialHighlighter>();
-            }
-        }
-
-        // Setup UI
-        if (uiSetup == null && tutorialUIPrefab != null)
-        {
-            Canvas canvas = FindFirstObjectByType<Canvas>();
-            if (canvas != null)
-            {
-                GameObject uiObj = Instantiate(tutorialUIPrefab, canvas.transform);
-                uiSetup = uiObj.GetComponent<TutorialUISetup>();
-            }
-        }
+        Debug.Log("Tutorial components setup complete!");
     }
 
     private void InitializeTutorialSystem()
     {
+        // First, create the tutorial UI if it doesn't exist
+        CreateTutorialUIIfNeeded();
+        
         // Configure tutorial manager
         if (tutorialManager != null)
         {
-            // Configure with assets
-            // tutorialManager.SetCharacterAssets(oldManPortrait, oldManVoiceClips);
-            
             // Connect auto-created UI to tutorial manager
             ConnectUIToTutorialManager();
-        }
-
-        // Configure highlighter
-        if (highlighter != null)
-        {
-            // Setup highlighter prefabs and materials
-            // highlighter.SetPrefabs(worldPointerPrefab, uiArrowPrefab, highlightMaterial);
         }
 
         // Subscribe to events
@@ -287,34 +233,23 @@ public class TutorialSystem : MonoBehaviour
         {
             tutorialManager.OnTutorialCompleted += HandleTutorialCompleted;
         }
-
-        if (progressTracker != null)
-        {
-            progressTracker.OnTutorialCompleted += HandleTutorialFinished;
-        }
     }
 
     private bool ShouldStartTutorial()
     {
-        // Check if tutorial is enabled in settings
-        if (!TutorialSettingsMenu.IsTutorialEnabled())
-        {
-            return false;
-        }
-
         // Check if tutorial should be skipped because it's already completed
-        if (TutorialSettingsMenu.ShouldSkipCompleted() && HasCompletedTutorial())
+        if (HasCompletedTutorial())
         {
             return false;
         }
 
-        // Check if this is a new game or tutorial restart
         return true;
     }
 
     private bool HasCompletedTutorial()
     {
-        return progressTracker != null && progressTracker.IsTutorialCompleted();
+        // Simple check - could be expanded to use PlayerPrefs or save file
+        return false;
     }
 
     public void StartTutorial()
@@ -343,11 +278,6 @@ public class TutorialSystem : MonoBehaviour
 
     public void RestartTutorial()
     {
-        if (progressTracker != null)
-        {
-            progressTracker.ResetProgress();
-        }
-
         if (tutorialManager != null)
         {
             tutorialManager.ResetTutorial();
@@ -372,12 +302,6 @@ public class TutorialSystem : MonoBehaviour
     private void HandleTutorialCompleted()
     {
         Debug.Log("Tutorial completed!");
-        OnTutorialCompleted?.Invoke();
-    }
-
-    private void HandleTutorialFinished(float totalTime)
-    {
-        Debug.Log($"Tutorial finished in {totalTime:F1} seconds!");
         OnTutorialCompleted?.Invoke();
     }
 
@@ -406,7 +330,7 @@ public class TutorialSystem : MonoBehaviour
 
     public bool IsTutorialCompleted()
     {
-        return progressTracker != null && progressTracker.IsTutorialCompleted();
+        return tutorialManager != null && tutorialManager.IsTutorialCompleted();
     }
 
     public void TriggerCondition(TutorialCondition condition)
@@ -414,30 +338,6 @@ public class TutorialSystem : MonoBehaviour
         if (tutorialManager != null)
         {
             tutorialManager.OnConditionMet(condition);
-        }
-    }
-
-    public void HighlightUIElement(string tag)
-    {
-        if (highlighter != null)
-        {
-            highlighter.HighlightUIElement(tag);
-        }
-    }
-
-    public void HighlightWorldPosition(Vector3 position)
-    {
-        if (highlighter != null)
-        {
-            highlighter.HighlightWorldPosition(position);
-        }
-    }
-
-    public void ClearAllHighlights()
-    {
-        if (highlighter != null)
-        {
-            highlighter.ClearAllHighlights();
         }
     }
 
@@ -536,10 +436,215 @@ public class TutorialSystem : MonoBehaviour
         {
             tutorialManager.OnTutorialCompleted -= HandleTutorialCompleted;
         }
+    }
 
-        if (progressTracker != null)
+    private void CreateTutorialUIIfNeeded()
+    {
+        // Check if tutorial UI already exists
+        GameObject existingUI = GameObject.Find("TutorialDialoguePanel");
+        if (existingUI == null)
         {
-            progressTracker.OnTutorialCompleted -= HandleTutorialFinished;
+            existingUI = GameObject.Find("TutorialCanvas");
+        }
+        if (existingUI == null)
+        {
+            existingUI = GameObject.Find("TutorialCanvas(Clone)");
+        }
+        
+        if (existingUI != null)
+        {
+            Debug.Log($"Tutorial UI already exists: {existingUI.name}");
+            return;
+        }
+        
+        // Try to find the prefab if not assigned
+        if (tutorialCanvasPrefab == null)
+        {
+            FindTutorialCanvasPrefab();
+        }
+        
+        // Create tutorial UI from prefab
+        if (tutorialCanvasPrefab != null)
+        {
+            Debug.Log("Creating tutorial UI from prefab...");
+            GameObject tutorialUI = Instantiate(tutorialCanvasPrefab);
+            tutorialUI.name = "TutorialCanvas"; // Remove (Clone) suffix
+            
+            // Make sure it has the TutorialUIPrefab component
+            Transform dialoguePanel = tutorialUI.transform.Find("TutorialDialoguePanel");
+            if (dialoguePanel != null)
+            {
+                TutorialUIPrefab uiPrefabScript = dialoguePanel.GetComponent<TutorialUIPrefab>();
+                if (uiPrefabScript == null)
+                {
+                    uiPrefabScript = dialoguePanel.gameObject.AddComponent<TutorialUIPrefab>();
+                }
+                Debug.Log("Tutorial UI created successfully!");
+            }
+            else
+            {
+                Debug.LogWarning("Created tutorial UI but couldn't find TutorialDialoguePanel inside it!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find or create tutorial UI! Creating a simple fallback UI...");
+            CreateFallbackTutorialUI();
         }
     }
+    
+    private void FindTutorialCanvasPrefab()
+    {
+        // First try Resources folders (if user moved prefab there)
+        string[] resourcePaths = {
+            "TutorialCanvas",
+            "Prefabs/TutorialCanvas",
+            "UI/Tutorial/TutorialCanvas",
+            "Tutorial/TutorialCanvas"
+        };
+        
+        foreach (string path in resourcePaths)
+        {
+            GameObject prefab = Resources.Load<GameObject>(path);
+            if (prefab != null)
+            {
+                tutorialCanvasPrefab = prefab;
+                Debug.Log($"Found tutorial canvas prefab in Resources at: {path}");
+                return;
+            }
+        }
+        
+        // If not found in Resources, search in the entire project using AddressableAssetSettings or AssetDatabase
+        #if UNITY_EDITOR
+        // This only works in the editor
+        string[] guids = UnityEditor.AssetDatabase.FindAssets("TutorialCanvas t:GameObject");
+        foreach (string guid in guids)
+        {
+            string assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+            GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            if (prefab != null && prefab.name == "TutorialCanvas")
+            {
+                tutorialCanvasPrefab = prefab;
+                Debug.Log($"Found tutorial canvas prefab at: {assetPath}");
+                return;
+            }
+        }
+        #endif
+        
+        Debug.LogWarning("Could not find TutorialCanvas prefab. Please manually assign it in the TutorialSystem inspector.");
+    }
+    
+    private void CreateFallbackTutorialUI()
+    {
+        Debug.Log("Creating fallback tutorial UI...");
+        
+        // Find or create canvas
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null)
+        {
+            GameObject canvasObj = new GameObject("Canvas");
+            canvas = canvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
+            canvasObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+        }
+
+        // Create main tutorial panel
+        GameObject tutorialPanel = new GameObject("TutorialDialoguePanel");
+        tutorialPanel.transform.SetParent(canvas.transform, false);
+
+        // Setup RectTransform
+        RectTransform panelRect = tutorialPanel.AddComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.1f, 0.1f);
+        panelRect.anchorMax = new Vector2(0.9f, 0.4f);
+        panelRect.anchoredPosition = Vector2.zero;
+        panelRect.sizeDelta = Vector2.zero;
+
+        // Add background
+        UnityEngine.UI.Image panelImage = tutorialPanel.AddComponent<UnityEngine.UI.Image>();
+        panelImage.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+        // Add CanvasGroup
+        CanvasGroup canvasGroup = tutorialPanel.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+
+        // Create character name text
+        GameObject nameObj = new GameObject("CharacterName");
+        nameObj.transform.SetParent(tutorialPanel.transform, false);
+        RectTransform nameRect = nameObj.AddComponent<RectTransform>();
+        nameRect.anchorMin = new Vector2(0.05f, 0.7f);
+        nameRect.anchorMax = new Vector2(0.5f, 0.9f);
+        nameRect.anchoredPosition = Vector2.zero;
+        nameRect.sizeDelta = Vector2.zero;
+
+        TMPro.TextMeshProUGUI nameText = nameObj.AddComponent<TMPro.TextMeshProUGUI>();
+        nameText.text = "Old Pete";
+        nameText.fontSize = 24;
+        nameText.color = Color.white;
+
+        // Create dialogue text
+        GameObject dialogueObj = new GameObject("DialogueText");
+        dialogueObj.transform.SetParent(tutorialPanel.transform, false);
+        RectTransform dialogueRect = dialogueObj.AddComponent<RectTransform>();
+        dialogueRect.anchorMin = new Vector2(0.05f, 0.2f);
+        dialogueRect.anchorMax = new Vector2(0.95f, 0.65f);
+        dialogueRect.anchoredPosition = Vector2.zero;
+        dialogueRect.sizeDelta = Vector2.zero;
+
+        TMPro.TextMeshProUGUI dialogueText = dialogueObj.AddComponent<TMPro.TextMeshProUGUI>();
+        dialogueText.text = "Welcome to the tutorial!";
+        dialogueText.fontSize = 18;
+        dialogueText.color = Color.white;
+        dialogueText.enableWordWrapping = true;
+
+        // Create next button
+        GameObject buttonObj = new GameObject("NextButton");
+        buttonObj.transform.SetParent(tutorialPanel.transform, false);
+        RectTransform buttonRect = buttonObj.AddComponent<RectTransform>();
+        buttonRect.anchorMin = new Vector2(0.7f, 0.05f);
+        buttonRect.anchorMax = new Vector2(0.95f, 0.15f);
+        buttonRect.anchoredPosition = Vector2.zero;
+        buttonRect.sizeDelta = Vector2.zero;
+
+        UnityEngine.UI.Image buttonImage = buttonObj.AddComponent<UnityEngine.UI.Image>();
+        buttonImage.color = new Color(0.3f, 0.6f, 1f, 1f);
+        
+        UnityEngine.UI.Button button = buttonObj.AddComponent<UnityEngine.UI.Button>();
+
+        GameObject buttonTextObj = new GameObject("Text");
+        buttonTextObj.transform.SetParent(buttonObj.transform, false);
+        RectTransform buttonTextRect = buttonTextObj.AddComponent<RectTransform>();
+        buttonTextRect.anchorMin = Vector2.zero;
+        buttonTextRect.anchorMax = Vector2.one;
+        buttonTextRect.anchoredPosition = Vector2.zero;
+        buttonTextRect.sizeDelta = Vector2.zero;
+
+        TMPro.TextMeshProUGUI buttonText = buttonTextObj.AddComponent<TMPro.TextMeshProUGUI>();
+        buttonText.text = "Next";
+        buttonText.fontSize = 16;
+        buttonText.color = Color.white;
+        buttonText.alignment = TMPro.TextAlignmentOptions.Center;
+
+        // Add TutorialUIPrefab component
+        TutorialUIPrefab uiPrefab = tutorialPanel.AddComponent<TutorialUIPrefab>();
+        uiPrefab.characterNameText = nameText;
+        uiPrefab.dialogueText = dialogueText;
+        uiPrefab.nextButton = button;
+        uiPrefab.canvasGroup = canvasGroup;
+        uiPrefab.backgroundPanel = panelImage;
+
+        Debug.Log("Fallback tutorial UI created successfully!");
+    }
+
+    #if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (tutorialCanvasPrefab == null)
+        {
+            FindTutorialCanvasPrefab();
+        }
+    }
+    #endif
 }

@@ -229,7 +229,20 @@ public class NightManager : MonoBehaviour
 
     private void Start()
     {
-        Hours = 7;
+        //preload the audio samples
+        if (source1 != null)
+        {
+            source1.Play();
+            source1.Stop();
+        }
+        if (source2 != null)
+        {
+            source2.Play();
+            source2.Stop();
+        }
+
+
+        Hours = 5;
         Years = 1;
         seasonNotification.gameObject.SetActive(false);
         productionNotification.gameObject.SetActive(false);
@@ -247,18 +260,6 @@ public class NightManager : MonoBehaviour
         }
 
         // chooseAnimalProductForSeason();
-
-        //preload the audio samples
-        if (source1 != null)
-        {
-            source1.Play();
-            source1.Stop();
-        }
-        if (source2 != null)
-        {
-            source2.Play();
-            source2.Stop();
-        }
     }
 
     private void Update()
@@ -881,11 +882,11 @@ public class NightManager : MonoBehaviour
         float totalMinutes = Hours * 60 + Minutes;
         float rotation = 0f;
 
-        if (Hours >= 7 && Hours < 18)
+        if (Hours >= 5 && Hours < 18)
         {
             // Daytime: 7:00 (0 min) to 18:00 (660 min)
-            float dayMinutes = totalMinutes - (7 * 60);
-            rotation = Mathf.Clamp01(dayMinutes / 660f) * 180f;
+            float dayMinutes = totalMinutes - (5 * 60);
+            rotation = Mathf.Clamp01(dayMinutes / 780f) * 180f;
         }
         else
         {
@@ -899,9 +900,9 @@ public class NightManager : MonoBehaviour
             else
             {
                 // 0:00 to 7:00
-                nightMinutes = (totalMinutes + (6 * 60)) + 60; // (0:00 is 0, 7:00 is 420)
+                nightMinutes = (totalMinutes + (6 * 60)); // (0:00 is 0, 7:00 is 420)
             }
-            rotation = 180f + Mathf.Clamp01(nightMinutes / 780f) * 180f;
+            rotation = 180f + Mathf.Clamp01(nightMinutes / 660f) * 180f;
         }
 
         timeOfDayIcon.rectTransform.localRotation = Quaternion.Euler(0, 0, -rotation);

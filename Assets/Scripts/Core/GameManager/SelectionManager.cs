@@ -41,6 +41,15 @@ private void SelectStructure(Structure structure)
     currentSelectedStructure = structure;
     structure.Select();
     
+    // Animate selection if BuildingSelector is present
+    SelectionAnimation selector = structure.GetComponent<SelectionAnimation>();
+    if (selector == null)
+    {
+        // selector.AnimateSelect();
+        selector = structure.gameObject.AddComponent<SelectionAnimation>();
+    }
+    selector.AnimateSelect();
+    
     if (StructureUIManager.Instance == null)
     {
         Debug.LogError("StructureUIManager.Instance is null! Make sure StructureUIManager is in the scene.");

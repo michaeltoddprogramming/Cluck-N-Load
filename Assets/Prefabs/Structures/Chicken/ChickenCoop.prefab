@@ -66,6 +66,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4459f0f3e5d250b4e8ace06336c530a4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6324912615152249241}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4459f0f3e5d250b4e8ace06336c530a4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3580937834229247398}
   m_SourcePrefab: {fileID: 100100000, guid: 4459f0f3e5d250b4e8ace06336c530a4, type: 3}
 --- !u!1 &24278512715701046 stripped
 GameObject:
@@ -107,7 +110,7 @@ MonoBehaviour:
   normalFoodRequired: 1
   foodMultiplier: 1
   baseMoneyPerProduct: 10
-  baseProductAmount: 1
+  baseProductMultiplier: 1
 --- !u!82 &6324912615152249241
 AudioSource:
   m_ObjectHideFlags: 0
@@ -223,3 +226,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &3580937834229247398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24278512715701046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b986a1ffd8d94d74a9001fb57734c6c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

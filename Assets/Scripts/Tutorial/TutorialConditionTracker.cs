@@ -310,10 +310,11 @@ public class TutorialConditionTracker : MonoBehaviour
         
         foreach (AnimalStructure animal in animalStructures)
         {
-            // Check if any animals have been bought
-            if (animal.AnimalCount > 0 && !hasBoughtFirstAnimal)
+            // Check if enough animals have been bought (require at least 3 for tutorial)
+            if (animal.AnimalCount >= 3 && !hasBoughtFirstAnimal)
             {
                 hasBoughtFirstAnimal = true;
+                Debug.Log($"Tutorial: {animal.AnimalCount} chickens bought - triggering FirstChickenBought condition");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstChickenBought);
             }
 
@@ -371,13 +372,15 @@ public class TutorialConditionTracker : MonoBehaviour
             if (barrack.GetFlagPosition != Vector3.zero && !hasPlacedFlag)
             {
                 hasPlacedFlag = true;
+                Debug.Log($"Tutorial: Flag placed at position {barrack.GetFlagPosition} - triggering FlagPlaced condition");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FlagPlaced);
             }
 
-            // Check if army has been recruited
-            if (barrack.ArmyAnimalCount > 0 && !hasRecruitedArmy)
+            // Check if army has been recruited (require at least 2 soldiers for tutorial)
+            if (barrack.ArmyAnimalCount >= 2 && !hasRecruitedArmy)
             {
                 hasRecruitedArmy = true;
+                Debug.Log($"Tutorial: Army recruited with {barrack.ArmyAnimalCount} soldiers - triggering ArmyRecruited condition");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.ArmyRecruited);
             }
         }
@@ -461,11 +464,27 @@ public class TutorialConditionTracker : MonoBehaviour
     {
         if (TutorialManager.Instance == null) return false;
         
-        // Block night if tutorial is active and defenses are not fully ready
-        bool tutorialActive = TutorialManager.Instance.IsTutorialActive();
+        // Don't block if tutorial is completed
+        if (TutorialManager.Instance.IsTutorialCompleted()) 
+        {
+            Debug.Log("Tutorial: Not blocking night - tutorial completed");
+            return false;
+        }
+        
+        // CRITICAL FIX: Check if tutorial is in progress (not completed) rather than just showing a dialog
+        bool tutorialInProgress = TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialCompleted();
+        
+        // ALWAYS block night if tutorial is in progress but first_night step hasn't been completed
+        if (tutorialInProgress && !HasCompletedTutorialStep("first_night"))
+        {
+            Debug.Log("Tutorial: BLOCKING night progression - tutorial in progress and first_night step not completed yet");
+            return true;
+        }
+        
+        // Block night if tutorial is in progress and defenses are not fully ready
         bool defensesNotReady = !AreDefensesReadyForTutorial();
         
-        if (tutorialActive && defensesNotReady)
+        if (tutorialInProgress && defensesNotReady)
         {
             Debug.Log("Tutorial: Blocking night progression - defenses not fully ready for night phase");
             return true;
@@ -473,7 +492,7 @@ public class TutorialConditionTracker : MonoBehaviour
         
         // ADDITIONAL CHECK: Even if basic conditions are met, ensure the user has explicitly
         // completed the "recruit_army" tutorial step before allowing night
-        if (tutorialActive && !HasCompletedTutorialStep("recruit_army"))
+        if (tutorialInProgress && !HasCompletedTutorialStep("recruit_army"))
         {
             Debug.Log("Tutorial: Blocking night progression - user hasn't completed army recruitment tutorial step");
             return true;
@@ -481,12 +500,13 @@ public class TutorialConditionTracker : MonoBehaviour
         
         // CRITICAL: Block automatic night transition during the "first_night" step
         // This step requires user to manually click the "Start Night" button
-        if (tutorialActive && IsCurrentTutorialStep("first_night"))
+        if (tutorialInProgress && IsCurrentTutorialStep("first_night"))
         {
             Debug.Log("Tutorial: Blocking automatic night progression - waiting for user to click Start Night button");
             return true;
         }
         
+        Debug.Log("Tutorial: Not blocking night progression - all conditions passed");
         return false;
     }
 
@@ -496,7 +516,30 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     public bool ShouldBlockNightTransition()
     {
-        return ShouldBlockNightProgression();
+        bool shouldBlock = ShouldBlockNightProgression();
+        Debug.Log($"TUTORIAL BLOCKING CHECK: ShouldBlockNightTransition() returning {shouldBlock}");
+        return shouldBlock;
+    }
+
+    /// <summary>
+    /// Debug method to check night blocking status
+    /// </summary>
+    [ContextMenu("Debug Night Blocking Status")]
+    public void DebugNightBlockingStatus()
+    {
+        Debug.Log("=== NIGHT BLOCKING DEBUG ===");
+        Debug.Log($"Tutorial Manager exists: {TutorialManager.Instance != null}");
+        if (TutorialManager.Instance != null)
+        {
+            Debug.Log($"Tutorial Active: {TutorialManager.Instance.IsTutorialActive()}");
+            Debug.Log($"Tutorial Completed: {TutorialManager.Instance.IsTutorialCompleted()}");
+            Debug.Log($"Defenses Ready: {AreDefensesReadyForTutorial()}");
+            Debug.Log($"Army Recruited Step Completed: {HasCompletedTutorialStep("recruit_army")}");
+            Debug.Log($"First Night Step Completed: {HasCompletedTutorialStep("first_night")}");
+            Debug.Log($"Is Current Step 'first_night': {IsCurrentTutorialStep("first_night")}");
+        }
+        Debug.Log($"FINAL RESULT - Should Block Night: {ShouldBlockNightTransition()}");
+        Debug.Log("========================");
     }
 
     /// <summary>
@@ -511,10 +554,10 @@ public class TutorialConditionTracker : MonoBehaviour
         if (TutorialManager.Instance.IsTutorialCompleted()) return false;
         
         // During tutorial, check comprehensive defense readiness
-        bool tutorialActive = TutorialManager.Instance.IsTutorialActive();
+        bool tutorialInProgress = !TutorialManager.Instance.IsTutorialCompleted();
         bool defensesReady = AreDefensesReadyForTutorial();
         
-        if (tutorialActive && !defensesReady)
+        if (tutorialInProgress && !defensesReady)
         {
             Debug.Log("Tutorial: Preventing enemy spawning - defenses not ready");
             return true;

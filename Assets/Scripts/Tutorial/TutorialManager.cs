@@ -274,10 +274,10 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "buy_chickens",
             title = "Buy Your First Chickens",
-            description = "An empty coop won't do you much good! Click on your chicken coop and buy some chickens. Start with just a few - you can always buy more later. Take your time, no rush! When you click Next, your crops will be ready to harvest.",
+            description = "An empty coop won't do you much good! Click on your chicken coop and buy 3-4 chickens to start with. This gives you a good balance of production without eating too much food. You can always buy more later when you have more resources!",
             triggerCondition = TutorialCondition.ChickenCoopPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.ChickenCoopPlaced },
-            displayDuration = 5f,
+            displayDuration = 6f,
             pauseGame = true
         });
 
@@ -360,10 +360,10 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "recruit_army",
             title = "Recruit Your Army",
-            description = "Perfect! Now recruit some soldier chickens from your barracks. They'll cost money and will take chickens from your coop, but they're essential for defense. The closer your barracks to your chicken coop, the cheaper recruitment is!",
+            description = "Perfect! Now recruit 2-3 soldier chickens from your barracks. They'll cost money and will take chickens from your coop, but they're essential for defense. Start small - 2-3 soldiers should be enough for your first night. The closer your barracks to your chicken coop, the cheaper recruitment is!",
             triggerCondition = TutorialCondition.FlagPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.FlagPlaced },
-            displayDuration = 7f,
+            displayDuration = 8f,
             pauseGame = true
         });
 
@@ -1021,6 +1021,36 @@ public class TutorialManager : MonoBehaviour
         
         Debug.Log("Animal production tutorial fix completed!");
     }
+
+    /// <summary>
+    /// Debug method to manually trigger defense setup conditions
+    /// </summary>
+    [ContextMenu("Fix Defense Tutorial")]
+    public void FixDefenseTutorial()
+    {
+        Debug.Log("=== FIXING DEFENSE TUTORIAL ===");
+        
+        // Check what conditions are missing and try to fix them
+        if (!completedConditions.Contains(TutorialCondition.BarracksPlaced))
+        {
+            Debug.Log("Manually triggering BarracksPlaced");
+            OnConditionMet(TutorialCondition.BarracksPlaced);
+        }
+        
+        if (!completedConditions.Contains(TutorialCondition.FlagPlaced))
+        {
+            Debug.Log("Manually triggering FlagPlaced");
+            OnConditionMet(TutorialCondition.FlagPlaced);
+        }
+        
+        if (!completedConditions.Contains(TutorialCondition.ArmyRecruited))
+        {
+            Debug.Log("Manually triggering ArmyRecruited");
+            OnConditionMet(TutorialCondition.ArmyRecruited);
+        }
+        
+        Debug.Log("Defense tutorial fix completed!");
+    }
     
     // Public methods for external systems to call
     public bool IsTutorialActive()
@@ -1113,6 +1143,12 @@ public class TutorialManager : MonoBehaviour
                 return false;
             }
         }
+        
+        if (step.prerequisites.Length > 0)
+        {
+            Debug.Log($"Tutorial step {step.stepId}: All prerequisites met ({string.Join(", ", step.prerequisites)})");
+        }
+        
         return true;
     }
     
@@ -1127,7 +1163,10 @@ public class TutorialManager : MonoBehaviour
             
         // Must not be already completed
         if (step.isCompleted)
+        {
+            Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
             return false;
+        }
             
         // Must have all prerequisites
         if (!ArePrerequisitesStrictlyMet(step))
@@ -1139,7 +1178,7 @@ public class TutorialManager : MonoBehaviour
         {
             if (pendingStep.triggerCondition == condition && pendingStep.stepId != step.stepId)
             {
-                Debug.Log($"Tutorial step {step.stepId} blocked: Another step with same trigger condition is already queued");
+                Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({pendingStep.stepId}) with same trigger condition is already queued");
                 return false;
             }
         }
@@ -1147,10 +1186,26 @@ public class TutorialManager : MonoBehaviour
         // Check if a step with the same trigger is currently active
         if (currentStep != null && currentStep.triggerCondition == condition && currentStep.stepId != step.stepId)
         {
-            Debug.Log($"Tutorial step {step.stepId} blocked: Another step with same trigger condition is currently active");
+            Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) with same trigger condition is currently active");
             return false;
         }
         
+        // ADDITIONAL CHECK: For sequential tutorial flow, ensure we're not skipping ahead
+        // Find the index of this step and make sure previous steps are completed
+        int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
+        if (stepIndex > 0)
+        {
+            for (int i = 0; i < stepIndex; i++)
+            {
+                if (!tutorialSteps[i].isCompleted)
+                {
+                    Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet");
+                    return false;
+                }
+            }
+        }
+        
+        Debug.Log($"Tutorial step {step.stepId} validation passed - can be triggered");
         return true;
     }
     

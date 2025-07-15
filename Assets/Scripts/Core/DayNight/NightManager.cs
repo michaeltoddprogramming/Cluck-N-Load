@@ -532,10 +532,13 @@ public class NightManager : MonoBehaviour
             {
                 Debug.Log("TUTORIAL: Blocking automatic night transition - player not ready");
                 // Don't advance to night, stay at current hour (reset to 17 to prevent multiple triggers)
-                Hours = 17;
+                // Use direct field assignment to avoid triggering the setter again
+                hours = 17;
+                Debug.Log("TUTORIAL: Hours reset to 17, night transition blocked");
                 return;
             }
 
+            Debug.Log("NightManager: Starting night at 18:00 - tutorial checks passed");
             StartNight(2);
             
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
@@ -743,10 +746,11 @@ public class NightManager : MonoBehaviour
     {
         Debug.Log("NightManager: Manually starting night via ForceStartNight");
         
-        // Set the time to night time
-        Hours = 18;
+        // Set the time to night time using direct field assignment to avoid triggering OnHoursChange
+        hours = 18;
         
         // Directly call StartNight with tutorial flag
+        Debug.Log("NightManager: Calling StartNight(1) for manual tutorial start");
         StartNight(1); // Use flag 1 for manual start
     }
 

@@ -254,7 +254,7 @@ public class NightManager : MonoBehaviour
             source2.Play();
             source2.Stop();
         }
-        
+
         Hours = 5;
         Years = 1;
         seasonNotification.gameObject.SetActive(false);
@@ -321,15 +321,8 @@ public class NightManager : MonoBehaviour
 
         isFast = !isFast;
         isPaused = false;
-        // speedUp = isFast ? speedOfFast : 1f;
-
-        // speedUp = isFast ? speedOfFast : 1f;
+        
         Time.timeScale = isFast ? speedOfFast : 1f; // Fast forward or normal speed
-
-        // speedUp = isFast ? speedOfFast : 1f;
-        // Time.timeScale = 1f; // Always keep this at 1 for normal/fast, only set to 0 for pause
-
-
     }
 
     private void cropGrowthOnAll(int stage)

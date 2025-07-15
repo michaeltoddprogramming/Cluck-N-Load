@@ -5440,7 +5440,7 @@ MonoBehaviour:
   maxZoom: 65
   fixedPitch: 0
   cursor: {fileID: 1632256037}
-  devCamera: 0
+  devCamera: 1
 --- !u!1 &1309907073
 GameObject:
   m_ObjectHideFlags: 0
@@ -6767,8 +6767,9 @@ MonoBehaviour:
   removeModifierKey: 306
   moveKey: 109
   itemDeleteIcon: {fileID: 2119073778}
+  dustPoof: {fileID: 2113437053342865282, guid: 34469936c54166c49b15ac8a0e295d69, type: 3}
   cursorOffset: {x: 50, y: -60}
-  enableLandBuying: 1
+  enableLandBuying: 0
   rangeIndicatorPrefab: {fileID: 0}
   validSynergyMaterial: {fileID: 0}
   potentialSynergyMaterial: {fileID: 0}

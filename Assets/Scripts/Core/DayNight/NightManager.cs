@@ -229,24 +229,8 @@ public class NightManager : MonoBehaviour
 
     private void Start()
     {
-        //preload the audio samples
-        if (source1 != null)
-        {
-            source1.Play();
-            source1.Stop();
-        }
-        if (source2 != null)
-        {
-            source2.Play();
-            source2.Stop();
-        }
 
 
-        Hours = 5;
-        Years = 1;
-        seasonNotification.gameObject.SetActive(false);
-        productionNotification.gameObject.SetActive(false);
-        setSeason(1);
 
         AudioSource[] sources = GetComponents<AudioSource>();
         if (sources.Length >= 2)
@@ -259,6 +243,23 @@ public class NightManager : MonoBehaviour
             doubleProductionSource = sources[5];
         }
 
+        //preload the audio samples
+        if (source1 != null)
+        {
+            source1.Play();
+            source1.Stop();
+        }
+        if (source2 != null)
+        {
+            source2.Play();
+            source2.Stop();
+        }
+        
+        Hours = 5;
+        Years = 1;
+        seasonNotification.gameObject.SetActive(false);
+        productionNotification.gameObject.SetActive(false);
+        setSeason(1);
         // chooseAnimalProductForSeason();
     }
 
@@ -300,6 +301,7 @@ public class NightManager : MonoBehaviour
     public void pauseTime()
     {
         isPaused = true;
+        Time.timeScale = 0f; // Pauses everything that uses Time.deltaTime
     }
 
     public void playTime()
@@ -307,13 +309,27 @@ public class NightManager : MonoBehaviour
         isPaused = false;
         isFast = false;
         speedUp = 1f;
+        Time.timeScale = 1f; // Resume normal speed
     }
 
     public void fastForwardTime()
     {
+        if (isPaused)
+        {
+            Time.timeScale = 1f;
+        }
+
         isFast = !isFast;
         isPaused = false;
-        speedUp = isFast ? speedOfFast : 1f;
+        // speedUp = isFast ? speedOfFast : 1f;
+
+        // speedUp = isFast ? speedOfFast : 1f;
+        Time.timeScale = isFast ? speedOfFast : 1f; // Fast forward or normal speed
+
+        // speedUp = isFast ? speedOfFast : 1f;
+        // Time.timeScale = 1f; // Always keep this at 1 for normal/fast, only set to 0 for pause
+
+
     }
 
     private void cropGrowthOnAll(int stage)

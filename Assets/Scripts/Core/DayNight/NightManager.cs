@@ -526,6 +526,16 @@ public class NightManager : MonoBehaviour
                 clockTickingSource.Stop();
             }
 
+            // TUTORIAL: Check if night transition should be blocked
+            TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+            if (tutorialTracker != null && tutorialTracker.ShouldBlockNightTransition())
+            {
+                Debug.Log("TUTORIAL: Blocking automatic night transition - player not ready");
+                // Don't advance to night, stay at current hour (reset to 17 to prevent multiple triggers)
+                Hours = 17;
+                return;
+            }
+
             StartNight(2);
             
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
@@ -724,6 +734,20 @@ public class NightManager : MonoBehaviour
         if (barracks != null && barracksStructures.Remove(barracks))
         {
             }
+    }
+
+    /// <summary>
+    /// Manually start night for tutorial system - bypasses normal time progression
+    /// </summary>
+    public void ForceStartNight()
+    {
+        Debug.Log("NightManager: Manually starting night via ForceStartNight");
+        
+        // Set the time to night time
+        Hours = 18;
+        
+        // Directly call StartNight with tutorial flag
+        StartNight(1); // Use flag 1 for manual start
     }
 
     public void chooseAnimalProductForSeason()

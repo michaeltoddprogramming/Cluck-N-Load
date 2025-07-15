@@ -1143,15 +1143,14 @@ public class BuildController : MonoBehaviour
             AudioManager.Instance.PlayPlaceSound();
 
         // Notify tutorial system about structure placement
-        if (TutorialManager.Instance != null)
+        TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        if (tutorialTracker != null)
         {
-            TutorialManager.Instance.OnConditionMet(TutorialCondition.FirstStructurePlaced);
-            
-            // Check if it's a barracks for defense tutorial
-            BarracksStructure barracks = placedItem.GetComponent<BarracksStructure>();
-            if (barracks != null)
+            Structure placedStructure = placedItem.GetComponent<Structure>();
+            if (placedStructure != null && placedStructure.structureData != null)
             {
-                TutorialManager.Instance.OnConditionMet(TutorialCondition.BarracksPlaced);
+                string structureName = placedStructure.structureData.structureName ?? placedStructure.name;
+                tutorialTracker.OnStructurePlaced(placedStructure.structureData.type, structureName);
             }
         }
 

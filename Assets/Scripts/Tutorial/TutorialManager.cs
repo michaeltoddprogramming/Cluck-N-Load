@@ -64,6 +64,10 @@ public class TutorialStep
     public bool pauseGame;
     public bool highlightUI;
     public string highlightUITag;
+    
+    // Special button controls
+    public bool showStartNightButton = false; // Show the "Start Night" button for this step
+    public bool requiresDefensesReady = false; // Button only enabled when defenses are ready
 }
 
 public class TutorialManager : MonoBehaviour
@@ -76,6 +80,7 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI tutorialDescription;
     [SerializeField] private Button nextButton;
     [SerializeField] private Button skipButton;
+    [SerializeField] private Button startNightButton; // Special button for starting night during tutorial
     [SerializeField] private Image characterPortrait;
     [SerializeField] private GameObject worldPointer;
     
@@ -362,16 +367,18 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 18: First Night
+        // Step 18: First Night - Special Tutorial Night Start
         tutorialSteps.Add(new TutorialStep
         {
             stepId = "first_night",
-            title = "Survive Your First Night",
-            description = "You're ready! Now let's start the night and see how you do. Click the 'Start Night' button when you're prepared. During night, your army animals will activate and defend against wolves. You can't build or farm at night, so make sure you're ready!",
+            title = "Ready for Your First Night?",
+            description = "Perfect! You've recruited your army and set up your defenses. When you're completely ready to face the night, click the 'Start Night' button below. The button will only be enabled when your defenses are properly set up. Take your time - you have full control!",
             triggerCondition = TutorialCondition.ArmyRecruited,
             prerequisites = new TutorialCondition[] { TutorialCondition.ArmyRecruited },
-            displayDuration = 8f,
-            pauseGame = true
+            displayDuration = 999f, // Wait for user to click Start Night button
+            pauseGame = true,
+            showStartNightButton = true, // Show the special Start Night button
+            requiresDefensesReady = true // Only enable when defenses are ready
         });
 
         // Step 19: Night Defense
@@ -450,6 +457,12 @@ public class TutorialManager : MonoBehaviour
         if (skipButton != null)
         {
             skipButton.onClick.AddListener(SkipTutorial);
+        }
+
+        if (startNightButton != null)
+        {
+            startNightButton.onClick.AddListener(OnStartNightClicked);
+            startNightButton.gameObject.SetActive(false); // Hidden by default
         }
 
         if (characterPortrait != null && oldManPortrait != null)
@@ -567,6 +580,19 @@ public class TutorialManager : MonoBehaviour
             {
                 HighlightUIElement(step.highlightUITag);
             }
+
+            // Handle special Start Night button
+            if (step.showStartNightButton && startNightButton != null)
+            {
+                startNightButton.gameObject.SetActive(true);
+                
+                // Start a coroutine to continuously update button state
+                StartCoroutine(UpdateStartNightButtonState(step));
+            }
+            else if (startNightButton != null)
+            {
+                startNightButton.gameObject.SetActive(false);
+            }
         }
 
         // Wait for manual progression ONLY (no auto-advance)
@@ -623,6 +649,20 @@ public class TutorialManager : MonoBehaviour
                 }
             }
             
+            // TUTORIAL FIX: Manually trigger animal production conditions when user progresses
+            if (currentStep.stepId == "feed_animals")
+            {
+                // User just fed animals, trigger chickens started producing
+                Debug.Log("Tutorial: Manually triggering ChickensStartedProducing after feeding animals");
+                OnConditionMet(TutorialCondition.ChickensStartedProducing);
+            }
+            else if (currentStep.stepId == "watch_production")
+            {
+                // User watched production, now make products ready
+                Debug.Log("Tutorial: Manually triggering AnimalProductsReady after watching production");
+                OnConditionMet(TutorialCondition.AnimalProductsReady);
+            }
+            
             // Check if this was the final step
             if (currentStep.stepId == "tutorial_complete")
             {
@@ -639,6 +679,12 @@ public class TutorialManager : MonoBehaviour
         if (worldPointer != null)
         {
             worldPointer.SetActive(false);
+        }
+
+        // Hide Start Night button
+        if (startNightButton != null)
+        {
+            startNightButton.gameObject.SetActive(false);
         }
 
         // Unpause game
@@ -668,6 +714,71 @@ public class TutorialManager : MonoBehaviour
     public void SkipTutorial()
     {
         CompleteTutorial();
+    }
+
+    /// <summary>
+    /// Called when the special "Start Night" button is clicked during tutorial
+    /// </summary>
+    public void OnStartNightClicked()
+    {
+        Debug.Log("Tutorial: Start Night button clicked!");
+        
+        // Verify defenses are ready
+        var tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        if (tutorialTracker != null && tutorialTracker.AreDefensesReady())
+        {
+            // Start the night through the night manager using the new manual method
+            if (nightManager != null)
+            {
+                Debug.Log("Tutorial: Starting night manually via tutorial button");
+                nightManager.ForceStartNight(); // Use the new manual night start method
+                
+                // Trigger the night started condition
+                OnConditionMet(TutorialCondition.NightStarted);
+                
+                // Complete the current tutorial step
+                NextTutorialStep();
+            }
+            else
+            {
+                Debug.LogError("Tutorial: NightManager not found!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Tutorial: Defenses not ready - button should be disabled!");
+        }
+    }
+
+    /// <summary>
+    /// Coroutine to continuously update the Start Night button enabled state
+    /// </summary>
+    private IEnumerator UpdateStartNightButtonState(TutorialStep step)
+    {
+        while (currentStep == step && startNightButton != null && startNightButton.gameObject.activeInHierarchy)
+        {
+            if (step.requiresDefensesReady)
+            {
+                var tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+                bool defensesReady = tutorialTracker != null && tutorialTracker.AreDefensesReady();
+                
+                startNightButton.interactable = defensesReady;
+                
+                // Update button text based on state
+                var buttonText = startNightButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (buttonText != null)
+                {
+                    buttonText.text = defensesReady ? "Start Night!" : "Defenses Not Ready";
+                    buttonText.color = defensesReady ? Color.white : Color.gray;
+                }
+            }
+            else
+            {
+                startNightButton.interactable = true;
+            }
+            
+            yield return new WaitForSeconds(0.1f); // Check 10 times per second
+        }
     }
 
     private void CompleteTutorial()
@@ -700,6 +811,12 @@ public class TutorialManager : MonoBehaviour
         if (worldPointer != null)
         {
             worldPointer.SetActive(false);
+        }
+
+        // Hide Start Night button
+        if (startNightButton != null)
+        {
+            startNightButton.gameObject.SetActive(false);
         }
 
         // Resume game using our pause management
@@ -868,6 +985,42 @@ public class TutorialManager : MonoBehaviour
         }
         Debug.Log("=====================");
     }
+
+    /// <summary>
+    /// Debug method to manually trigger animal production conditions
+    /// </summary>
+    [ContextMenu("Fix Animal Production Tutorial")]
+    public void FixAnimalProductionTutorial()
+    {
+        Debug.Log("=== FIXING ANIMAL PRODUCTION TUTORIAL ===");
+        
+        // Check what conditions are missing and try to fix them
+        if (!completedConditions.Contains(TutorialCondition.FirstChickenBought))
+        {
+            Debug.Log("Manually triggering FirstChickenBought");
+            OnConditionMet(TutorialCondition.FirstChickenBought);
+        }
+        
+        if (!completedConditions.Contains(TutorialCondition.ChickensStartedProducing))
+        {
+            Debug.Log("Manually triggering ChickensStartedProducing");
+            OnConditionMet(TutorialCondition.ChickensStartedProducing);
+        }
+        
+        if (!completedConditions.Contains(TutorialCondition.AnimalProductsReady))
+        {
+            Debug.Log("Manually triggering AnimalProductsReady");
+            OnConditionMet(TutorialCondition.AnimalProductsReady);
+        }
+        
+        if (!completedConditions.Contains(TutorialCondition.AnimalProductsCollected))
+        {
+            Debug.Log("Manually triggering AnimalProductsCollected");
+            OnConditionMet(TutorialCondition.AnimalProductsCollected);
+        }
+        
+        Debug.Log("Animal production tutorial fix completed!");
+    }
     
     // Public methods for external systems to call
     public bool IsTutorialActive()
@@ -890,6 +1043,14 @@ public class TutorialManager : MonoBehaviour
         {
             step.isCompleted = false;
         }
+    }
+
+    /// <summary>
+    /// Get the list of tutorial steps for external systems to check completion status
+    /// </summary>
+    public List<TutorialStep> GetTutorialSteps()
+    {
+        return tutorialSteps;
     }
 
     /// <summary>
@@ -1031,13 +1192,16 @@ public class TutorialManager : MonoBehaviour
                 }
             }
             
-            // Farm house placed check
+            // DISABLED: Farm house placed check - now handled by BuildController -> TutorialConditionTracker
+            /*
             if (!completedConditions.Contains(TutorialCondition.FarmHousePlaced))
             {
                 var farmHouses = FindObjectsByType<Structure>(FindObjectsSortMode.None);
                 foreach (var structure in farmHouses)
                 {
-                    if (structure.name.ToLower().Contains("farmhouse") || structure.name.ToLower().Contains("farm house"))
+                    // Skip BuildGhost objects (they're just previews)
+                    if (structure.gameObject.name != "BuildGhost" && 
+                        (structure.name.ToLower().Contains("farmhouse") || structure.name.ToLower().Contains("farm house")))
                     {
                         Debug.Log("Tutorial Polling: Detected missed FarmHousePlaced condition");
                         OnConditionMet(TutorialCondition.FarmHousePlaced);
@@ -1045,17 +1209,32 @@ public class TutorialManager : MonoBehaviour
                     }
                 }
             }
+            */
             
-            // Crop plot placed check
+            // DISABLED: Crop plot placed check - now handled by BuildController -> TutorialConditionTracker
+            // The polling system was causing premature detection of BuildGhost objects
+            /*
             if (!completedConditions.Contains(TutorialCondition.CropPlotPlaced))
             {
                 var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-                if (cropStructures.Length > 0)
+                bool hasRealCropPlot = false;
+                foreach (var crop in cropStructures)
+                {
+                    // Skip BuildGhost objects (they're just previews)
+                    if (crop.gameObject.name != "BuildGhost")
+                    {
+                        hasRealCropPlot = true;
+                        break;
+                    }
+                }
+                
+                if (hasRealCropPlot)
                 {
                     Debug.Log("Tutorial Polling: Detected missed CropPlotPlaced condition");
                     OnConditionMet(TutorialCondition.CropPlotPlaced);
                 }
             }
+            */
             
             // First crop planted check
             if (!completedConditions.Contains(TutorialCondition.FirstCropPlanted))
@@ -1063,7 +1242,8 @@ public class TutorialManager : MonoBehaviour
                 var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
                 foreach (var crop in cropStructures)
                 {
-                    if (crop.CurrentCropType != CropStructure.CropType.None)
+                    // Skip BuildGhost objects (they're just previews)
+                    if (crop.gameObject.name != "BuildGhost" && crop.CurrentCropType != CropStructure.CropType.None)
                     {
                         Debug.Log("Tutorial Polling: Detected missed FirstCropPlanted condition");
                         OnConditionMet(TutorialCondition.FirstCropPlanted);
@@ -1072,13 +1252,15 @@ public class TutorialManager : MonoBehaviour
                 }
             }
             
-            // Silo placed check
+            // DISABLED: Silo placed check - now handled by BuildController -> TutorialConditionTracker
+            /*
             if (!completedConditions.Contains(TutorialCondition.SiloPlaced))
             {
                 var structures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
                 foreach (var structure in structures)
                 {
-                    if (structure.name.ToLower().Contains("silo"))
+                    // Skip BuildGhost objects (they're just previews)
+                    if (structure.gameObject.name != "BuildGhost" && structure.name.ToLower().Contains("silo"))
                     {
                         Debug.Log("Tutorial Polling: Detected missed SiloPlaced condition");
                         OnConditionMet(TutorialCondition.SiloPlaced);
@@ -1086,14 +1268,18 @@ public class TutorialManager : MonoBehaviour
                     }
                 }
             }
+            */
             
-            // Chicken coop placed check
+            // DISABLED: Chicken coop placed check - now handled by BuildController -> TutorialConditionTracker
+            /*
             if (!completedConditions.Contains(TutorialCondition.ChickenCoopPlaced))
             {
                 var animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
                 foreach (var animal in animalStructures)
                 {
-                    if (animal.name.ToLower().Contains("chicken") || animal.name.ToLower().Contains("coop"))
+                    // Skip BuildGhost objects (they're just previews)
+                    if (animal.gameObject.name != "BuildGhost" && 
+                        (animal.name.ToLower().Contains("chicken") || animal.name.ToLower().Contains("coop")))
                     {
                         Debug.Log("Tutorial Polling: Detected missed ChickenCoopPlaced condition");
                         OnConditionMet(TutorialCondition.ChickenCoopPlaced);
@@ -1101,6 +1287,7 @@ public class TutorialManager : MonoBehaviour
                     }
                 }
             }
+            */
             
             // First chicken bought check
             if (!completedConditions.Contains(TutorialCondition.FirstChickenBought))
@@ -1108,11 +1295,70 @@ public class TutorialManager : MonoBehaviour
                 var animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
                 foreach (var animal in animalStructures)
                 {
-                    if (animal.AnimalCount > 0)
+                    // Skip BuildGhost objects (they're just previews)
+                    if (animal.gameObject.name != "BuildGhost" && animal.AnimalCount > 0)
                     {
                         Debug.Log("Tutorial Polling: Detected missed FirstChickenBought condition");
                         OnConditionMet(TutorialCondition.FirstChickenBought);
                         break;
+                    }
+                }
+            }
+            
+            // Chickens started producing check
+            if (!completedConditions.Contains(TutorialCondition.ChickensStartedProducing))
+            {
+                var animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+                foreach (var animal in animalStructures)
+                {
+                    // Skip BuildGhost objects (they're just previews)
+                    if (animal.gameObject.name != "BuildGhost" && animal.AnimalCount > 0 && animal.IsProducing)
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed ChickensStartedProducing condition");
+                        OnConditionMet(TutorialCondition.ChickensStartedProducing);
+                        break;
+                    }
+                }
+            }
+            
+            // Animal products ready check
+            if (!completedConditions.Contains(TutorialCondition.AnimalProductsReady))
+            {
+                var animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+                foreach (var animal in animalStructures)
+                {
+                    // Skip BuildGhost objects (they're just previews)
+                    if (animal.gameObject.name != "BuildGhost" && animal.ProductReady)
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed AnimalProductsReady condition");
+                        OnConditionMet(TutorialCondition.AnimalProductsReady);
+                        break;
+                    }
+                }
+            }
+            
+            // Animal products collected check
+            if (!completedConditions.Contains(TutorialCondition.AnimalProductsCollected))
+            {
+                // This condition should be triggered by the animal structure when products are collected
+                // We'll add a fallback check to see if we have money and the animals don't have products anymore
+                if (moneyManager != null && moneyManager.GetCurrentMoney() > 0)
+                {
+                    var animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+                    bool hasAnimalsWithoutProducts = false;
+                    foreach (var animal in animalStructures)
+                    {
+                        if (animal.gameObject.name != "BuildGhost" && animal.AnimalCount > 0 && !animal.ProductReady)
+                        {
+                            hasAnimalsWithoutProducts = true;
+                            break;
+                        }
+                    }
+                    
+                    if (hasAnimalsWithoutProducts && completedConditions.Contains(TutorialCondition.AnimalProductsReady))
+                    {
+                        Debug.Log("Tutorial Polling: Detected missed AnimalProductsCollected condition (inferred from money and empty animals)");
+                        OnConditionMet(TutorialCondition.AnimalProductsCollected);
                     }
                 }
             }
@@ -1123,7 +1369,8 @@ public class TutorialManager : MonoBehaviour
                 var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
                 foreach (var crop in cropStructures)
                 {
-                    if (crop.CropReady)
+                    // Skip BuildGhost objects (they're just previews)
+                    if (crop.gameObject.name != "BuildGhost" && crop.CropReady)
                     {
                         Debug.Log("Tutorial Polling: Detected crop ready for FirstCropHarvested condition");
                         OnConditionMet(TutorialCondition.FirstCropHarvested);
@@ -1132,16 +1379,29 @@ public class TutorialManager : MonoBehaviour
                 }
             }
             
-            // Barracks placed check
+            // DISABLED: Barracks placed check - now handled by BuildController -> TutorialConditionTracker
+            /*
             if (!completedConditions.Contains(TutorialCondition.BarracksPlaced))
             {
                 var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
-                if (barracks.Length > 0)
+                bool hasRealBarracks = false;
+                foreach (var barrack in barracks)
+                {
+                    // Skip BuildGhost objects (they're just previews)
+                    if (barrack.gameObject.name != "BuildGhost")
+                    {
+                        hasRealBarracks = true;
+                        break;
+                    }
+                }
+                
+                if (hasRealBarracks)
                 {
                     Debug.Log("Tutorial Polling: Detected missed BarracksPlaced condition");
                     OnConditionMet(TutorialCondition.BarracksPlaced);
                 }
             }
+            */
             
             // Flag placed check
             if (!completedConditions.Contains(TutorialCondition.FlagPlaced))

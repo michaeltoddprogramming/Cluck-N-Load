@@ -74,7 +74,7 @@ public class TutorialConditionTracker : MonoBehaviour
         {
             yield return new WaitForSeconds(1f); // Check every second
 
-            TrackStructurePlacements();
+            // DISABLED: TrackStructurePlacements() - now handled directly by BuildController
             TrackCropStatus();
             TrackAnimalStatus();
             TrackDefenseStatus();
@@ -404,7 +404,7 @@ public class TutorialConditionTracker : MonoBehaviour
         if (!hasOpenedShop)
         {
             // Find the shop UI manager
-            ShopUIManager shopManager = FindObjectOfType<ShopUIManager>();
+            ShopUIManager shopManager = FindFirstObjectByType<ShopUIManager>();
             if (shopManager != null)
             {
                 // Check if shop panel is active
@@ -455,22 +455,48 @@ public class TutorialConditionTracker : MonoBehaviour
 
     /// <summary>
     /// Check if tutorial is currently active and should block night progression
+    /// Enhanced to use comprehensive defense readiness checks
     /// </summary>
     private bool ShouldBlockNightProgression()
     {
         if (TutorialManager.Instance == null) return false;
         
-        // Block night if tutorial is active and we haven't completed the army recruitment step yet
+        // Block night if tutorial is active and defenses are not fully ready
         bool tutorialActive = TutorialManager.Instance.IsTutorialActive();
-        bool armyNotReady = !hasRecruitedArmy;
+        bool defensesNotReady = !AreDefensesReadyForTutorial();
         
-        if (tutorialActive && armyNotReady)
+        if (tutorialActive && defensesNotReady)
         {
-            Debug.Log("Tutorial: Blocking night progression - player not ready for night phase");
+            Debug.Log("Tutorial: Blocking night progression - defenses not fully ready for night phase");
+            return true;
+        }
+        
+        // ADDITIONAL CHECK: Even if basic conditions are met, ensure the user has explicitly
+        // completed the "recruit_army" tutorial step before allowing night
+        if (tutorialActive && !HasCompletedTutorialStep("recruit_army"))
+        {
+            Debug.Log("Tutorial: Blocking night progression - user hasn't completed army recruitment tutorial step");
+            return true;
+        }
+        
+        // CRITICAL: Block automatic night transition during the "first_night" step
+        // This step requires user to manually click the "Start Night" button
+        if (tutorialActive && IsCurrentTutorialStep("first_night"))
+        {
+            Debug.Log("Tutorial: Blocking automatic night progression - waiting for user to click Start Night button");
             return true;
         }
         
         return false;
+    }
+
+    /// <summary>
+    /// Public method for NightManager and other systems to check if night progression should be blocked
+    /// This is the main method other systems should use to check if tutorial is blocking night
+    /// </summary>
+    public bool ShouldBlockNightTransition()
+    {
+        return ShouldBlockNightProgression();
     }
 
     /// <summary>
@@ -649,5 +675,138 @@ public class TutorialConditionTracker : MonoBehaviour
                 break; // Only grow the first planted crop
             }
         }
+    }
+
+    /// <summary>
+    /// Called by BuildController when a structure is placed
+    /// This replaces the automatic tracking to ensure timing is correct
+    /// </summary>
+    public void OnStructurePlaced(StructureType structureType, string structureName)
+    {
+        Debug.Log($"TutorialConditionTracker: Structure placed - Type: {structureType}, Name: {structureName}");
+        
+        // Mark first structure as placed
+        if (!hasPlacedFirstStructure)
+        {
+            hasPlacedFirstStructure = true;
+            TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstStructurePlaced);
+        }
+        
+        // Handle specific structure types
+        switch (structureType)
+        {
+            case StructureType.Building:
+                // Check if it's a farmhouse by name
+                if (!hasFarmHousePlaced && (structureName.ToLower().Contains("farmhouse") || 
+                    structureName.ToLower().Contains("farm house")))
+                {
+                    hasFarmHousePlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
+                }
+                break;
+                
+            case StructureType.Silo:
+                if (!hasSiloPlaced)
+                {
+                    hasSiloPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.SiloPlaced);
+                }
+                break;
+                
+            case StructureType.CropPlot:
+                if (!hasCropPlotPlaced)
+                {
+                    hasCropPlotPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.CropPlotPlaced);
+                }
+                break;
+                
+            case StructureType.Animal:
+            case StructureType.AnimalPlot:
+                if (!hasChickenCoopPlaced && (structureName.ToLower().Contains("chicken") || 
+                    structureName.ToLower().Contains("coop")))
+                {
+                    hasChickenCoopPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickenCoopPlaced);
+                }
+                break;
+                
+            case StructureType.Barracks:
+                if (!hasBarracksPlaced)
+                {
+                    hasBarracksPlaced = true;
+                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.BarracksPlaced);
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Check if a specific tutorial step has been completed
+    /// </summary>
+    private bool HasCompletedTutorialStep(string stepId)
+    {
+        if (TutorialManager.Instance == null) return false;
+        
+        // Check if the specific tutorial step has been marked as completed
+        var tutorialSteps = TutorialManager.Instance.GetTutorialSteps();
+        if (tutorialSteps != null)
+        {
+            foreach (var step in tutorialSteps)
+            {
+                if (step.stepId == stepId)
+                {
+                    return step.isCompleted;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    /// <summary>
+    /// Check if the tutorial is currently on a specific step
+    /// </summary>
+    private bool IsCurrentTutorialStep(string stepId)
+    {
+        if (TutorialManager.Instance == null) return false;
+        
+        // Check if we're currently active and the current step matches
+        if (!TutorialManager.Instance.IsTutorialActive()) return false;
+        
+        // Try to get the current step via reflection or find another way to check current step
+        // For now, we'll use a different approach - check if the step is incomplete but its prerequisites are met
+        var tutorialSteps = TutorialManager.Instance.GetTutorialSteps();
+        if (tutorialSteps != null)
+        {
+            foreach (var step in tutorialSteps)
+            {
+                if (step.stepId == stepId && !step.isCompleted)
+                {
+                    // Check if all prerequisites are met (indicating this is likely the current step)
+                    bool allPrereqsMet = true;
+                    foreach (var prereq in step.prerequisites)
+                    {
+                        bool prereqMet = false;
+                        foreach (var checkStep in tutorialSteps)
+                        {
+                            if (checkStep.triggerCondition == prereq && checkStep.isCompleted)
+                            {
+                                prereqMet = true;
+                                break;
+                            }
+                        }
+                        if (!prereqMet)
+                        {
+                            allPrereqsMet = false;
+                            break;
+                        }
+                    }
+                    return allPrereqsMet;
+                }
+            }
+        }
+        
+        return false;
     }
 }

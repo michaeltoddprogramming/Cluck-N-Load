@@ -597,7 +597,7 @@ public class TutorialSystem : MonoBehaviour
         dialogueText.text = "Welcome to the tutorial!";
         dialogueText.fontSize = 18;
         dialogueText.color = Color.white;
-        dialogueText.enableWordWrapping = true;
+        dialogueText.textWrappingMode = TMPro.TextWrappingModes.Normal;
 
         // Create next button
         GameObject buttonObj = new GameObject("NextButton");

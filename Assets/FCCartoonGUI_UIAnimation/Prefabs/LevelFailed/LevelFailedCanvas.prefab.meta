@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9d13e51a438a8d34fa0b0663fc61dece
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318385
+  packageName: Funky Cartoon GUI + UI Animation Bundle | Demo
+  packageVersion: 1.0.0
+  assetPath: Assets/FCCartoonGUI_UIAnimation/Prefabs/LevelFailed/LevelFailedCanvas.prefab
+  uploadId: 752511

@@ -301,7 +301,7 @@ public class TutorialManager : MonoBehaviour
             stepId = "feed_animals",
             title = "Feed Your Chickens",
             description = "Now that you have sunflowers, your chickens are hungry! Click on the chicken coop and feed them with your harvested sunflowers. Well-fed animals will start producing eggs!",
-            triggerCondition = TutorialCondition.FirstCropHarvested,
+            triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested, TutorialCondition.FirstChickenBought },
             displayDuration = 6f,
             pauseGame = true
@@ -488,28 +488,91 @@ public class TutorialManager : MonoBehaviour
     {
         if (!enableTutorial || tutorialCompleted) return;
 
-        if (completedConditions.Contains(condition)) return;
+        if (completedConditions.Contains(condition)) 
+        {
+            Debug.Log($"Tutorial condition {condition} already completed - ignoring duplicate");
+            return;
+        }
 
         Debug.Log($"Tutorial condition met: {condition}");
         completedConditions.Add(condition);
         OnConditionCompleted?.Invoke(condition);
 
-        // Check for tutorial steps that can now be triggered with strict validation
+        // STRICT SEQUENTIAL FLOW: Only process the NEXT step in sequence
+        TutorialStep nextStep = GetNextIncompleteStep();
+        
+        if (nextStep != null && nextStep.triggerCondition == condition && CanTriggerStepStrictly(nextStep))
+        {
+            Debug.Log($"Tutorial: Triggering next sequential step {nextStep.stepId}");
+            pendingSteps.Clear(); // Clear any old pending steps
+            pendingSteps.Enqueue(nextStep);
+            ProcessPendingSteps();
+        }
+        else if (nextStep != null)
+        {
+            Debug.Log($"Tutorial: Condition {condition} met, but next step is {nextStep.stepId} (waiting for {nextStep.triggerCondition})");
+        }
+        else
+        {
+            Debug.Log($"Tutorial: No more incomplete steps to process");
+        }
+    }
+
+    /// <summary>
+    /// Get the next incomplete step in the tutorial sequence
+    /// </summary>
+    private TutorialStep GetNextIncompleteStep()
+    {
         foreach (var step in tutorialSteps)
         {
-            if (CanTriggerStep(step, condition))
+            if (!step.isCompleted)
             {
-                Debug.Log($"Tutorial step {step.stepId} can be triggered by condition {condition}");
-                pendingSteps.Enqueue(step);
-            }
-            else if (step.triggerCondition == condition)
-            {
-                Debug.LogWarning($"Tutorial step {step.stepId} matched condition {condition} but failed strict validation");
+                return step;
             }
         }
-
-        // Process pending steps
-        ProcessPendingSteps();
+        return null;
+    }
+    
+    /// <summary>
+    /// Strictly check if a step can be triggered - MUCH more restrictive than before
+    /// </summary>
+    private bool CanTriggerStepStrictly(TutorialStep step)
+    {
+        // Must not be already completed
+        if (step.isCompleted)
+        {
+            Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
+            return false;
+        }
+        
+        // Must be the EXACT next step in sequence (no skipping allowed)
+        int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
+        if (stepIndex > 0)
+        {
+            // Check that ALL previous steps are completed
+            for (int i = 0; i < stepIndex; i++)
+            {
+                if (!tutorialSteps[i].isCompleted)
+                {
+                    Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet (index {i})");
+                    return false;
+                }
+            }
+        }
+        
+        // Must have all prerequisites
+        if (!ArePrerequisitesStrictlyMet(step))
+            return false;
+        
+        // Cannot trigger if another step is currently active
+        if (isTutorialActive && currentStep != null)
+        {
+            Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) is currently active");
+            return false;
+        }
+        
+        Debug.Log($"Tutorial step {step.stepId} STRICT validation passed");
+        return true;
     }
 
     private void ProcessPendingSteps()
@@ -661,6 +724,12 @@ public class TutorialManager : MonoBehaviour
                 // User watched production, now make products ready
                 Debug.Log("Tutorial: Manually triggering AnimalProductsReady after watching production");
                 OnConditionMet(TutorialCondition.AnimalProductsReady);
+            }
+            else if (currentStep.stepId == "harvest_first_crops")
+            {
+                // User just harvested crops, now show feed animals step
+                Debug.Log("Tutorial: Harvest completed, showing feed animals step");
+                StartCoroutine(ShowNextStepAfterDelay("feed_animals", 0.5f));
             }
             
             // Check if this was the final step
@@ -1418,13 +1487,14 @@ public class TutorialManager : MonoBehaviour
                 }
             }
             
-            // Crop harvested check
+            // DISABLED: Crop harvested check - this should only trigger when player actually harvests
+            // The polling was incorrectly triggering when crops became ready rather than when harvested
+            /*
             if (!completedConditions.Contains(TutorialCondition.FirstCropHarvested))
             {
                 var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
                 foreach (var crop in cropStructures)
                 {
-                    // Skip BuildGhost objects (they're just previews)
                     if (crop.gameObject.name != "BuildGhost" && crop.CropReady)
                     {
                         Debug.Log("Tutorial Polling: Detected crop ready for FirstCropHarvested condition");
@@ -1433,6 +1503,7 @@ public class TutorialManager : MonoBehaviour
                     }
                 }
             }
+            */
             
             // DISABLED: Barracks placed check - now handled by BuildController -> TutorialConditionTracker
             /*

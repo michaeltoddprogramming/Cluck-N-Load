@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 87b02802730fa6a41bcbe9cc8f68d699
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304714
+  packageName: Stylize Tree &Grassess samples
+  packageVersion: 1.1
+  assetPath: Assets/Stylize Tree &Grasses samples/URP/Shaders/WavingLeavesURP.shadergraph
+  uploadId: 719853

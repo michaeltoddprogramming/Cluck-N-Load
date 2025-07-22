@@ -362,6 +362,12 @@ public class NightManager : MonoBehaviour
             TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
         }
 
+        // Notify WeatherManager about night starting
+        if (WeatherManager.Instance != null)
+        {
+            WeatherManager.Instance.OnDayNightChanged(true);
+        }
+
         // Start wolf spawning when night begins
         if (unitSpawner != null)
         {
@@ -370,7 +376,7 @@ public class NightManager : MonoBehaviour
             {
                 StopCoroutine(wolfSpawnCoroutine);
             }
-
+            
             wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
         }
         else
@@ -397,9 +403,7 @@ public class NightManager : MonoBehaviour
                 barracks.OnDayNightChanged(true);
             }
         }
-    }
-
-    private void StartDay(int flag)
+    }    private void StartDay(int flag)
     {
         // Destroy all remaining wolves when day starts
         foreach (Wolf wolf in activeWolves.ToList())
@@ -427,6 +431,12 @@ public class NightManager : MonoBehaviour
             {
                 barracks.OnDayNightChanged(false);
             }
+        }
+
+        // Notify WeatherManager about day starting
+        if (WeatherManager.Instance != null)
+        {
+            WeatherManager.Instance.OnDayNightChanged(false);
         }
 
         // Advance growing crops to stage 2, preserve ready-to-harvest crops
@@ -631,7 +641,7 @@ public class NightManager : MonoBehaviour
                     text = "Spring!!";
                     seasonIcon.sprite = spring;
                     chooseAnimalProductForSeason();
-                    break;
+                    break;                    
                 }
             case 2:
                 yearsChanged = false;
@@ -648,15 +658,20 @@ public class NightManager : MonoBehaviour
                 text = "Winter!!";
                 seasonIcon.sprite = winter;
                 chooseAnimalProductForSeason();
-                break;
+                break;                
             default:
                 text = "";
                 break;
         }
+        
+        // Notify WeatherManager of season change
+        if (WeatherManager.Instance != null)
+        {
+            WeatherManager.Instance.OnSeasonChanged(season);
+        }
+        
         StartNotification(text, 5);
-    }
-
-    // New method to properly manage notification coroutines
+    }    // New method to properly manage notification coroutines
     private void StartNotification(string message, float duration)
     {
         // Stop any existing notification first

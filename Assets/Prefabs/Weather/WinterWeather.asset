@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fee4d90f91e6fdf45ab6138a1211d164, type: 3}
+  m_Name: WinterWeather
+  m_EditorClassIdentifier: 
+  rainIntensity: 0
+  snowIntensity: 200
+  windStrength: 5
+  enableWeatherWind: 1
+  rainChance: 0
+  snowChance: 1
+  windChance: 0
+  seasonDescription: 'Spring
+
+'

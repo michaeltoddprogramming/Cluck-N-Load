@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 96097e5f9e2e2224aa8a6a297d0f625d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318385
+  packageName: Funky Cartoon GUI + UI Animation Bundle | Demo
+  packageVersion: 1.0.0
+  assetPath: Assets/FCCartoonGUI_UIAnimation/Prefabs/QuestCompleted/QuestCompletedCanvas.prefab
+  uploadId: 752511

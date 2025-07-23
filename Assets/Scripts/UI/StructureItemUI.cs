@@ -35,7 +35,7 @@ public class StructureItemUI : MonoBehaviour
         // Display cost if we have a cost text component
         if (costText != null)
         {
-            costText.text = $"{structure.cost} Gold";
+            costText.text = $"{structure.cost}";
         }
 
         if (selectButton != null)
@@ -119,11 +119,11 @@ public class StructureItemUI : MonoBehaviour
             // Add a "Cannot Afford" text or symbol for extra clarity
             if (!canAfford)
             {
-                costText.text = $"Cost: {data.cost} Gold (Cannot Afford!)";
+                costText.text = $"{data.cost} (Cannot Afford!)";
             }
             else
             {
-                costText.text = $"Cost: {data.cost} Gold";
+                costText.text = $"{data.cost}";
             }
         }
         

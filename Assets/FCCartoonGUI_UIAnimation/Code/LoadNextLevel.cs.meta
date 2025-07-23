@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 655195a84aed8ed4e971cbefcecf5d82
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318385
+  packageName: Funky Cartoon GUI + UI Animation Bundle | Demo
+  packageVersion: 1.0.0
+  assetPath: Assets/FCCartoonGUI_UIAnimation/Code/LoadNextLevel.cs
+  uploadId: 752511

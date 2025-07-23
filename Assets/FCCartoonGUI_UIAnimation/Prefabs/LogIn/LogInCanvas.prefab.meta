@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 65e2155cd2c51bf4998a22ba8ceb86f2
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318385
+  packageName: Funky Cartoon GUI + UI Animation Bundle | Demo
+  packageVersion: 1.0.0
+  assetPath: Assets/FCCartoonGUI_UIAnimation/Prefabs/LogIn/LogInCanvas.prefab
+  uploadId: 752511

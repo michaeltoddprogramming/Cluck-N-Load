@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 433cecad4dab4f94fb8ad651dac8f4b0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318385
+  packageName: Funky Cartoon GUI + UI Animation Bundle | Demo
+  packageVersion: 1.0.0
+  assetPath: Assets/FCCartoonGUI_UIAnimation/Data/Inventory/Buttons/ExpandButton/ItemsButton_Icon_RotateClick.asset
+  uploadId: 752511

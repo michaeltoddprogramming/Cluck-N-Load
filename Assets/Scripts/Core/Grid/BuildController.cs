@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using FarmDefender.Core.AI.FlowField;
 using System.Collections;
+using UnityEngine.VFX;
 
 public class BuildController : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class BuildController : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private RectTransform itemDeleteIcon;
+    [SerializeField] public GameObject dustPoof;
 
     [Header("Delete Mode Settings")]
     [Tooltip("Position offset from the cursor where the delete icon will appear")]
@@ -1123,8 +1125,58 @@ public class BuildController : MonoBehaviour
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
         GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
         placedItem.name = $"Item_{x}_{y}";
-
         Structure structure = placedItem.GetComponent<Structure>();
+
+        // --- Play particle effect on placement ---
+        if (dustPoof != null)
+        {
+            Vector3 effectPosition;
+            Vector3 posMult;
+            float totalMult;
+
+            if (structure != null)
+            {
+                if (structure.GetStructureName() == "Cow Barn")
+                {
+                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0); // Center of building, 1 unit above
+                    posMult = new Vector3(1.5f, 1.5f, 1.5f); // more position spread
+                    totalMult = 1.5f; // more bubbles
+                }
+                else if (structure.GetStructureName() == "Goat Pen")
+                {
+                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0); // Center of building, 1 unit above
+                    posMult = new Vector3(1.2f, 1.2f, 1.2f); // more position spread
+                    totalMult = 1.2f; // more bubbles
+                }
+                else
+                {
+                    effectPosition = placedItem.transform.position + new Vector3(0, 1f, 0); // Center of building, 1 unit above
+                    posMult = new Vector3(1f, 1f, 1f); // more position spread
+                    totalMult = 1f; // more bubbles
+                }
+            }
+            else
+            {
+                effectPosition = placedItem.transform.position + new Vector3(0, 3f, 0); // Center of building, 1 unit above
+                posMult = new Vector3(2f, 2f, 2f); // more position spread
+                totalMult = 2f; // more bubbles
+            }                
+
+
+            GameObject effect = Instantiate(dustPoof, effectPosition, Quaternion.identity);
+
+
+            VisualEffect ps = effect.GetComponent<VisualEffect>();
+            if (ps != null)
+                ps.SetVector3("posMult", posMult);
+                ps.SetFloat("totalMult", totalMult);
+            ps.Play();
+            Destroy(effect, 3f); // Destroy after 3 seconds (adjust as needed)
+            
+            Debug.Log("Dust effect position: " + effect.transform.position);
+        }
+        // --- End particle effect ---
+
         if (structure != null)
         {
             structure.SetAllowSelectionAndUI(false);
@@ -1143,15 +1195,14 @@ public class BuildController : MonoBehaviour
             AudioManager.Instance.PlayPlaceSound();
 
         // Notify tutorial system about structure placement
-        if (TutorialManager.Instance != null)
+        TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        if (tutorialTracker != null)
         {
-            TutorialManager.Instance.OnConditionMet(TutorialCondition.FirstStructurePlaced);
-            
-            // Check if it's a barracks for defense tutorial
-            BarracksStructure barracks = placedItem.GetComponent<BarracksStructure>();
-            if (barracks != null)
+            Structure placedStructure = placedItem.GetComponent<Structure>();
+            if (placedStructure != null && placedStructure.structureData != null)
             {
-                TutorialManager.Instance.OnConditionMet(TutorialCondition.BarracksPlaced);
+                string structureName = placedStructure.structureData.structureName ?? placedStructure.name;
+                tutorialTracker.OnStructurePlaced(placedStructure.structureData.type, structureName);
             }
         }
 

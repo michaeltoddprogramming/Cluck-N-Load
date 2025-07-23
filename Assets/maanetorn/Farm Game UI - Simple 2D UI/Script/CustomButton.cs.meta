@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c645a687879a2124a95915c7e5bd035f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318607
+  packageName: Farm Game UI - Starter 2D
+  packageVersion: 1.0
+  assetPath: Assets/maanetorn/Farm Game UI - Simple 2D UI/Script/CustomButton.cs
+  uploadId: 760604

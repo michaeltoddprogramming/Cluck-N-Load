@@ -78,6 +78,14 @@ public class AnimalStructureUI : BaseStructureUI
             collectButton.onClick.AddListener(() =>
             {
                 animalStructure.Collect();
+                
+                // Notify tutorial system about product collection
+                TutorialConditionTracker tracker = FindFirstObjectByType<TutorialConditionTracker>();
+                if (tracker != null)
+                {
+                    tracker.OnProductCollected();
+                }
+                
                 UpdateUI();
             });
         }

@@ -7,6 +7,7 @@ using System.Linq;
 
 public class NightManager : MonoBehaviour
 {
+    private int currentSeason = 1;
     // Singleton instance
     public static NightManager Instance { get; private set; }
 
@@ -23,7 +24,7 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Gradient DayToAfternoonGradient;
     [SerializeField] private Gradient AfternoonToNightGradient;
     [SerializeField] private Gradient nightToMorningGradient;
-    
+
     [Header("Performance Settings")]
     [SerializeField] private bool enableLightingOptimizations = true;
     [SerializeField] private float lightingUpdateInterval = 0.2f; // Reduce frequency for potato devices
@@ -38,8 +39,8 @@ public class NightManager : MonoBehaviour
     // Time indicator icons
     [Header("Time Indicator")]
     [SerializeField] private Image timeOfDayIcon;
-    [SerializeField] private Sprite dayIcon;
-    [SerializeField] private Sprite nightIcon;
+    // [SerializeField] private Sprite dayIcon;
+    // [SerializeField] private Sprite nightIcon;
 
     // Songs
     private AudioSource source1;
@@ -68,8 +69,8 @@ public class NightManager : MonoBehaviour
     [SerializeField] private float speedUp = 1f;
     [SerializeField] private float speedOfFast = 5f;
 
-    [Tooltip("How many in-game minutes per real life second (0.0625f -> 1 in-game minute = 0.0625 seconds (1 day ≈ 12 minutes))")]
-    [SerializeField] private float inGameMinVSSec = 0.0625f;
+    [Tooltip("How many in-game minutes per real life second (0.02f -> 1 in-game minute = 0.02 seconds (1 day ≈ 36 minutes))")]
+    [SerializeField] private float inGameMinVSSec = 0.02f;
     private bool isPaused = false;
     [SerializeField] private bool isFast = false;
     [SerializeField] private TextMeshProUGUI timeText;
@@ -145,10 +146,10 @@ public class NightManager : MonoBehaviour
     [SerializeField] private int additionalWolvesPerDay = 1;
     [SerializeField] private float spawnInterval = 20f;
     [SerializeField] private int maxWolvesAtOnce = 10;
-    
+
     private List<Wolf> activeWolves = new List<Wolf>();
     private float nextWolfSpawnTime;
-    
+
     // Coroutine tracking for better management
     private Coroutine seasonNotificationCoroutine = null;
     private Coroutine productionNotificationCoroutine = null;
@@ -171,20 +172,36 @@ public class NightManager : MonoBehaviour
             // Wolf successfully removed from tracking
         }
     }
-    
+
     // Fix the SpawnWolvesOverTime coroutine
     private IEnumerator SpawnWolvesOverTime()
     {
+        // Check if tutorial should prevent enemy spawning
+        TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+        {
+            Debug.Log("Tutorial: Preventing wolf spawning - defenses not ready");
+            wolfSpawnCoroutine = null;
+            yield break;
+        }
+
         // Calculate how many wolves to spawn tonight (increasing difficulty)
         int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
         int wolvesSpawned = 0;
-        
+
         // // Initial delay before first spawn
         yield return new WaitForSeconds(3f);
-        
+
         // Keep spawning wolves until we reach the limit or day breaks
         while (wolvesSpawned < totalWolvesToSpawn && !isDay)
         {
+            // Check again for tutorial prevention during spawning
+            if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+            {
+                Debug.Log("Tutorial: Stopping wolf spawning mid-night - tutorial still active");
+                break;
+            }
+
             // Don't spawn more if we're at max concurrent wolves
             if (activeWolves.Count < maxWolvesAtOnce)
             {
@@ -204,11 +221,11 @@ public class NightManager : MonoBehaviour
             {
                 // Maximum wolves reached, wait before checking again
             }
-            
+
             // Wait before spawning next wolf
             yield return new WaitForSeconds(spawnInterval);
         }
-        
+
         wolfSpawnCoroutine = null;
     }
 
@@ -229,11 +246,8 @@ public class NightManager : MonoBehaviour
 
     private void Start()
     {
-        Hours = 7;
-        Years = 1;
-        seasonNotification.gameObject.SetActive(false);
-        productionNotification.gameObject.SetActive(false);
-        setSeason(1);
+
+
 
         AudioSource[] sources = GetComponents<AudioSource>();
         if (sources.Length >= 2)
@@ -246,6 +260,23 @@ public class NightManager : MonoBehaviour
             doubleProductionSource = sources[5];
         }
 
+        //preload the audio samples
+        if (source1 != null)
+        {
+            source1.Play();
+            source1.Stop();
+        }
+        if (source2 != null)
+        {
+            source2.Play();
+            source2.Stop();
+        }
+
+        Hours = 5;
+        Years = 1;
+        seasonNotification.gameObject.SetActive(false);
+        productionNotification.gameObject.SetActive(false);
+        setSeason(1);
         // chooseAnimalProductForSeason();
     }
 
@@ -259,7 +290,10 @@ public class NightManager : MonoBehaviour
         tempSecond += Time.deltaTime * speedUp;
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
 
-        if (tempSecond >= inGameMinVSSec) // 1 in-game minute = 0.0625 seconds (1 day ≈ 12 minutes)
+        // Use even slower time during tutorial for stress-free learning
+        float currentTimeRate = IsInTutorialMode() ? inGameMinVSSec * 0.5f : inGameMinVSSec;
+        
+        if (tempSecond >= currentTimeRate)
         {
             Minutes += 1;
             tempSecond = 0;
@@ -269,9 +303,13 @@ public class NightManager : MonoBehaviour
         activeWolves.RemoveAll(wolf => wolf == null);
 
         DebugAllAnimalProductionSettings();
+
+
+        //rotate daynight icon
+        rotateDayNightIcon();
     }
 
-        public void DebugAllAnimalProductionSettings()
+    public void DebugAllAnimalProductionSettings()
     {
         foreach (var animal in animalStructures)
         {
@@ -283,6 +321,7 @@ public class NightManager : MonoBehaviour
     public void pauseTime()
     {
         isPaused = true;
+        Time.timeScale = 0f; // Pauses everything that uses Time.deltaTime
     }
 
     public void playTime()
@@ -290,13 +329,20 @@ public class NightManager : MonoBehaviour
         isPaused = false;
         isFast = false;
         speedUp = 1f;
+        Time.timeScale = 1f; // Resume normal speed
     }
 
     public void fastForwardTime()
     {
+        if (isPaused)
+        {
+            Time.timeScale = 1f;
+        }
+
         isFast = !isFast;
         isPaused = false;
-        speedUp = isFast ? speedOfFast : 1f;
+        
+        Time.timeScale = isFast ? speedOfFast : 1f; // Fast forward or normal speed
     }
 
     private void cropGrowthOnAll(int stage)
@@ -307,13 +353,13 @@ public class NightManager : MonoBehaviour
             if (crop.IsGrowing && !crop.CropReady)
             {
                 crop.UpdateVisuals(stage);
-                }
+            }
             else if (crop.CropReady)
             {
-                }
+            }
             else
             {
-                }
+            }
         }
     }
 
@@ -336,6 +382,21 @@ public class NightManager : MonoBehaviour
             TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
         }
 
+        // Set weather for night: randomly rain, only snow in winter
+        if (WeatherManager.Instance != null)
+        {
+            int season = currentSeason; // You may need to track season in NightManager
+            float rainChance = 0.3f;
+            float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
+            float roll = Random.value;
+            if (season == 4 && roll < snowChance)
+                WeatherManager.Instance.SpawnSnow();
+            else if (roll < rainChance)
+                WeatherManager.Instance.SpawnRain();
+            else
+                WeatherManager.Instance.ClearWeather();
+        }
+
         // Start wolf spawning when night begins
         if (unitSpawner != null)
         {
@@ -355,13 +416,13 @@ public class NightManager : MonoBehaviour
         // Manage skybox coroutines
         Coroutine skyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxNight, 5f));
         skyboxCoroutines.Add(skyboxCor);
-        
+
         if (source1 != null) source1.Play();
         if (source2 != null) source2.Stop();
 
         sceneLight.intensity = nightIntensity;
         RenderSettings.fogDensity = nightFog;
-        timeOfDayIcon.sprite = nightIcon;
+        // timeOfDayIcon.sprite = nightIcon;
 
         // Notify barracks of night
         foreach (BarracksStructure barracks in barracksStructures)
@@ -371,9 +432,7 @@ public class NightManager : MonoBehaviour
                 barracks.OnDayNightChanged(true);
             }
         }
-    }
-
-    private void StartDay(int flag)
+    }    private void StartDay(int flag)
     {
         // Destroy all remaining wolves when day starts
         foreach (Wolf wolf in activeWolves.ToList())
@@ -403,6 +462,21 @@ public class NightManager : MonoBehaviour
             }
         }
 
+        // Set weather for day: randomly rain, only snow in winter
+        if (WeatherManager.Instance != null)
+        {
+            int season = currentSeason; // You may need to track season in NightManager
+            float rainChance = 0.3f;
+            float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
+            float roll = Random.value;
+            if (season == 4 && roll < snowChance)
+                WeatherManager.Instance.SpawnSnow();
+            else if (roll < rainChance)
+                WeatherManager.Instance.SpawnRain();
+            else
+                WeatherManager.Instance.ClearWeather();
+        }
+
         // Advance growing crops to stage 2, preserve ready-to-harvest crops
         cropGrowthOnAll(2);
 
@@ -414,27 +488,27 @@ public class NightManager : MonoBehaviour
         // Manage skybox coroutines
         Coroutine skyboxCor = StartCoroutine(Skybox(skyboxNight, skyboxDay, flag == 0 ? 0f : 5f));
         skyboxCoroutines.Add(skyboxCor);
-        
+
         if (source1 != null) source1.Stop();
         if (source2 != null) source2.Play();
 
         sceneLight.intensity = dayIntensity;
         RenderSettings.fogDensity = dayFog;
-        timeOfDayIcon.sprite = dayIcon;
+        // timeOfDayIcon.sprite = dayIcon;
     }
 
-            private IEnumerator LightingChanges(Gradient lightGradient, float time)
+    private IEnumerator LightingChanges(Gradient lightGradient, float time)
+    {
+        for (float k = 0; k < time; k += Time.deltaTime)
         {
-            for (float k = 0; k < time; k += Time.deltaTime)
-            {
-                sceneLight.color = lightGradient.Evaluate(k / time);
-                RenderSettings.fogColor = sceneLight.color;
-                yield return null;
-            }
-            
-            // Remove the problematic line entirely - coroutines will be cleaned up
-            // by Unity when the object is destroyed
+            sceneLight.color = lightGradient.Evaluate(k / time);
+            RenderSettings.fogColor = sceneLight.color;
+            yield return null;
         }
+
+        // Remove the problematic line entirely - coroutines will be cleaned up
+        // by Unity when the object is destroyed
+    }
 
     private void OnMinutesChange(int value)
     {
@@ -462,25 +536,25 @@ public class NightManager : MonoBehaviour
                 roosterMorningSource.Play();
             }
             RenderSettings.fogDensity = morningFog;
-            
+
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxNight, skyboxMorning, 2f));
             skyboxCoroutines.Add(skyboxCor);
-            
+
             Coroutine lightCor = StartCoroutine(LightingChanges(nightToMorningGradient, 2f));
             lightingCoroutines.Add(lightCor);
-            
+
             sceneLight.colorTemperature = 2000f;
         }
         else if (value == 7)
         {
             RenderSettings.fogDensity = dayFog;
-            
+
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxMorning, skyboxDay, 2f));
             skyboxCoroutines.Add(skyboxCor);
-            
+
             Coroutine lightCor = StartCoroutine(LightingChanges(morningToDayGradient, 2f));
             lightingCoroutines.Add(lightCor);
-            
+
             sceneLight.colorTemperature = 6000f;
         }
         else if (value == 15)
@@ -491,13 +565,13 @@ public class NightManager : MonoBehaviour
             }
 
             StartNotification("Night starting soon!!", 5f);
-            
+
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
             skyboxCoroutines.Add(skyboxCor);
-            
+
             Coroutine lightCor = StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
             lightingCoroutines.Add(lightCor);
-            
+
             sceneLight.colorTemperature = 2000f;
         }
         else if (value == 18)
@@ -507,14 +581,27 @@ public class NightManager : MonoBehaviour
                 clockTickingSource.Stop();
             }
 
+            // TUTORIAL: Check if night transition should be blocked
+            TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+            if (tutorialTracker != null && tutorialTracker.ShouldBlockNightTransition())
+            {
+                Debug.Log("TUTORIAL: Blocking automatic night transition - player not ready");
+                // Don't advance to night, stay at current hour (reset to 17 to prevent multiple triggers)
+                // Use direct field assignment to avoid triggering the setter again
+                hours = 17;
+                Debug.Log("TUTORIAL: Hours reset to 17, night transition blocked");
+                return;
+            }
+
+            Debug.Log("NightManager: Starting night at 18:00 - tutorial checks passed");
             StartNight(2);
-            
+
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
             skyboxCoroutines.Add(skyboxCor);
-            
+
             Coroutine lightCor = StartCoroutine(LightingChanges(AfternoonToNightGradient, 2f));
             lightingCoroutines.Add(lightCor);
-            
+
             sceneLight.colorTemperature = 9000f;
         }
     }
@@ -569,26 +656,27 @@ public class NightManager : MonoBehaviour
         }
     }
 
-        private IEnumerator Skybox(Texture2D a, Texture2D b, float time)
+    private IEnumerator Skybox(Texture2D a, Texture2D b, float time)
     {
         RenderSettings.skybox.SetTexture("_Texture1", a);
         RenderSettings.skybox.SetTexture("_Texture2", b);
         RenderSettings.skybox.SetFloat("_Blend", 0);
-    
+
         for (float k = 0; k < time; k += Time.deltaTime)
         {
             RenderSettings.skybox.SetFloat("_Blend", k / time);
             yield return null;
         }
-    
+
         RenderSettings.skybox.SetTexture("_Texture1", b);
-        
+
         // Remove this problematic line:
         // skyboxCoroutines.Remove(System.Array.Find(skyboxCoroutines.ToArray(), c => c == this));
     }
 
-    private void setSeason(int season)
-    {
+private void setSeason(int season)
+{
+    currentSeason = season;
         string text;
         switch (season)
         {
@@ -627,10 +715,27 @@ public class NightManager : MonoBehaviour
                 text = "";
                 break;
         }
+        
+        // Set weather for season change: always snow in winter, otherwise random rain
+        if (WeatherManager.Instance != null)
+        {
+            if (currentSeason == 4)
+            {
+                WeatherManager.Instance.SpawnSnow();
+            }
+            else
+            {
+                float rainChance = 0.3f;
+                float roll = Random.value;
+                if (roll < rainChance)
+                    WeatherManager.Instance.SpawnRain();
+                else
+                    WeatherManager.Instance.ClearWeather();
+            }
+        }
+        
         StartNotification(text, 5);
-    }
-    
-    // New method to properly manage notification coroutines
+    }    // New method to properly manage notification coroutines
     private void StartNotification(string message, float duration)
     {
         // Stop any existing notification first
@@ -639,7 +744,7 @@ public class NightManager : MonoBehaviour
             StopCoroutine(seasonNotificationCoroutine);
             seasonNotification.gameObject.SetActive(false);
         }
-        
+
         // Start new notification
         seasonNotificationCoroutine = StartCoroutine(showText(message, duration));
     }
@@ -652,7 +757,7 @@ public class NightManager : MonoBehaviour
         seasonNotification.gameObject.SetActive(false);
         seasonNotificationCoroutine = null;
     }
-    
+
     // New method to properly manage production notification coroutines
     private void StartProductionNotification(string message, float duration)
     {
@@ -662,7 +767,7 @@ public class NightManager : MonoBehaviour
             StopCoroutine(productionNotificationCoroutine);
             productionNotification.gameObject.SetActive(false);
         }
-        
+
         // Start new notification
         productionNotificationCoroutine = StartCoroutine(showProductionText(message, duration));
     }
@@ -682,14 +787,14 @@ public class NightManager : MonoBehaviour
         if (structure != null && !animalStructures.Contains(structure))
         {
             animalStructures.Add(structure);
-            }
+        }
     }
 
     public void UnregisterAnimalStructure(AnimalStructure structure)
     {
         if (structure != null && animalStructures.Remove(structure))
         {
-            }
+        }
     }
 
     public void RegisterBarracksStructure(BarracksStructure barracks)
@@ -697,14 +802,29 @@ public class NightManager : MonoBehaviour
         if (barracks != null && !barracksStructures.Contains(barracks))
         {
             barracksStructures.Add(barracks);
-            }
+        }
     }
 
     public void UnregisterBarracksStructure(BarracksStructure barracks)
     {
         if (barracks != null && barracksStructures.Remove(barracks))
         {
-            }
+        }
+    }
+
+    /// <summary>
+    /// Manually start night for tutorial system - bypasses normal time progression
+    /// </summary>
+    public void ForceStartNight()
+    {
+        Debug.Log("NightManager: Manually starting night via ForceStartNight");
+        
+        // Set the time to night time using direct field assignment to avoid triggering OnHoursChange
+        hours = 18;
+        
+        // Directly call StartNight with tutorial flag
+        Debug.Log("NightManager: Calling StartNight(1) for manual tutorial start");
+        StartNight(1); // Use flag 1 for manual start
     }
 
     public void chooseAnimalProductForSeason()
@@ -725,7 +845,7 @@ public class NightManager : MonoBehaviour
         {
             string animal = determineAnimalProduct(product1);
             string fullAnimalName = getFullAnimalName(animal);
-            
+
             if (animal == "E")
             {
                 Debug.LogError("Invalid animal product determined.");
@@ -745,7 +865,7 @@ public class NightManager : MonoBehaviour
                 doubleProductionSource.Play();
             }
             StartProductionNotification(message, 5);
-            
+
         }
         else
         {
@@ -847,7 +967,7 @@ public class NightManager : MonoBehaviour
                 return "Eish";
         }
     }
-    
+
     private IEnumerator showProductionText(string message, float time)
     {
         productionNotification.text = message;
@@ -855,5 +975,49 @@ public class NightManager : MonoBehaviour
         yield return new WaitForSeconds(time);
         productionNotification.gameObject.SetActive(false);
         productionNotificationCoroutine = null;
+    }
+
+    /// <summary>
+    /// Check if we're currently in tutorial mode and should use extended day timing
+    /// </summary>
+    private bool IsInTutorialMode()
+    {
+        return TutorialManager.Instance != null && 
+               !TutorialManager.Instance.IsTutorialCompleted() && 
+               TutorialManager.Instance.enabled;
+    }
+    
+
+    private void rotateDayNightIcon()
+    {
+        // Day: 7:00 to 18:00 (11 hours, 660 minutes)
+        // Night: 18:00 to next 7:00 (13 hours, 780 minutes)
+        float totalMinutes = Hours * 60 + Minutes;
+        float rotation = 0f;
+
+        if (Hours >= 5 && Hours < 18)
+        {
+            // Daytime: 7:00 (0 min) to 18:00 (660 min)
+            float dayMinutes = totalMinutes - (5 * 60);
+            rotation = Mathf.Clamp01(dayMinutes / 780f) * 180f;
+        }
+        else
+        {
+            // Nighttime: 18:00 (1080 min) to next 7:00 (420 min, but next day)
+            float nightMinutes;
+            if (Hours >= 18)
+            {
+                // 18:00 to 24:00
+                nightMinutes = totalMinutes - (18 * 60);
+            }
+            else
+            {
+                // 0:00 to 7:00
+                nightMinutes = (totalMinutes + (6 * 60)); // (0:00 is 0, 7:00 is 420)
+            }
+            rotation = 180f + Mathf.Clamp01(nightMinutes / 660f) * 180f;
+        }
+
+        timeOfDayIcon.rectTransform.localRotation = Quaternion.Euler(0, 0, -rotation);
     }
 }

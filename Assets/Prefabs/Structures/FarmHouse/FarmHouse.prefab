@@ -54,10 +54,40 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 3e0701eaaab39454c9bf4a0b62102344, type: 2}
     - target: {fileID: 919132149155446097, guid: 6568a1d8bcb55d14a8fa79bd1d3090e6, type: 3}
       propertyPath: m_Name
-      value: farm_House
+      value: FarmHouse
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6568a1d8bcb55d14a8fa79bd1d3090e6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5669211837103864624}
   m_SourcePrefab: {fileID: 100100000, guid: 6568a1d8bcb55d14a8fa79bd1d3090e6, type: 3}
+--- !u!1 &5033101337580006205 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6568a1d8bcb55d14a8fa79bd1d3090e6, type: 3}
+  m_PrefabInstance: {fileID: 5267033233466513004}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-5669211837103864624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5033101337580006205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c22b4dbbaed1d714197e85047dc78133, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  structureData: {fileID: 11400000, guid: 43ce2b2be2338e244b08852d1740c888, type: 2}
+  currentHealth: 0
+  isIndestructible: 0
+  blocksPathfinding: 1
+  occupiesGridCells: 1
+  autoRegisterWithGrid: 1
+  destroyOnZeroHealth: 1
+  destroyDelay: 0.5
+  destructionEffectPrefab: {fileID: 0}
+  showDebugInfo: 0

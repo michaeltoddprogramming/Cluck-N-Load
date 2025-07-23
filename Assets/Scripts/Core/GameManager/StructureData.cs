@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class StructureData : ScriptableObject
 {
     public string structureName;
+    public string description;
     public GameObject prefab;
     public Sprite icon;
     public StructureType type;
@@ -50,5 +51,6 @@ public enum StructureType
     Silo,
     CropPlot,
     Animal,
-    Barracks
+    Barracks,
+    Decoration
 }

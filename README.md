@@ -26,6 +26,7 @@
 | Scroll Wheel           | Zoom in/out                   |
 
 Final Comments:
-- Day-night speed has been sped up to allow for easier and quicker understanding of how the day-night cycle will work.
+- Day-night speed has been slowed down in the tutorial for easier learning and less time pressure.
 - Seasons will last 5 days each, but for this deliverable, it has been changed so that every day is a new season, also for easier understanding of this mechanic.
 - More grid spaces can be bought when the shop is open. If you click on the dark grid boxes, you will be able to buy them, and they will be added to your overall buildable space.
+- Tutorial steps now only advance when you actually PLACE buildings, not when you just select them from the shop.

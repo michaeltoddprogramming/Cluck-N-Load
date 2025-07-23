@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: bc29031730632b047a64794857f59d44
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318385
+  packageName: Funky Cartoon GUI + UI Animation Bundle | Demo
+  packageVersion: 1.0.0
+  assetPath: Assets/FCCartoonGUI_UIAnimation/Data/Quit/Close/Panel_CloseScale.asset
+  uploadId: 752511

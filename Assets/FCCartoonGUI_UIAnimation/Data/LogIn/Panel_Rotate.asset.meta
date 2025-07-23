@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5dbd7312242f5e543aca59a1bec32faf
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 318385
+  packageName: Funky Cartoon GUI + UI Animation Bundle | Demo
+  packageVersion: 1.0.0
+  assetPath: Assets/FCCartoonGUI_UIAnimation/Data/LogIn/Panel_Rotate.asset
+  uploadId: 752511

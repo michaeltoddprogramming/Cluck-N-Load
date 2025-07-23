@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Pig Sty
   m_EditorClassIdentifier: 
   structureName: Pig Sty
+  description: A muddy pen where pigs wallow and stay protected.
   prefab: {fileID: 1494612050108861018, guid: f51b39235da009447aaf83678d2a01a2, type: 3}
   icon: {fileID: 21300000, guid: 0cbd4b51c610a634f88af29a7f3b9006, type: 3}
   type: 8

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 524960bb423f14c4b96252c2ea519f30
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304714
+  packageName: Stylize Tree &Grassess samples
+  packageVersion: 1.1
+  assetPath: Assets/Stylize Tree &Grasses samples/URP/Shaders/MT_OakWaving-3_URP.mat
+  uploadId: 719853

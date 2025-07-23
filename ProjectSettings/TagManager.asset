@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - Terrain
+  - TutorialShopButton
+  - TutorialInventory
+  - TutorialMoney
+  - TutorialBuildButton
+  - ShopButton
   layers:
   - Default
   - TransparentFX
@@ -12,7 +17,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - PortraitLayer
   - 
   - 
   - 

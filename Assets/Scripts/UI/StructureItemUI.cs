@@ -5,8 +5,9 @@ using TMPro;
 public class StructureItemUI : MonoBehaviour
 {
     public Image icon;
-    public TMP_Text nameText;
-    public TMP_Text costText; // Add this if you want to display cost
+    public TextMeshProUGUI nameText;
+    public TextMeshProUGUI costText; // Add this if you want to display cost
+    public TextMeshProUGUI descriptionText; 
     public Button selectButton;
 
     private StructureData data;
@@ -35,7 +36,13 @@ public class StructureItemUI : MonoBehaviour
         // Display cost if we have a cost text component
         if (costText != null)
         {
-            costText.text = $"{structure.cost} Gold";
+            costText.text = $"{structure.cost}";
+        }
+        
+
+        if (descriptionText != null)
+        {
+            descriptionText.text = structure.description;
         }
 
         if (selectButton != null)
@@ -119,11 +126,11 @@ public class StructureItemUI : MonoBehaviour
             // Add a "Cannot Afford" text or symbol for extra clarity
             if (!canAfford)
             {
-                costText.text = $"Cost: {data.cost} Gold (Cannot Afford!)";
+                costText.text = $"{data.cost} (Cannot Afford!)";
             }
             else
             {
-                costText.text = $"Cost: {data.cost} Gold";
+                costText.text = $"{data.cost}";
             }
         }
         

@@ -7,6 +7,7 @@ using System.Linq;
 
 public class NightManager : MonoBehaviour
 {
+    private int currentSeason = 1;
     // Singleton instance
     public static NightManager Instance { get; private set; }
 
@@ -362,10 +363,19 @@ public class NightManager : MonoBehaviour
             TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
         }
 
-        // Notify WeatherManager about night starting
+        // Set weather for night: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
         {
-            WeatherManager.Instance.OnDayNightChanged(true);
+            int season = currentSeason; // You may need to track season in NightManager
+            float rainChance = 0.3f;
+            float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
+            float roll = Random.value;
+            if (season == 4 && roll < snowChance)
+                WeatherManager.Instance.SpawnSnow();
+            else if (roll < rainChance)
+                WeatherManager.Instance.SpawnRain();
+            else
+                WeatherManager.Instance.ClearWeather();
         }
 
         // Start wolf spawning when night begins
@@ -433,10 +443,19 @@ public class NightManager : MonoBehaviour
             }
         }
 
-        // Notify WeatherManager about day starting
+        // Set weather for day: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
         {
-            WeatherManager.Instance.OnDayNightChanged(false);
+            int season = currentSeason; // You may need to track season in NightManager
+            float rainChance = 0.3f;
+            float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
+            float roll = Random.value;
+            if (season == 4 && roll < snowChance)
+                WeatherManager.Instance.SpawnSnow();
+            else if (roll < rainChance)
+                WeatherManager.Instance.SpawnRain();
+            else
+                WeatherManager.Instance.ClearWeather();
         }
 
         // Advance growing crops to stage 2, preserve ready-to-harvest crops
@@ -623,8 +642,9 @@ public class NightManager : MonoBehaviour
         // skyboxCoroutines.Remove(System.Array.Find(skyboxCoroutines.ToArray(), c => c == this));
     }
 
-    private void setSeason(int season)
-    {
+private void setSeason(int season)
+{
+    currentSeason = season;
         string text;
         switch (season)
         {
@@ -664,10 +684,22 @@ public class NightManager : MonoBehaviour
                 break;
         }
         
-        // Notify WeatherManager of season change
+        // Set weather for season change: always snow in winter, otherwise random rain
         if (WeatherManager.Instance != null)
         {
-            WeatherManager.Instance.OnSeasonChanged(season);
+            if (currentSeason == 4)
+            {
+                WeatherManager.Instance.SpawnSnow();
+            }
+            else
+            {
+                float rainChance = 0.3f;
+                float roll = Random.value;
+                if (roll < rainChance)
+                    WeatherManager.Instance.SpawnRain();
+                else
+                    WeatherManager.Instance.ClearWeather();
+            }
         }
         
         StartNotification(text, 5);

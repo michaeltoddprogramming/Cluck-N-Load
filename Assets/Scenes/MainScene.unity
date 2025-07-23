@@ -1640,9 +1640,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
-  enableAnimations: 1
-  poolStructureItems: 1
-  maxVisibleItems: 20
 --- !u!1 &369685982
 GameObject:
   m_ObjectHideFlags: 0
@@ -2029,7 +2026,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000015258789, y: -0.000006198883}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &379602641
@@ -7340,18 +7337,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tutorialManager: {fileID: 0}
   conditionTracker: {fileID: 0}
-  progressTracker: {fileID: 0}
-  highlighter: {fileID: 0}
-  uiSetup: {fileID: 0}
+  tutorialCanvasPrefab: {fileID: 1323876942442514190, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
   autoCreateComponents: 1
   startTutorialOnGameStart: 1
   startDelay: 3
-  tutorialUIPrefab: {fileID: 1323876942442514190, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
-  worldPointerPrefab: {fileID: 2263791218397969870, guid: a0d116b1f1d5b58439ad58a42532a869, type: 3}
-  uiArrowPrefab: {fileID: 292227764893978924, guid: fafef38dd50062145ad726c188dc7f09, type: 3}
-  highlightMaterial: {fileID: 15303, guid: 0000000000000000f000000000000000, type: 0}
-  oldManPortrait: {fileID: 0}
-  oldManVoiceClips: []
   OnTutorialStarted:
     m_PersistentCalls:
       m_Calls: []
@@ -7486,9 +7475,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1683679576}
-  - component: {fileID: 1683679578}
-  - component: {fileID: 1683679577}
+  - component: {fileID: 1688956108}
   m_Layer: 5
   m_Name: StructureList
   m_TagString: TutorialBuildButton

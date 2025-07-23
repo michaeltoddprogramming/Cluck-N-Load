@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: CowBarn
   m_EditorClassIdentifier: 
   structureName: Cow Barn
+  description: 'A large barn where cows rest and are milked. Provides shelter and
+    comfort.  '
   prefab: {fileID: 8921371263811498732, guid: 73d56bec68accdb46a42b94af8267d0a, type: 3}
   icon: {fileID: 21300000, guid: 22c616fcc593d794ca9573d5e6610dd6, type: 3}
   type: 8

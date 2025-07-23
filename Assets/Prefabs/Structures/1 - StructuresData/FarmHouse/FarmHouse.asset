@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FarmHouse
   m_EditorClassIdentifier: 
   structureName: Farm House
+  description: The house where you will live and manag the farm.
   prefab: {fileID: 5033101337580006205, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
   icon: {fileID: 21300000, guid: 13bc3438508c04448b9a40684a2cf9d4, type: 3}
   type: 0

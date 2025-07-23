@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: SheepPen
   m_EditorClassIdentifier: 
   structureName: Sheep Pen
+  description: A fenced area where sheep gather, graze, and stay safe from predators.
   prefab: {fileID: 8633490058668250337, guid: 5e7210df6c259bd4680e879e856be3e3, type: 3}
   icon: {fileID: 21300000, guid: 951db41141d979846812a0532e4009d7, type: 3}
-  type: 5
+  type: 8
   cost: 50
   health: 100
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}

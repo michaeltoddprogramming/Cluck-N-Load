@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: crop_plot
   m_EditorClassIdentifier: 
   structureName: Crop Plot
+  description: A patch of land ready for planting seeds and growing crops.
   prefab: {fileID: 591288824324097048, guid: 7a006dbc08416d04c993a741682e4ff3, type: 3}
   icon: {fileID: 21300000, guid: 88d0a2f163f64fa4383e15540c5326ea, type: 3}
   type: 7

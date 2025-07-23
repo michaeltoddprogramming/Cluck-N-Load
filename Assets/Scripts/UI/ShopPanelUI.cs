@@ -27,6 +27,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private CameraController cameraController;
     private bool wasGhostActiveBeforeHover = false;
 
+    // private bool navBarChange = true; // if user chose something else in the nav bar
+    private char currNav = 'C'; // current nav bar selection
+
+    [SerializeField] private GameObject comingSoonPanel; // Panel for upcoming features 
+
     private void Awake()
     {
         Canvas canvas = GetComponent<Canvas>();
@@ -69,7 +74,39 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         cameraController = FindFirstObjectByType<CameraController>();
     }
 
-    void PopulateShop()
+    public void changeNavBar(int num)
+    {
+        char tempNav = currNav;
+
+        switch (num)
+        {
+            case 0:
+                currNav = 'C'; // animals
+                break;
+            case 1:
+                currNav = 'A'; // army
+                break;
+            case 2:
+                currNav = 'P'; // plant
+                break;
+            case 3:
+                currNav = 'S'; // defence 
+                break;
+            case 4:
+                currNav = 'D'; // decoration
+                break;
+            default:
+                Debug.LogWarning("Invalid nav bar selection: " + num);
+                return;
+        }
+
+        if (tempNav != currNav)
+        {
+            PopulateShop(currNav);
+        }
+    }
+
+    void PopulateShop(char display = 'C')
     {
         if (database == null)
         {
@@ -82,6 +119,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             Debug.LogWarning("StructureDatabase is empty. No structures to display.");
             return;
         }
+        
+        // Clear previous items
+        foreach (Transform child in contentParent)
+        {
+            Destroy(child.gameObject);
+        }
 
         foreach (StructureData data in database.allStructures)
         {
@@ -91,13 +134,38 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 continue;
             }
 
-            GameObject item = Instantiate(itemPrefab, contentParent);
-            if (item == null)
+            bool showItem = false;
+            switch (display)
             {
-                Debug.LogError("Failed to instantiate itemPrefab!");
-                continue;
+                case 'C': // animals
+                    displayComingSoonPanel(1);
+                    showItem = data.type == StructureType.Animal;
+                    break;
+                case 'A': // army
+                    displayComingSoonPanel(1);
+                    showItem = data.type == StructureType.Barracks;
+                    break;
+                case 'S': // defense
+                    displayComingSoonPanel(0);
+                    showItem = data.type == StructureType.Defense;
+                    break;
+                case 'P': // plant (silo or crop plot)
+                    displayComingSoonPanel(1);
+                    showItem = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
+                    break;
+                case 'D': // decorations (optional category?)
+                    displayComingSoonPanel(0);
+                    showItem = data.type == StructureType.Decoration; // or whatever type you use
+                    break;
+                default:
+                    Debug.LogWarning("Invalid display category: " + display);
+                    break;
             }
 
+            if (!showItem) continue;
+            Debug.Log($"Adding structure: {data.structureName} to shop UI\n${data}");
+
+            GameObject item = Instantiate(itemPrefab, contentParent);
             StructureItemUI itemUI = item.GetComponent<StructureItemUI>();
             if (itemUI == null)
             {
@@ -108,33 +176,45 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             itemUI.Setup(data);
         }
 
+    }
+
+    private void displayComingSoonPanel(int num)
+    {
+        if(num == 0 && !comingSoonPanel.activeSelf)
+        {
+            comingSoonPanel.SetActive(true);
         }
+        else if(num == 1 && comingSoonPanel.activeSelf)
+        {
+            comingSoonPanel.SetActive(false);
+        }
+    }
 
     public void OpenShop()
-{
-    isShopOpen = true;
-
-    // Move THIS UI panel (gameObject) to the top of the hierarchy
-    transform.SetAsLastSibling();
-
-    // Show this UI panel
-    gameObject.SetActive(true);
-
-    OnShopOpened.Invoke();
-
-    // Let the BuildController know the shop opened
-    if (buildController == null)
     {
-        // Try to find it again in case it wasn't available earlier
-        buildController = FindFirstObjectByType<BuildController>();
+        isShopOpen = true;
+
+        // Move THIS UI panel (gameObject) to the top of the hierarchy
+        transform.SetAsLastSibling();
+
+        // Show this UI panel
+        gameObject.SetActive(true);
+
+        OnShopOpened.Invoke();
+
+        // Let the BuildController know the shop opened
+        if (buildController == null)
+        {
+            // Try to find it again in case it wasn't available earlier
+            buildController = FindFirstObjectByType<BuildController>();
+        }
+
+        if (buildController != null)
+        {
+            buildController.HandleShopOpened();
+        }
+        // Remove the warning as it's not critical - shop can work without BuildController
     }
-    
-    if (buildController != null)
-    {
-        buildController.HandleShopOpened();
-    }
-    // Remove the warning as it's not critical - shop can work without BuildController
-}
 
     public void CloseShop()
     {

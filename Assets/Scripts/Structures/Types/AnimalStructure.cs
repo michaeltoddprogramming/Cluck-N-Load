@@ -498,6 +498,8 @@ public class AnimalStructure : Structure
             }
         }
     }
+
+    Debug.Log($"Boosted products for {string.Join(", ", animals)}: {string.Join(", ", boosted)}");
     return boosted;
 }
 

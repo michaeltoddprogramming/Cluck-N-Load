@@ -180,8 +180,46 @@ public class AnimalStructure : Structure
             return;
         }
 
-        int totalProducts = productionSettings.productAmount * animalCount;
-        int totalMoneyEarned = totalProducts * productionSettings.moneyPerProduct;
+        
+        ProductionBoosts productionBoosts = FindObjectOfType<ProductionBoosts>();
+        int productPrice = 0;
+        float boostedAmount = 0f;
+
+        if (animalType == AnimalType.Chicken)
+        {
+            productPrice = productionBoosts.GetProductPrices()[0];
+            boostedAmount = productionBoosts.GetBoostedProducts()[0];
+        }
+        else if (animalType == AnimalType.Cow)
+        {
+            productPrice = productionBoosts.GetProductPrices()[1];
+            boostedAmount = productionBoosts.GetBoostedProducts()[1];
+        }
+        else if (animalType == AnimalType.Sheep)
+        {
+            productPrice = productionBoosts.GetProductPrices()[2];
+            boostedAmount = productionBoosts.GetBoostedProducts()[2];
+        }
+        else if (animalType == AnimalType.Goat)
+        {
+            productPrice = productionBoosts.GetProductPrices()[3];
+            boostedAmount = productionBoosts.GetBoostedProducts()[3];
+        }
+        else if (animalType == AnimalType.Pig)
+        {
+            productPrice = productionBoosts.GetProductPrices()[4];
+            boostedAmount = productionBoosts.GetBoostedProducts()[4];
+        }
+
+
+
+        // int totalProducts = productionSettings.productAmount * animalCount;
+        int totalProducts = (int)(productPrice * boostedAmount);
+        // int totalMoneyEarned = totalProducts * productionSettings.moneyPerProduct;
+        int totalMoneyEarned = totalProducts * animalCount;
+        // int totalMoneyEarned = totalProducts;
+
+        // Debug.Log($"products: {totalProducts}, product price: {productPrice}, money earned: {totalMoneyEarned}");
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(totalMoneyEarned);
@@ -420,24 +458,24 @@ public class AnimalStructure : Structure
     //     return prices;
     // }
 
-    public static int[] getProductPrices(string[] animals)
-    {
-        int[] prices = new int[animals.Length];
-        AnimalStructure[] allStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+    // public static int[] getProductPrices(string[] animals)
+    // {
+    //     int[] prices = new int[animals.Length];
+    //     AnimalStructure[] allStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
 
-        for (int i = 0; i < animals.Length; i++)
-        {
-            foreach (var structure in allStructures)
-            {
-                if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
-                {
-                    prices[i] = structure.productionSettings.moneyPerProduct;
-                    break; // Found the structure for this animal type, move to next animal
-                }
-            }
-        }
-        return prices;
-    }
+    //     for (int i = 0; i < animals.Length; i++)
+    //     {
+    //         foreach (var structure in allStructures)
+    //         {
+    //             if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
+    //             {
+    //                 prices[i] = structure.productionSettings.moneyPerProduct;
+    //                 break; // Found the structure for this animal type, move to next animal
+    //             }
+    //         }
+    //     }
+    //     return prices;
+    // }
 
     // public int[] whichProductsAreBoosted(string[] animals)
     // {

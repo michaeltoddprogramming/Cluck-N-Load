@@ -5,17 +5,18 @@ using TMPro;
 public class ProductionBoosts : MonoBehaviour
 {
     private bool isBoosted = false;
-    private float[] productsBoosted = new float[5] { 0, 0, 0, 0, 0 };
+    private float[] productsBoosted = new float[5] { 1, 1, 1, 1, 1 };
+    private int[] productPrices = new int[5] { 10, 20, 18, 30, 15 };
 
     public void SetBoosted(float[] amounts)
     {
         isBoosted = true;
 
-        productsBoosted[0] = 0; // chicken
-        productsBoosted[1] = 0; // cow
-        productsBoosted[2] = 0; // sheep
-        productsBoosted[3] = 0; // goat
-        productsBoosted[4] = 0; // pig
+        productsBoosted[0] = 1; // chicken
+        productsBoosted[1] = 1; // cow
+        productsBoosted[2] = 1; // sheep
+        productsBoosted[3] = 1; // goat
+        productsBoosted[4] = 1; // pig
 
         for (int k = 0; k < productsBoosted.Length; k++)
         {
@@ -25,8 +26,8 @@ public class ProductionBoosts : MonoBehaviour
                 productsBoosted[k] = amounts[k];
 
             }
-            
-            Debug.Log($"Here is the amount boosted for {productsBoosted[k]}: {productsBoosted[k]}");
+
+            // Debug.Log($"Here is the amount boosted for {productsBoosted[k]}: {productsBoosted[k]}");
         }
     }
 
@@ -39,5 +40,10 @@ public class ProductionBoosts : MonoBehaviour
         }
 
         return productsBoosted;
+    }
+
+    public int[] GetProductPrices()
+    {
+        return productPrices;
     }
 }

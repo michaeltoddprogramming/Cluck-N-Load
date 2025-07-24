@@ -298,7 +298,8 @@ public class PricePanelUI : MonoBehaviour
             Debug.LogError("inventoryManager is null!");
 
         cropAmounts = inventoryManager.getInventory(crops);
-        produceAmounts = AnimalStructure.getProductPrices(animals);
+        // produceAmounts = AnimalStructure.getProductPrices(animals);
+        produceAmounts = productionBoosts.GetProductPrices();
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         boostedProducts = productionBoosts.GetBoostedProducts();
@@ -336,25 +337,30 @@ public class PricePanelUI : MonoBehaviour
         float amount = 3f;
 
 
-        eggs.text = $"$ {produceAmounts[0]}";
-        milk.text = $"$ {produceAmounts[1]}";
-        wool.text = $"$ {produceAmounts[2]}";
-        bacon.text = $"$ {produceAmounts[3]}";
-        cheese.text = $"$ {produceAmounts[4]}";
+        eggs.text = $"$ {(int)(produceAmounts[0] * boostedProducts[0])}";
+        milk.text = $"$ {(int)(produceAmounts[1] * boostedProducts[1])}";
+        wool.text = $"$ {(int)(produceAmounts[2] * boostedProducts[2])}";
+        bacon.text = $"$ {(int)(produceAmounts[4] * boostedProducts[4])}";
+        cheese.text = $"$ {(int)(produceAmounts[3] * boostedProducts[3])}";
 
-        for(int k = 0; k <boostedProducts.Length; k++)
+        for (int k = 0; k < boostedProducts.Length; k++)
         {
-            if(boostedProducts[k] == 2)
+            if (boostedProducts[k] == 2)
             {
                 amount = 2f;
+            }
+
+            if (boostedProducts[k] == 1)
+            {
+                boostedProducts[k] = 0f;
             }
         }
 
         eggsBonus.text = $"{boostedProducts[0] * 100 / amount}%";
         milkBonus.text = $"{boostedProducts[1]  * 100 / amount}%";
         woolBonus.text = $"{boostedProducts[2]  * 100 / amount}%";
-        baconBonus.text = $"{boostedProducts[3]  * 100 / amount}%";
-        cheeseBonus.text = $"{boostedProducts[4]  * 100 / amount}%";
+        baconBonus.text = $"{boostedProducts[4]  * 100 / amount}%";
+        cheeseBonus.text = $"{boostedProducts[3]  * 100 / amount}%";
     }
 
     private void populateCrops()

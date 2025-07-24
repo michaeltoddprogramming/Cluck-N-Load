@@ -465,12 +465,14 @@ public class Wolf : MonoBehaviour
         float bestScore = float.MinValue;
 
         cachedTargets.RemoveAll(go => go == null || !go);
+        Debug.Log($"[Wolf] FindTargetWithPriority: cachedTargets count = {cachedTargets.Count}");
 
-        foreach (GameObject go in cachedTargets)
+        foreach (GameObject go in cachedTargets.ToList())
         {
             if (!IsValidTarget(go)) continue;
 
             float score = CalculateTargetScore(go, out Vector3 attackPoint);
+            Debug.Log($"[Wolf] Checking target {go.name}, score = {score}");
             if (score > bestScore)
             {
                 bestTarget = go;
@@ -481,10 +483,12 @@ public class Wolf : MonoBehaviour
 
         if (bestTarget != null)
         {
+            Debug.Log($"[Wolf] New target selected: {bestTarget.name} (score: {bestScore})");
             SetTarget(bestTarget, bestAttackPoint);
         }
         else
         {
+            Debug.Log("[Wolf] No valid target found.");
             target = null;
         }
     }
@@ -897,11 +901,9 @@ public class Wolf : MonoBehaviour
         // Use flow field for long-distance navigation
         if (distanceToTarget < 10f)
         {
-            float moveSpeed = 4f; // Faster when close to target
-            
+            float moveSpeed = flowFieldAgent != null ? flowFieldAgent.moveSpeed : 2f; // Use normal move speed
             // Move directly towards target
             transform.position += direction * moveSpeed * Time.deltaTime;
-            
             // Rotate to face target
             if (direction != Vector3.zero)
             {

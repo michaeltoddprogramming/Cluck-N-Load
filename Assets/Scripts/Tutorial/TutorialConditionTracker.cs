@@ -20,6 +20,12 @@ public struct DefenseReadinessReport
 
 public class TutorialConditionTracker : MonoBehaviour
 {
+    // Returns true if tutorial logic should run (not completed and active)
+    private bool TutorialLogicAllowed()
+    {
+        return TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive() && !TutorialManager.Instance.IsTutorialCompleted();
+    }
+
     private bool hasPlacedFirstStructure = false;
     private bool hasPlantedFirstCrop = false;
     private bool hasHarvestedFirstCrop = false;
@@ -45,6 +51,8 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void Start()
     {
+        if (!TutorialLogicAllowed()) return;
+    
         // Subscribe to relevant game events
         SubscribeToGameEvents();
         
@@ -54,6 +62,8 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void SubscribeToGameEvents()
     {
+        if (!TutorialLogicAllowed()) return;
+    
         // Subscribe to night manager events
         if (NightManager.Instance != null)
         {
@@ -70,6 +80,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private IEnumerator TrackGameConditions()
     {
+        if (!TutorialLogicAllowed()) yield break;
         while (true)
         {
             yield return new WaitForSeconds(1f); // Check every second
@@ -85,6 +96,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private IEnumerator TrackDayNightChanges()
     {
+        if (!TutorialLogicAllowed()) yield break;
         bool wasNight = false;
         int lastDay = 0;
 
@@ -130,6 +142,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackStructurePlacements()
     {
+        if (!TutorialLogicAllowed()) return;
         // Count all structures in the scene (excluding BuildGhost)
         Structure[] allStructures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
         int actualStructureCount = 0;
@@ -173,6 +186,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void CheckSpecificStructureType(Structure structure)
     {
+        if (!TutorialLogicAllowed()) return;
         if (structure.structureData == null) 
         {
             Debug.LogWarning($"Structure {structure.name} has no structureData!");
@@ -250,6 +264,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackCropStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
         
         foreach (CropStructure crop in cropStructures)
@@ -278,6 +293,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private IEnumerator InstantGrowCropForTutorial(CropStructure crop)
     {
+        if (!TutorialLogicAllowed()) yield break;
         yield return new WaitForSeconds(2f); // Wait 2 seconds after planting
         
         if (crop != null && !crop.CropReady)
@@ -289,6 +305,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void CheckInventoryForHarvest()
     {
+        if (!TutorialLogicAllowed()) return;
         if (InventoryManager.Instance != null)
         {
             int totalCrops = InventoryManager.Instance.GetItemCount("Sunflower") +
@@ -305,6 +322,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackAnimalStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         AnimalStructure[] animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
         
         foreach (AnimalStructure animal in animalStructures)
@@ -341,6 +359,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private IEnumerator FastTrackAnimalProductionForTutorial(AnimalStructure animal)
     {
+        if (!TutorialLogicAllowed()) yield break;
         yield return new WaitForSeconds(5f); // Wait 5 seconds after feeding
         
         if (animal != null && animal.IsProducing && !animal.ProductReady)
@@ -363,6 +382,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackDefenseStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
         
         foreach (BarracksStructure barrack in barracks)
@@ -387,6 +407,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackNightStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         if (isNightTime)
         {
             // Track wolf defeats
@@ -403,6 +424,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackShopStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         if (!hasOpenedShop)
         {
             // Find the shop UI manager
@@ -423,12 +445,14 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void OnMoneyChanged(int newAmount)
     {
+        if (!TutorialLogicAllowed()) return;
         // Note: MoneyEarned condition disabled for now - not needed for core tutorial flow
         // TutorialManager.Instance?.OnConditionMet(TutorialCondition.MoneyEarned);
     }
 
     public void OnProductCollected()
     {
+        if (!TutorialLogicAllowed()) return;
         if (!hasCollectedFirstProduct)
         {
             hasCollectedFirstProduct = true;
@@ -438,16 +462,19 @@ public class TutorialConditionTracker : MonoBehaviour
 
     public void OnSynergyDiscovered()
     {
+        if (!TutorialLogicAllowed()) return;
         TutorialManager.Instance?.OnConditionMet(TutorialCondition.SynergyDiscovered);
     }
 
     public void OnLandExpanded()
     {
+        if (!TutorialLogicAllowed()) return;
         TutorialManager.Instance?.OnConditionMet(TutorialCondition.LandExpanded);
     }
 
     private void OnDestroy()
     {
+        if (!TutorialLogicAllowed()) return;
         // Unsubscribe from events
         if (MoneyManager.Instance != null)
         {
@@ -461,6 +488,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     private bool ShouldBlockNightProgression()
     {
+        if (!TutorialLogicAllowed()) return false;
         if (TutorialManager.Instance == null) return false;
         
         // Don't block if tutorial is completed
@@ -515,6 +543,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     public bool ShouldBlockNightTransition()
     {
+        if (!TutorialLogicAllowed()) return false;
         bool shouldBlock = ShouldBlockNightProgression();
         Debug.Log($"TUTORIAL BLOCKING CHECK: ShouldBlockNightTransition() returning {shouldBlock}");
         return shouldBlock;
@@ -526,6 +555,7 @@ public class TutorialConditionTracker : MonoBehaviour
     [ContextMenu("Debug Night Blocking Status")]
     public void DebugNightBlockingStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         Debug.Log("=== NIGHT BLOCKING DEBUG ===");
         Debug.Log($"Tutorial Manager exists: {TutorialManager.Instance != null}");
         if (TutorialManager.Instance != null)
@@ -547,6 +577,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     public bool ShouldPreventEnemySpawning()
     {
+        if (!TutorialLogicAllowed()) return false;
         if (TutorialManager.Instance == null) return false;
         
         // Allow enemies if tutorial is completed
@@ -570,6 +601,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     private bool AreDefensesReadyForTutorial()
     {
+        if (!TutorialLogicAllowed()) return false;
         // Must have built barracks first
         if (!hasBarracksPlaced)
         {
@@ -622,6 +654,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private IEnumerator InstantCompleteAnimalProductionForTutorial(AnimalStructure animal)
     {
+        if (!TutorialLogicAllowed()) yield break;
         yield return new WaitForSeconds(2f); // Wait 2 seconds
         
         if (animal != null && animal.AnimalCount > 0)
@@ -637,6 +670,7 @@ public class TutorialConditionTracker : MonoBehaviour
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public void LogDefenseStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         Debug.Log("=== TUTORIAL DEFENSE STATUS ===");
         Debug.Log($"Barracks Placed: {hasBarracksPlaced}");
         Debug.Log($"Flag Placed: {hasPlacedFlag}");
@@ -664,6 +698,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     public bool AreDefensesReady()
     {
+        if (!TutorialLogicAllowed()) return false;
         return AreDefensesReadyForTutorial();
     }
     
@@ -672,6 +707,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     public DefenseReadinessReport GetDefenseReadinessReport()
     {
+        if (!TutorialLogicAllowed()) return new DefenseReadinessReport();
         return new DefenseReadinessReport
         {
             hasBarracks = hasBarracksPlaced,
@@ -685,6 +721,7 @@ public class TutorialConditionTracker : MonoBehaviour
     
     private int GetTotalArmyCount()
     {
+        if (!TutorialLogicAllowed()) return 0;
         int totalArmy = 0;
         BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
         foreach (BarracksStructure barrack in barracks)
@@ -700,6 +737,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     public void TriggerCropGrowthForTutorial()
     {
+        if (!TutorialLogicAllowed()) return;
         if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
         {
             Debug.LogWarning("TriggerCropGrowthForTutorial called but tutorial is not active!");
@@ -725,6 +763,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     public void OnStructurePlaced(StructureType structureType, string structureName)
     {
+        if (!TutorialLogicAllowed()) return;
         Debug.Log($"TutorialConditionTracker: Structure placed - Type: {structureType}, Name: {structureName}");
         
         // Mark first structure as placed

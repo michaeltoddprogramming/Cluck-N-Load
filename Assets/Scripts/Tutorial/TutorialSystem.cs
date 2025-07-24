@@ -248,17 +248,21 @@ public class TutorialSystem : MonoBehaviour
 
     private bool HasCompletedTutorial()
     {
-        // Simple check - could be expanded to use PlayerPrefs or save file
-        return false;
+        // Persistent check using PlayerPrefs
+        return PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
     }
 
     public void StartTutorial()
     {
         if (tutorialManager != null)
         {
+            if (IsTutorialCompleted())
+            {
+                Debug.Log("Tutorial is already completed. Will not start again.");
+                return;
+            }
             Debug.Log("Starting tutorial system...");
             OnTutorialStarted?.Invoke();
-            
             // The tutorial manager will handle the rest
             tutorialManager.OnConditionMet(TutorialCondition.GameStarted);
         }
@@ -302,6 +306,8 @@ public class TutorialSystem : MonoBehaviour
     private void HandleTutorialCompleted()
     {
         Debug.Log("Tutorial completed!");
+        PlayerPrefs.SetInt("TutorialCompleted", 1);
+        PlayerPrefs.Save();
         OnTutorialCompleted?.Invoke();
     }
 
@@ -318,6 +324,8 @@ public class TutorialSystem : MonoBehaviour
         if (tutorialManager != null)
         {
             tutorialManager.SkipTutorial();
+            PlayerPrefs.SetInt("TutorialCompleted", 1);
+            PlayerPrefs.Save();
             OnTutorialSkipped?.Invoke();
             // Destroy this system as well so nothing remains
             Destroy(gameObject);

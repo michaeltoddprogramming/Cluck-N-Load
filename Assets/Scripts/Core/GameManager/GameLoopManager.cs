@@ -6,7 +6,19 @@ using System.Collections.Generic;
 /// Integrates with your existing GameEventManager system.
 /// </summary>
 public class GameLoopManager : MonoBehaviour
-{
+{// Call this from your Game Over panel's Quit button
+
+    public void OnQuitButton()
+    {
+    #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+    #else
+        Application.Quit();
+    #endif
+    }
+
+    [Header("UI")]
+    [SerializeField] private GameObject gameOverPanel;
     public static GameLoopManager Instance { get; private set; }
 
     [Header("Game State")]
@@ -152,6 +164,12 @@ public class GameLoopManager : MonoBehaviour
         
         // Use your existing GameEventManager
         GameEventManager.Instance?.OnGamePaused?.Invoke();
+
+        // Show Game Over UI if assigned
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
     }
 
     public void PauseGame()

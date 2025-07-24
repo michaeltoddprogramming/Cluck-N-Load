@@ -269,17 +269,6 @@ public class TutorialManager : MonoBehaviour
             pauseGame = true
         });
 
-        // Step 10: Buy Chickens
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "buy_chickens",
-            title = "Buy Your First Chickens",
-            description = "An empty coop won't do you much good! Click on your chicken coop and buy 3-4 chickens to start with. This gives you a good balance of production without eating too much food. You can always buy more later when you have more resources!",
-            triggerCondition = TutorialCondition.ChickenCoopPlaced,
-            prerequisites = new TutorialCondition[] { TutorialCondition.ChickenCoopPlaced },
-            displayDuration = 6f,
-            pauseGame = true
-        });
 
         // Step 11: Watch Crops Grow (REMOVED - this was causing overlap with step 7)
 
@@ -590,6 +579,17 @@ public class TutorialManager : MonoBehaviour
             StopCoroutine(currentTutorialCoroutine);
         }
 
+        // Animate the tutorial panel in using the prefab's animation method
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(true);
+            var uiScript = tutorialPanel.GetComponent<TutorialUIPrefab>();
+            if (uiScript != null)
+            {
+                uiScript.AnimatePanelIn();
+            }
+        }
+
         currentStep = step;
         currentTutorialCoroutine = StartCoroutine(DisplayTutorialStep(step));
     }
@@ -678,13 +678,7 @@ public class TutorialManager : MonoBehaviour
         if (currentStep != null)
         {
             currentStep.isCompleted = true;
-            
-            // Trigger special conditions when certain steps complete
-            if (currentStep.stepId == "time_controls")
-            {
-                OnConditionMet(TutorialCondition.TimeControlsExplained);
-            }
-            
+
             // SEQUENTIAL TUTORIAL FLOW: Manually trigger next steps to avoid conflicts
             if (currentStep.stepId == "welcome")
             {
@@ -704,19 +698,19 @@ public class TutorialManager : MonoBehaviour
                 Debug.Log("Tutorial: Shop instruction completed, waiting for shop to be opened");
                 // ShopOpened condition will trigger the farmhouse step
             }
-            
+
             // TUTORIAL TIMING FIX: Only grow crops when we're ready for harvest step
-            if (currentStep.stepId == "buy_chickens")
+            if (currentStep.stepId == "harvest_first_crops")
             {
-                // User just bought chickens, now trigger crop growth so they'll be ready for harvest step
+                // User just reached harvest step, now trigger crop growth so they'll be ready for harvest
                 var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
                 if (conditionTracker != null)
                 {
-                    Debug.Log("Tutorial: Triggering crop growth after buying chickens");
+                    Debug.Log("Tutorial: Triggering crop growth for harvest step");
                     conditionTracker.TriggerCropGrowthForTutorial();
                 }
             }
-            
+
             // TUTORIAL FIX: Manually trigger animal production conditions when user progresses
             if (currentStep.stepId == "feed_animals")
             {
@@ -736,7 +730,7 @@ public class TutorialManager : MonoBehaviour
                 Debug.Log("Tutorial: Harvest completed, showing feed animals step");
                 StartCoroutine(ShowNextStepAfterDelay("feed_animals", 0.5f));
             }
-            
+
             // Check if this was the final step
             if (currentStep.stepId == "tutorial_complete")
             {

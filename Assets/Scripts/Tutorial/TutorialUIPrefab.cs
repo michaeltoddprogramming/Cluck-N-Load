@@ -16,6 +16,40 @@ public class TutorialUIPrefab : MonoBehaviour
 
     private Coroutine typingCoroutine;
     private Coroutine mumbleCoroutine;
+
+    /// <summary>
+    /// Animate the tutorial panel in with a pop/fade effect using LeanTween
+    /// </summary>
+    public void AnimatePanelIn()
+    {
+        // Only animate the background panel, never touch the root panel's CanvasGroup or scale
+        if (backgroundPanel != null)
+        {
+            // Ensure CanvasGroup is present on the background
+            var bgGroup = backgroundPanel.GetComponent<CanvasGroup>();
+            if (bgGroup == null)
+                bgGroup = backgroundPanel.gameObject.AddComponent<CanvasGroup>();
+
+            // Reset scale and alpha for background only
+            backgroundPanel.transform.localScale = Vector3.one * 0.7f;
+            bgGroup.alpha = 0f;
+            bgGroup.interactable = false;
+            bgGroup.blocksRaycasts = false;
+
+            // Animate scale (pop) and fade in for background only
+            LeanTween.scale(backgroundPanel.gameObject, Vector3.one, 0.35f)
+                .setEase(LeanTweenType.easeOutBack)
+                .setIgnoreTimeScale(true);
+            LeanTween.value(backgroundPanel.gameObject, 0f, 1f, 0.28f)
+                .setOnUpdate((float val) => { bgGroup.alpha = val; })
+                .setOnComplete(() => {
+                    bgGroup.interactable = true;
+                    bgGroup.blocksRaycasts = true;
+                })
+                .setIgnoreTimeScale(true);
+        }
+    }
+
     /// <summary>
     /// Starts typewriter effect with mumble SFX
     /// </summary>

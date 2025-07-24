@@ -341,8 +341,16 @@ public class NightManager : MonoBehaviour
 
         isFast = !isFast;
         isPaused = false;
-        
         Time.timeScale = isFast ? speedOfFast : 1f; // Fast forward or normal speed
+
+        // Trigger tutorial condition for time controls
+        var pauseManager = FindFirstObjectByType<PauseManager>();
+        if (pauseManager != null)
+        {
+            var method = pauseManager.GetType().GetMethod("TriggerTimeControlsExplained", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (method != null)
+                method.Invoke(pauseManager, null);
+        }
     }
 
     private void cropGrowthOnAll(int stage)

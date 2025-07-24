@@ -6,6 +6,7 @@ public class PauseManager : MonoBehaviour
 {
     [SerializeField] private ShopUIManager shopManager;
     private bool isPaused = false;
+    private static bool hasExplainedTimeControls = false;
 
     void Start()
     {
@@ -48,6 +49,7 @@ public class PauseManager : MonoBehaviour
         {
             Time.timeScale = 0;
             isPaused = true;
+            TriggerTimeControlsExplained();
         }
     }
 
@@ -57,6 +59,17 @@ public class PauseManager : MonoBehaviour
         {
             Time.timeScale = 1;
             isPaused = false;
+            TriggerTimeControlsExplained();
         }
     }
-}
+
+    private void TriggerTimeControlsExplained()
+    {
+        if (!hasExplainedTimeControls)
+        {
+            hasExplainedTimeControls = true;
+            if (TutorialManager.Instance != null)
+                TutorialManager.Instance.OnConditionMet(TutorialCondition.TimeControlsExplained);
+        }
+    }
+    }

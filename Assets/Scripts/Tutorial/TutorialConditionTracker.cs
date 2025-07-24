@@ -187,21 +187,20 @@ public class TutorialConditionTracker : MonoBehaviour
 
         Debug.Log($"Checking structure: {structure.name}, Type: {structure.structureData.type}");
 
-        // Check for farmhouse first (by name or type)
+        // Check for farmhouse by name, regardless of type
         if (!hasFarmHousePlaced && (structure.name.ToLower().Contains("farmhouse") || 
             structure.name.ToLower().Contains("farm house") ||
-            structure.name.ToLower().Contains("mainbuilding") ||
-            structure.structureData.type == StructureType.Building))
+            structure.name.ToLower().Contains("mainbuilding")))
         {
             Debug.Log("Farm House placed - triggering tutorial condition!");
             hasFarmHousePlaced = true;
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
-            return; // Exit early since we found the farmhouse
+            // Do not return; allow other type checks to run if needed
         }
 
         switch (structure.structureData.type)
         {
-            case StructureType.Building:
+            case StructureType.Decoration:
                 // Building type already handled above in farmhouse check
                 // No need to log as unknown
                 break;
@@ -735,19 +734,18 @@ public class TutorialConditionTracker : MonoBehaviour
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstStructurePlaced);
         }
         
-        // Handle specific structure types
+        // Trigger FarmHousePlaced if the name matches, regardless of type
+        if (!hasFarmHousePlaced && (structureName.ToLower().Contains("farmhouse") || 
+            structureName.ToLower().Contains("farm house") ||
+            structureName.ToLower().Contains("mainbuilding")))
+        {
+            hasFarmHousePlaced = true;
+            TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
+        }
+
+        // Handle specific structure types for other tutorial steps
         switch (structureType)
         {
-            case StructureType.Building:
-                // Check if it's a farmhouse by name
-                if (!hasFarmHousePlaced && (structureName.ToLower().Contains("farmhouse") || 
-                    structureName.ToLower().Contains("farm house")))
-                {
-                    hasFarmHousePlaced = true;
-                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
-                }
-                break;
-                
             case StructureType.Silo:
                 if (!hasSiloPlaced)
                 {
@@ -755,7 +753,6 @@ public class TutorialConditionTracker : MonoBehaviour
                     TutorialManager.Instance?.OnConditionMet(TutorialCondition.SiloPlaced);
                 }
                 break;
-                
             case StructureType.CropPlot:
                 if (!hasCropPlotPlaced)
                 {
@@ -763,7 +760,6 @@ public class TutorialConditionTracker : MonoBehaviour
                     TutorialManager.Instance?.OnConditionMet(TutorialCondition.CropPlotPlaced);
                 }
                 break;
-                
             case StructureType.Animal:
             case StructureType.AnimalPlot:
                 if (!hasChickenCoopPlaced && (structureName.ToLower().Contains("chicken") || 
@@ -773,7 +769,6 @@ public class TutorialConditionTracker : MonoBehaviour
                     TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickenCoopPlaced);
                 }
                 break;
-                
             case StructureType.Barracks:
                 if (!hasBarracksPlaced)
                 {

@@ -618,10 +618,15 @@ public class TutorialManager : MonoBehaviour
                 canvasGroup.blocksRaycasts = true;
             }
 
+
             if (tutorialTitle != null)
                 tutorialTitle.text = step.title;
 
-            if (tutorialDescription != null)
+            // Use typewriter effect with mumble SFX
+            var uiScript = tutorialPanel != null ? tutorialPanel.GetComponent<TutorialUIPrefab>() : null;
+            if (uiScript != null)
+                uiScript.PlayTypingWithMumble(step.description);
+            else if (tutorialDescription != null)
                 tutorialDescription.text = step.description;
 
             // Play voice if available

@@ -66,6 +66,15 @@ public class Wolf : MonoBehaviour
     public event System.Action OnHurt;
     public event System.Action OnDeath;
 
+    // Static event to notify all wolves when a target is destroyed
+    public static event System.Action<GameObject> OnAnyTargetDestroyed;
+
+    // Ensure static event is cleared on domain reload to prevent leaks
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+    private static void EditorDomainReloadCleanup() { OnAnyTargetDestroyed = null; }
+#endif
+
     private void Awake()
     {
         if (flowFieldAgent == null)
@@ -91,6 +100,10 @@ public class Wolf : MonoBehaviour
         // Performance optimizations
         _targetSearchRangeSquared = detectionRange * detectionRange;
         _lastPosition = transform.position;
+
+        // Subscribe to global destroyed target event (avoid duplicate subscription)
+        OnAnyTargetDestroyed -= HandleAnyTargetDestroyed;
+        OnAnyTargetDestroyed += HandleAnyTargetDestroyed;
     }
 
     private void Start()
@@ -149,9 +162,14 @@ public class Wolf : MonoBehaviour
         Structure.UnregisterWolf(this);
         if (fallbackTarget != null)
             Destroy(fallbackTarget);
-            
+
         // Clear cached targets to prevent memory leaks
         cachedTargets.Clear();
+        _localAnimalCache.Clear();
+        _localStructureCache.Clear();
+
+        // Unsubscribe from global event
+        OnAnyTargetDestroyed -= HandleAnyTargetDestroyed;
     }
 
     private void Update()
@@ -329,6 +347,7 @@ public class Wolf : MonoBehaviour
         
         // Clean up any null references that slipped through
         cachedTargets.RemoveAll(go => go == null || !go.activeInHierarchy);
+        _localStructureCache.RemoveAll(s => s == null || s.gameObject == null);
     }
     
     private void RefreshLocalCache()
@@ -338,7 +357,8 @@ public class Wolf : MonoBehaviour
         {
             return; // Too soon since last refresh
         }
-        
+        _localAnimalCache.RemoveAll(a => a == null || a.gameObject == null);
+        _localStructureCache.RemoveAll(s => s == null || s.gameObject == null);
         _localAnimalCache.Clear();
         _localStructureCache.Clear();
         
@@ -668,23 +688,8 @@ public class Wolf : MonoBehaviour
 
         if (target == null || !IsValidTarget(target))
         {
-            target = null;
-            _isActivelyAttacking = false;
-            _lastTargetDestroyTime = Time.time; // Mark target as lost
-            
-            // Force immediate cache refresh and new target search
-            RefreshLocalCache();
-            UpdateTargetCache();
-            FindTargetWithPriority();
-            
-            // If no new target, start moving immediately
-            if (target == null)
-            {
-                flowFieldAgent.SetMoving(true);
-                OnStartMoving?.Invoke();
-                UpdateFallbackTarget();
-                // Let wolves follow existing flow field instead of regenerating
-            }
+            // Target is already gone, clean up
+            HandleAnyTargetDestroyed(target);
             return;
         }
 
@@ -695,56 +700,24 @@ public class Wolf : MonoBehaviour
             if (target != null)
             {
                 target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
-                
-                // Check if target was destroyed by our attack
+                // Only invoke event if target is now destroyed
                 if (!IsValidTarget(target))
                 {
-                    target = null;
-                    _isActivelyAttacking = false;
-                    _lastTargetDestroyTime = Time.time;
-                    
-                    // Immediate search for new target
-                    RefreshLocalCache();
-                    UpdateTargetCache();
-                    FindTargetWithPriority();
-                    
-                    // If no new target found, start moving
-                    if (target == null)
-                    {
-                        flowFieldAgent.SetMoving(true);
-                        OnStartMoving?.Invoke();
-                        UpdateFallbackTarget();
-                        // Let wolves follow existing flow field instead of regenerating
-                    }
+                    OnAnyTargetDestroyed?.Invoke(target);
+                    HandleAnyTargetDestroyed(target);
                 }
             }
             else
             {
                 Debug.LogWarning($"Wolf {name} aborted attack: Target null in try block");
-                target = null;
-                _isActivelyAttacking = false;
-                FindTargetWithPriority();
+                HandleAnyTargetDestroyed(target);
             }
         }
         catch (System.Exception e)
         {
             Debug.LogWarning($"Wolf {name} failed to attack: {e.Message}");
-            target = null;
-            _isActivelyAttacking = false;
-            _lastTargetDestroyTime = Time.time;
-            
-            // Force fresh search after attack failure
-            RefreshLocalCache();
-            UpdateTargetCache();
-            FindTargetWithPriority();
-            
-            if (target == null)
-            {
-                flowFieldAgent.SetMoving(true);
-                OnStartMoving?.Invoke();
-                UpdateFallbackTarget();
-                // Let wolves follow existing flow field instead of regenerating
-            }
+            OnAnyTargetDestroyed?.Invoke(target);
+            HandleAnyTargetDestroyed(target);
         }
     }
 
@@ -792,12 +765,10 @@ public class Wolf : MonoBehaviour
             targetAttackPoint = Vector3.zero;
             _lastTargetDestroyTime = Time.time; // Mark when target was destroyed
             _isActivelyAttacking = false;
-            
             // Force immediate local cache refresh and target search
             RefreshLocalCache();
             UpdateTargetCache();
             FindTargetWithPriority();
-            
             // If still no target, start moving immediately
             if (target == null)
             {
@@ -807,9 +778,9 @@ public class Wolf : MonoBehaviour
                 // Let wolves follow existing flow field instead of regenerating
             }
         }
-        
-        // Remove from cache regardless
+        // Remove from all caches regardless
         cachedTargets.Remove(destroyedTarget);
+        _localStructureCache.RemoveAll(s => s == null || s.gameObject == null || s.gameObject == destroyedTarget);
     }
 
     private void UpdateFallbackTarget()
@@ -966,6 +937,32 @@ public class Wolf : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogWarning($"Failed to initialize stable flow field: {e.Message}");
+        }
+    }
+
+    // Handler for global destroyed target event
+    private void HandleAnyTargetDestroyed(GameObject destroyedTarget)
+    {
+        if (destroyedTarget == null) return;
+        cachedTargets.RemoveAll(go => go == null || go == destroyedTarget || !IsValidTargetFast(go));
+        _localStructureCache.RemoveAll(s => s == null || s.gameObject == null || s.gameObject == destroyedTarget);
+        _localAnimalCache.RemoveAll(a => a == null || a.gameObject == null || a.gameObject == destroyedTarget);
+        if (target == destroyedTarget)
+        {
+            target = null;
+            targetAttackPoint = Vector3.zero;
+            _lastTargetDestroyTime = Time.time;
+            _isActivelyAttacking = false;
+            RefreshLocalCache();
+            UpdateTargetCache();
+            FindTargetWithPriority();
+            // If still no target, move to fallback
+            if (target == null)
+            {
+                UpdateFallbackTarget();
+                flowFieldAgent.SetMoving(true);
+                OnStartMoving?.Invoke();
+            }
         }
     }
 }

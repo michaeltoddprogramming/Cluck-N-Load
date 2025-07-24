@@ -319,6 +319,8 @@ public class TutorialSystem : MonoBehaviour
         {
             tutorialManager.SkipTutorial();
             OnTutorialSkipped?.Invoke();
+            // Destroy this system as well so nothing remains
+            Destroy(gameObject);
         }
     }
 

@@ -192,7 +192,7 @@ public class TutorialManager : MonoBehaviour
             triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered  
             prerequisites = new TutorialCondition[] { },
             displayDuration = 5f,
-            pauseGame = true,
+            pauseGame = false, // Do NOT pause the game for this step so UI input works
             highlightUI = true,
             highlightUITag = "ShopButton"
         });
@@ -579,6 +579,40 @@ public class TutorialManager : MonoBehaviour
             StopCoroutine(currentTutorialCoroutine);
         }
 
+        // For the open_shop step, force the shop to be closed and the shop button enabled before showing the step
+        if (step.stepId == "open_shop")
+        {
+            Debug.Log("Tutorial: Preparing for open_shop step - forcing shop closed and enabling shop button");
+            if (shopManager != null)
+            {
+                shopManager.CloseShop();
+                shopManager.ResetShopState();
+                shopManager.enableShop();
+            }
+            if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
+            {
+                NightManager.Instance.shopManager.CloseShop();
+                NightManager.Instance.shopManager.ResetShopState();
+                if (NightManager.Instance.IsDay)
+                    NightManager.Instance.shopManager.enableShop();
+            }
+        }
+        else
+        {
+            if (shopManager != null)
+            {
+                shopManager.CloseShop();
+            }
+            if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
+            {
+                NightManager.Instance.shopManager.CloseShop();
+                NightManager.Instance.shopManager.ResetShopState();
+                // Ensure the shop button is enabled and ready after reset
+                if (NightManager.Instance.IsDay)
+                    NightManager.Instance.shopManager.enableShop();
+            }
+        }
+
         // Animate the tutorial panel in using the prefab's animation method
         if (tutorialPanel != null)
         {
@@ -697,7 +731,11 @@ public class TutorialManager : MonoBehaviour
                 // After shop instruction, wait for them to actually open the shop
                 Debug.Log("Tutorial: Shop instruction completed, waiting for shop to be opened");
                 // ShopOpened condition will trigger the farmhouse step
+
+                // Add a delay before allowing the next step to close the shop
+                StartCoroutine(DelayNextStepAfterShopOpened());
             }
+
 
             // TUTORIAL TIMING FIX: Only grow crops when we're ready for harvest step
             if (currentStep.stepId == "harvest_first_crops")
@@ -762,6 +800,15 @@ public class TutorialManager : MonoBehaviour
         currentStep = null;
 
         // Process any pending steps
+        ProcessPendingSteps();
+    }
+
+    // Coroutine to delay the next step after shop is opened
+    private IEnumerator DelayNextStepAfterShopOpened()
+    {
+        // Wait for 1.5 seconds before allowing the next step/dialogue to close the shop
+        yield return new WaitForSecondsRealtime(1.5f);
+        // Now allow the next step to proceed as normal
         ProcessPendingSteps();
     }
 

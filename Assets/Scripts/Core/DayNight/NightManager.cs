@@ -56,7 +56,7 @@ public class NightManager : MonoBehaviour
     private Color dayShop = Color.white;
     private Color nightShop = Color.grey * 0.9f;
     public Image shopIcon;
-    [SerializeField] private ShopUIManager shopManager;
+    [SerializeField] public ShopUIManager shopManager;
 
     // Item delete icon
     [Header("Delete Icon")]

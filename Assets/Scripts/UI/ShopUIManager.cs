@@ -141,4 +141,15 @@ public class ShopUIManager : MonoBehaviour
         shopButton.interactable = true;
         shopIcon.color = dayShop;
     }
+
+    // Resets the shop state to fully closed and ready
+    public void ResetShopState()
+    {
+        isVisible = false;
+        if (shopPanelUI != null)
+        {
+            shopPanelUI.CloseShop();
+        }
+        shopPanel.SetActive(false);
+    }
 }

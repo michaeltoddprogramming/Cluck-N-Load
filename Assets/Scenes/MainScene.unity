@@ -10587,7 +10587,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2059154239
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10622,8 +10622,8 @@ Light:
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 349.3
-  m_Range: 137.7
+  m_Intensity: 2309.93
+  m_Range: 551.83
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -10664,9 +10664,9 @@ Light:
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 5.65
-  m_ColorTemperature: 6570
-  m_UseColorTemperature: 0
+  m_BounceIntensity: 5652.5
+  m_ColorTemperature: 3935
+  m_UseColorTemperature: 1
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1

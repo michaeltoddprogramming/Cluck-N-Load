@@ -248,6 +248,8 @@ public class NightManager : MonoBehaviour
 
     private void Start()
     {
+        // AddToAllStructures addToAllStructures = FindObjectOfType<AddToAllStructures>();
+        // addToAllStructures.AddHitEffectToAllStructures();
 
 
 

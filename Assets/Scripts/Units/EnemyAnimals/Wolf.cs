@@ -704,6 +704,15 @@ public class Wolf : MonoBehaviour
             if (target != null)
             {
                 target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+
+                DamageAnimation hitEffect = target.GetComponent<DamageAnimation>();
+                if (hitEffect != null)
+                {
+                    hitEffect.PlayDamageHitEffect();
+                }
+
+
+
                 // Only invoke event if target is now destroyed
                 if (!IsValidTarget(target))
                 {

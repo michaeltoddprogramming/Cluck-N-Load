@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d88e98dad5c0e194c8082d09aeb7bcfe, type: 3}
       insertIndex: -1
       addedObject: {fileID: 305474767889245940}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d88e98dad5c0e194c8082d09aeb7bcfe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8489389777049512571}
   m_SourcePrefab: {fileID: 100100000, guid: d88e98dad5c0e194c8082d09aeb7bcfe, type: 3}
 --- !u!1 &591288824324097048 stripped
 GameObject:
@@ -116,3 +119,15 @@ MonoBehaviour:
   cropHarvestMultiplierIncrease: 1.5
   multiplierRange: 10
   baseCropHarvestAmount: 10
+--- !u!114 &8489389777049512571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591288824324097048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c38fc64b467ba9c4f85d6232afb72860, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

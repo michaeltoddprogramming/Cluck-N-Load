@@ -535,15 +535,13 @@ public class Wolf : MonoBehaviour
             {
                 priority = structurePriority;
                 attackPoint = GetNearestPointOnBoundsFast(go, transform.position);
-                
-                // Only calculate health factors for structures (more expensive)
+                // Calculate health factors for all structures
                 int currentHealth = structure.GetCurrentHealth();
                 int maxHealth = structure.GetMaxHealth();
                 healthFactor = maxHealth > 0 ? (1f - (float)currentHealth / maxHealth) : 1f;
-                
+                // If it's an animal structure, add animal count factor, otherwise 0
                 AnimalStructure animalStructure = structure as AnimalStructure;
-                if (animalStructure != null)
-                    animalCountFactor = Mathf.Clamp01((float)animalStructure.AnimalCount / 10f);
+                animalCountFactor = animalStructure != null ? Mathf.Clamp01((float)animalStructure.AnimalCount / 10f) : 0f;
             }
         }
 
@@ -639,9 +637,9 @@ public class Wolf : MonoBehaviour
                 int currentHealth = structure.GetCurrentHealth();
                 int maxHealth = structure.GetMaxHealth();
                 healthFactor = maxHealth > 0 ? (1f - (float)currentHealth / maxHealth) : 1f;
+                // If it's an animal structure, add animal count factor, otherwise 0
                 AnimalStructure animalStructure = structure as AnimalStructure;
-                if (animalStructure != null)
-                    animalCountFactor = Mathf.Clamp01((float)animalStructure.AnimalCount / 10f);
+                animalCountFactor = animalStructure != null ? Mathf.Clamp01((float)animalStructure.AnimalCount / 10f) : 0f;
             }
         }
 

@@ -690,7 +690,10 @@ public class Wolf : MonoBehaviour
 
         lastAttackTime = Time.time;
 
-        if (target == null || !IsValidTarget(target))
+        // Clean up cachedTargets list
+        cachedTargets.RemoveAll(go => go == null || !go || !IsValidTargetFast(go));
+
+        if (target == null || !target || !IsValidTarget(target))
         {
             // Target is already gone, clean up
             HandleAnyTargetDestroyed(target);
@@ -701,34 +704,47 @@ public class Wolf : MonoBehaviour
 
         try
         {
-            if (target != null)
+            if (target == null || !target)
+            {
+                Debug.LogWarning($"Wolf {name} aborted attack: Target is null or destroyed");
+                HandleAnyTargetDestroyed(target);
+                return;
+            }
+
+            try
             {
                 target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Wolf {name} failed to SendMessage to target: {e.Message}");
+                HandleAnyTargetDestroyed(target);
+                return;
+            }
 
-                DamageAnimation hitEffect = target.GetComponent<DamageAnimation>();
-                if (hitEffect != null)
+            var hitEffect = target.GetComponent<DamageAnimation>();
+            if (hitEffect != null)
+            {
+                try
                 {
                     hitEffect.PlayDamageHitEffect();
                 }
-
-
-
-                // Only invoke event if target is now destroyed
-                if (!IsValidTarget(target))
+                catch (System.Exception e)
                 {
-                    OnAnyTargetDestroyed?.Invoke(target);
-                    HandleAnyTargetDestroyed(target);
+                    Debug.LogWarning($"Wolf {name} failed to play DamageAnimation: {e.Message}");
                 }
             }
-            else
+
+            // Only invoke event if target is now destroyed
+            if (target == null || !target || !IsValidTarget(target))
             {
-                Debug.LogWarning($"Wolf {name} aborted attack: Target null in try block");
+                OnAnyTargetDestroyed?.Invoke(target);
                 HandleAnyTargetDestroyed(target);
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogWarning($"Wolf {name} failed to attack: {e.Message}");
+            Debug.LogWarning($"Wolf {name} failed to attack (outer catch): {e.Message}");
             OnAnyTargetDestroyed?.Invoke(target);
             HandleAnyTargetDestroyed(target);
         }

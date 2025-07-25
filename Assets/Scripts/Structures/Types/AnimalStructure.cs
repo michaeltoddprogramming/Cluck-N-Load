@@ -3,6 +3,8 @@ using System.Collections;
 
 public class AnimalStructure : Structure
 {
+    // Registration flag to prevent double registration with NightManager
+    private bool isRegisteredWithNightManager = false;
     public enum AnimalType
     {
         Chicken,
@@ -92,9 +94,10 @@ public class AnimalStructure : Structure
 
         lastCheckedHour = nightManager != null ? nightManager.Hours + (nightManager.Minutes / 60f) : 7f;
         requiredFood = GetRequiredFood();
-        if (nightManager != null)
+        if (nightManager != null && !isRegisteredWithNightManager)
         {
             nightManager.RegisterAnimalStructure(this);
+            isRegisteredWithNightManager = true;
         }
 
         if (audioSource == null)
@@ -307,10 +310,11 @@ public class AnimalStructure : Structure
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        if (nightManager != null)
+        if (nightManager != null && isRegisteredWithNightManager)
         {
             nightManager.UnregisterAnimalStructure(this);
-            }
+            isRegisteredWithNightManager = false;
+        }
     }
 
     //handles stuff for lees food if animals close to silo

@@ -796,7 +796,9 @@ private void setSeason(int season)
 
     public void RegisterAnimalStructure(AnimalStructure structure)
     {
-        if (structure != null && !animalStructures.Contains(structure))
+        if (structure == null || !structure) return;
+        animalStructures.RemoveAll(s => s == null || !s);
+        if (!animalStructures.Contains(structure))
         {
             animalStructures.Add(structure);
         }
@@ -804,9 +806,9 @@ private void setSeason(int season)
 
     public void UnregisterAnimalStructure(AnimalStructure structure)
     {
-        if (structure != null && animalStructures.Remove(structure))
-        {
-        }
+        if (structure == null || !structure) return;
+        animalStructures.RemoveAll(s => s == null || !s);
+        animalStructures.Remove(structure);
     }
 
     public void RegisterBarracksStructure(BarracksStructure barracks)

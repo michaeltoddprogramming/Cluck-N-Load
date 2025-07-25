@@ -19,7 +19,7 @@ public class Wolf : MonoBehaviour
 
     [Header("Target Priorities (Higher = More Priority)")]
     [SerializeField] private int chickenPriority = 10;
-    [SerializeField] private int structurePriority = 5;
+    [SerializeField] private int structurePriority = 20; // Increased from 5 for higher attack motivation
     [SerializeField] private float healthWeight = 0.5f;
     [SerializeField] private float animalCountWeight = 0.5f;
 
@@ -341,6 +341,7 @@ public class Wolf : MonoBehaviour
                 {
                     cachedTargets.Add(structure.gameObject);
                     structureCount++;
+                    Debug.Log($"[Wolf] TargetCache: Found structure {structure.gameObject.name} (health: {structure.GetCurrentHealth()}/{structure.GetMaxHealth()}) at {structure.transform.position}");
                 }
             }
         }
@@ -469,7 +470,10 @@ public class Wolf : MonoBehaviour
 
         foreach (GameObject go in cachedTargets.ToList())
         {
-            if (!IsValidTarget(go)) continue;
+            if (!IsValidTarget(go)) {
+                Debug.Log($"[Wolf] Skipping invalid target: {go?.name ?? "null"}");
+                continue;
+            }
 
             float score = CalculateTargetScore(go, out Vector3 attackPoint);
             Debug.Log($"[Wolf] Checking target {go.name}, score = {score}");
@@ -549,7 +553,7 @@ public class Wolf : MonoBehaviour
         }
 
         // Use squared distance to avoid expensive sqrt calculation
-        float distancePenalty = sqrDistance / (_targetSearchRangeSquared);
+        float distancePenalty = sqrDistance / (_targetSearchRangeSquared * 2f); // Reduce penalty for distance
         float score = priority - distancePenalty + (healthWeight * healthFactor) + (animalCountWeight * animalCountFactor);
         return score;
     }
@@ -646,7 +650,7 @@ public class Wolf : MonoBehaviour
             return float.MinValue;
         }
 
-        float distancePenalty = sqrDistance / _targetSearchRangeSquared; // Use squared values
+        float distancePenalty = sqrDistance / (_targetSearchRangeSquared * 2f); // Reduce penalty for distance
         float score = priority - distancePenalty + (healthWeight * healthFactor) + (animalCountWeight * animalCountFactor);
         return score;
     }
@@ -700,6 +704,8 @@ public class Wolf : MonoBehaviour
             return;
         }
 
+
+        Debug.Log($"[Wolf] ATTACKING target: {target?.name ?? "null"} at {target?.transform.position.ToString() ?? "null"} (wolf: {name})");
         OnAttack?.Invoke();
 
         try

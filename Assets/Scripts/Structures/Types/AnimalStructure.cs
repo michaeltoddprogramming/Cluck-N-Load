@@ -114,6 +114,8 @@ public class AnimalStructure : Structure
     private void Update()
     {
 
+
+
         if (nightManager == null || !isProducing || productReady) return;
 
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);

@@ -22,6 +22,7 @@ namespace FGUIStarter
 
         public override void OnPointerDown(PointerEventData eventData)
         {
+            if (!interactable) return;
             base.OnPointerDown(eventData);
             isHeld = true;
             ApplyPressedVisual();
@@ -29,6 +30,7 @@ namespace FGUIStarter
 
         public override void OnPointerUp(PointerEventData eventData)
         {
+            if (!interactable) return;
             base.OnPointerUp(eventData);
             isHeld = false;
             ApplyNormalVisual();

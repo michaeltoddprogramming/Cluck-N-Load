@@ -81,7 +81,7 @@ public class SiloUI : BaseStructureUI
     [SerializeField] private TextMeshProUGUI wheatAmount;
     [SerializeField] private TextMeshProUGUI carrotAmount;
     [SerializeField] private TextMeshProUGUI storageAmount;
-    [SerializeField] private TextMeshProUGUI currAmount;
+    // [SerializeField] private TextMeshProUGUI currAmount;
 
     private SiloStructure siloStructure;
     private bool isSiloStructure = false;
@@ -131,14 +131,14 @@ public class SiloUI : BaseStructureUI
         if (storageAmount != null)
         {
             // You need to implement GetTotalSiloCapacity() in your InventoryManager or SiloManager
-            storageAmount.text = "Max Capacity:\n" + inventoryManager.GetTotalSiloCapacity().ToString();
+            storageAmount.text = $"{inventoryManager.GetCurrentSiloCapacity()}/{inventoryManager.GetTotalSiloCapacity()}";
         }
 
-        if (currAmount != null)
-        {
-            // You need to implement GetTotalSiloCapacity() in your InventoryManager or SiloManager
-            currAmount.text = "Current Capacity:\n" + inventoryManager.GetCurrentSiloCapacity().ToString();
-        }
+        // if (currAmount != null)
+        // {
+        //     // You need to implement GetTotalSiloCapacity() in your InventoryManager or SiloManager
+        //     currAmount.text = "Current Capacity:\n" + inventoryManager.GetCurrentSiloCapacity().ToString();
+        // }
     }
 
     private void HideSiloSpecificUI()

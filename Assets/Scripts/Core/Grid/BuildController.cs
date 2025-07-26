@@ -500,7 +500,10 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         DisableBuildMode();
-        }
+
+        
+
+    }
 
     void CancelMove()
     {

@@ -9,10 +9,15 @@ public class CropStructureUI : BaseStructureUI
     [SerializeField] private Button plantWheatButton;
     [SerializeField] private Button plantCarrotsButton;
     [SerializeField] private Button harvestButton;
+    [SerializeField] private Button plantButton;
     [SerializeField] private GameObject selectCropPanel;
     [SerializeField] private GameObject plantingClose;
     [SerializeField] private TextMeshProUGUI cropStatusText;
     [SerializeField] private TextMeshProUGUI notificationText;
+    [SerializeField] private Image CropImage;
+    [SerializeField] private Sprite SunflowerIcon;
+    [SerializeField] private Sprite WheatIcon;
+    [SerializeField] private Sprite carrotIcon;
 
     [Header("Dependencies")]
     [SerializeField] private NightManager nightManager;
@@ -29,11 +34,14 @@ public class CropStructureUI : BaseStructureUI
     private CropStructure cropStructure;
     private bool isCropStructure = false;
 
+    private char currCrop = 'N';
+
     public override void Initialize(Structure structure)
     {
 
         //make notification invisible
         notificationText.gameObject.SetActive(false);
+        plantButton.interactable = true; 
 
         // Setup audio source
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -57,14 +65,15 @@ public class CropStructureUI : BaseStructureUI
         if (selectCropPanel != null)
         {
             selectCropPanel.SetActive(false);
+            plantButton.interactable = true; 
         }
         else
         {
-            }
+        }
 
         if (cropStatusText == null)
         {
-            }
+        }
 
         if (nightManager == null)
         {
@@ -83,19 +92,24 @@ public class CropStructureUI : BaseStructureUI
         UpdateUI();
     }
 
+    private void Update()
+    {
+        UpdateUI();
+    }
+
     // Add this method to play error sounds
     private void PlayErrorSound()
     {
         // Prevent sound spam by adding cooldown
         if (Time.time - lastErrorSoundTime < 0.5f)
             return;
-            
+
         lastErrorSoundTime = Time.time;
-        
+
         if (errorSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(errorSound);
-            }
+        }
     }
     
     // Add method to play success sounds
@@ -109,10 +123,31 @@ public class CropStructureUI : BaseStructureUI
 
     private void SetupButtonListeners()
     {
+        if (plantButton != null)
+        {
+            plantButton.onClick.RemoveAllListeners();
+            plantButton.onClick.AddListener(() =>
+            {
+                // Check conditions before planting
+                if (!CanPlantCrops())
+                {
+                    PlayErrorSound();
+                    return;
+                }
+                ShowSelectCropPanel();
+            });
+        }
+        else
+        {
+            }
+
+
+
         if (plantSunflowerButton != null)
         {
             plantSunflowerButton.onClick.RemoveAllListeners();
-            plantSunflowerButton.onClick.AddListener(() => {
+            plantSunflowerButton.onClick.AddListener(() =>
+            {
                 // Check conditions before planting
                 if (!CanPlantCrops())
                 {
@@ -124,7 +159,7 @@ public class CropStructureUI : BaseStructureUI
         }
         else
         {
-            }
+        }
 
         if (plantWheatButton != null)
         {
@@ -225,12 +260,14 @@ public class CropStructureUI : BaseStructureUI
                            cropStructure != null && 
                            !cropStructure.IsGrowing && 
                            !cropStructure.CropReady;
-                           
+
         if (canShowPanel)
         {
             selectCropPanel.SetActive(true);
+            plantButton.interactable = false; 
             UpdateUI();
-            }
+            Debug.Log("Select crop panel shown=================================================================");
+        }
         else
         {
             PlayErrorSound();
@@ -352,6 +389,9 @@ public class CropStructureUI : BaseStructureUI
 
     private void UpdateUI()
     {
+        setCropImage();
+
+
         if (!isCropStructure || cropStructure == null || nightManager == null)
         {
             HideCropSpecificUI();
@@ -400,22 +440,22 @@ public class CropStructureUI : BaseStructureUI
         if (plantSunflowerButton != null)
         {
             plantSunflowerButton.interactable = canPlant;
-            UpdateButtonVisual(plantSunflowerButton, canPlant, "Sunflower");
+            UpdateButtonVisual(plantSunflowerButton, canPlant, "");
             }
         if (plantWheatButton != null)
         {
             plantWheatButton.interactable = canPlant;
-            UpdateButtonVisual(plantWheatButton, canPlant, "Wheat");
+            UpdateButtonVisual(plantWheatButton, canPlant, "");
             }
         if (plantCarrotsButton != null)
         {
             plantCarrotsButton.interactable = canPlant;
-            UpdateButtonVisual(plantCarrotsButton, canPlant, "Carrots");
+            UpdateButtonVisual(plantCarrotsButton, canPlant, "");
             }
         if (harvestButton != null)
         {
             harvestButton.interactable = cropReady;
-            UpdateButtonVisual(harvestButton, cropReady, "Harvest");
+            UpdateButtonVisual(harvestButton, cropReady, "");
             }
         if (selectCropPanel != null)
         {
@@ -434,13 +474,13 @@ public class CropStructureUI : BaseStructureUI
             {
                 if (isInteractable)
                 {
-                    buttonText.text = "Harvest";
+                    // buttonText.text = "";
                 }
                 else
                 {
                     // Similar to how BarracksStructureUI handles button text
                     string reason = GetHarvestDisabledReason();
-                    buttonText.text = $"Harvest\n<size=10>({reason})</size>";
+                    // buttonText.text = $"Harvest\n<size=10>({reason})</size>";
                 }
             }
             else
@@ -448,12 +488,12 @@ public class CropStructureUI : BaseStructureUI
                 // Plant buttons
                 if (isInteractable)
                 {
-                    buttonText.text = $"Plant {action}";
+                    // buttonText.text = $"Plant {action}";
                 }
                 else
                 {
                     string reason = GetPlantDisabledReason();
-                    buttonText.text = $"Plant {action}\n<size=10>({reason})</size>";
+                    // buttonText.text = $"Plant {action}\n<size=10>({reason})</size>";
                 }
             }
             
@@ -486,27 +526,49 @@ public class CropStructureUI : BaseStructureUI
                 return "Harvest First";
             return "Unavailable";
         }
+
+    private void setCropImage()
+    {
+
+        currCrop = cropStructure.GetCurrCrop();
+
+        switch (currCrop)
+        {
+            case 'S':
+                CropImage.sprite = SunflowerIcon;
+                break;
+            case 'W':
+                CropImage.sprite = WheatIcon;
+                break;
+            case 'C':
+                CropImage.sprite = carrotIcon;
+                break;
+            default:
+                CropImage.sprite = null; // No crop selected
+                break;
+        }
+    }
     private void HideCropSpecificUI()
     {
         if (plantSunflowerButton != null)
         {
             plantSunflowerButton.interactable = false;
-            UpdateButtonVisual(plantSunflowerButton, false, "Sunflower");
+            UpdateButtonVisual(plantSunflowerButton, false, "");
         }
         if (plantWheatButton != null)
         {
             plantWheatButton.interactable = false;
-            UpdateButtonVisual(plantWheatButton, false, "Wheat");
+            UpdateButtonVisual(plantWheatButton, false, "");
         }
         if (plantCarrotsButton != null)
         {
             plantCarrotsButton.interactable = false;
-            UpdateButtonVisual(plantCarrotsButton, false, "Carrots");
+            UpdateButtonVisual(plantCarrotsButton, false, "");
         }
         if (harvestButton != null)
         {
             harvestButton.interactable = false;
-            UpdateButtonVisual(harvestButton, false, "Harvest");
+            UpdateButtonVisual(harvestButton, false, "");
         }
         if (selectCropPanel != null)
         {

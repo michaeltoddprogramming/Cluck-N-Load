@@ -74,7 +74,7 @@ public class CropStructure : Structure
 
         if (structureData != null && structureData.type != StructureType.CropPlot)
         {
-            }
+        }
 
         // Prefer singleton access
         if (nightManager == null)
@@ -229,7 +229,7 @@ public class CropStructure : Structure
         {
             currentCropInstance = Instantiate(prefabToSpawn, transform);
             currentCropInstance.transform.localPosition = Vector3.zero;
-            }
+        }
         else
         {
             Debug.LogWarning($"No prefab found for {cropType} stage {growthStage} on {GetStructureName()}");
@@ -338,6 +338,26 @@ public class CropStructure : Structure
             isGrowing = false;
             UpdateCropVisual(currentCropType, 2); // Stage 2 = fully grown
             Debug.Log($"TUTORIAL: Instantly completed growth for {currentCropType}");
+        }
+    }
+
+    public char GetCurrCrop()
+    {
+        if (currentCropType == CropType.Carrots)
+        {
+            return 'C';
+        }
+        else if (currentCropType == CropType.Sunflower)
+        {
+            return 'S';
+        }
+        else if (currentCropType == CropType.Wheat)
+        {
+            return 'W';
+        }
+        else
+        {
+            return 'N'; //no crop
         }
     }
 }

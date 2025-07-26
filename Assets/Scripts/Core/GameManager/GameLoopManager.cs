@@ -5,8 +5,17 @@ using System.Collections.Generic;
 /// Manages the main game loop, game state, and game over conditions.
 /// Integrates with your existing GameEventManager system.
 /// </summary>
+
 public class GameLoopManager : MonoBehaviour
-{// Call this from your Game Over panel's Quit button
+{
+
+    // Helper to check if a structure is already registered
+    public bool IsStructureRegistered(Structure structure)
+    {
+        return allStructures.Contains(structure);
+    }
+
+    // Call this from your Game Over panel's Quit button
 
     public void OnQuitButton()
     {
@@ -75,18 +84,24 @@ public class GameLoopManager : MonoBehaviour
     /// </summary>
     public void RegisterStructure(Structure structure)
     {
-        if (structure == null) return;
+        if (structure == null || !structure) return;
 
-        if (!allStructures.Contains(structure))
+        // Clean up null/destroyed entries before adding
+        allStructures.RemoveAll(s => s == null || !s);
+
+        // Debug: log if double registration is attempted
+        if (allStructures.Contains(structure))
         {
-            allStructures.Add(structure);
-            totalStructuresBuilt++;
-            
-            Debug.Log($"Structure registered: {structure.name}. Total: {allStructures.Count}");
-            
-            // Fire event through GameEventManager if available
-            GameEventManager.Instance?.OnStructurePlaced?.Invoke(structure);
+            Debug.LogWarning($"[GameLoopManager] Attempted to register structure twice: {structure.name}", structure);
+            return;
         }
+
+        allStructures.Add(structure);
+        totalStructuresBuilt++;
+        string structureName = structure != null ? structure.name : "(destroyed object)";
+        Debug.Log($"Structure registered: {structureName}. Total: {allStructures.Count}");
+        // Fire event through GameEventManager if available
+        GameEventManager.Instance?.OnStructurePlaced?.Invoke(structure);
     }
 
     /// <summary>
@@ -94,17 +109,18 @@ public class GameLoopManager : MonoBehaviour
     /// </summary>
     public void UnregisterStructure(Structure structure)
     {
-        if (structure == null) return;
+        if (structure == null || !structure) return;
+
+        // Clean up null/destroyed entries before removing
+        allStructures.RemoveAll(s => s == null || !s);
 
         if (allStructures.Contains(structure))
         {
+            string structureName = structure != null ? structure.name : "(destroyed object)";
             allStructures.Remove(structure);
-            
-            Debug.Log($"Structure unregistered: {structure.name}. Remaining: {allStructures.Count}");
-            
+            Debug.Log($"Structure unregistered: {structureName}. Remaining: {allStructures.Count}");
             // Fire event through GameEventManager if available
             GameEventManager.Instance?.OnStructureDestroyed?.Invoke(structure);
-            
             // Check game over conditions
             CheckGameOverConditions();
         }
@@ -116,12 +132,16 @@ public class GameLoopManager : MonoBehaviour
 
         bool shouldGameOver = false;
 
+        // Clean up null/destroyed entries before checking
+        allStructures.RemoveAll(s => s == null || !s);
+
         // Check if Farm House was destroyed (main game over condition)
         if (checkFarmHouseDestruction)
         {
             bool hasFarmHouse = false;
             foreach (var structure in allStructures)
             {
+                if (structure == null || !structure) continue;
                 // Check if it's a main building/farm house
                 if (structure.name.ToLower().Contains("farmhouse") || 
                     structure.name.ToLower().Contains("farm house") ||

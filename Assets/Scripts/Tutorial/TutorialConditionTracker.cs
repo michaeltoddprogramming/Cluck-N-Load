@@ -20,10 +20,10 @@ public struct DefenseReadinessReport
 
 public class TutorialConditionTracker : MonoBehaviour
 {
-    // Returns true if tutorial logic should run (not completed and active)
+    // Returns true if tutorial logic should run (not completed)
     private bool TutorialLogicAllowed()
     {
-        return TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive() && !TutorialManager.Instance.IsTutorialCompleted();
+        return TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialCompleted();
     }
 
     private bool hasPlacedFirstStructure = false;

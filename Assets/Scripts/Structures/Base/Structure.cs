@@ -1,12 +1,14 @@
+
 using UnityEngine;
 using System.Collections.Generic;
 using FarmDefender.Core.AI.FlowField;
 using System.Linq;
 using System.Collections;
-using UnityEngine.VFX;
 
 public class Structure : MonoBehaviour
 {
+    // Registration flag to prevent double registration
+    private bool isRegisteredWithGameLoop = false;
 
     public StructureData StructureData => structureData; // Public property for external access
 
@@ -60,13 +62,6 @@ public class Structure : MonoBehaviour
     // Health changed event for UI updates
     public event System.Action OnHealthChanged;
 
-    // destruction audio source
-    private AudioSource destructionAudioSource;
-    private AudioClip destructionClip;
-
-    //destruction effect
-    [SerializeField] public GameObject dustPoof;
-
     // Wolf notifications
     private static readonly List<Wolf> registeredWolves = new List<Wolf>();
 
@@ -100,41 +95,14 @@ public class Structure : MonoBehaviour
         {
             selectionIndicator.SetActive(false);
         }
-
-        destructionClip = Resources.Load<AudioClip>("Assets/Resources/Sound/Building/delete_building.wav");
-    
-         // Add AudioSource dynamically
-        destructionAudioSource = gameObject.AddComponent<AudioSource>();
-
-        // Basic settings
-        destructionAudioSource.playOnAwake = false;
-        destructionAudioSource.loop = true; // Based on your screenshot
-        destructionAudioSource.priority = 128;
-        destructionAudioSource.volume = 1f;
-        destructionAudioSource.pitch = 1f;
-        destructionAudioSource.panStereo = 0f;
-        destructionAudioSource.spatialBlend = 1f; // 3D sound
-        destructionAudioSource.reverbZoneMix = 1f;
-
-        // 3D sound settings
-        destructionAudioSource.dopplerLevel = 1f;
-        destructionAudioSource.spread = 0f;
-        destructionAudioSource.rolloffMode = AudioRolloffMode.Custom;
-        destructionAudioSource.maxDistance = 55f;
-
-        // Optional: Set a custom rolloff curve
-        AnimationCurve customRolloff = new AnimationCurve(
-            new Keyframe(0f, 1f),
-            new Keyframe(10f, 0.75f),
-            new Keyframe(25f, 0.5f),
-            new Keyframe(40f, 0.25f),
-            new Keyframe(55f, 0f)
-        );
-        destructionAudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, customRolloff);
     }
 
     protected virtual void Start()
     {
+        if (isRegisteredWithGameLoop)
+        {
+            Debug.LogWarning($"[Structure] Start() called but already registered: {gameObject.name}", this);
+        }
         if (gameObject.name == "BuildGhost")
         {
             return;
@@ -150,7 +118,12 @@ public class Structure : MonoBehaviour
             return;
         }
 
-        GameLoopManager.Instance?.RegisterStructure(this);
+        // Only register with GameLoopManager if not already registered (prevents double registration)
+        if (!isRegisteredWithGameLoop && GameLoopManager.Instance != null && !GameLoopManager.Instance.IsStructureRegistered(this))
+        {
+            GameLoopManager.Instance.RegisterStructure(this);
+            isRegisteredWithGameLoop = true;
+        }
 
         if (autoRegisterWithGrid && gridController != null)
         {
@@ -161,6 +134,12 @@ public class Structure : MonoBehaviour
         {
             AddColliderToStructure();
         }
+    }
+
+    // Optional: If something is calling OnEnable, ensure it doesn't re-register
+    private void OnEnable()
+    {
+        // Do not register here; registration is handled in Start only
     }
 
     public void SetAllowSelectionAndUI(bool allow)
@@ -325,59 +304,15 @@ public class Structure : MonoBehaviour
         }
 
         // Unregister from GameLoopManager immediately
-        GameLoopManager.Instance?.UnregisterStructure(this);
+        if (isRegisteredWithGameLoop && GameLoopManager.Instance != null)
+        {
+            GameLoopManager.Instance.UnregisterStructure(this);
+            isRegisteredWithGameLoop = false;
+        }
         UnregisterFromGrid();
 
         if (destroyOnZeroHealth)
         {
-            if (destructionClip != null && destructionAudioSource != null)
-            {
-                destructionAudioSource.PlayOneShot(destructionClip);
-            }
-            // Play destruction animation if available
-            GetComponent<DestroyStructure>()?.PlayDestructionAnimationAndDestroy();
-
-            GameObject dustPoofPrefab = Resources.Load<GameObject>("Assets/Prefabs/Visual effects/Smoke Poof.prefab"); 
-
-            if (dustPoofPrefab != null)
-            {
-                Vector3 effectPosition = transform.position + new Vector3(0, 4f, 0);
-                Vector3 posMult = new Vector3(1f, 1f, 1f);
-                float totalMult = 1f;
-
-                GameObject effect = Instantiate(dustPoofPrefab, effectPosition, Quaternion.identity);
-
-                VisualEffect ps = effect.GetComponent<VisualEffect>();
-                if (ps != null)
-                {
-                    ps.SetVector3("posMult", posMult);
-                    ps.SetFloat("totalMult", totalMult);
-                    ps.Play();
-                }
-
-                Destroy(effect, 3f);
-            }
-
-            // Vector3 effectPosition;
-            // Vector3 posMult;
-            // float totalMult;
-
-            // effectPosition = gameObject.transform.position + new Vector3(0, 4f, 0); // Center of building, 1 unit above
-            // posMult = new Vector3(1f, 1f, 1f); // more position spread
-            // totalMult = 1f; // more bubbles
-
-
-            // GameObject effect = Instantiate(dustPoof, effectPosition, Quaternion.identity);
-
-
-            // VisualEffect ps = effect.GetComponent<VisualEffect>();
-            // if (ps != null)
-            //     ps.SetVector3("posMult", posMult);
-            //     ps.SetFloat("totalMult", totalMult);
-            // ps.Play();
-            // Destroy(effect, 3f); // Destroy after 3 seconds (adjust as needed)
-
-
             Destroy(gameObject, destroyDelay);
         }
     }

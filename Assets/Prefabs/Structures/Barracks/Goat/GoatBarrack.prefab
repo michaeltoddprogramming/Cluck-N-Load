@@ -78,6 +78,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
       insertIndex: -1
       addedObject: {fileID: -1494882712750094774}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -114993051934737035}
   m_SourcePrefab: {fileID: 100100000, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
 --- !u!1 &4222961760227805080 stripped
 GameObject:
@@ -106,6 +109,7 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 1
+  dustPoof: {fileID: 0}
   targetAnimalType: Goat
   armyAnimalPrefabs:
   - {fileID: 2168163027447337882, guid: d007a9f0ea53a9345818e2da41f194b4, type: 3}
@@ -541,5 +545,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c38fc64b467ba9c4f85d6232afb72860, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitSound: {fileID: 0}
+--- !u!114 &-114993051934737035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4222961760227805080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a955076890812eb4a8fa0e5a3dceb661, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

@@ -23,8 +23,8 @@ public class BarracksStructureUI : BaseStructureUI
     private int animalCount = 0;
     private int maxAnimalCount = 0;
 
-    [SerializeField] public Image animalIcon1;          
-    [SerializeField] public Image animalIcon2;          
+    [SerializeField] public Image animalIcon1;
+    [SerializeField] public Image animalIcon2;
     [SerializeField] public Sprite cowIcon;
     [SerializeField] public Sprite chickenIcon;
     [SerializeField] public Sprite goatIcon;
@@ -316,7 +316,7 @@ public class BarracksStructureUI : BaseStructureUI
         {
             updateStatusText($"Cannot afford {maxAnimalCount} many animals!");
         }
-        
+
         if (animalIcon1 != null)
         {
             if (barracksStructure.GetAnimalType() == "Cow")
@@ -338,7 +338,7 @@ public class BarracksStructureUI : BaseStructureUI
             else if (barracksStructure.GetAnimalType() == "Sheep")
             {
                 animalIcon1.sprite = sheepIcon;
-            }            
+            }
         }
 
         if (animalIcon2 != null)
@@ -362,7 +362,7 @@ public class BarracksStructureUI : BaseStructureUI
             else if (barracksStructure.GetAnimalType() == "Sheep")
             {
                 animalIcon2.sprite = sheepIcon;
-            }            
+            }
         }
     }
 
@@ -434,6 +434,15 @@ public class BarracksStructureUI : BaseStructureUI
             barracksStructure.RecruitAnimals(newAnimalCount);
             newAnimalCount = 0;
         }
+    }
+    
+    public void checkFlagPlacement()
+    {
+        TutorialManager.Instance.CheckStep14();   
+    }
+    public void checkAnimalBuy()
+    {
+        TutorialManager.Instance.CheckStep13();   
     }
 
 }

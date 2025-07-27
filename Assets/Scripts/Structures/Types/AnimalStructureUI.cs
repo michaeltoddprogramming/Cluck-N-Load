@@ -15,8 +15,8 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] private Button buyAnimal;
     [SerializeField] private TextMeshProUGUI animalAmountText;
     [SerializeField] private TextMeshProUGUI newAnimalAmount;
-    [SerializeField] public Image animalIcon1;          
-    [SerializeField] public Image animalIcon2;          
+    [SerializeField] public Image animalIcon1;
+    [SerializeField] public Image animalIcon2;
     [SerializeField] public Sprite cowIcon;
     [SerializeField] public Sprite chickenIcon;
     [SerializeField] public Sprite goatIcon;
@@ -33,8 +33,8 @@ public class AnimalStructureUI : BaseStructureUI
 
     // private bool fed = false;
 
-    
-    
+
+
     private float testProgressTimer = 0f;
     private float testFillDuration = 2f;
     private bool testFilling = false;
@@ -235,7 +235,7 @@ public class AnimalStructureUI : BaseStructureUI
             else if (animalStructure.GetAnimalType == AnimalStructure.AnimalType.Sheep)
             {
                 animalIcon1.sprite = sheepIcon;
-            }            
+            }
         }
 
         if (animalIcon2 != null)
@@ -259,15 +259,15 @@ public class AnimalStructureUI : BaseStructureUI
             else if (animalStructure.GetAnimalType == AnimalStructure.AnimalType.Sheep)
             {
                 animalIcon2.sprite = sheepIcon;
-            }            
+            }
         }
 
 
         if (newAnimalAmount != null)
-            {
-                newAnimalAmount.text = $"{newAnimalCount}";
-                // animalAmountText.text = "piosaeurgof";
-            }
+        {
+            newAnimalAmount.text = $"{newAnimalCount}";
+            // animalAmountText.text = "piosaeurgof";
+        }
 
         // Update buttons (BarracksStyle)
         if (feedButton != null && canFeed && !isProducing && !productReady)
@@ -339,28 +339,28 @@ public class AnimalStructureUI : BaseStructureUI
                 removeAnimal.interactable = false;
             }
         }
-        
 
-                // float progress = animalStructure.ProductionProgress;
-                // float totalTime = animalStructure.ProductionSettings.productionTime;
-                // float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
-                // float remainingHours = totalTime - progress;
-                // float completionHour = (currentHour + remainingHours) % 24f;
-                // int completionHourInt = Mathf.FloorToInt(completionHour);
-                // int completionMinuteInt = Mathf.CeilToInt((completionHour - completionHourInt) * 60f);
-                // if (completionMinuteInt == 60)
-                // {
-                //     completionHourInt = (completionHourInt + 1) % 24;
-                //     completionMinuteInt = 0;
-                // }
-                // // statusText.text = $"{animalStatus}, Producing... (Ready at 05:00)";
-                // // statusText.color = Color.yellow;
-                // if (progressBar != null)
-                // {
-                //     progressBar.gameObject.SetActive(true);
-                //     progressBar.maxValue = totalTime;
-                //     progressBar.value = progress;
-                // }
+
+        // float progress = animalStructure.ProductionProgress;
+        // float totalTime = animalStructure.ProductionSettings.productionTime;
+        // float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+        // float remainingHours = totalTime - progress;
+        // float completionHour = (currentHour + remainingHours) % 24f;
+        // int completionHourInt = Mathf.FloorToInt(completionHour);
+        // int completionMinuteInt = Mathf.CeilToInt((completionHour - completionHourInt) * 60f);
+        // if (completionMinuteInt == 60)
+        // {
+        //     completionHourInt = (completionHourInt + 1) % 24;
+        //     completionMinuteInt = 0;
+        // }
+        // // statusText.text = $"{animalStatus}, Producing... (Ready at 05:00)";
+        // // statusText.color = Color.yellow;
+        // if (progressBar != null)
+        // {
+        //     progressBar.gameObject.SetActive(true);
+        //     progressBar.maxValue = totalTime;
+        //     progressBar.value = progress;
+        // }
 
         // if (buyOneAnimalButton != null)
         // {
@@ -514,7 +514,7 @@ public class AnimalStructureUI : BaseStructureUI
             newAnimalCount = 0;
         }
     }
-    
+
     private void updateStatusText(string message)
     {
         // Update status text
@@ -522,11 +522,11 @@ public class AnimalStructureUI : BaseStructureUI
         {
             string animalStatus = "";
 
-                    statusText.text = message;
+            statusText.text = message;
             statusText.color = Color.red;
 
-            
-            
+
+
             // else
             // {
             //     // statusText.text = animalCount > 0 ? $"{animalStatus}, Needs feeding" : $"{animalStatus}, No animals!";
@@ -534,5 +534,16 @@ public class AnimalStructureUI : BaseStructureUI
             //     // if (progressBar != null) progressBar.gameObject.SetActive(false);
             // }
         }
+    }
+
+
+    public void checkFeed()
+    {
+        TutorialManager.Instance.CheckStep10();   
+    }
+    public void checkCollect()
+    {
+        Debug.Log("checkCollect called----------------------------------------------------------------------------------------");
+        TutorialManager.Instance.CheckStep11();   
     }
 }

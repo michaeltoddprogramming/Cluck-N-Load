@@ -1152,6 +1152,10 @@ public class BuildController : MonoBehaviour
         {
             TutorialManager.Instance.CheckStep8();
         }
+        if (structure.GetStructureName() == "Chicken Barrack")
+        {
+            TutorialManager.Instance.CheckStep12();
+        }
 
         // --- Play particle effect on placement ---
         if (dustPoof != null)

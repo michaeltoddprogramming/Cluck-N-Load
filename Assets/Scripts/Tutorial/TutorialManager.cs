@@ -188,14 +188,14 @@ public class TutorialManager : MonoBehaviour
 
         // Step 13: Watch Production Start
 
-      string   title12 = "Production Starting";
-        string     description12 = "Excellent! Your chickens are now fed and <color=purple><i>producing eggs</i></color>. They will produce eggs quickly for the tutorial! No rush, just click Next when you want to proceed.";
+      string   title12 = "Collect Your Eggs";
+        string     description12 = "Excellent! Your chickens are now fed and <color=purple><i>producing eggs</i></color>. They will produce eggs quickly for the tutorial! Click on the chicken coop and <color=purple><i>collect the eggs to earn money</i></color>. This is how you'll fund your expansion and defenses!";
 
 
         // Step 14: Collect Products
 
-       string  title13 = "Collect Your Eggs";
-        string     description13 = "Perfect! Your chickens have finished producing eggs. Click on the chicken coop and <color=purple><i>collect the eggs to earn money</i></color>. This is how you'll fund your expansion and defenses!";
+    //    string  title13 = "Collect Your Eggs";
+    //     string     description13 = "Perfect! Your chickens have finished producing eggs. Click on the chicken coop and <color=purple><i>collect the eggs to earn money</i></color>. This is how you'll fund your expansion and defenses!";
 
         // Step 15: Build Barracks for Defense
 
@@ -205,32 +205,32 @@ public class TutorialManager : MonoBehaviour
 
         // Step 16: Place Defense Flag
 
-       string  title15 = "Set Your Defense Position";
-        string     description15 = "Great! Now <color=purple><i>click on your barracks and place a flag</i></color>. This flag shows your <color=purple><i>army where to gather and defend</i></color>. Place it in a strategic position where your army can protect your important buildings!";
+       string  title16 = "Set Your Defense Position";
+        string     description16 = "Great! Now <color=purple><i>click on your barracks and place a flag</i></color>. This flag shows your <color=purple><i>army where to gather and defend</i></color>. Place it in a strategic position where your army can protect your important buildings!";
 
 
         // Step 17: Recruit Army
 
-        string title16 = "Recruit Your Army";
-         string    description16 = "Perfect! Now <color=purple><i>recruit 2-3 soldier chickens</i></color> from your barracks. They'll <color=purple><i>cost money</i></color> and will <color=purple><i>take chickens from your coop</i></color>, but they're essential for defense. Start small - 2-3 soldiers should be enough for your first night. The further your barracks are to your chicken coop, the cheaper recruitment is!";
+        string title15 = "Recruit Your Army";
+         string    description15 = "Perfect! Now <color=purple><i>recruit 2-3 soldier chickens</i></color> from your barracks. They'll <color=purple><i>cost money</i></color> and will <color=purple><i>take chickens from your coop</i></color>, but they're essential for defense. Start small - 2-3 soldiers should be enough for your first night. The further your barracks are to your chicken coop, the cheaper recruitment is!";
 
 
         // Step 18: First Night - Special Tutorial Night Start
 
-       string  title17 = "Ready for Your First Night?";
-        string     description17 = "Perfect! You've recruited your army and set up your defenses. When you're completely ready to face the night, click the 'Next' button below. The button will only be enabled when your defenses are properly set up. Take your time - you have full control!";
+    //    string  title17 = "Ready for Your First Night?";
+    //     string     description17 = "Perfect! You've recruited your army and set up your defenses. When you're completely ready to face the night, click the 'Next' button below. The button will only be enabled when your defenses are properly set up. Take your time - you have full control!";
 
 
         // Step 19: Night Defense
 
-       string  title18 = "Watch Your Army Fight!";
-        string     description18 = "Look at them go! Your soldier chickens are defending your farm. Watch how they <color=purple><i>move to the flag position and fight off the wolves</i></color>. If <color=purple><i>all your structures get destroyed, it's game over</i></color>, so keep building up your defenses!";
+       string  title19 = "Watch Your Army Fight!";
+        string     description19 = "Look at them go! Your soldier chickens are defending your farm. Watch how they <color=purple><i>move to the flag position and fight off the wolves</i></color>. If <color=purple><i>all your structures get destroyed, it's game over</i></color>, so keep building up your defenses!";
 
 
         // Step 20: Show Synergies
 
-       string  title19 = "Understanding Synergies";
-          string   description19 = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos <color=purple><i>near</i></color> crops = <color=purple><i>more</i></color> production\n• Animals <color=purple><i>near</i></color> silos = eat <color=purple><i>less</i></color> food\n• Barracks <color=purple><i>farther</i></color> from animals = <color=purple><i>cheaper</i></color> recruitment\nPlan your layout carefully!";
+       string  title18 = "Understanding Synergies";
+          string   description18 = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos <color=purple><i>near</i></color> crops = <color=purple><i>more</i></color> production\n• Animals <color=purple><i>near</i></color> silos = eat <color=purple><i>less</i></color> food\n• Barracks <color=purple><i>farther</i></color> from animals = <color=purple><i>cheaper</i></color> recruitment\nPlan your layout carefully!";
 
 
         // Step 21: Complete Tutorial
@@ -389,6 +389,133 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    public void CheckStep10()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 10 && called == false)
+        {
+            displayStuff(title12, description12);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+    public void CheckStep11()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 11 && called == false)
+        {
+            Debug.Log("checkCollect called+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            displayStuff(title14, description14);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+    public void CheckStep12()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 12 && called == false)
+        {
+            Debug.Log("checkCollect called+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            displayStuff(title15, description15);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+    public void CheckStep13()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 13 && called == false)
+        {
+            Debug.Log("checkCollect called+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            displayStuff(title16, description16);
+            currStep++;
+            called = true;
+            if (startNightButton != null)
+            {
+                startNightButton.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            return;
+        }
+    }
+    public void CheckStep14()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 14 && called == false)
+        {
+            Debug.Log("checkCollect called+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            displayStuff(title18, description18);
+            currStep++;
+            called = true;
+            CompleteTutorial();
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    public void EndTutorial()
+    {
+        Debug.Log("Ending the tutorial and resuming normal gameplay.");
+
+        // Mark the tutorial as completed
+        tutorialCompleted = true;
+
+        // Stop any ongoing tutorial-related coroutines
+        if (conditionPollingCoroutine != null)
+        {
+            StopCoroutine(conditionPollingCoroutine);
+            conditionPollingCoroutine = null;
+        }
+
+        // Clear any pending tutorial steps
+        pendingSteps.Clear();
+
+        // Hide the tutorial UI
+        // if (tutorialPanel != null)
+        // {
+        //     tutorialPanel.SetActive(false);
+        // }
+
+        // Disable the world pointer
+        if (worldPointer != null)
+        {
+            worldPointer.SetActive(false);
+        }
+
+        // Resume normal game time
+        ResumeFromTutorial();
+
+        // Save the tutorial completion state
+        PlayerPrefs.SetInt("TutorialCompleted", 1);
+        PlayerPrefs.Save();
+
+        // Trigger any additional logic for ending the tutorial
+        OnTutorialCompleted?.Invoke();
+
+        Debug.Log("Tutorial has been successfully ended.");
+    }
+
     private void Start()
     {
         tutScript = FindObjectOfType<TutorialUIPrefab>();
@@ -485,498 +612,505 @@ public class TutorialManager : MonoBehaviour
         // CompleteCurrentStep();
     }
 
-    private void SetupUI()
-    {
-        if (tutorialPanel == null)
-        {
-            GameObject tutorialUI = GameObject.Find("TutorialUI");
-            if (tutorialUI != null)
-            {
-                tutorialPanel = tutorialUI;
-                Debug.Log("Auto-found TutorialUI panel");
+    // private void SetupUI()
+    // {
+    //     if (tutorialPanel == null)
+    //     {
+    //         GameObject tutorialUI = GameObject.Find("TutorialUI");
+    //         if (tutorialUI != null)
+    //         {
+    //             tutorialPanel = tutorialUI;
+    //             Debug.Log("Auto-found TutorialUI panel");
 
-                var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
-                if (uiScript != null)
-                {
-                    if (tutorialDescription == null) tutorialDescription = uiScript.dialogueText;
-                    if (tutorialTitle == null) tutorialTitle = uiScript.characterNameText;
-                    if (nextButton == null) nextButton = uiScript.nextButton;
-                    if (skipButton == null) skipButton = uiScript.skipButton;
-                    if (characterPortrait == null) characterPortrait = uiScript.characterPortrait;
+    //             var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
+    //             if (uiScript != null)
+    //             {
+    //                 if (tutorialDescription == null) tutorialDescription = uiScript.dialogueText;
+    //                 if (tutorialTitle == null) tutorialTitle = uiScript.characterNameText;
+    //                 if (nextButton == null) nextButton = uiScript.nextButton;
+    //                 if (skipButton == null) skipButton = uiScript.skipButton;
+    //                 if (characterPortrait == null) characterPortrait = uiScript.characterPortrait;
 
-                    Debug.Log("Auto-assigned UI components from TutorialUIPrefab");
-                }
-            }
-        }
+    //                 Debug.Log("Auto-assigned UI components from TutorialUIPrefab");
+    //             }
+    //         }
+    //     }
 
-        if (tutorialPanel != null)
-        {
-            tutorialPanel.SetActive(false);
-        }
+    //     if (tutorialPanel != null)
+    //     {
+    //         tutorialPanel.SetActive(false);
+    //     }
 
-        if (nextButton != null)
-        {
-            nextButton.onClick.AddListener(NextTutorialStep);
-        }
+    //     if (nextButton != null)
+    //     {
+    //         nextButton.onClick.AddListener(NextTutorialStep);
+    //     }
 
-        if (skipButton != null)
-        {
-            skipButton.onClick.AddListener(SkipTutorial);
-        }
+    //     if (skipButton != null)
+    //     {
+    //         skipButton.onClick.AddListener(SkipTutorial);
+    //     }
 
-        if (startNightButton != null)
-        {
-            startNightButton.onClick.AddListener(OnStartNightClicked);
-            startNightButton.gameObject.SetActive(false);
-        }
+    //     if (startNightButton != null)
+    //     {
+    //         startNightButton.onClick.AddListener(OnStartNightClicked);
+    //         startNightButton.gameObject.SetActive(false);
+    //     }
 
-        if (characterPortrait != null && oldManPortrait != null)
-        {
-            characterPortrait.sprite = oldManPortrait;
-        }
-    }
+    //     if (characterPortrait != null && oldManPortrait != null)
+    //     {
+    //         characterPortrait.sprite = oldManPortrait;
+    //     }
+    // }
 
     private void StartTutorial()
     {
-        if (tutorialCompleted) return;
+        // if (tutorialCompleted) return;
 
-        if (conditionPollingCoroutine == null)
-        {
-            conditionPollingCoroutine = StartCoroutine(PollForMissedConditions());
-        }
+        // if (conditionPollingCoroutine == null)
+        // {
+        //     conditionPollingCoroutine = StartCoroutine(PollForMissedConditions());
+        // }
 
-        OnConditionMet(TutorialCondition.GameStarted);
+        // OnConditionMet(TutorialCondition.GameStarted);
     }
 
     public void OnConditionMet(TutorialCondition condition)
 {
-    if (!enableTutorial || tutorialCompleted) return;
+    // if (!enableTutorial || tutorialCompleted) return;
 
-    if (completedConditions.Contains(condition)) 
-    {
-        Debug.Log($"Tutorial condition {condition} already completed - ignoring duplicate");
-        return;
-    }
+    // if (completedConditions.Contains(condition)) 
+    // {
+    //     Debug.Log($"Tutorial condition {condition} already completed - ignoring duplicate");
+    //     return;
+    // }
 
-    Debug.Log($"Tutorial condition met: {condition}");
-    completedConditions.Add(condition);
-    OnConditionCompleted?.Invoke(condition);
+    // Debug.Log($"Tutorial condition met: {condition}");
+    // completedConditions.Add(condition);
+    // OnConditionCompleted?.Invoke(condition);
 
-    TutorialStep nextStep = GetNextIncompleteStep();
+    // TutorialStep nextStep = GetNextIncompleteStep();
     
-    if (nextStep != null && (nextStep.triggerCondition == condition || (nextStep.stepId == "time_controls" && condition == TutorialCondition.TimeControlsExplained)) && CanTriggerStepStrictly(nextStep))
-    {
-        Debug.Log($"Tutorial: Triggering next sequential step {nextStep.stepId}");
-        pendingSteps.Clear();
-        pendingSteps.Enqueue(nextStep);
-        ProcessPendingSteps();
-    }
-    else if (nextStep != null)
-    {
-        Debug.Log($"Tutorial: Condition {condition} met, but next step is {nextStep.stepId} (waiting for {nextStep.triggerCondition})");
-    }
-    else
-    {
-        Debug.Log($"Tutorial: No more incomplete steps to process");
-    }
+    // if (nextStep != null && (nextStep.triggerCondition == condition || (nextStep.stepId == "time_controls" && condition == TutorialCondition.TimeControlsExplained)) && CanTriggerStepStrictly(nextStep))
+    // {
+    //     Debug.Log($"Tutorial: Triggering next sequential step {nextStep.stepId}");
+    //     pendingSteps.Clear();
+    //     pendingSteps.Enqueue(nextStep);
+    //     ProcessPendingSteps();
+    // }
+    // else if (nextStep != null)
+    // {
+    //     Debug.Log($"Tutorial: Condition {condition} met, but next step is {nextStep.stepId} (waiting for {nextStep.triggerCondition})");
+    // }
+    // else
+    // {
+    //     Debug.Log($"Tutorial: No more incomplete steps to process");
+    // }
 }
 
     private TutorialStep GetNextIncompleteStep()
     {
-        foreach (var step in tutorialSteps)
-        {
-            if (!step.isCompleted)
-            {
-                return step;
-            }
-        }
+        // foreach (var step in tutorialSteps)
+        // {
+        //     if (!step.isCompleted)
+        //     {
+        //         return step;
+        //     }
+        // }
         return null;
     }
 private bool CanTriggerStepStrictly(TutorialStep step)
 {
-    if (step.isCompleted)
-    {
-        Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
-        return false;
-    }
+    // if (step.isCompleted)
+    // {
+    //     Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
+    //     return false;
+    // }
 
-    if (!ArePrerequisitesStrictlyMet(step))
-    {
-        Debug.Log($"Tutorial step {step.stepId} blocked: Prerequisites not met");
-        return false;
-    }
+    // if (!ArePrerequisitesStrictlyMet(step))
+    // {
+    //     Debug.Log($"Tutorial step {step.stepId} blocked: Prerequisites not met");
+    //     return false;
+    // }
 
-    if (isTutorialActive && currentStep != null && currentStep.stepId != step.stepId)
-    {
-        Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) is currently active");
-        return false;
-    }
+    // if (isTutorialActive && currentStep != null && currentStep.stepId != step.stepId)
+    // {
+    //     Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) is currently active");
+    //     return false;
+    // }
 
-    // Allow time_controls if either FirstCropHarvested or TimeControlsExplained is met
-    if (step.stepId == "time_controls" && (completedConditions.Contains(TutorialCondition.FirstCropHarvested) || completedConditions.Contains(TutorialCondition.TimeControlsExplained)))
-    {
-        Debug.Log($"Tutorial step {step.stepId} allowed: FirstCropHarvested or TimeControlsExplained condition met");
-        return true;
-    }
+    // // Allow time_controls if either FirstCropHarvested or TimeControlsExplained is met
+    // if (step.stepId == "time_controls" && (completedConditions.Contains(TutorialCondition.FirstCropHarvested) || completedConditions.Contains(TutorialCondition.TimeControlsExplained)))
+    // {
+    //     Debug.Log($"Tutorial step {step.stepId} allowed: FirstCropHarvested or TimeControlsExplained condition met");
+    //     return true;
+    // }
 
-    int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
-    if (stepIndex > 0)
-    {
-        for (int i = 0; i < stepIndex; i++)
-        {
-            if (!tutorialSteps[i].isCompleted)
-            {
-                Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet (index {i})");
-                return false;
-            }
-        }
-    }
+    // int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
+    // if (stepIndex > 0)
+    // {
+    //     for (int i = 0; i < stepIndex; i++)
+    //     {
+    //         if (!tutorialSteps[i].isCompleted)
+    //         {
+    //             Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet (index {i})");
+    //             return false;
+    //         }
+    //     }
+    // }
 
-    Debug.Log($"Tutorial step {step.stepId} can be triggered");
+    // Debug.Log($"Tutorial step {step.stepId} can be triggered");
     return true;
 }
 
     private void ProcessPendingSteps()
     {
-        if (isTutorialActive || pendingSteps.Count == 0)
-        {
-            Debug.Log($"ProcessPendingSteps: Cannot process - Tutorial active: {isTutorialActive}, Pending steps: {pendingSteps.Count}");
-            return;
-        }
+        // if (isTutorialActive || pendingSteps.Count == 0)
+        // {
+        //     Debug.Log($"ProcessPendingSteps: Cannot process - Tutorial active: {isTutorialActive}, Pending steps: {pendingSteps.Count}");
+        //     return;
+        // }
 
-        var step = pendingSteps.Dequeue();
-        Debug.Log($"Processing pending step: {step.stepId} (Trigger: {step.triggerCondition})");
-        ShowTutorialStep(step);
+        // var step = pendingSteps.Dequeue();
+        // Debug.Log($"Processing pending step: {step.stepId} (Trigger: {step.triggerCondition})");
+        // ShowTutorialStep(step);
     }
 
  public void ShowTutorialStep(TutorialStep step)
 {
-    if (currentTutorialCoroutine != null)
-    {
-        StopCoroutine(currentTutorialCoroutine);
-    }
+    // if (currentTutorialCoroutine != null)
+    // {
+    //     StopCoroutine(currentTutorialCoroutine);
+    // }
 
-    if (step.stepId == "open_shop")
-    {
-        Debug.Log("Tutorial: Preparing for open_shop step - forcing shop closed and enabling shop button");
-        if (shopManager != null)
-        {
-            // shopManager.CloseShop();
-            shopManager.ResetShopState();
-            shopManager.enableShop();
-        }
-        if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
-        {
-            // NightManager.Instance.shopManager.CloseShop();
-            NightManager.Instance.shopManager.ResetShopState();
-            if (NightManager.Instance.IsDay)
-                NightManager.Instance.shopManager.enableShop();
-        }
-    }
-    else if (step.stepId == "harvest_first_crops")
-    {
-        CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-        bool cropReady = false;
-        foreach (var crop in crops)
-        {
-            if (crop.CropReady)
-            {
-                cropReady = true;
-                step.worldPosition = crop.transform.position + Vector3.up * 3f;
-                Debug.Log($"Tutorial: Highlighting crop plot {crop.name} at {step.worldPosition} for harvest");
-                StartCoroutine(PulseEffect(crop.gameObject));
-                if (worldPointer != null)
-                {
-                    worldPointer.transform.position = step.worldPosition + Vector3.up * 1f;
-                    worldPointer.SetActive(true);
-                }
-                break;
-            }
-        }
-        if (!cropReady)
-        {
-            Debug.Log("Tutorial: No crop ready for harvest, delaying harvest_first_crops step");
-            StartCoroutine(ShowNextStepAfterDelay("harvest_first_crops", 1f));
-            return;
-        }
-    }
-    else if (step.stepId == "time_controls")
-    {
-        Debug.Log("Tutorial: Forcing time_controls step UI visibility");
-        ForceShowTutorialUI();
-    }
-    else
-    {
-        if (shopManager != null)
-        {
-            // shopManager.CloseShop();
-        }
-        if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
-        {
-            // NightManager.Instance.shopManager.CloseShop();
-            NightManager.Instance.shopManager.ResetShopState();
-            if (NightManager.Instance.IsDay)
-                NightManager.Instance.shopManager.enableShop();
-        }
-    }
+    // if (step.stepId == "open_shop")
+    // {
+    //     Debug.Log("Tutorial: Preparing for open_shop step - forcing shop closed and enabling shop button");
+    //     if (shopManager != null)
+    //     {
+    //         // shopManager.CloseShop();
+    //         shopManager.ResetShopState();
+    //         shopManager.enableShop();
+    //     }
+    //     if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
+    //     {
+    //         // NightManager.Instance.shopManager.CloseShop();
+    //         NightManager.Instance.shopManager.ResetShopState();
+    //         if (NightManager.Instance.IsDay)
+    //             NightManager.Instance.shopManager.enableShop();
+    //     }
+    // }
+    // else if (step.stepId == "harvest_first_crops")
+    // {
+    //     CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+    //     bool cropReady = false;
+    //     foreach (var crop in crops)
+    //     {
+    //         if (crop.CropReady)
+    //         {
+    //             cropReady = true;
+    //             step.worldPosition = crop.transform.position + Vector3.up * 3f;
+    //             Debug.Log($"Tutorial: Highlighting crop plot {crop.name} at {step.worldPosition} for harvest");
+    //             StartCoroutine(PulseEffect(crop.gameObject));
+    //             if (worldPointer != null)
+    //             {
+    //                 worldPointer.transform.position = step.worldPosition + Vector3.up * 1f;
+    //                 worldPointer.SetActive(true);
+    //             }
+    //             break;
+    //         }
+    //     }
+    //     if (!cropReady)
+    //     {
+    //         Debug.Log("Tutorial: No crop ready for harvest, delaying harvest_first_crops step");
+    //         StartCoroutine(ShowNextStepAfterDelay("harvest_first_crops", 1f));
+    //         return;
+    //     }
+    // }
+    // else if (step.stepId == "time_controls")
+    // {
+    //     Debug.Log("Tutorial: Forcing time_controls step UI visibility");
+    //     ForceShowTutorialUI();
+    // }
+    // else
+    // {
+    //     if (shopManager != null)
+    //     {
+    //         // shopManager.CloseShop();
+    //     }
+    //     if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
+    //     {
+    //         // NightManager.Instance.shopManager.CloseShop();
+    //         NightManager.Instance.shopManager.ResetShopState();
+    //         if (NightManager.Instance.IsDay)
+    //             NightManager.Instance.shopManager.enableShop();
+    //     }
+    // }
 
-    ForceShowTutorialUI(); // Ensure UI is visible for all steps
-    currentStep = step;
-    currentTutorialCoroutine = StartCoroutine(DisplayTutorialStep(step));
+    // ForceShowTutorialUI(); // Ensure UI is visible for all steps
+    // currentStep = step;
+    // currentTutorialCoroutine = StartCoroutine(DisplayTutorialStep(step));
 }
 
     private IEnumerator DisplayTutorialStep(TutorialStep step)
     {
-        isTutorialActive = true;
+        // isTutorialActive = true;
 
-        if (step.pauseGame)
-        {
-            PauseForTutorial();
-        }
+        // if (step.pauseGame)
+        // {
+        //     PauseForTutorial();
+        // }
 
-        if (tutorialPanel != null)
-        {
-            tutorialPanel.SetActive(true);
+        // if (tutorialPanel != null)
+        // {
+        //     tutorialPanel.SetActive(true);
             
-            var canvasGroup = tutorialPanel.GetComponent<CanvasGroup>();
-            if (canvasGroup != null)
-            {
-                canvasGroup.alpha = 1f;
-                canvasGroup.interactable = true;
-                canvasGroup.blocksRaycasts = true;
-            }
+        //     var canvasGroup = tutorialPanel.GetComponent<CanvasGroup>();
+        //     if (canvasGroup != null)
+        //     {
+        //         canvasGroup.alpha = 1f;
+        //         canvasGroup.interactable = true;
+        //         canvasGroup.blocksRaycasts = true;
+        //     }
 
-            if (tutorialTitle != null)
-                tutorialTitle.text = step.title;
+        //     if (tutorialTitle != null)
+        //         tutorialTitle.text = step.title;
 
-            var uiScript = tutorialPanel != null ? tutorialPanel.GetComponent<TutorialUIPrefab>() : null;
-            if (uiScript != null)
-                uiScript.PlayTypingWithMumble(step.description);
-            else if (tutorialDescription != null)
-                tutorialDescription.text = step.description;
+        //     var uiScript = tutorialPanel != null ? tutorialPanel.GetComponent<TutorialUIPrefab>() : null;
+        //     if (uiScript != null)
+        //         uiScript.PlayTypingWithMumble(step.description);
+        //     else if (tutorialDescription != null)
+        //         tutorialDescription.text = step.description;
 
-            PlayOldManVoice();
+        //     PlayOldManVoice();
 
-            if (step.pointToWorldPosition && worldPointer != null)
-            {
-                worldPointer.SetActive(true);
-                worldPointer.transform.position = step.worldPosition;
-            }
-            else if (worldPointer != null)
-            {
-                worldPointer.SetActive(false);
-            }
+        //     if (step.pointToWorldPosition && worldPointer != null)
+        //     {
+        //         worldPointer.SetActive(true);
+        //         worldPointer.transform.position = step.worldPosition;
+        //     }
+        //     else if (worldPointer != null)
+        //     {
+        //         worldPointer.SetActive(false);
+        //     }
 
-            if (step.highlightUI && !string.IsNullOrEmpty(step.highlightUITag))
-            {
-                HighlightUIElement(step.highlightUITag);
-            }
+        //     if (step.highlightUI && !string.IsNullOrEmpty(step.highlightUITag))
+        //     {
+        //         HighlightUIElement(step.highlightUITag);
+        //     }
 
-            if (step.showStartNightButton && startNightButton != null)
-            {
-                startNightButton.gameObject.SetActive(true);
-                StartCoroutine(UpdateStartNightButtonState(step));
-            }
-            else if (startNightButton != null)
-            {
-                startNightButton.gameObject.SetActive(false);
-            }
-        }
+        //     if (step.showStartNightButton && startNightButton != null)
+        //     {
+        //         startNightButton.gameObject.SetActive(true);
+        //         StartCoroutine(UpdateStartNightButtonState(step));
+        //     }
+        //     else if (startNightButton != null)
+        //     {
+        //         startNightButton.gameObject.SetActive(false);
+        //     }
+        // }
 
-        while (currentStep == step && isTutorialActive)
-        {
+        // while (currentStep == step && isTutorialActive)
+        // {
+        //     yield return null;
+        // }
+
             yield return null;
-        }
-
-        CompleteCurrentStep();
+        // CompleteCurrentStep();
     }
 
 private void CompleteCurrentStep()
 {
-    if (currentStep != null)
+    // if (currentStep != null)
+    // {
+    //     currentStep.isCompleted = true;
+
+    //     if (currentStep.stepId == "welcome")
+    //     {
+    //         Debug.Log("Tutorial: Welcome completed, showing camera controls");
+    //         StartCoroutine(ShowNextStepAfterDelay("camera_controls", 0.5f));
+    //     }
+    //     else if (currentStep.stepId == "camera_controls")
+    //     {
+    //         Debug.Log("Tutorial: Camera controls completed, showing shop instruction");
+    //         StartCoroutine(ShowNextStepAfterDelay("open_shop", 0.5f));
+    //     }
+    //     else if (currentStep.stepId == "open_shop")
+    //     {
+    //         Debug.Log("Tutorial: Shop instruction completed, waiting for shop to be opened");
+    //         StartCoroutine(DelayNextStepAfterShopOpened());
+    //     }
+    //     else if (currentStep.stepId == "harvest_first_crops")
+    //     {
+    //         Debug.Log("Tutorial: Harvest first crops completed, checking harvest status");
+    //         var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
+    //         conditionTracker?.CheckInventoryForHarvest();
+    //         if (conditionTracker != null && conditionTracker.hasHarvestedFirstCrop && completedConditions.Contains(TutorialCondition.FirstCropHarvested))
+    //         {
+    //             Debug.Log("Tutorial: Harvest confirmed, triggering time_controls step");
+    //             OnConditionMet(TutorialCondition.TimeControlsExplained);
+    //             StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.5f));
+    //         }
+    //         else
+    //         {
+    //             Debug.Log("Tutorial: Waiting for player to harvest crop or FirstCropHarvested condition, scheduling recheck");
+    //             StartCoroutine(WaitForHarvestAndProceed());
+    //         }
+    //     }
+    //     else if (currentStep.stepId == "tutorial_complete")
+    //     {
+    //         CompleteTutorial();
+    //     }
+    // }
+
+    //     // Hide UI
+    //     // if (tutorialPanel != null)
+    //     // {
+    //     //     tutorialPanel.SetActive(false);
+    //     // }
+
+    // if (worldPointer != null)
+    // {
+    //     worldPointer.SetActive(false);
+    // }
+
+    // if (startNightButton != null)
+    // {
+    //     startNightButton.gameObject.SetActive(false);
+    // }
+
+    // ResumeFromTutorial();
+
+    // isTutorialActive = false;
+    // currentStep = null;
+
+    // ProcessPendingSteps();
+}
+
+    private IEnumerator WaitForHarvestAndProceed()
     {
-        currentStep.isCompleted = true;
+    return null;
+        // Debug.Log("Tutorial: Waiting for harvest to be completed or FirstCropHarvested condition to be met");
 
-        if (currentStep.stepId == "welcome")
-        {
-            Debug.Log("Tutorial: Welcome completed, showing camera controls");
-            StartCoroutine(ShowNextStepAfterDelay("camera_controls", 0.5f));
-        }
-        else if (currentStep.stepId == "camera_controls")
-        {
-            Debug.Log("Tutorial: Camera controls completed, showing shop instruction");
-            StartCoroutine(ShowNextStepAfterDelay("open_shop", 0.5f));
-        }
-        else if (currentStep.stepId == "open_shop")
-        {
-            Debug.Log("Tutorial: Shop instruction completed, waiting for shop to be opened");
-            StartCoroutine(DelayNextStepAfterShopOpened());
-        }
-        else if (currentStep.stepId == "harvest_first_crops")
-        {
-            Debug.Log("Tutorial: Harvest first crops completed, checking harvest status");
-            var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
-            conditionTracker?.CheckInventoryForHarvest();
-            if (conditionTracker != null && conditionTracker.hasHarvestedFirstCrop && completedConditions.Contains(TutorialCondition.FirstCropHarvested))
-            {
-                Debug.Log("Tutorial: Harvest confirmed, triggering time_controls step");
-                OnConditionMet(TutorialCondition.TimeControlsExplained);
-                StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.5f));
-            }
-            else
-            {
-                Debug.Log("Tutorial: Waiting for player to harvest crop or FirstCropHarvested condition, scheduling recheck");
-                StartCoroutine(WaitForHarvestAndProceed());
-            }
-        }
-        else if (currentStep.stepId == "tutorial_complete")
-        {
-            CompleteTutorial();
-        }
-    }
+        // // Wait for a short period to check if the player harvests the crop
+    // var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        // float timeout = 5f;
+        // float elapsed = 0f;
 
-        // Hide UI
-        // if (tutorialPanel != null)
+        // while (elapsed < timeout)
         // {
-        //     tutorialPanel.SetActive(false);
+        //     conditionTracker?.CheckInventoryForHarvest();
+        //     if (conditionTracker != null && conditionTracker.hasHarvestedFirstCrop && completedConditions.Contains(TutorialCondition.FirstCropHarvested))
+        //     {
+        //         Debug.Log("Tutorial: Harvest detected after delay, proceeding to time_controls");
+        //         if (!pendingSteps.Any(s => s.stepId == "time_controls") && (currentStep == null || currentStep.stepId != "time_controls"))
+        //         {
+        //             OnConditionMet(TutorialCondition.TimeControlsExplained);
+        //             StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.5f));
+        //         }
+        //         else
+        //         {
+        //             Debug.Log("Tutorial: time_controls already queued or active, skipping duplicate");
+        //         }
+        //         yield break;
+        //     }
+        //     elapsed += 0.1f;
+        //     yield return new WaitForSeconds(0.1f);
         // }
 
-    if (worldPointer != null)
-    {
-        worldPointer.SetActive(false);
+        // Debug.LogWarning("Tutorial: Harvest not detected within timeout, forcing FirstCropHarvested and time_controls step");
+        // if (conditionTracker != null)
+        // {
+        //     conditionTracker.hasHarvestedFirstCrop = true;
+        // }
+        // OnConditionMet(TutorialCondition.FirstCropHarvested);
+        // if (!pendingSteps.Any(s => s.stepId == "time_controls") && (currentStep == null || currentStep.stepId != "time_controls"))
+        // {
+        //     OnConditionMet(TutorialCondition.TimeControlsExplained);
+        //     StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.1f));
+        // }
+        // else
+        // {
+        //     Debug.Log("Tutorial: time_controls already queued or active, skipping duplicate");
+        // }
     }
-
-    if (startNightButton != null)
-    {
-        startNightButton.gameObject.SetActive(false);
-    }
-
-    ResumeFromTutorial();
-
-    isTutorialActive = false;
-    currentStep = null;
-
-    ProcessPendingSteps();
-}
-
-private IEnumerator WaitForHarvestAndProceed()
-{
-    var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
-    float timeout = 5f;
-    float elapsed = 0f;
-
-    while (elapsed < timeout)
-    {
-        conditionTracker?.CheckInventoryForHarvest();
-        if (conditionTracker != null && conditionTracker.hasHarvestedFirstCrop && completedConditions.Contains(TutorialCondition.FirstCropHarvested))
-        {
-            Debug.Log("Tutorial: Harvest detected after delay, proceeding to time_controls");
-            if (!pendingSteps.Any(s => s.stepId == "time_controls") && (currentStep == null || currentStep.stepId != "time_controls"))
-            {
-                OnConditionMet(TutorialCondition.TimeControlsExplained);
-                StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.5f));
-            }
-            else
-            {
-                Debug.Log("Tutorial: time_controls already queued or active, skipping duplicate");
-            }
-            yield break;
-        }
-        elapsed += 0.1f;
-        yield return new WaitForSeconds(0.1f);
-    }
-
-    Debug.LogWarning("Tutorial: Harvest not detected within timeout, forcing FirstCropHarvested and time_controls step");
-    if (conditionTracker != null)
-    {
-        conditionTracker.hasHarvestedFirstCrop = true;
-    }
-    OnConditionMet(TutorialCondition.FirstCropHarvested);
-    if (!pendingSteps.Any(s => s.stepId == "time_controls") && (currentStep == null || currentStep.stepId != "time_controls"))
-    {
-        OnConditionMet(TutorialCondition.TimeControlsExplained);
-        StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.1f));
-    }
-    else
-    {
-        Debug.Log("Tutorial: time_controls already queued or active, skipping duplicate");
-    }
-}
     private IEnumerator DelayNextStepAfterShopOpened()
     {
-        yield return new WaitForSecondsRealtime(1.5f);
-        ProcessPendingSteps();
+        return null;
+        // yield return new WaitForSecondsRealtime(1.5f);
+        // ProcessPendingSteps();
     }
 
     public void NextTutorialStep()
     {
-        Debug.Log("NextTutorialStep called!");
-        if (currentStep != null)
-        {
-            Debug.Log($"Completing current step: {currentStep.stepId}");
-            CompleteCurrentStep();
-        }
-        else
-        {
-            Debug.LogWarning("NextTutorialStep called but currentStep is null!");
-        }
+        // Debug.Log("NextTutorialStep called!");
+        // if (currentStep != null)
+        // {
+        //     Debug.Log($"Completing current step: {currentStep.stepId}");
+        //     CompleteCurrentStep();
+        // }
+        // else
+        // {
+        //     Debug.LogWarning("NextTutorialStep called but currentStep is null!");
+        // }
     }
 
     public void SkipTutorial()
     {
-        CompleteTutorial();
+        // CompleteTutorial();
     }
 
     public void OnStartNightClicked()
     {
-        Debug.Log("Tutorial: Start Night button clicked!");
+        // Debug.Log("Tutorial: Start Night button clicked!");
         
-        var tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
-        if (tutorialTracker != null && tutorialTracker.AreDefensesReady())
-        {
-            if (nightManager != null)
-            {
-                Debug.Log("Tutorial: Starting night manually via tutorial button");
-                nightManager.ForceStartNight();
-                OnConditionMet(TutorialCondition.NightStarted);
-                NextTutorialStep();
-            }
-            else
-            {
-                Debug.LogError("Tutorial: NightManager not found!");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Tutorial: Defenses not ready - button should be disabled!");
-        }
+        // var tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        // if (tutorialTracker != null && tutorialTracker.AreDefensesReady())
+        // {
+        //     if (nightManager != null)
+        //     {
+        //         Debug.Log("Tutorial: Starting night manually via tutorial button");
+        //         nightManager.ForceStartNight();
+        //         OnConditionMet(TutorialCondition.NightStarted);
+        //         NextTutorialStep();
+        //     }
+        //     else
+        //     {
+        //         Debug.LogError("Tutorial: NightManager not found!");
+        //     }
+        // }
+        // else
+        // {
+        //     Debug.LogWarning("Tutorial: Defenses not ready - button should be disabled!");
+        // }
     }
 
     private IEnumerator UpdateStartNightButtonState(TutorialStep step)
     {
-        while (currentStep == step && startNightButton != null && startNightButton.gameObject.activeInHierarchy)
-        {
-            if (step.requiresDefensesReady)
-            {
-                var tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
-                bool defensesReady = tutorialTracker != null && tutorialTracker.AreDefensesReady();
-                
-                startNightButton.interactable = defensesReady;
-                
-                var buttonText = startNightButton.GetComponentInChildren<TextMeshProUGUI>();
-                if (buttonText != null)
-                {
-                    buttonText.text = defensesReady ? "Start Night!" : "Defenses Not Ready";
-                    buttonText.color = defensesReady ? Color.white : Color.gray;
-                }
-            }
-            else
-            {
-                startNightButton.interactable = true;
-            }
-            
-            yield return new WaitForSeconds(0.1f);
-        }
+        // while (currentStep == step && startNightButton != null && startNightButton.gameObject.activeInHierarchy)
+        // {
+        //     if (step.requiresDefensesReady)
+        //     {
+        //         var tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        //         bool defensesReady = tutorialTracker != null && tutorialTracker.AreDefensesReady();
+
+        //         startNightButton.interactable = defensesReady;
+
+        //         var buttonText = startNightButton.GetComponentInChildren<TextMeshProUGUI>();
+        //         if (buttonText != null)
+        //         {
+        //             buttonText.text = defensesReady ? "Start Night!" : "Defenses Not Ready";
+        //             buttonText.color = defensesReady ? Color.white : Color.gray;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         startNightButton.interactable = true;
+        //     }
+
+        //     yield return new WaitForSeconds(0.1f);
+        // }
+        return null;
     }
 
     private void CompleteTutorial()
@@ -1021,196 +1155,197 @@ private IEnumerator WaitForHarvestAndProceed()
 
     private bool HasCompletedTutorial()
     {
-        return PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
+        return true;
+        // return PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
     }
 
     private void PlayOldManVoice()
     {
-        if (voiceAudioSource != null && oldManVoices != null && oldManVoices.Length > 0)
-        {
-            var randomClip = oldManVoices[UnityEngine.Random.Range(0, oldManVoices.Length)];
-            voiceAudioSource.clip = randomClip;
-            voiceAudioSource.Play();
-        }
+        // if (voiceAudioSource != null && oldManVoices != null && oldManVoices.Length > 0)
+        // {
+        //     var randomClip = oldManVoices[UnityEngine.Random.Range(0, oldManVoices.Length)];
+        //     voiceAudioSource.clip = randomClip;
+        //     voiceAudioSource.Play();
+        // }
     }
 
     private void HighlightUIElement(string tag)
 {
-    try
-    {
-        GameObject uiElement = GameObject.FindGameObjectWithTag(tag);
-        if (uiElement != null)
-        {
-            Debug.Log($"Tutorial: Highlighting UI element {uiElement.name} with tag: {tag}");
-            StartCoroutine(PulseUIEffect(uiElement));
-        }
-        else
-        {
-            Debug.LogWarning($"Tutorial: No GameObject found with tag: {tag}");
-        }
-    }
-    catch (UnityException ex)
-    {
-        Debug.LogWarning($"Tutorial: Tag '{tag}' is not defined. Skipping highlight. Error: {ex.Message}");
-    }
+    // try
+    // {
+    //     GameObject uiElement = GameObject.FindGameObjectWithTag(tag);
+    //     if (uiElement != null)
+    //     {
+    //         Debug.Log($"Tutorial: Highlighting UI element {uiElement.name} with tag: {tag}");
+    //         StartCoroutine(PulseUIEffect(uiElement));
+    //     }
+    //     else
+    //     {
+    //         Debug.LogWarning($"Tutorial: No GameObject found with tag: {tag}");
+    //     }
+    // }
+    // catch (UnityException ex)
+    // {
+    //     Debug.LogWarning($"Tutorial: Tag '{tag}' is not defined. Skipping highlight. Error: {ex.Message}");
+    // }
 }
 
     public void ForceShowTutorialUI()
     {
-        if (tutorialPanel != null)
-        {
-            tutorialPanel.SetActive(true);
+        // if (tutorialPanel != null)
+        // {
+        //     tutorialPanel.SetActive(true);
             
-            var canvasGroup = tutorialPanel.GetComponent<CanvasGroup>();
-            if (canvasGroup != null)
-            {
-                canvasGroup.alpha = 1f;
-                canvasGroup.interactable = true;
-                canvasGroup.blocksRaycasts = true;
-                Debug.Log("Forced tutorial UI alpha to 1");
-            }
+        //     var canvasGroup = tutorialPanel.GetComponent<CanvasGroup>();
+        //     if (canvasGroup != null)
+        //     {
+        //         canvasGroup.alpha = 1f;
+        //         canvasGroup.interactable = true;
+        //         canvasGroup.blocksRaycasts = true;
+        //         Debug.Log("Forced tutorial UI alpha to 1");
+        //     }
             
-            Transform parent = tutorialPanel.transform.parent;
-            while (parent != null)
-            {
-                var parentCanvasGroup = parent.GetComponent<CanvasGroup>();
-                if (parentCanvasGroup != null)
-                {
-                    parentCanvasGroup.alpha = 1f;
-                    Debug.Log($"Set parent {parent.name} alpha to 1");
-                }
-                parent = parent.parent;
-            }
+        //     Transform parent = tutorialPanel.transform.parent;
+        //     while (parent != null)
+        //     {
+        //         var parentCanvasGroup = parent.GetComponent<CanvasGroup>();
+        //         if (parentCanvasGroup != null)
+        //         {
+        //             parentCanvasGroup.alpha = 1f;
+        //             Debug.Log($"Set parent {parent.name} alpha to 1");
+        //         }
+        //         parent = parent.parent;
+        //     }
             
-            Debug.Log("Tutorial UI forced visible");
-        }
-        else
-        {
-            Debug.LogError("Tutorial panel is null!");
-        }
+        //     Debug.Log("Tutorial UI forced visible");
+        // }
+        // else
+        // {
+        //     Debug.LogError("Tutorial panel is null!");
+        // }
     }
 
     [ContextMenu("Test Tutorial Display")]
     public void TestTutorialDisplay()
     {
-        if (tutorialSteps.Count > 0)
-        {
-            ForceShowTutorialUI();
-            DisplayTutorialStep(tutorialSteps[0]);
-        }
+        // if (tutorialSteps.Count > 0)
+        // {
+        //     ForceShowTutorialUI();
+        //     DisplayTutorialStep(tutorialSteps[0]);
+        // }
     }
 
     [ContextMenu("Debug UI Connections")]
     public void DebugUIConnections()
     {
-        Debug.Log($"Tutorial Panel: {(tutorialPanel != null ? tutorialPanel.name : "NULL")}");
-        Debug.Log($"Tutorial Title: {(tutorialTitle != null ? tutorialTitle.name : "NULL")}");
-        Debug.Log($"Tutorial Description: {(tutorialDescription != null ? tutorialDescription.name : "NULL")}");
-        Debug.Log($"Next Button: {(nextButton != null ? nextButton.name : "NULL")}");
-        Debug.Log($"Skip Button: {(skipButton != null ? skipButton.name : "NULL")}");
-        Debug.Log($"Character Portrait: {(characterPortrait != null ? characterPortrait.name : "NULL")}");
+        // Debug.Log($"Tutorial Panel: {(tutorialPanel != null ? tutorialPanel.name : "NULL")}");
+        // Debug.Log($"Tutorial Title: {(tutorialTitle != null ? tutorialTitle.name : "NULL")}");
+        // Debug.Log($"Tutorial Description: {(tutorialDescription != null ? tutorialDescription.name : "NULL")}");
+        // Debug.Log($"Next Button: {(nextButton != null ? nextButton.name : "NULL")}");
+        // Debug.Log($"Skip Button: {(skipButton != null ? skipButton.name : "NULL")}");
+        // Debug.Log($"Character Portrait: {(characterPortrait != null ? characterPortrait.name : "NULL")}");
     }
 
     [ContextMenu("Force Next Tutorial Step")]
     public void ForceNextTutorialStep()
     {
-        if (tutorialCompleted)
-        {
-            Debug.Log("Tutorial already completed");
-            return;
-        }
+        // if (tutorialCompleted)
+        // {
+        //     Debug.Log("Tutorial already completed");
+        //     return;
+        // }
         
-        foreach (var step in tutorialSteps)
-        {
-            if (!step.isCompleted)
-            {
-                Debug.Log($"Forcing tutorial step: {step.stepId} ({step.triggerCondition})");
-                OnConditionMet(step.triggerCondition);
-                break;
-            }
-        }
+        // foreach (var step in tutorialSteps)
+        // {
+        //     if (!step.isCompleted)
+        //     {
+        //         Debug.Log($"Forcing tutorial step: {step.stepId} ({step.triggerCondition})");
+        //         OnConditionMet(step.triggerCondition);
+        //         break;
+        //     }
+        // }
     }
 
     [ContextMenu("Show Tutorial State")]
     public void ShowTutorialState()
     {
-        Debug.Log("=== TUTORIAL STATE ===");
-        Debug.Log($"Tutorial Active: {isTutorialActive}");
-        Debug.Log($"Tutorial Completed: {tutorialCompleted}");
-        Debug.Log($"Current Step: {(currentStep != null ? currentStep.stepId : "None")}");
-        Debug.Log($"Pending Steps: {pendingSteps.Count}");
-        Debug.Log($"Completed Conditions: {string.Join(", ", completedConditions)}");
+        // Debug.Log("=== TUTORIAL STATE ===");
+        // Debug.Log($"Tutorial Active: {isTutorialActive}");
+        // Debug.Log($"Tutorial Completed: {tutorialCompleted}");
+        // Debug.Log($"Current Step: {(currentStep != null ? currentStep.stepId : "None")}");
+        // Debug.Log($"Pending Steps: {pendingSteps.Count}");
+        // Debug.Log($"Completed Conditions: {string.Join(", ", completedConditions)}");
         
-        Debug.Log("Next incomplete steps:");
-        int count = 0;
-        foreach (var step in tutorialSteps)
-        {
-            if (!step.isCompleted)
-            {
-                Debug.Log($"  {step.stepId} (waiting for: {step.triggerCondition})");
-                count++;
-                if (count >= 3) break;
-            }
-        }
-        Debug.Log("=====================");
+        // Debug.Log("Next incomplete steps:");
+        // int count = 0;
+        // foreach (var step in tutorialSteps)
+        // {
+        //     if (!step.isCompleted)
+        //     {
+        //         Debug.Log($"  {step.stepId} (waiting for: {step.triggerCondition})");
+        //         count++;
+        //         if (count >= 3) break;
+        //     }
+        // }
+        // Debug.Log("=====================");
     }
 
     [ContextMenu("Fix Animal Production Tutorial")]
     public void FixAnimalProductionTutorial()
     {
-        Debug.Log("=== FIXING ANIMAL PRODUCTION TUTORIAL ===");
+        // Debug.Log("=== FIXING ANIMAL PRODUCTION TUTORIAL ===");
         
-        if (!completedConditions.Contains(TutorialCondition.FirstChickenBought))
-        {
-            Debug.Log("Manually triggering FirstChickenBought");
-            OnConditionMet(TutorialCondition.FirstChickenBought);
-        }
+        // if (!completedConditions.Contains(TutorialCondition.FirstChickenBought))
+        // {
+        //     Debug.Log("Manually triggering FirstChickenBought");
+        //     OnConditionMet(TutorialCondition.FirstChickenBought);
+        // }
         
-        if (!completedConditions.Contains(TutorialCondition.ChickensStartedProducing))
-        {
-            Debug.Log("Manually triggering ChickensStartedProducing");
-            OnConditionMet(TutorialCondition.ChickensStartedProducing);
-        }
+        // if (!completedConditions.Contains(TutorialCondition.ChickensStartedProducing))
+        // {
+        //     Debug.Log("Manually triggering ChickensStartedProducing");
+        //     OnConditionMet(TutorialCondition.ChickensStartedProducing);
+        // }
         
-        if (!completedConditions.Contains(TutorialCondition.AnimalProductsReady))
-        {
-            Debug.Log("Manually triggering AnimalProductsReady");
-            OnConditionMet(TutorialCondition.AnimalProductsReady);
-        }
+        // if (!completedConditions.Contains(TutorialCondition.AnimalProductsReady))
+        // {
+        //     Debug.Log("Manually triggering AnimalProductsReady");
+        //     OnConditionMet(TutorialCondition.AnimalProductsReady);
+        // }
         
-        if (!completedConditions.Contains(TutorialCondition.AnimalProductsCollected))
-        {
-            Debug.Log("Manually triggering AnimalProductsCollected");
-            OnConditionMet(TutorialCondition.AnimalProductsCollected);
-        }
+        // if (!completedConditions.Contains(TutorialCondition.AnimalProductsCollected))
+        // {
+        //     Debug.Log("Manually triggering AnimalProductsCollected");
+        //     OnConditionMet(TutorialCondition.AnimalProductsCollected);
+        // }
         
-        Debug.Log("Animal production tutorial fix completed!");
+        // Debug.Log("Animal production tutorial fix completed!");
     }
 
     [ContextMenu("Fix Defense Tutorial")]
     public void FixDefenseTutorial()
     {
-        Debug.Log("=== FIXING DEFENSE TUTORIAL ===");
+        // Debug.Log("=== FIXING DEFENSE TUTORIAL ===");
         
-        if (!completedConditions.Contains(TutorialCondition.BarracksPlaced))
-        {
-            Debug.Log("Manually triggering BarracksPlaced");
-            OnConditionMet(TutorialCondition.BarracksPlaced);
-        }
+        // if (!completedConditions.Contains(TutorialCondition.BarracksPlaced))
+        // {
+        //     Debug.Log("Manually triggering BarracksPlaced");
+        //     OnConditionMet(TutorialCondition.BarracksPlaced);
+        // }
         
-        if (!completedConditions.Contains(TutorialCondition.FlagPlaced))
-        {
-            Debug.Log("Manually triggering FlagPlaced");
-            OnConditionMet(TutorialCondition.FlagPlaced);
-        }
+        // if (!completedConditions.Contains(TutorialCondition.FlagPlaced))
+        // {
+        //     Debug.Log("Manually triggering FlagPlaced");
+        //     OnConditionMet(TutorialCondition.FlagPlaced);
+        // }
         
-        if (!completedConditions.Contains(TutorialCondition.ArmyRecruited))
-        {
-            Debug.Log("Manually triggering ArmyRecruited");
-            OnConditionMet(TutorialCondition.ArmyRecruited);
-        }
+        // if (!completedConditions.Contains(TutorialCondition.ArmyRecruited))
+        // {
+        //     Debug.Log("Manually triggering ArmyRecruited");
+        //     OnConditionMet(TutorialCondition.ArmyRecruited);
+        // }
         
-        Debug.Log("Defense tutorial fix completed!");
+        // Debug.Log("Defense tutorial fix completed!");
     }
 
     public bool IsTutorialActive()
@@ -1226,14 +1361,14 @@ private IEnumerator WaitForHarvestAndProceed()
 
     public void ResetTutorial()
     {
-        PlayerPrefs.DeleteKey("TutorialCompleted");
-        tutorialCompleted = false;
-        completedConditions.Clear();
+        // PlayerPrefs.DeleteKey("TutorialCompleted");
+        // tutorialCompleted = false;
+        // completedConditions.Clear();
         
-        foreach (var step in tutorialSteps)
-        {
-            step.isCompleted = false;
-        }
+        // foreach (var step in tutorialSteps)
+        // {
+        //     step.isCompleted = false;
+        // }
     }
 
     public List<TutorialStep> GetTutorialSteps()
@@ -1243,182 +1378,185 @@ private IEnumerator WaitForHarvestAndProceed()
 
     private void PauseForTutorial()
     {
-        if (pauseManager != null)
-        {
-            wasPausedBeforeTutorial = Time.timeScale == 0f;
-            pauseManager.pauseGame();
-        }
-        else
-        {
-            wasPausedBeforeTutorial = Time.timeScale == 0f;
-            Time.timeScale = 0f;
-        }
+        // if (pauseManager != null)
+        // {
+        //     wasPausedBeforeTutorial = Time.timeScale == 0f;
+        //     pauseManager.pauseGame();
+        // }
+        // else
+        // {
+        //     wasPausedBeforeTutorial = Time.timeScale == 0f;
+        //     Time.timeScale = 0f;
+        // }
         
-        Debug.Log("Tutorial: Game paused for tutorial step");
+        // Debug.Log("Tutorial: Game paused for tutorial step");
     }
 
     private void ResumeFromTutorial()
     {
-        if (!wasPausedBeforeTutorial)
-        {
-            if (pauseManager != null)
-            {
-                pauseManager.playGame();
-            }
-            else
-            {
-                Time.timeScale = 1f;
-            }
+        // if (!wasPausedBeforeTutorial)
+        // {
+        //     if (pauseManager != null)
+        //     {
+        //         pauseManager.playGame();
+        //     }
+        //     else
+        //     {
+        //         Time.timeScale = 1f;
+        //     }
             
-            Debug.Log("Tutorial: Game resumed after tutorial step");
-        }
-        else
-        {
-            Debug.Log("Tutorial: Game remains paused (was paused before tutorial step)");
-        }
+        //     Debug.Log("Tutorial: Game resumed after tutorial step");
+        // }
+        // else
+        // {
+        //     Debug.Log("Tutorial: Game remains paused (was paused before tutorial step)");
+        // }
     }
 
     private bool ArePrerequisitesStrictlyMet(TutorialStep step)
     {
-        foreach (var prereq in step.prerequisites)
-        {
-            if (!completedConditions.Contains(prereq))
-            {
-                Debug.LogWarning($"Tutorial step {step.stepId} blocked: Missing prerequisite {prereq}");
-                return false;
-            }
-        }
-        
-        if (step.prerequisites.Length > 0)
-        {
-            Debug.Log($"Tutorial step {step.stepId}: All prerequisites met ({string.Join(", ", step.prerequisites)})");
-        }
-        
         return true;
+        // foreach (var prereq in step.prerequisites)
+        // {
+        //     if (!completedConditions.Contains(prereq))
+        //     {
+        //         Debug.LogWarning($"Tutorial step {step.stepId} blocked: Missing prerequisite {prereq}");
+        //         return false;
+        //     }
+        // }
+
+        // if (step.prerequisites.Length > 0)
+        // {
+        //     Debug.Log($"Tutorial step {step.stepId}: All prerequisites met ({string.Join(", ", step.prerequisites)})");
+        // }
+
+        // return true;
     }
 
     private bool CanTriggerStep(TutorialStep step, TutorialCondition condition)
     {
-        if (step.triggerCondition != condition)
-            return false;
-            
-        if (step.isCompleted)
-        {
-            Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
-            return false;
-        }
-            
-        if (!ArePrerequisitesStrictlyMet(step))
-            return false;
-            
-        foreach (var pendingStep in pendingSteps)
-        {
-            if (pendingStep.triggerCondition == condition && pendingStep.stepId != step.stepId)
-            {
-                Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({pendingStep.stepId}) with same trigger condition is already queued");
-                return false;
-            }
-        }
-        
-        if (currentStep != null && currentStep.triggerCondition == condition && currentStep.stepId != step.stepId)
-        {
-            Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) with same trigger condition is currently active");
-            return false;
-        }
-        
-        int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
-        if (stepIndex > 0)
-        {
-            for (int i = 0; i < stepIndex; i++)
-            {
-                if (!tutorialSteps[i].isCompleted)
-                {
-                    Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet");
-                    return false;
-                }
-            }
-        }
-        
-        Debug.Log($"Tutorial step {step.stepId} validation passed - can be triggered");
         return true;
+        // if (step.triggerCondition != condition)
+        //     return false;
+
+        // if (step.isCompleted)
+        // {
+        //     Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
+        //     return false;
+        // }
+
+        // if (!ArePrerequisitesStrictlyMet(step))
+        //     return false;
+
+        // foreach (var pendingStep in pendingSteps)
+        // {
+        //     if (pendingStep.triggerCondition == condition && pendingStep.stepId != step.stepId)
+        //     {
+        //         Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({pendingStep.stepId}) with same trigger condition is already queued");
+        //         return false;
+        //     }
+        // }
+
+        // if (currentStep != null && currentStep.triggerCondition == condition && currentStep.stepId != step.stepId)
+        // {
+        //     Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) with same trigger condition is currently active");
+        //     return false;
+        // }
+
+        // int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
+        // if (stepIndex > 0)
+        // {
+        //     for (int i = 0; i < stepIndex; i++)
+        //     {
+        //         if (!tutorialSteps[i].isCompleted)
+        //         {
+        //             Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet");
+        //             return false;
+        //         }
+        //     }
+        // }
+
+        // Debug.Log($"Tutorial step {step.stepId} validation passed - can be triggered");
+        // return true;
     }
 
     private IEnumerator PollForMissedConditions()
     {
-        while (!tutorialCompleted)
-        {
-            yield return new WaitForSeconds(conditionCheckInterval);
-            
-            if (!enableTutorial || tutorialCompleted) 
-                continue;
-                
-            CheckForMissedConditions();
-        }
+        return null;
+        // while (!tutorialCompleted)
+        // {
+        //     yield return new WaitForSeconds(conditionCheckInterval);
+
+        //     if (!enableTutorial || tutorialCompleted) 
+        //         continue;
+
+        //     CheckForMissedConditions();
+        // }
     }
 
     private void CheckForMissedConditions()
     {
-        try
-        {
-            if (!completedConditions.Contains(TutorialCondition.ShopOpened))
-            {
-                if (shopManager != null && shopManager.gameObject.activeInHierarchy)
-                {
-                    var shopCanvas = shopManager.GetComponent<Canvas>();
-                    if (shopCanvas != null && shopCanvas.enabled)
-                    {
-                        Debug.Log("Tutorial Polling: Detected missed ShopOpened condition");
-                        OnConditionMet(TutorialCondition.ShopOpened);
-                    }
-                }
-            }
+        // try
+        // {
+        //     if (!completedConditions.Contains(TutorialCondition.ShopOpened))
+        //     {
+        //         if (shopManager != null && shopManager.gameObject.activeInHierarchy)
+        //         {
+        //             var shopCanvas = shopManager.GetComponent<Canvas>();
+        //             if (shopCanvas != null && shopCanvas.enabled)
+        //             {
+        //                 Debug.Log("Tutorial Polling: Detected missed ShopOpened condition");
+        //                 OnConditionMet(TutorialCondition.ShopOpened);
+        //             }
+        //         }
+        //     }
             
-            if (!completedConditions.Contains(TutorialCondition.FirstCropPlanted))
-            {
-                var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-                foreach (var crop in cropStructures)
-                {
-                    if (crop.gameObject.name != "BuildGhost" && crop.CurrentCropType != CropStructure.CropType.None)
-                    {
-                        Debug.Log("Tutorial Polling: Detected missed FirstCropPlanted condition");
-                        OnConditionMet(TutorialCondition.FirstCropPlanted);
-                        break;
-                    }
-                }
-            }
+        //     if (!completedConditions.Contains(TutorialCondition.FirstCropPlanted))
+        //     {
+        //         var cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        //         foreach (var crop in cropStructures)
+        //         {
+        //             if (crop.gameObject.name != "BuildGhost" && crop.CurrentCropType != CropStructure.CropType.None)
+        //             {
+        //                 Debug.Log("Tutorial Polling: Detected missed FirstCropPlanted condition");
+        //                 OnConditionMet(TutorialCondition.FirstCropPlanted);
+        //                 break;
+        //             }
+        //         }
+        //     }
             
-            if (!completedConditions.Contains(TutorialCondition.FlagPlaced))
-            {
-                var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
-                foreach (var barrack in barracks)
-                {
-                    if (barrack.GetFlagPosition != Vector3.zero)
-                    {
-                        Debug.Log("Tutorial Polling: Detected missed FlagPlaced condition");
-                        OnConditionMet(TutorialCondition.FlagPlaced);
-                        break;
-                    }
-                }
-            }
+        //     if (!completedConditions.Contains(TutorialCondition.FlagPlaced))
+        //     {
+        //         var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+        //         foreach (var barrack in barracks)
+        //         {
+        //             if (barrack.GetFlagPosition != Vector3.zero)
+        //             {
+        //                 Debug.Log("Tutorial Polling: Detected missed FlagPlaced condition");
+        //                 OnConditionMet(TutorialCondition.FlagPlaced);
+        //                 break;
+        //             }
+        //         }
+        //     }
             
-            if (!completedConditions.Contains(TutorialCondition.ArmyRecruited))
-            {
-                var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
-                foreach (var barrack in barracks)
-                {
-                    if (barrack.ArmyAnimalCount > 0)
-                    {
-                        Debug.Log("Tutorial Polling: Detected missed ArmyRecruited condition");
-                        OnConditionMet(TutorialCondition.ArmyRecruited);
-                        break;
-                    }
-                }
-            }
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogWarning($"Tutorial polling error: {ex.Message}");
-        }
+        //     if (!completedConditions.Contains(TutorialCondition.ArmyRecruited))
+        //     {
+        //         var barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+        //         foreach (var barrack in barracks)
+        //         {
+        //             if (barrack.ArmyAnimalCount > 0)
+        //             {
+        //                 Debug.Log("Tutorial Polling: Detected missed ArmyRecruited condition");
+        //                 OnConditionMet(TutorialCondition.ArmyRecruited);
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
+        // catch (System.Exception ex)
+        // {
+        //     Debug.LogWarning($"Tutorial polling error: {ex.Message}");
+        // }
     }
 
     public void CheckTutorialConditions()
@@ -1430,78 +1568,82 @@ private IEnumerator WaitForHarvestAndProceed()
 
     public void OnStructurePlaced(GameObject structure)
     {
-        if (!enableTutorial || tutorialCompleted) return;
+        // if (!enableTutorial || tutorialCompleted) return;
         
-        string structureName = structure.name.ToLower();
+        // string structureName = structure.name.ToLower();
         
-        if (structureName.Contains("farmhouse") || structureName.Contains("farm house"))
-        {
-            OnConditionMet(TutorialCondition.FarmHousePlaced);
-        }
-        else if (structureName.Contains("silo"))
-        {
-            OnConditionMet(TutorialCondition.SiloPlaced);
-        }
-        else if (structureName.Contains("crop") || structure.GetComponent<CropStructure>() != null)
-        {
-            OnConditionMet(TutorialCondition.CropPlotPlaced);
-        }
-        else if (structureName.Contains("chicken") || structureName.Contains("coop") || structure.GetComponent<AnimalStructure>() != null)
-        {
-            OnConditionMet(TutorialCondition.ChickenCoopPlaced);
-        }
-        else if (structureName.Contains("barracks") || structure.GetComponent<BarracksStructure>() != null)
-        {
-            OnConditionMet(TutorialCondition.BarracksPlaced);
-        }
+        // if (structureName.Contains("farmhouse") || structureName.Contains("farm house"))
+        // {
+        //     OnConditionMet(TutorialCondition.FarmHousePlaced);
+        // }
+        // else if (structureName.Contains("silo"))
+        // {
+        //     OnConditionMet(TutorialCondition.SiloPlaced);
+        // }
+        // else if (structureName.Contains("crop") || structure.GetComponent<CropStructure>() != null)
+        // {
+        //     OnConditionMet(TutorialCondition.CropPlotPlaced);
+        // }
+        // else if (structureName.Contains("chicken") || structureName.Contains("coop") || structure.GetComponent<AnimalStructure>() != null)
+        // {
+        //     OnConditionMet(TutorialCondition.ChickenCoopPlaced);
+        // }
+        // else if (structureName.Contains("barracks") || structure.GetComponent<BarracksStructure>() != null)
+        // {
+        //     OnConditionMet(TutorialCondition.BarracksPlaced);
+        // }
         
-        Debug.Log($"Tutorial: Structure placed - {structureName}");
+        // Debug.Log($"Tutorial: Structure placed - {structureName}");
     }
 
     private IEnumerator ShowNextStepAfterDelay(string stepId, float delay)
     {
-        yield return new WaitForSeconds(delay);
-        
-        foreach (var step in tutorialSteps)
-        {
-            if (step.stepId == stepId && !step.isCompleted)
-            {
-                Debug.Log($"Tutorial: Manually showing step {stepId}");
-                pendingSteps.Enqueue(step);
-                ProcessPendingSteps();
-                break;
-            }
-        }
+        return null;
+        // yield return new WaitForSeconds(delay);
+
+        // foreach (var step in tutorialSteps)
+        // {
+        //     if (step.stepId == stepId && !step.isCompleted)
+        //     {
+        //         Debug.Log($"Tutorial: Manually showing step {stepId}");
+        //         pendingSteps.Enqueue(step);
+        //         ProcessPendingSteps();
+        //         break;
+        //     }
+        // }
     }
 
     // In TutorialManager.cs, modify PulseUIEffect
     private IEnumerator PulseUIEffect(GameObject uiElement)
     {
-        if (uiElement == null) yield break;
-        Vector3 originalScale = uiElement.transform.localScale;
-        while (uiElement != null && currentStep != null && currentStep.highlightUI)
-        {
-            uiElement.transform.localScale = originalScale * (1f + 0.2f * Mathf.Sin(Time.unscaledTime * 5f)); // Increased from 0.05f to 0.1f
-            yield return null;
-        }
-        if (uiElement != null) uiElement.transform.localScale = originalScale;
+        return null;
+        // if (uiElement == null) yield break;
+        // Vector3 originalScale = uiElement.transform.localScale;
+        // while (uiElement != null && currentStep != null && currentStep.highlightUI)
+        // {
+        //     uiElement.transform.localScale = originalScale * (1f + 0.2f * Mathf.Sin(Time.unscaledTime * 5f)); // Increased from 0.05f to 0.1f
+        //     yield return null;
+        // }
+        // if (uiElement != null) uiElement.transform.localScale = originalScale;
     }
 
     // In TutorialManager.cs, modify PulseEffect
-private IEnumerator PulseEffect(GameObject obj)
-{
-    if (obj == null) yield break;
-    Vector3 originalScale = obj.transform.localScale;
-    while (obj != null && currentStep != null && currentStep.pointToWorldPosition)
+    private IEnumerator PulseEffect(GameObject obj)
     {
-        obj.transform.localScale = originalScale * (1f + 0.2f * Mathf.Sin(Time.unscaledTime * 5f)); // Increased from 0.1f to 0.2f
-        yield return null;
+        return null;
+    // if (obj == null) yield break;
+        // Vector3 originalScale = obj.transform.localScale;
+        // while (obj != null && currentStep != null && currentStep.pointToWorldPosition)
+        // {
+        //     obj.transform.localScale = originalScale * (1f + 0.2f * Mathf.Sin(Time.unscaledTime * 5f)); // Increased from 0.1f to 0.2f
+        //     yield return null;
+        // }
+        // if (obj != null) obj.transform.localScale = originalScale;
     }
-    if (obj != null) obj.transform.localScale = originalScale;
-}
 
     public string GetCurrentStepId()
     {
-        return currentStep != null ? currentStep.stepId : "None";
+        return "";
+        // return currentStep != null ? currentStep.stepId : "None";
     }
 }

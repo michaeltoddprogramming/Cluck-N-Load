@@ -2876,9 +2876,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-        m_MethodName: Play
+      - m_Target: {fileID: -8090860008486070274}
+        m_TargetAssemblyTypeName: BarracksStructureUI, Assembly-CSharp
+        m_MethodName: checkAnimalBuy
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3278,9 +3278,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-        m_MethodName: Play
+      - m_Target: {fileID: -8090860008486070274}
+        m_TargetAssemblyTypeName: BarracksStructureUI, Assembly-CSharp
+        m_MethodName: checkFlagPlacement
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

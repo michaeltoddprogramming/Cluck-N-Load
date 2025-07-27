@@ -36,9 +36,9 @@ public class InventoryManager : MonoBehaviour
         }
 
         // Initialize inventory with crop types
-        inventory["Sunflower"] = 20;
-        inventory["Wheat"] = 20;
-        inventory["Carrots"] = 20;
+        inventory["Sunflower"] = 5;
+        inventory["Wheat"] = 5;
+        inventory["Carrots"] = 5;
         }
 
     // Removed Update() method - capacity is now calculated when silos are added/removed

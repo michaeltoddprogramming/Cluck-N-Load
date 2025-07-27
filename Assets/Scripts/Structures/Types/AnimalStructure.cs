@@ -20,8 +20,8 @@ public class AnimalStructure : Structure
     [SerializeField] private bool productReady;
     [SerializeField] private float productionProgress;
     [SerializeField] private AnimalProductionSettings productionSettings;
-    [SerializeField] private int animalCount = 5;
-    [SerializeField] private int maxAnimalCount = 10;
+    [SerializeField] private int animalCount = 0;
+    [SerializeField] private int maxAnimalCount = 5;
 
     [Header("SFX")]
     [Tooltip("Background sound for the animal structure.")]
@@ -36,7 +36,7 @@ public class AnimalStructure : Structure
     {
         public float productionTime = 24f;
         public int productAmount = 1;
-        public int moneyPerProduct = 10;
+        public int moneyPerProduct = 50;
         public int baseFoodRequired = 2;
         public int costPerAnimal = 50;
         public int boostedProduction = 0;
@@ -63,7 +63,7 @@ public class AnimalStructure : Structure
     [SerializeField] private float synergyFoodRequired = 0.8f; // food per animal when in range
     [SerializeField] private float normalFoodRequired = 1f; // food per animal when not in range
     [SerializeField] private float foodMultiplier = 1f; // food per animal when not in range
-    [SerializeField] public int baseMoneyPerProduct = 10;
+    [SerializeField] public int baseMoneyPerProduct = 50;
     [SerializeField] public int baseProductMultiplier = 1;
 
     protected override void Start()

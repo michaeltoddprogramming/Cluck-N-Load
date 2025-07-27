@@ -28,7 +28,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private bool hasPlacedFirstStructure = false;
     private bool hasPlantedFirstCrop = false;
-    private bool hasHarvestedFirstCrop = false;
+    public bool hasHarvestedFirstCrop = false;
     private bool hasBoughtFirstAnimal = false;
     private bool hasCollectedFirstProduct = false;
     private bool hasRecruitedArmy = false;
@@ -166,57 +166,73 @@ public class TutorialConditionTracker : MonoBehaviour
         }
     }
 
-    private void TrackCropStatus()
+       private void TrackCropStatus()
     {
+        Debug.Log($"[Tutorial] TrackCropStatus called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}");
         if (!TutorialLogicAllowed()) return;
         CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-
+        Debug.Log($"TutorialConditionTracker: Checking {cropStructures.Length} crop structures");
+    
         foreach (CropStructure crop in cropStructures)
         {
             // Check if any crop has been planted
             if (crop.CurrentCropType != CropStructure.CropType.None && !hasPlantedFirstCrop)
             {
+                Debug.Log($"[Tutorial] Crop: {crop.name}, Type={crop.CurrentCropType}, IsGrowing={crop.IsGrowing}, CropReady={crop.CropReady}");
                 hasPlantedFirstCrop = true;
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropPlanted);
-
+                Debug.Log($"TutorialConditionTracker: First crop planted (Type: {crop.CurrentCropType}), triggering FirstCropPlanted");
+    
                 // Store initial crop counts to detect new harvests
                 initialCropCounts["Sunflower"] = InventoryManager.Instance.GetItemCount("Sunflower");
                 initialCropCounts["Wheat"] = InventoryManager.Instance.GetItemCount("Wheat");
                 initialCropCounts["Carrots"] = InventoryManager.Instance.GetItemCount("Carrots");
                 Debug.Log($"Tutorial: Initial crop counts - Sunflower: {initialCropCounts["Sunflower"]}, Wheat: {initialCropCounts["Wheat"]}, Carrots: {initialCropCounts["Carrots"]}");
-
+    
                 if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
                 {
                     Debug.Log("Tutorial: Crop planted, triggering instant growth");
                     StartCoroutine(InstantGrowCropForTutorial(crop));
                 }
             }
-
-            // Log ready crops for debugging
+    
+            // Show harvest step when crop is ready
             if (crop.CropReady && hasPlantedFirstCrop && !hasHarvestedFirstCrop &&
                 HasCompletedTutorialStep("plant_first_crop") && !HasCompletedTutorialStep("harvest_first_crops"))
             {
-                Debug.Log($"Crop is ready for harvest: {crop.name}, Type: {crop.CurrentCropType}");
+                Debug.Log($"TutorialConditionTracker: Crop ready for harvest: {crop.name}, Type: {crop.CurrentCropType}");
+                TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropReady); // <-- Trigger the condition!
+                TutorialStep harvestStep = TutorialManager.Instance.GetTutorialSteps().Find(s => s.stepId == "harvest_first_crops");
+                if (harvestStep != null && !TutorialManager.Instance.IsTutorialActive())
+                {
+                    harvestStep.worldPosition = crop.transform.position + Vector3.up * 3f;
+                    TutorialManager.Instance.ShowTutorialStep(harvestStep);
+                    Debug.Log($"Tutorial: Showing harvest_first_crops step for crop {crop.name}");
+                }
             }
         }
+    
+        // Check inventory for harvests
+        CheckInventoryForHarvest();
     }
 
-    private void OnCropHarvested(CropStructure.CropType cropType, int amount)
+private void OnCropHarvested(CropStructure.CropType cropType, int amount)
+{
+    if (!TutorialLogicAllowed()) return;
+
+    Debug.Log($"Tutorial: OnCropHarvested triggered for {amount} {cropType}. Current Step: {TutorialManager.Instance?.GetCurrentStepId() ?? "None"}");
+
+    if (!hasHarvestedFirstCrop)
     {
-        if (!TutorialLogicAllowed()) return;
-        if (hasPlantedFirstCrop && !hasHarvestedFirstCrop && HasCompletedTutorialStep("plant_first_crop") && !HasCompletedTutorialStep("harvest_first_crops"))
-        {
-            Debug.Log($"Tutorial: Crop harvested event - Type: {cropType}, Amount: {amount}");
-            CheckInventoryForHarvest(); // Double-check inventory
-            if (!hasHarvestedFirstCrop) // Only trigger if not already triggered
-            {
-                hasHarvestedFirstCrop = true;
-                TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropHarvested);
-            }
-        }
+        hasHarvestedFirstCrop = true;
+        Debug.Log("Tutorial: First crop harvested, triggering FirstCropHarvested and TimeControlsExplained conditions");
+        TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropHarvested);
+        TutorialManager.Instance?.OnConditionMet(TutorialCondition.TimeControlsExplained);
+        // Force immediate inventory check to confirm harvest
+        CheckInventoryForHarvest();
     }
-
-    private void CheckInventoryForHarvest()
+}
+    public void CheckInventoryForHarvest()
     {
         if (!TutorialLogicAllowed()) return;
         if (InventoryManager.Instance != null && HasCompletedTutorialStep("plant_first_crop") && !HasCompletedTutorialStep("harvest_first_crops"))
@@ -233,10 +249,12 @@ public class TutorialConditionTracker : MonoBehaviour
             if (totalNewCrops > 0 && !hasHarvestedFirstCrop)
             {
                 hasHarvestedFirstCrop = true;
-                Debug.Log("Tutorial: First crop harvested detected!");
+                Debug.Log("Tutorial: First crop harvested detected via inventory!");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropHarvested);
             }
         }
+
+
     }
 
     private void TrackAnimalStatus()
@@ -276,21 +294,21 @@ public class TutorialConditionTracker : MonoBehaviour
         }
     }
 
-    private IEnumerator InstantGrowCropForTutorial(CropStructure crop)
+private IEnumerator InstantGrowCropForTutorial(CropStructure crop)
+{
+    Debug.Log($"[Tutorial] InstantGrowCropForTutorial called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}, Crop={crop?.name}, CropType={crop?.CurrentCropType}, IsGrowing={crop?.IsGrowing}, CropReady={crop?.CropReady}");
+    if (crop != null && crop.CurrentCropType != CropStructure.CropType.None && crop.IsGrowing && !crop.CropReady)
     {
-        if (crop != null && crop.CurrentCropType != CropStructure.CropType.None && crop.IsGrowing && !crop.CropReady)
-        {
-            Debug.Log($"Tutorial: Forcing instant growth for crop {crop.name} (Type: {crop.CurrentCropType})");
-            crop.InstantGrowForTutorial();
-            yield return null;
-            Debug.Log($"Tutorial: Post-growth state - Ready: {crop.CropReady}, Type: {crop.CurrentCropType}, Progress: {crop.GrowthProgress}/{crop.ProductionSettings.growthTime}");
-        }
-        else
-        {
-            Debug.LogWarning($"Tutorial: Cannot grow crop instantly. Valid: {crop != null}, Type: {crop?.CurrentCropType}, Growing: {crop?.IsGrowing}, Ready: {crop?.CropReady}");
-            yield return null;
-        }
+        crop.InstantGrowForTutorial();
+        yield return null;
+        Debug.Log($"[Tutorial] Crop {crop.name} grown instantly. Ready={crop.CropReady}, IsGrowing={crop.IsGrowing}");
     }
+    else
+    {
+        Debug.LogWarning($"[Tutorial] Cannot grow crop instantly. Crop={crop?.name}, CropType={crop?.CurrentCropType}, IsGrowing={crop?.IsGrowing}, CropReady={crop?.CropReady}");
+        yield return null;
+    }
+}
 
     private IEnumerator InstantCompleteAnimalProductionForTutorial(AnimalStructure animal)
     {
@@ -637,18 +655,18 @@ public class TutorialConditionTracker : MonoBehaviour
     /// <summary>
     /// Called by BuildController when a structure is placed
     /// </summary>
-    public void OnStructurePlaced(StructureType structureType, string structureName)
+        public void OnStructurePlaced(StructureType structureType, string structureName)
     {
         if (!TutorialLogicAllowed()) return;
         Debug.Log($"TutorialConditionTracker: Structure placed - Type: {structureType}, Name: {structureName}");
-
+    
         // Mark first structure as placed
         if (!hasPlacedFirstStructure)
         {
             hasPlacedFirstStructure = true;
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstStructurePlaced);
         }
-
+    
         // Trigger FarmHousePlaced if the name matches, regardless of type
         if (!hasFarmHousePlaced && (structureName.ToLower().Contains("farmhouse") ||
             structureName.ToLower().Contains("farm house") ||
@@ -657,7 +675,7 @@ public class TutorialConditionTracker : MonoBehaviour
             hasFarmHousePlaced = true;
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
         }
-
+    
         // Handle specific structure types for other tutorial steps
         switch (structureType)
         {
@@ -677,8 +695,8 @@ public class TutorialConditionTracker : MonoBehaviour
                 break;
             case StructureType.Animal:
             case StructureType.AnimalPlot:
-                if (!hasChickenCoopPlaced && (structureName.ToLower().Contains("chicken") ||
-                    structureName.ToLower().Contains("coop")))
+                // FIX: Only trigger if this is a *newly placed* Chicken Coop, not just any animal structure
+                if (!hasChickenCoopPlaced && structureName.ToLower().Contains("chicken") && structureName.ToLower().Contains("coop"))
                 {
                     hasChickenCoopPlaced = true;
                     TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickenCoopPlaced);
@@ -765,6 +783,7 @@ public class TutorialConditionTracker : MonoBehaviour
     /// <summary>
     /// Debug method to inspect crop status and inventory
     /// </summary>
+
     [ContextMenu("Debug Crop Status")]
     public void DebugCropStatus()
     {
@@ -774,7 +793,7 @@ public class TutorialConditionTracker : MonoBehaviour
         CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
         foreach (var crop in crops)
         {
-            Debug.Log($"Crop: {crop.name}, Type: {crop.CurrentCropType}, Growing: {crop.IsGrowing}, Ready: {crop.CropReady}, Progress: {crop.GrowthProgress}/{crop.ProductionSettings.growthTime}");
+            Debug.Log($"Crop: {crop.name}, Type: {crop.CurrentCropType}, Growing: {crop.IsGrowing}, Ready: {crop.CropReady}");
         }
         Debug.Log($"Initial Crop Counts: Sunflower={initialCropCounts.GetValueOrDefault("Sunflower", 0)}, Wheat={initialCropCounts.GetValueOrDefault("Wheat", 0)}, Carrots={initialCropCounts.GetValueOrDefault("Carrots", 0)}");
         Debug.Log($"Current Inventory: Sunflower={InventoryManager.Instance?.GetItemCount("Sunflower")}, Wheat={InventoryManager.Instance?.GetItemCount("Wheat")}, Carrots={InventoryManager.Instance?.GetItemCount("Carrots")}");
@@ -782,4 +801,18 @@ public class TutorialConditionTracker : MonoBehaviour
         Debug.Log($"Tutorial Step Status: plant_first_crop={HasCompletedTutorialStep("plant_first_crop")}, harvest_first_crops={HasCompletedTutorialStep("harvest_first_crops")}");
         Debug.Log("========================");
     }
+
+[ContextMenu("Debug Tutorial Progression")]
+public void DebugTutorialProgression()
+{
+    Debug.Log("=== TUTORIAL PROGRESSION DEBUG ===");
+    Debug.Log($"Tutorial Active: {TutorialManager.Instance?.IsTutorialActive()}");
+    Debug.Log($"Tutorial Completed: {TutorialManager.Instance?.IsTutorialCompleted()}");
+    Debug.Log($"Current Step: {TutorialManager.Instance?.GetCurrentStepId() ?? "None"}");
+    Debug.Log($"Has Planted First Crop: {hasPlantedFirstCrop}");
+    Debug.Log($"Has Harvested First Crop: {hasHarvestedFirstCrop}");
+    Debug.Log($"Initial Crop Counts: Sunflower={initialCropCounts.GetValueOrDefault("Sunflower", 0)}, Wheat={initialCropCounts.GetValueOrDefault("Wheat", 0)}, Carrots={initialCropCounts.GetValueOrDefault("Carrots", 0)}");
+    Debug.Log($"Current Inventory: Sunflower={InventoryManager.Instance?.GetItemCount("Sunflower") ?? 0}, Wheat={InventoryManager.Instance?.GetItemCount("Wheat") ?? 0}, Carrots={InventoryManager.Instance?.GetItemCount("Carrots") ?? 0}");
+    Debug.Log("================================");
+}
 }

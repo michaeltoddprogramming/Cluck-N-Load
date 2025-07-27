@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Linq;
 
 public enum TutorialCondition
 {
@@ -16,6 +17,8 @@ public enum TutorialCondition
     FarmHousePlaced,
     SiloPlaced,
     CropPlotPlaced,
+
+    FirstCropReady,
     
     // Farming Mechanics
     FirstCropPlanted,
@@ -206,11 +209,22 @@ public class TutorialManager : MonoBehaviour
 
     tutorialSteps.Add(new TutorialStep
     {
+        stepId = "build_silo",
+        title = "Stash Your Goods!",
+        description = "Build a Silo near your crops to store those sunflowers. Close silos mean happy chickens!",
+        triggerCondition = TutorialCondition.FarmHousePlaced,
+        prerequisites = new TutorialCondition[] { TutorialCondition.FarmHousePlaced },
+        displayDuration = 4f,
+        pauseGame = true
+    });
+
+    tutorialSteps.Add(new TutorialStep
+    {
         stepId = "place_crop_plot",
         title = "Plant Some Chow!",
         description = "Build a Crop Plot near your farmhouse. Gotta grow food for your feathered army!",
-        triggerCondition = TutorialCondition.FarmHousePlaced,
-        prerequisites = new TutorialCondition[] { TutorialCondition.FarmHousePlaced },
+        triggerCondition = TutorialCondition.SiloPlaced,
+        prerequisites = new TutorialCondition[] { TutorialCondition.SiloPlaced },
         displayDuration = 4f,
         pauseGame = true
     });
@@ -226,36 +240,26 @@ public class TutorialManager : MonoBehaviour
         pauseGame = true
     });
 
-    tutorialSteps.Add(new TutorialStep
-    {
-        stepId = "harvest_first_crops",
-        title = "Reap Those Sunflowers!",
-        description = "Your sunflowers are ripe! Click the plot to harvest 'em for your hungry chickens!",
-        triggerCondition = TutorialCondition.FirstCropHarvested,
-        prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropPlanted },
-        displayDuration = 999f,
-        pauseGame = true,
-        pointToWorldPosition = true
-    });
 
-    tutorialSteps.Add(new TutorialStep
-    {
-        stepId = "build_silo",
-        title = "Stash Your Goods!",
-        description = "Build a Silo near your crops to store those sunflowers. Close silos mean happy chickens!",
-        triggerCondition = TutorialCondition.FirstCropHarvested,
-        prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
-        displayDuration = 4f,
-        pauseGame = true
-    });
+           tutorialSteps.Add(new TutorialStep
+        {
+            stepId = "harvest_first_crops",
+            title = "Reap Those Sunflowers!",
+            description = "Your sunflowers are ripe! Click the plot to harvest 'em for your hungry chickens!",
+            triggerCondition = TutorialCondition.FirstCropReady,
+            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropPlanted, TutorialCondition.SiloPlaced },
+            displayDuration = 999f,
+            pauseGame = true,
+            pointToWorldPosition = true
+        });
 
-    tutorialSteps.Add(new TutorialStep
+       tutorialSteps.Add(new TutorialStep
     {
         stepId = "time_controls",
         title = "Master Time Itself!",
         description = "Use time controls to pause or speed up. Day’s for farmin’, night’s for fightin’ wolves!",
-        triggerCondition = TutorialCondition.SiloPlaced,
-        prerequisites = new TutorialCondition[] { TutorialCondition.SiloPlaced },
+        triggerCondition = TutorialCondition.FirstCropHarvested,
+        prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested, TutorialCondition.SiloPlaced},
         displayDuration = 4f,
         pauseGame = true
     });
@@ -453,37 +457,37 @@ public class TutorialManager : MonoBehaviour
     }
 
     public void OnConditionMet(TutorialCondition condition)
+{
+    if (!enableTutorial || tutorialCompleted) return;
+
+    if (completedConditions.Contains(condition)) 
     {
-        if (!enableTutorial || tutorialCompleted) return;
-
-        if (completedConditions.Contains(condition)) 
-        {
-            Debug.Log($"Tutorial condition {condition} already completed - ignoring duplicate");
-            return;
-        }
-
-        Debug.Log($"Tutorial condition met: {condition}");
-        completedConditions.Add(condition);
-        OnConditionCompleted?.Invoke(condition);
-
-        TutorialStep nextStep = GetNextIncompleteStep();
-        
-        if (nextStep != null && nextStep.triggerCondition == condition && CanTriggerStepStrictly(nextStep))
-        {
-            Debug.Log($"Tutorial: Triggering next sequential step {nextStep.stepId}");
-            pendingSteps.Clear();
-            pendingSteps.Enqueue(nextStep);
-            ProcessPendingSteps();
-        }
-        else if (nextStep != null)
-        {
-            Debug.Log($"Tutorial: Condition {condition} met, but next step is {nextStep.stepId} (waiting for {nextStep.triggerCondition})");
-        }
-        else
-        {
-            Debug.Log($"Tutorial: No more incomplete steps to process");
-        }
+        Debug.Log($"Tutorial condition {condition} already completed - ignoring duplicate");
+        return;
     }
+
+    Debug.Log($"Tutorial condition met: {condition}");
+    completedConditions.Add(condition);
+    OnConditionCompleted?.Invoke(condition);
+
+    TutorialStep nextStep = GetNextIncompleteStep();
+    
+    if (nextStep != null && (nextStep.triggerCondition == condition || (nextStep.stepId == "time_controls" && condition == TutorialCondition.TimeControlsExplained)) && CanTriggerStepStrictly(nextStep))
+    {
+        Debug.Log($"Tutorial: Triggering next sequential step {nextStep.stepId}");
+        pendingSteps.Clear();
+        pendingSteps.Enqueue(nextStep);
+        ProcessPendingSteps();
+    }
+    else if (nextStep != null)
+    {
+        Debug.Log($"Tutorial: Condition {condition} met, but next step is {nextStep.stepId} (waiting for {nextStep.triggerCondition})");
+    }
+    else
+    {
+        Debug.Log($"Tutorial: No more incomplete steps to process");
+    }
+}
 
     private TutorialStep GetNextIncompleteStep()
     {
@@ -496,43 +500,49 @@ public class TutorialManager : MonoBehaviour
         }
         return null;
     }
-
-    private bool CanTriggerStepStrictly(TutorialStep step)
+private bool CanTriggerStepStrictly(TutorialStep step)
+{
+    if (step.isCompleted)
     {
-        if (step.isCompleted)
-        {
-            Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
-            return false;
-        }
+        Debug.Log($"Tutorial step {step.stepId} blocked: Already completed");
+        return false;
+    }
 
-        int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
-        if (stepIndex > 0)
-        {
-            for (int i = 0; i < stepIndex; i++)
-            {
-                if (!tutorialSteps[i].isCompleted)
-                {
-                    Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet (index {i})");
-                    return false;
-                }
-            }
-        }
+    if (!ArePrerequisitesStrictlyMet(step))
+    {
+        Debug.Log($"Tutorial step {step.stepId} blocked: Prerequisites not met");
+        return false;
+    }
 
-        if (!ArePrerequisitesStrictlyMet(step))
-        {
-            Debug.Log($"Tutorial step {step.stepId} blocked: Prerequisites not met");
-            return false;
-        }
+    if (isTutorialActive && currentStep != null && currentStep.stepId != step.stepId)
+    {
+        Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) is currently active");
+        return false;
+    }
 
-        if (isTutorialActive && currentStep != null)
-        {
-            Debug.Log($"Tutorial step {step.stepId} blocked: Another step ({currentStep.stepId}) is currently active");
-            return false;
-        }
-
-        Debug.Log($"Tutorial step {step.stepId} can be triggered");
+    // Allow time_controls if either FirstCropHarvested or TimeControlsExplained is met
+    if (step.stepId == "time_controls" && (completedConditions.Contains(TutorialCondition.FirstCropHarvested) || completedConditions.Contains(TutorialCondition.TimeControlsExplained)))
+    {
+        Debug.Log($"Tutorial step {step.stepId} allowed: FirstCropHarvested or TimeControlsExplained condition met");
         return true;
     }
+
+    int stepIndex = tutorialSteps.FindIndex(s => s.stepId == step.stepId);
+    if (stepIndex > 0)
+    {
+        for (int i = 0; i < stepIndex; i++)
+        {
+            if (!tutorialSteps[i].isCompleted)
+            {
+                Debug.Log($"Tutorial step {step.stepId} blocked: Previous step {tutorialSteps[i].stepId} not completed yet (index {i})");
+                return false;
+            }
+        }
+    }
+
+    Debug.Log($"Tutorial step {step.stepId} can be triggered");
+    return true;
+}
 
     private void ProcessPendingSteps()
     {
@@ -547,78 +557,81 @@ public class TutorialManager : MonoBehaviour
         ShowTutorialStep(step);
     }
 
-    private void ShowTutorialStep(TutorialStep step)
-    {
-        if (currentTutorialCoroutine != null)
-        {
-            StopCoroutine(currentTutorialCoroutine);
-        }
-
-        if (step.stepId == "open_shop")
-        {
-            Debug.Log("Tutorial: Preparing for open_shop step - forcing shop closed and enabling shop button");
-            if (shopManager != null)
-            {
-                shopManager.CloseShop();
-                shopManager.ResetShopState();
-                shopManager.enableShop();
-            }
-            if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
-            {
-                NightManager.Instance.shopManager.CloseShop();
-                NightManager.Instance.shopManager.ResetShopState();
-                if (NightManager.Instance.IsDay)
-                    NightManager.Instance.shopManager.enableShop();
-            }
-        }
-        // In TutorialManager.cs, modify ShowTutorialStep for harvest_first_crops
-else if (step.stepId == "harvest_first_crops")
+ public void ShowTutorialStep(TutorialStep step)
 {
-    CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-    foreach (var crop in crops)
+    if (currentTutorialCoroutine != null)
     {
-        if (crop.CropReady)
+        StopCoroutine(currentTutorialCoroutine);
+    }
+
+    if (step.stepId == "open_shop")
+    {
+        Debug.Log("Tutorial: Preparing for open_shop step - forcing shop closed and enabling shop button");
+        if (shopManager != null)
         {
-            step.worldPosition = crop.transform.position + Vector3.up * 3f;
-            Debug.Log($"Tutorial: Highlighting crop plot {crop.name} at {step.worldPosition} for harvest");
-            StartCoroutine(PulseEffect(crop.gameObject));
-            if (worldPointer != null)
-            {
-                worldPointer.transform.position = step.worldPosition + Vector3.up * 1f; // Adjusted for visibility
-                worldPointer.SetActive(true);
-            }
-            break;
+            shopManager.CloseShop();
+            shopManager.ResetShopState();
+            shopManager.enableShop();
+        }
+        if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
+        {
+            NightManager.Instance.shopManager.CloseShop();
+            NightManager.Instance.shopManager.ResetShopState();
+            if (NightManager.Instance.IsDay)
+                NightManager.Instance.shopManager.enableShop();
         }
     }
+    else if (step.stepId == "harvest_first_crops")
+    {
+        CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        bool cropReady = false;
+        foreach (var crop in crops)
+        {
+            if (crop.CropReady)
+            {
+                cropReady = true;
+                step.worldPosition = crop.transform.position + Vector3.up * 3f;
+                Debug.Log($"Tutorial: Highlighting crop plot {crop.name} at {step.worldPosition} for harvest");
+                StartCoroutine(PulseEffect(crop.gameObject));
+                if (worldPointer != null)
+                {
+                    worldPointer.transform.position = step.worldPosition + Vector3.up * 1f;
+                    worldPointer.SetActive(true);
+                }
+                break;
+            }
+        }
+        if (!cropReady)
+        {
+            Debug.Log("Tutorial: No crop ready for harvest, delaying harvest_first_crops step");
+            StartCoroutine(ShowNextStepAfterDelay("harvest_first_crops", 1f));
+            return;
+        }
+    }
+    else if (step.stepId == "time_controls")
+    {
+        Debug.Log("Tutorial: Forcing time_controls step UI visibility");
+        ForceShowTutorialUI();
+    }
+    else
+    {
+        if (shopManager != null)
+        {
+            shopManager.CloseShop();
+        }
+        if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
+        {
+            NightManager.Instance.shopManager.CloseShop();
+            NightManager.Instance.shopManager.ResetShopState();
+            if (NightManager.Instance.IsDay)
+                NightManager.Instance.shopManager.enableShop();
+        }
+    }
+
+    ForceShowTutorialUI(); // Ensure UI is visible for all steps
+    currentStep = step;
+    currentTutorialCoroutine = StartCoroutine(DisplayTutorialStep(step));
 }
-        else
-        {
-            if (shopManager != null)
-            {
-                shopManager.CloseShop();
-            }
-            if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
-            {
-                NightManager.Instance.shopManager.CloseShop();
-                NightManager.Instance.shopManager.ResetShopState();
-                if (NightManager.Instance.IsDay)
-                    NightManager.Instance.shopManager.enableShop();
-            }
-        }
-
-        if (tutorialPanel != null)
-        {
-            tutorialPanel.SetActive(true);
-            var uiScript = tutorialPanel.GetComponent<TutorialUIPrefab>();
-            if (uiScript != null)
-            {
-                uiScript.AnimatePanelIn();
-            }
-        }
-
-        currentStep = step;
-        currentTutorialCoroutine = StartCoroutine(DisplayTutorialStep(step));
-    }
 
     private IEnumerator DisplayTutorialStep(TutorialStep step)
     {
@@ -686,57 +699,116 @@ else if (step.stepId == "harvest_first_crops")
         CompleteCurrentStep();
     }
 
-    private void CompleteCurrentStep()
+private void CompleteCurrentStep()
+{
+    if (currentStep != null)
     {
-        if (currentStep != null)
+        currentStep.isCompleted = true;
+
+        if (currentStep.stepId == "welcome")
         {
-            currentStep.isCompleted = true;
-
-            if (currentStep.stepId == "welcome")
+            Debug.Log("Tutorial: Welcome completed, showing camera controls");
+            StartCoroutine(ShowNextStepAfterDelay("camera_controls", 0.5f));
+        }
+        else if (currentStep.stepId == "camera_controls")
+        {
+            Debug.Log("Tutorial: Camera controls completed, showing shop instruction");
+            StartCoroutine(ShowNextStepAfterDelay("open_shop", 0.5f));
+        }
+        else if (currentStep.stepId == "open_shop")
+        {
+            Debug.Log("Tutorial: Shop instruction completed, waiting for shop to be opened");
+            StartCoroutine(DelayNextStepAfterShopOpened());
+        }
+        else if (currentStep.stepId == "harvest_first_crops")
+        {
+            Debug.Log("Tutorial: Harvest first crops completed, checking harvest status");
+            var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
+            conditionTracker?.CheckInventoryForHarvest();
+            if (conditionTracker != null && conditionTracker.hasHarvestedFirstCrop && completedConditions.Contains(TutorialCondition.FirstCropHarvested))
             {
-                Debug.Log("Tutorial: Welcome completed, showing camera controls");
-                StartCoroutine(ShowNextStepAfterDelay("camera_controls", 0.5f));
+                Debug.Log("Tutorial: Harvest confirmed, triggering time_controls step");
+                OnConditionMet(TutorialCondition.TimeControlsExplained);
+                StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.5f));
             }
-            else if (currentStep.stepId == "camera_controls")
+            else
             {
-                Debug.Log("Tutorial: Camera controls completed, showing shop instruction");
-                StartCoroutine(ShowNextStepAfterDelay("open_shop", 0.5f));
-            }
-            else if (currentStep.stepId == "open_shop")
-            {
-                Debug.Log("Tutorial: Shop instruction completed, waiting for shop to be opened");
-                StartCoroutine(DelayNextStepAfterShopOpened());
-            }
-
-            if (currentStep.stepId == "tutorial_complete")
-            {
-                CompleteTutorial();
+                Debug.Log("Tutorial: Waiting for player to harvest crop or FirstCropHarvested condition, scheduling recheck");
+                StartCoroutine(WaitForHarvestAndProceed());
             }
         }
-
-        if (tutorialPanel != null)
+        else if (currentStep.stepId == "tutorial_complete")
         {
-            tutorialPanel.SetActive(false);
+            CompleteTutorial();
         }
-
-        if (worldPointer != null)
-        {
-            worldPointer.SetActive(false);
-        }
-
-        if (startNightButton != null)
-        {
-            startNightButton.gameObject.SetActive(false);
-        }
-
-        ResumeFromTutorial();
-
-        isTutorialActive = false;
-        currentStep = null;
-
-        ProcessPendingSteps();
     }
 
+    if (tutorialPanel != null)
+    {
+        tutorialPanel.SetActive(false);
+    }
+
+    if (worldPointer != null)
+    {
+        worldPointer.SetActive(false);
+    }
+
+    if (startNightButton != null)
+    {
+        startNightButton.gameObject.SetActive(false);
+    }
+
+    ResumeFromTutorial();
+
+    isTutorialActive = false;
+    currentStep = null;
+
+    ProcessPendingSteps();
+}
+
+private IEnumerator WaitForHarvestAndProceed()
+{
+    var conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
+    float timeout = 5f;
+    float elapsed = 0f;
+
+    while (elapsed < timeout)
+    {
+        conditionTracker?.CheckInventoryForHarvest();
+        if (conditionTracker != null && conditionTracker.hasHarvestedFirstCrop && completedConditions.Contains(TutorialCondition.FirstCropHarvested))
+        {
+            Debug.Log("Tutorial: Harvest detected after delay, proceeding to time_controls");
+            if (!pendingSteps.Any(s => s.stepId == "time_controls") && (currentStep == null || currentStep.stepId != "time_controls"))
+            {
+                OnConditionMet(TutorialCondition.TimeControlsExplained);
+                StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.5f));
+            }
+            else
+            {
+                Debug.Log("Tutorial: time_controls already queued or active, skipping duplicate");
+            }
+            yield break;
+        }
+        elapsed += 0.1f;
+        yield return new WaitForSeconds(0.1f);
+    }
+
+    Debug.LogWarning("Tutorial: Harvest not detected within timeout, forcing FirstCropHarvested and time_controls step");
+    if (conditionTracker != null)
+    {
+        conditionTracker.hasHarvestedFirstCrop = true;
+    }
+    OnConditionMet(TutorialCondition.FirstCropHarvested);
+    if (!pendingSteps.Any(s => s.stepId == "time_controls") && (currentStep == null || currentStep.stepId != "time_controls"))
+    {
+        OnConditionMet(TutorialCondition.TimeControlsExplained);
+        StartCoroutine(ShowNextStepAfterDelay("time_controls", 0.1f));
+    }
+    else
+    {
+        Debug.Log("Tutorial: time_controls already queued or active, skipping duplicate");
+    }
+}
     private IEnumerator DelayNextStepAfterShopOpened()
     {
         yield return new WaitForSecondsRealtime(1.5f);
@@ -1050,7 +1122,8 @@ else if (step.stepId == "harvest_first_crops")
 
     public bool IsTutorialActive()
     {
-        return isTutorialActive;
+        // Tutorial is active if not completed and not skipped
+        return enableTutorial && !tutorialCompleted;
     }
 
     public bool IsTutorialCompleted()

@@ -86,6 +86,9 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private Button startNightButton; // Special button for starting night during tutorial
     [SerializeField] private Image characterPortrait;
     [SerializeField] private GameObject worldPointer;
+
+    // GameObject obj = GameObject.Find("");
+    // TutorialUIPrefab tutScript = obj.GetComponent<TutorialUIPrefab>();
     
     [Header("Old Man Character")]
     [SerializeField] private Sprite oldManPortrait;
@@ -120,292 +123,366 @@ public class TutorialManager : MonoBehaviour
     public event Action<TutorialCondition> OnConditionCompleted;
     public event Action OnTutorialCompleted;
 
+    TutorialUIPrefab tutScript;
+
+    private int currStep = 0;
+
+    string title1 = "Old Pete's Farm Fiasco!";
+        string description1 = "Howdy, greenhorn! I'm Old Pete, and this farm's your ticket to glory—if you can keep those darn wolves at bay!";
+
+
+        // Step 2: Camera Controls (triggers when welcome step completes)
+
+            string title2 = "Look Around Your Farm";
+        string description2 = "First things first - let's learn to look around! Use <color=purple><i>WASD</i></color></color> to move the camera, <color=purple><i>QE</i></color> to rotate, your <color=purple><i>mouse wheel</i></color> to zoom in and out, <color=purple><i>hold right click</i></color> to also move the camera. Take a moment to explore your land, get familiar with the lay of the land!";
+
+
+        // Step 3: Opening the Shop (triggers when camera step completes)
+
+           string  title3 = "Open the Build Shop";
+       string  description3 = "Now, see that shop icon in the <color=purple><i>bottom left of your screen</i></color>? That's your <color=purple><i>build shop</i></color>! Click on it to see what structures you can build. We'll need to construct some buildings to get this farm running properly!";
+
+
+        // Step 4: Farm House First
+
+         string   title4 = "Build Your Farm House";
+       string  description4 = "Perfect! Now you can see all the buildings you can construct. Every farm needs a proper house! Look for the <color=purple><i>Farm House</i></color> in the shop and click on it, then click somewhere on your land to place it. This will be the heart of your operation!";
+
+
+        // Step 5: Place Crop Plot
+
+           string  title5 = "Plant Your First Crops";
+      string   description5 = "A farm ain't a farm without crops! Build a <color=purple><i>Crop Plot</i></color> near your house. This is where you'll grow food - both to <color=purple><i>feed your animals</i></color> and to store for tough times ahead.";
+
+
+        // Step 6: Plant First Crop
+
+          string   title6 = "Plant Your Seeds";
+      string   description6 = "Excellent! Now click on your crop plot and choose what to <color=purple><i>plant</i></color>. I'd recommend starting with <color=purple><i>Sunflowers</i></color> - they will be used to feed your <color=purple><i>chickens</i></color>. Remember, you can only <color=purple><i>plant during the day</i></color>!";
+
+
+
+          string   title7 = "Build Storage - The Silo";
+       string  description7 = "Good work! Now you'll need somewhere to store your harvest. Build a <color=purple><i>Silo</i></color> close to your crops - the <color=purple><i>closer it is, the more efficient</i></color> your farming will be! This is called 'synergy' - structures work better when they're placed strategically.";
+
+
+        // Step 8: Explain Day/Night & Time Controls
+
+          string   title8 = "Day, Night & Time Controls";
+       string  description8 = "See those time controls on the <color=purple><i>bottom right</i></color> of your screen? You can <color=purple><i>pause time, play, or speed things up</i></color>! Your crops grow over time, and there's a day-night cycle. <color=purple><i>During the day, you farm and build. At night... well, that's when the wolves come</i></color>. But don't worry - I've made the days extra long for this tutorial so you have plenty of time to learn!";
+
+        // Step 9: Chicken Coop for Production (after time controls explanation)
+
+           string  title9 = "Start Animal Production";
+       string  description9 = "Now let's add some livestock! Build a <color=purple><i>Chicken Coop</i></color>. Chickens will lay eggs that you can <color=purple><i>collect and sell for money</i></color>. Place it <color=purple><i>near your silo for better efficiency</i></color> - animals <color=purple><i>eat less food</i></color> when they're close to storage!";
+
+        string title10 = "Harvest Your Sunflowers";
+           string  description10 = "Look at that! Your sunflowers are ready to <color=purple><i>harvest</i></color>! Click on the <color=purple><i>crop plot</i></color> and harvest your sunflowers. You'll need these to feed your <color=purple><i>chickens</i></color>!";
+
+
+        // Step 12: Feed Animals (after harvest AND chickens bought)
+
+       string  title11 = "Feed Your Chickens";
+         string    description11 = "Now that you have sunflowers, your chickens are hungry! Click on the <color=purple><i>chicken coop</i></color> and feed them with your harvested sunflowers. <color=purple><i>Well-fed animals</i></color> will start <color=purple><i>producing products which turns into money</i></color>!";
+
+
+        // Step 13: Watch Production Start
+
+      string   title12 = "Production Starting";
+        string     description12 = "Excellent! Your chickens are now fed and <color=purple><i>producing eggs</i></color>. They will produce eggs quickly for the tutorial! No rush, just click Next when you want to proceed.";
+
+
+        // Step 14: Collect Products
+
+       string  title13 = "Collect Your Eggs";
+        string     description13 = "Perfect! Your chickens have finished producing eggs. Click on the chicken coop and <color=purple><i>collect the eggs to earn money</i></color>. This is how you'll fund your expansion and defenses!";
+
+        // Step 15: Build Barracks for Defense
+
+       string  title14 = "Prepare Your Defenses";
+        string     description14 = "Now for the important part - defense! Those wolves I mentioned? They <color=purple><i>attack at night</i></color>. Build a Barracks near your chicken coop but not too close -> <color=purple><i>if they are too close it will cost more to recruit your army animals<color=purple><i>!! The <color=purple><i>barracks will recruit chickens to form an army that protects your farm</i></color>!";
+
+
+        // Step 16: Place Defense Flag
+
+       string  title15 = "Set Your Defense Position";
+        string     description15 = "Great! Now <color=purple><i>click on your barracks and place a flag</i></color>. This flag shows your <color=purple><i>army where to gather and defend</i></color>. Place it in a strategic position where your army can protect your important buildings!";
+
+
+        // Step 17: Recruit Army
+
+        string title16 = "Recruit Your Army";
+         string    description16 = "Perfect! Now <color=purple><i>recruit 2-3 soldier chickens</i></color> from your barracks. They'll <color=purple><i>cost money</i></color> and will <color=purple><i>take chickens from your coop</i></color>, but they're essential for defense. Start small - 2-3 soldiers should be enough for your first night. The further your barracks are to your chicken coop, the cheaper recruitment is!";
+
+
+        // Step 18: First Night - Special Tutorial Night Start
+
+       string  title17 = "Ready for Your First Night?";
+        string     description17 = "Perfect! You've recruited your army and set up your defenses. When you're completely ready to face the night, click the 'Next' button below. The button will only be enabled when your defenses are properly set up. Take your time - you have full control!";
+
+
+        // Step 19: Night Defense
+
+       string  title18 = "Watch Your Army Fight!";
+        string     description18 = "Look at them go! Your soldier chickens are defending your farm. Watch how they <color=purple><i>move to the flag position and fight off the wolves</i></color>. If <color=purple><i>all your structures get destroyed, it's game over</i></color>, so keep building up your defenses!";
+
+
+        // Step 20: Show Synergies
+
+       string  title19 = "Understanding Synergies";
+          string   description19 = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos <color=purple><i>near</i></color> crops = <color=purple><i>more</i></color> production\n• Animals <color=purple><i>near</i></color> silos = eat <color=purple><i>less</i></color> food\n• Barracks <color=purple><i>farther</i></color> from animals = <color=purple><i>cheaper</i></color> recruitment\nPlan your layout carefully!";
+
+
+        // Step 21: Complete Tutorial
+
+           string  title20 = "You're Ready to Farm!";
+          string   description20 = "Congratulations! You've learned the basics of Cluck N Load. Keep expanding your farm, try <color=purple><i>different animals</i></color>, experiment with layouts, and survive as many nights as you can. Remember: <color=purple><i>Farm during the day, fight at night</i></color>, and always plan ahead!\n\nGood luck, farmer!";
+
+
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            if (transform.parent == null)
-            {
-                DontDestroyOnLoad(gameObject);
-            }
         }
         else
         {
             Destroy(gameObject);
             return;
         }
-        
-        InitializeTutorialSteps();
+
+        // InitializeTutorialSteps();
+    }
+
+    private void Update()
+    {
+        if (currStep == 1 && Input.GetKeyDown(KeyCode.W))
+        {
+            displayStuff(title3, description3);
+            currStep++;
+        }
+    }
+
+    public void CheckStep2()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 2 && called == false)
+        {
+            Debug.Log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            displayStuff(title4, description4);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    public void CheckStep3()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 3 && called == false)
+        {
+            displayStuff(title5, description5);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    public void CheckStep4()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 4 && called == false)
+        {
+            displayStuff(title6, description6);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    public void CheckStep5()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 5 && called == false)
+        {
+            displayStuff(title7, description7);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+    public void CheckStep6()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 6 && called == false)
+        {
+            displayStuff(title8, description8);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    public void CheckStep7()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 7 && called == false)
+        {
+            displayStuff(title9, description9);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+    public void CheckStep8()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 8 && called == false)
+        {
+            displayStuff(title10, description10);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+    public void CheckStep9()
+    {
+        bool called = false;
+        Debug.Log($"Checking Step 2 conditions...{currStep}");
+        if (currStep == 9 && called == false)
+        {
+            displayStuff(title11, description11);
+            currStep++;
+            called = true;
+        }
+        else
+        {
+            return;
+        }
     }
 
     private void Start()
     {
-        if (!enableTutorial)
-        {
-            gameObject.SetActive(false);
-            return;
-        }
+        tutScript = FindObjectOfType<TutorialUIPrefab>();
 
-        if (skipTutorialOnRestart && HasCompletedTutorial())
-        {
-            gameObject.SetActive(false);
-            return;
-        }
 
-        SetupUI();
-        StartTutorial();
+        displayStuff(title1, description1);
+
+
+        // if (!enableTutorial)
+        // {
+        //     gameObject.SetActive(false);
+        //     return;
+        // }
+
+        // if (skipTutorialOnRestart && HasCompletedTutorial())
+        // {
+        //     gameObject.SetActive(false);
+        //     return;
+        // }
+
+
+
+        // SetupUI();
+        // StartTutorial();
     }
 
     private void InitializeTutorialSteps()
 {
     tutorialSteps.Clear();
 
-    tutorialSteps.Add(new TutorialStep
-    {
-        stepId = "welcome",
-        title = "Old Pete's Farm Fiasco!",
-        description = "Howdy, greenhorn! I'm Old Pete, and this farm's your ticket to glory—if you can keep those darn wolves at bay!",
-        triggerCondition = TutorialCondition.GameStarted,
-        prerequisites = new TutorialCondition[] { },
-        displayDuration = 5f,
-        pauseGame = true
-    });
-
-        // Step 2: Camera Controls (triggers when welcome step completes)
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "camera_controls",
-            title = "Look Around Your Farm",
-            description = "First things first - let's learn to look around! Use <color=purple><i>WASD</i></color></color> to move the camera, <color=purple><i>QE</i></color> to rotate, your <color=purple><i>mouse wheel</i></color> to zoom in and out, <color=purple><i>hold right click</i></color> to also move the camera. Take a moment to explore your land, get familiar with the lay of the land!",
-            triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered
-            prerequisites = new TutorialCondition[] { },
-            displayDuration = 6f,
-            pauseGame = true
-        });
-
-        // Step 3: Opening the Shop (triggers when camera step completes)
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "open_shop",
-            title = "Open the Build Shop",
-            description = "Now, see that shop icon in the <color=purple><i>bottom left of your screen</i></color>? That's your <color=purple><i>build shop</i></color>! Click on it to see what structures you can build. We'll need to construct some buildings to get this farm running properly!",
-            triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered  
-            prerequisites = new TutorialCondition[] { },
-            displayDuration = 5f,
-            pauseGame = false, // Do NOT pause the game for this step so UI input works
-            highlightUI = true,
-            highlightUITag = "ShopButton"
-        });
-
-        // Step 4: Farm House First
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "build_farmhouse",
-            title = "Build Your Farm House",
-            description = "Perfect! Now you can see all the buildings you can construct. Every farm needs a proper house! Look for the <color=purple><i>Farm House</i></color> in the shop and click on it, then click somewhere on your land to place it. This will be the heart of your operation!",
-            triggerCondition = TutorialCondition.ShopOpened,
-            prerequisites = new TutorialCondition[] { TutorialCondition.ShopOpened },
-            displayDuration = 6f,
-            pauseGame = true
-        });
-
-        // Step 5: Place Crop Plot
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "place_crop_plot",
-            title = "Plant Your First Crops",
-            description = "A farm ain't a farm without crops! Build a <color=purple><i>Crop Plot</i></color> near your house. This is where you'll grow food - both to <color=purple><i>feed your animals</i></color> and to store for tough times ahead.",
-            triggerCondition = TutorialCondition.FarmHousePlaced,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FarmHousePlaced },
-            displayDuration = 5f,
-            pauseGame = true
-        });
-
-        // Step 6: Plant First Crop
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "plant_first_crop",
-            title = "Plant Your Seeds",
-            description = "Excellent! Now click on your crop plot and choose what to <color=purple><i>plant</i></color>. I'd recommend starting with <color=purple><i>Sunflowers</i></color> - they will be used to feed your <color=purple><i>chickens</i></color>. Remember, you can only <color=purple><i>plant during the day</i></color>!",
-            triggerCondition = TutorialCondition.CropPlotPlaced,
-            prerequisites = new TutorialCondition[] { TutorialCondition.CropPlotPlaced },
-            displayDuration = 5f,
-            pauseGame = true
-        });
-
-
-           tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "build_silo",
-            title = "Build Storage - The Silo",
-            description = "Good work! Now you'll need somewhere to store your harvest. Build a <color=purple><i>Silo</i></color> close to your crops - the <color=purple><i>closer it is, the more efficient</i></color> your farming will be! This is called 'synergy' - structures work better when they're placed strategically.",
-            triggerCondition = TutorialCondition.FirstCropPlanted,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropPlanted },
-            displayDuration = 7f,
-            pauseGame = true
-        });
-
-        // Step 8: Explain Day/Night & Time Controls
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "time_controls",
-            title = "Day, Night & Time Controls",
-            description = "See those time controls on the <color=purple><i>bottom right</i></color> of your screen? You can <color=purple><i>pause time, play, or speed things up</i></color>! Your crops grow over time, and there's a day-night cycle. <color=purple><i>During the day, you farm and build. At night... well, that's when the wolves come</i></color>. But don't worry - I've made the days extra long for this tutorial so you have plenty of time to learn!",
-            triggerCondition = TutorialCondition.SiloPlaced,
-            prerequisites = new TutorialCondition[] { TutorialCondition.SiloPlaced },
-            displayDuration = 8f,
-            pauseGame = true
-        });
-
-        // Step 9: Chicken Coop for Production (after time controls explanation)
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "build_chicken_coop",
-            title = "Start Animal Production",
-            description = "Now let's add some livestock! Build a <color=purple><i>Chicken Coop</i></color>. Chickens will lay eggs that you can <color=purple><i>collect and sell for money</i></color>. Place it <color=purple><i>near your silo for better efficiency</i></color> - animals <color=purple><i>eat less food</i></color> when they're close to storage!",
-            triggerCondition = TutorialCondition.TimeControlsExplained,
-            prerequisites = new TutorialCondition[] { TutorialCondition.TimeControlsExplained },
-            displayDuration = 7f,
-            pauseGame = true
-        });
-
 
         // Step 11: Watch Crops Grow (REMOVED - this was causing overlap with step 7)
 
         // Step 11: Harvest Your Crops (when they're ready)
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "harvest_first_crops",
-            title = "Harvest Your Sunflowers",
-            description = "Look at that! Your sunflowers are ready to <color=purple><i>harvest</i></color>! Click on the <color=purple><i>crop plot</i></color> and harvest your sunflowers. You'll need these to feed your <color=purple><i>chickens</i></color>!",
-            triggerCondition = TutorialCondition.FirstCropHarvested,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
-            displayDuration = 6f,
-            pauseGame = true
-        });
 
-        // Step 12: Feed Animals (after harvest AND chickens bought)
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "feed_animals",
-            title = "Feed Your Chickens",
-            description = "Now that you have sunflowers, your chickens are hungry! Click on the <color=purple><i>chicken coop</i></color> and feed them with your harvested sunflowers. <color=purple><i>Well-fed animals</i></color> will start <color=purple><i>producing products which turns into money</i></color>!",
-            triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered
-            prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested, TutorialCondition.FirstChickenBought },
-            displayDuration = 6f,
-            pauseGame = true
-        });
+        
+    }
 
-        // Step 13: Watch Production Start
-        tutorialSteps.Add(new TutorialStep
+    public void nextThing()
+    {
+        if (currStep == 0)
         {
-            stepId = "watch_production",
-            title = "Production Starting",
-            description = "Excellent! Your chickens are now fed and <color=purple><i>producing eggs</i></color>. They will produce eggs quickly for the tutorial! No rush, just click Next when you want to proceed.",
-            triggerCondition = TutorialCondition.ChickensStartedProducing,
-            prerequisites = new TutorialCondition[] { TutorialCondition.ChickensStartedProducing },
-            displayDuration = 6f,
-            pauseGame = true
-        });
+            displayStuff(title2, description2);
+            Debug.Log("--------------------------------------------------------------------");     
+            currStep++;       
+        }
+    }
 
-        // Step 14: Collect Products
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "collect_products",
-            title = "Collect Your Eggs",
-            description = "Perfect! Your chickens have finished producing eggs. Click on the chicken coop and <color=purple><i>collect the eggs to earn money</i></color>. This is how you'll fund your expansion and defenses!",
-            triggerCondition = TutorialCondition.AnimalProductsReady,
-            prerequisites = new TutorialCondition[] { TutorialCondition.AnimalProductsReady },
-            displayDuration = 6f,
-            pauseGame = true
-        });
 
-        // Step 15: Build Barracks for Defense
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "build_barracks",
-            title = "Prepare Your Defenses",
-            description = "Now for the important part - defense! Those wolves I mentioned? They <color=purple><i>attack at night</i></color>. Build a Barracks near your chicken coop but not too close -> <color=purple><i>if they are too close it will cost more to recruit your army animals<color=purple><i>!! The <color=purple><i>barracks will recruit chickens to form an army that protects your farm</i></color>!",
-            triggerCondition = TutorialCondition.AnimalProductsCollected,
-            prerequisites = new TutorialCondition[] { TutorialCondition.AnimalProductsCollected },
-            displayDuration = 8f,
-            pauseGame = true
-        });
+    private void displayStuff(string title, string description)
+    {
+        tutScript.setDescription(description);
+        tutScript.setTitle(title);
+        
 
-        // Step 16: Place Defense Flag
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "place_flag",
-            title = "Set Your Defense Position",
-            description = "Great! Now <color=purple><i>click on your barracks and place a flag</i></color>. This flag shows your <color=purple><i>army where to gather and defend</i></color>. Place it in a strategic position where your army can protect your important buildings!",
-            triggerCondition = TutorialCondition.BarracksPlaced,
-            prerequisites = new TutorialCondition[] { TutorialCondition.BarracksPlaced },
-            displayDuration = 6f,
-            pauseGame = true
-        });
 
-        // Step 17: Recruit Army
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "recruit_army",
-            title = "Recruit Your Army",
-            description = "Perfect! Now <color=purple><i>recruit 2-3 soldier chickens</i></color> from your barracks. They'll <color=purple><i>cost money</i></color> and will <color=purple><i>take chickens from your coop</i></color>, but they're essential for defense. Start small - 2-3 soldiers should be enough for your first night. The further your barracks are to your chicken coop, the cheaper recruitment is!",
-            triggerCondition = TutorialCondition.FlagPlaced,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FlagPlaced },
-            displayDuration = 8f,
-            pauseGame = true
-        });
 
-        // Step 18: First Night - Special Tutorial Night Start
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "first_night",
-            title = "Ready for Your First Night?",
-            description = "Perfect! You've recruited your army and set up your defenses. When you're completely ready to face the night, click the 'Next' button below. The button will only be enabled when your defenses are properly set up. Take your time - you have full control!",
-            triggerCondition = TutorialCondition.ArmyRecruited,
-            prerequisites = new TutorialCondition[] { TutorialCondition.ArmyRecruited },
-            displayDuration = 999f, // Wait for user to click Start Night button
-            pauseGame = true,
-            showStartNightButton = true, // Show the special Start Night button
-            requiresDefensesReady = true // Only enable when defenses are ready
-        });
+        // isTutorialActive = true;
 
-        // Step 19: Night Defense
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "night_defense",
-            title = "Watch Your Army Fight!",
-            description = "Look at them go! Your soldier chickens are defending your farm. Watch how they <color=purple><i>move to the flag position and fight off the wolves</i></color>. If <color=purple><i>all your structures get destroyed, it's game over</i></color>, so keep building up your defenses!",
-            triggerCondition = TutorialCondition.NightStarted,
-            prerequisites = new TutorialCondition[] { TutorialCondition.NightStarted },
-            displayDuration = 6f,
-            pauseGame = true
-        });
+        // if (step.pauseGame)
+        // {
+        //     PauseForTutorial();
+        // }
 
-        // Step 20: Show Synergies
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "synergy_explanation",
-            title = "Understanding Synergies",
-            description = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos <color=purple><i>near</i></color> crops = <color=purple><i>more</i></color> production\n• Animals <color=purple><i>near</i></color> silos = eat <color=purple><i>less</i></color> food\n• Barracks <color=purple><i>farther</i></color> from animals = <color=purple><i>cheaper</i></color> recruitment\nPlan your layout carefully!",
-            triggerCondition = TutorialCondition.FirstWolfDefeated,
-            prerequisites = new TutorialCondition[] { TutorialCondition.FirstWolfDefeated },
-            displayDuration = 10f,
-            pauseGame = true
-        });
+        // if (tutorialPanel != null)
+        // {
+        //     tutorialPanel.SetActive(true);
 
-        // Step 21: Complete Tutorial
-        tutorialSteps.Add(new TutorialStep
-        {
-            stepId = "tutorial_complete",
-            title = "You're Ready to Farm!",
-            description = "Congratulations! You've learned the basics of Cluck N Load. Keep expanding your farm, try <color=purple><i>different animals</i></color>, experiment with layouts, and survive as many nights as you can. Remember: <color=purple><i>Farm during the day, fight at night</i></color>, and always plan ahead!\n\nGood luck, farmer!",
-            triggerCondition = TutorialCondition.SecondDayStarted,
-            prerequisites = new TutorialCondition[] { TutorialCondition.SecondDayStarted },
-            displayDuration = 12f,
-            pauseGame = true
-        });
+        //     var canvasGroup = tutorialPanel.GetComponent<CanvasGroup>();
+        //     if (canvasGroup != null)
+        //     {
+        //         canvasGroup.alpha = 1f;
+        //         canvasGroup.interactable = true;
+        //         canvasGroup.blocksRaycasts = true;
+        //     }
+
+        //     if (tutorialTitle != null)
+        //         tutorialTitle.text = title;
+
+        //     var uiScript = tutorialPanel != null ? tutorialPanel.GetComponent<TutorialUIPrefab>() : null;
+        //     // if (uiScript != null)
+        //     //     uiScript.PlayTypingWithMumble(description);
+        //     if (tutorialDescription != null)
+        //         tutorialDescription.text = description;
+
+        //     PlayOldManVoice();
+        // }
+
+        // while (currentStep == step && isTutorialActive)
+        // {
+        //     yield return null;
+        // }
+
+        // CompleteCurrentStep();
     }
 
     private void SetupUI()
@@ -417,7 +494,7 @@ public class TutorialManager : MonoBehaviour
             {
                 tutorialPanel = tutorialUI;
                 Debug.Log("Auto-found TutorialUI panel");
-                
+
                 var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
                 if (uiScript != null)
                 {
@@ -426,7 +503,7 @@ public class TutorialManager : MonoBehaviour
                     if (nextButton == null) nextButton = uiScript.nextButton;
                     if (skipButton == null) skipButton = uiScript.skipButton;
                     if (characterPortrait == null) characterPortrait = uiScript.characterPortrait;
-                    
+
                     Debug.Log("Auto-assigned UI components from TutorialUIPrefab");
                 }
             }

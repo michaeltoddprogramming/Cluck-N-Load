@@ -17,6 +17,13 @@ public class TutorialUIPrefab : MonoBehaviour
     private Coroutine typingCoroutine;
     private Coroutine mumbleCoroutine;
 
+    private TutorialManager tutorialManager;
+
+
+    [SerializeField] public TextMeshProUGUI description;
+    [SerializeField] public TextMeshProUGUI Title;
+
+
     /// <summary>
     /// Animate the tutorial panel in with a pop/fade effect using LeanTween
     /// </summary>
@@ -120,6 +127,7 @@ public class TutorialUIPrefab : MonoBehaviour
     {
         // Auto-assign components if not already set
         AutoAssignComponents();
+        tutorialManager = FindFirstObjectByType<TutorialManager>();
     }
 
     private void AutoAssignComponents()
@@ -226,5 +234,25 @@ public class TutorialUIPrefab : MonoBehaviour
         portraitModelInstance.transform.localRotation = Quaternion.identity;
         portraitModelInstance.transform.localScale = Vector3.one;
     }
+
+    public void NextClicked()
+    {
+        TutorialManager.Instance.nextThing();
+    }
+
+    public void setDescription(string des)
+    {
+        description.text = des;
+    }
+
+    public void setTitle(string title)
+    {
+        Title.text = title;
+    }
+
+    // public void CheckStep2()
+    // {
+    //     TutorialManager.Instance.CheckStep2();
+    // }
 }
 

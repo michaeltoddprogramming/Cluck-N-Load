@@ -103,6 +103,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 4eb01adda5fe46040b992efcbda5182a, type: 3}
   - {fileID: 8300000, guid: 73c15ed4448be3a4799b62982b2e5f21, type: 3}
   typeSpeed: 0.000001
+  description: {fileID: 5104302757712792310}
+  Title: {fileID: 9070076454465208996}
   characterPortrait: {fileID: 0}
   characterNameText: {fileID: 9070076454465208996}
   dialogueText: {fileID: 5104302757712792310}
@@ -1474,7 +1476,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8726535397865705954}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 5143000238856137996}
+        m_TargetAssemblyTypeName: TutorialUIPrefab, Assembly-CSharp
+        m_MethodName: NextClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7722909651824760683
 GameObject:
   m_ObjectHideFlags: 0

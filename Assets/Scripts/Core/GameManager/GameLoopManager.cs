@@ -70,6 +70,9 @@ public class GameLoopManager : MonoBehaviour
         // Initialize game state
         isGameOver = false;
         isPaused = false;
+
+        TutorialManager.Instance?.StartTutorial();
+        TutorialManager.Instance?.Trigger(TutorialTrigger.GameStarted);
         
         // Subscribe to GameEventManager events if it exists
         if (GameEventManager.Instance != null)

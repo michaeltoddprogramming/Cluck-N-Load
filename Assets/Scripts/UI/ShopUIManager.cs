@@ -59,7 +59,7 @@ public class ShopUIManager : MonoBehaviour
     public void OpenShop()
     {
         shopPanel.transform.SetAsLastSibling();
-        
+
         isVisible = true;
         shopPanel.SetActive(true);
 
@@ -67,13 +67,8 @@ public class ShopUIManager : MonoBehaviour
         {
             shopPanelUI.OpenShop();
         }
-
-        Debug.Log("Shop opened! Notifying tutorial system...");
-        // Notify tutorial system
-        if (TutorialManager.Instance != null)
-        {
-            TutorialManager.Instance.OnConditionMet(TutorialCondition.ShopOpened);
-        }
+        
+        TutorialManager.Instance?.Trigger(TutorialTrigger.ShopOpened);
     }
 
     public void CloseShop()

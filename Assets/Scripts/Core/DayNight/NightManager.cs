@@ -179,13 +179,13 @@ public class NightManager : MonoBehaviour
     private IEnumerator SpawnWolvesOverTime()
     {
         // Check if tutorial should prevent enemy spawning
-        TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
-        if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
-        {
-            Debug.Log("Tutorial: Preventing wolf spawning - defenses not ready");
-            wolfSpawnCoroutine = null;
-            yield break;
-        }
+        // TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+        // if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+        // {
+        //     Debug.Log("Tutorial: Preventing wolf spawning - defenses not ready");
+        //     wolfSpawnCoroutine = null;
+        //     yield break;
+        // }
 
         // Calculate how many wolves to spawn tonight (increasing difficulty)
         int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
@@ -197,12 +197,12 @@ public class NightManager : MonoBehaviour
         // Keep spawning wolves until we reach the limit or day breaks
         while (wolvesSpawned < totalWolvesToSpawn && !isDay)
         {
-            // Check again for tutorial prevention during spawning
-            if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
-            {
-                Debug.Log("Tutorial: Stopping wolf spawning mid-night - tutorial still active");
-                break;
-            }
+            // // Check again for tutorial prevention during spawning
+            // if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+            // {
+            //     Debug.Log("Tutorial: Stopping wolf spawning mid-night - tutorial still active");
+            //     break;
+            // }
 
             // Don't spawn more if we're at max concurrent wolves
             if (activeWolves.Count < maxWolvesAtOnce)
@@ -294,9 +294,7 @@ public class NightManager : MonoBehaviour
         tempSecond += Time.deltaTime * speedUp;
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
 
-        // Use even slower time during tutorial for stress-free learning
-        float currentTimeRate = IsInTutorialMode() ? inGameMinVSSec * 0.5f : inGameMinVSSec;
-        
+        float currentTimeRate = inGameMinVSSec;
         if (tempSecond >= currentTimeRate)
         {
             Minutes += 1;
@@ -348,13 +346,13 @@ public class NightManager : MonoBehaviour
         Time.timeScale = isFast ? speedOfFast : 1f; // Fast forward or normal speed
 
         // Trigger tutorial condition for time controls
-        var pauseManager = FindFirstObjectByType<PauseManager>();
-        if (pauseManager != null)
-        {
-            var method = pauseManager.GetType().GetMethod("TriggerTimeControlsExplained", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (method != null)
-                method.Invoke(pauseManager, null);
-        }
+        // var pauseManager = FindFirstObjectByType<PauseManager>();
+        // if (pauseManager != null)
+        // {
+        //     var method = pauseManager.GetType().GetMethod("TriggerTimeControlsExplained", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        //     if (method != null)
+        //         method.Invoke(pauseManager, null);
+        // }
     }
 
     private void cropGrowthOnAll(int stage)
@@ -388,11 +386,11 @@ public class NightManager : MonoBehaviour
         isDay = false;
         buttonText.text = "End Night";
 
-        // Notify tutorial system about night starting
-        if (TutorialManager.Instance != null)
-        {
-            TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
-        }
+        // // Notify tutorial system about night starting
+        // if (TutorialManager.Instance != null)
+        // {
+        //     TutorialManager.Instance.OnConditionMet(TutorialCondition.NightStarted);
+        // }
 
         // Set weather for night: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
@@ -594,18 +592,18 @@ public class NightManager : MonoBehaviour
             }
 
             // TUTORIAL: Check if night transition should be blocked
-            TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
-            if (tutorialTracker != null && tutorialTracker.ShouldBlockNightTransition())
-            {
-                Debug.Log("TUTORIAL: Blocking automatic night transition - player not ready");
-                // Don't advance to night, stay at current hour (reset to 17 to prevent multiple triggers)
-                // Use direct field assignment to avoid triggering the setter again
-                hours = 17;
-                Debug.Log("TUTORIAL: Hours reset to 17, night transition blocked");
-                return;
-            }
+            // TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+            // if (tutorialTracker != null && tutorialTracker.ShouldBlockNightTransition())
+            // {
+            //     Debug.Log("TUTORIAL: Blocking automatic night transition - player not ready");
+            //     // Don't advance to night, stay at current hour (reset to 17 to prevent multiple triggers)
+            //     // Use direct field assignment to avoid triggering the setter again
+            //     hours = 17;
+            //     Debug.Log("TUTORIAL: Hours reset to 17, night transition blocked");
+            //     return;
+            // }
 
-            Debug.Log("NightManager: Starting night at 18:00 - tutorial checks passed");
+            // Debug.Log("NightManager: Starting night at 18:00 - tutorial checks passed");
             StartNight(2);
 
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
@@ -829,17 +827,17 @@ private void setSeason(int season)
     /// <summary>
     /// Manually start night for tutorial system - bypasses normal time progression
     /// </summary>
-    public void ForceStartNight()
-    {
-        Debug.Log("NightManager: Manually starting night via ForceStartNight");
+    // public void ForceStartNight()
+    // {
+    //     Debug.Log("NightManager: Manually starting night via ForceStartNight");
         
-        // Set the time to night time using direct field assignment to avoid triggering OnHoursChange
-        hours = 18;
+    //     // Set the time to night time using direct field assignment to avoid triggering OnHoursChange
+    //     hours = 18;
         
-        // Directly call StartNight with tutorial flag
-        Debug.Log("NightManager: Calling StartNight(1) for manual tutorial start");
-        StartNight(1); // Use flag 1 for manual start
-    }
+    //     // Directly call StartNight with tutorial flag
+    //     // Debug.Log("NightManager: Calling StartNight(1) for manual tutorial start");
+    //     StartNight(1); // Use flag 1 for manual start
+    // }
 
     public void chooseAnimalProductForSeason()
     {
@@ -1108,12 +1106,12 @@ private void setSeason(int season)
     /// <summary>
     /// Check if we're currently in tutorial mode and should use extended day timing
     /// </summary>
-    private bool IsInTutorialMode()
-    {
-        return TutorialManager.Instance != null && 
-               !TutorialManager.Instance.IsTutorialCompleted() && 
-               TutorialManager.Instance.enabled;
-    }
+    // private bool IsInTutorialMode()
+    // {
+    //     return TutorialManager.Instance != null && 
+    //            !TutorialManager.Instance.IsTutorialCompleted() && 
+    //            TutorialManager.Instance.enabled;
+    // }
     
 
     private void rotateDayNightIcon()

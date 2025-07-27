@@ -136,11 +136,11 @@ public class AnimalStructureUI : BaseStructureUI
                 animalStructure.Collect();
 
                 // Notify tutorial system about product collection
-                TutorialConditionTracker tracker = FindFirstObjectByType<TutorialConditionTracker>();
-                if (tracker != null)
-                {
-                    tracker.OnProductCollected();
-                }
+                // TutorialConditionTracker tracker = FindFirstObjectByType<TutorialConditionTracker>();
+                // if (tracker != null)
+                // {
+                //     tracker.OnProductCollected();
+                // }
 
                 // fed = false;
                 UpdateUI();

@@ -324,6 +324,7 @@ public class CropStructureUI : BaseStructureUI
         }
     
         cropStructure.Plant(cropType);
+        TutorialManager.Instance?.Trigger(TutorialTrigger.PlantedCrop);
         PlaySound(plantSound); // Play planting sound on success
         closeSelectCropPanel();
         

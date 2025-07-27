@@ -28,7 +28,6 @@ public class GameEventManager : MonoBehaviour
 
     [Header("Tutorial Events")]
     public UnityEvent<string> OnFeatureUnlocked;
-    public UnityEvent<TutorialCondition> OnTutorialConditionMet;
 
     [Header("Combat Events")]
     public UnityEvent<Wolf> OnWolfSpawned;
@@ -108,11 +107,6 @@ public class GameEventManager : MonoBehaviour
     public void TriggerFeatureUnlocked(string featureName)
     {
         OnFeatureUnlocked?.Invoke(featureName);
-    }
-
-    public void TriggerTutorialConditionMet(TutorialCondition condition)
-    {
-        OnTutorialConditionMet?.Invoke(condition);
     }
 
     public void TriggerWolfSpawned(Wolf wolf)

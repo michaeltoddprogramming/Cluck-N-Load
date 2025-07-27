@@ -83,7 +83,7 @@ public class CropStructure : Structure
 
     public void Plant(CropType cropType)
     {
-        Debug.Log($"[CropStructure] Plant called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}, CropType={cropType}, IsGrowing={isGrowing}, CropReady={cropReady}");
+        // Debug.Log($"[CropStructure] Plant called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}, CropType={cropType}, IsGrowing={isGrowing}, CropReady={cropReady}");
         if (cropType == CropType.None)
         {
             Debug.LogWarning($"{GetStructureName()} cannot plant CropType.None.");
@@ -95,6 +95,7 @@ public class CropStructure : Structure
             currentCropType = cropType;
             isGrowing = true;
             UpdateCropVisual(cropType, 0);
+            // TutorialManager.Instance?.Trigger(TutorialTrigger.PlantedCrop);
         }
         else
         {
@@ -104,20 +105,20 @@ public class CropStructure : Structure
 
     public string Harvest()
     {
-        Debug.Log($"Tutorial: Attempting to harvest {currentCropType} from {GetStructureName()}, CropReady: {cropReady}, Current Step: {TutorialManager.Instance?.GetCurrentStepId() ?? "None"}");
+        // Debug.Log($"Tutorial: Attempting to harvest {currentCropType} from {GetStructureName()}, CropReady: {cropReady}, Current Step: {TutorialManager.Instance?.GetCurrentStepId() ?? "None"}");
         if (cropReady)
         {
             int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
 
-            TutorialConditionTracker conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
-            bool isTutorialHarvest = TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive() && (conditionTracker != null && !conditionTracker.HasCompletedTutorialStep("harvest_first_crops"));
-            Debug.Log($"Tutorial: Harvest check - isTutorialHarvest: {isTutorialHarvest}, CanHarvest: {InventoryManager.Instance.canHarvest(totalCrops)}, TotalCrops: {totalCrops}");
+            // TutorialConditionTracker conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
+            // bool isTutorialHarvest = TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive() && (conditionTracker != null && !conditionTracker.HasCompletedTutorialStep("harvest_first_crops"));
+            // Debug.Log($"Tutorial: Harvest check - isTutorialHarvest: {isTutorialHarvest}, CanHarvest: {InventoryManager.Instance.canHarvest(totalCrops)}, TotalCrops: {totalCrops}");
 
-            if (!isTutorialHarvest && InventoryManager.Instance.canHarvest(totalCrops) == false)
-            {
-                Debug.LogWarning($"{GetStructureName()} cannot harvest: Not enough space in inventory.");
-                return "space";
-            }
+            // if (!isTutorialHarvest && InventoryManager.Instance.canHarvest(totalCrops) == false)
+            // {
+            //     Debug.LogWarning($"{GetStructureName()} cannot harvest: Not enough space in inventory.");
+            //     return "space";
+            // }
 
             string cropName = currentCropType.ToString();
             InventoryManager.Instance.AddItem(cropName, totalCrops);
@@ -137,9 +138,15 @@ public class CropStructure : Structure
                     break;
             }
 
-            Debug.Log($"Tutorial: Triggering OnCropHarvested for {totalCrops} {currentCropType}");
-            OnCropHarvested?.Invoke(currentCropType, totalCrops);
-            Debug.Log($"Tutorial: Harvested {totalCrops} {currentCropType} from {GetStructureName()}");
+            // Debug.Log($"Tutorial: Triggering OnCropHarvested for {totalCrops} {currentCropType}");
+            // OnCropHarvested?.Invoke(currentCropType, totalCrops);
+            // Debug.Log($"Tutorial: Harvested {totalCrops} {currentCropType} from {GetStructureName()}");
+
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.Trigger(TutorialTrigger.HarvestedCrop);
+            }
+
 
             currentCropType = CropType.None;
             cropReady = false;
@@ -294,16 +301,16 @@ public class CropStructure : Structure
         return null;
     }
 
-    public void InstantGrowForTutorial()
-    {
-        if (isGrowing && !cropReady)
-        {
-            UpdateCropVisual(currentCropType, 2);
-            cropReady = true;
-            isGrowing = false;
-            Debug.Log($"TUTORIAL: Instantly completed growth for {currentCropType}");
-        }
-    }
+    // public void InstantGrowForTutorial()
+    // {
+    //     if (isGrowing && !cropReady)
+    //     {
+    //         UpdateCropVisual(currentCropType, 2);
+    //         cropReady = true;
+    //         isGrowing = false;
+    //         Debug.Log($"TUTORIAL: Instantly completed growth for {currentCropType}");
+    //     }
+    // }
 
     public char GetCurrCrop()
     {

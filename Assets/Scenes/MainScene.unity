@@ -1216,8 +1216,8 @@ MonoBehaviour:
   isPaused: 0
   allStructures: []
   totalStructuresBuilt: 0
-  checkFarmHouseDestruction: 1
-  checkAllStructuresDestroyed: 0
+  checkFarmHouseDestruction: 0
+  checkAllStructuresDestroyed: 1
 --- !u!4 &272689960
 Transform:
   m_ObjectHideFlags: 0

@@ -46,6 +46,18 @@ public class CropStructure : Structure
     private float productionMultiplier = 1f;
     private float lastCheckedHour;
 
+    // Synergies
+    [Header("Mechanic variations")]
+    [Header("Base synergies (increase crop closer to silo)")]
+    [SerializeField] private float cropHarvestMultiplier = 1.5f;
+    [SerializeField] private float cropHarvestMultiplierIncrease = 1.5f;
+    [SerializeField] private float multiplierRange = 10f;
+    [SerializeField] private float baseCropHarvestAmount = 10f;
+
+    // Event triggered when a crop is harvested
+    public delegate void CropHarvestedHandler(CropType cropType, int amount);
+    public event CropHarvestedHandler OnCropHarvested;
+
     // Public properties
     public bool IsGrowing => isGrowing;
     public bool CropReady => cropReady;
@@ -53,14 +65,6 @@ public class CropStructure : Structure
     public CropProductionSettings ProductionSettings => productionSettings;
     public float ProductionMultiplier => productionMultiplier;
     public CropType CurrentCropType => currentCropType;
-
-    //synergies
-    [Header("Mechanic variations")]
-    [Header("Base synergies (increase crop closer to silo)")]
-    [SerializeField] private float cropHarvestMultiplier = 1.5f;
-    [SerializeField] private float cropHarvestMultiplierIncrease = 1.5f;
-    [SerializeField] private float multiplierRange = 10f;
-    [SerializeField] private float baseCropHarvestAmount = 10f;
 
     protected override void Start()
     {
@@ -74,9 +78,9 @@ public class CropStructure : Structure
 
         if (structureData != null && structureData.type != StructureType.CropPlot)
         {
+            Debug.LogWarning($"{GetStructureName()} has incorrect structureData type: {structureData.type}. Expected CropPlot.");
         }
 
-        // Prefer singleton access
         if (nightManager == null)
         {
             nightManager = NightManager.Instance;
@@ -137,18 +141,20 @@ public class CropStructure : Structure
 
     public string Harvest()
     {
+        Debug.Log($"Tutorial: Attempting to harvest {currentCropType} from {GetStructureName()}, CropReady: {cropReady}, Current Step: {TutorialManager.Instance?.GetCurrentStepId() ?? "None"}");
         if (cropReady)
         {
             int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
 
-            //check if silos have space to store the crops
-            if (InventoryManager.Instance.canHarvest(totalCrops) == false)
+            TutorialConditionTracker conditionTracker = FindFirstObjectByType<TutorialConditionTracker>();
+            bool isTutorialHarvest = TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive() && (conditionTracker != null && !conditionTracker.HasCompletedTutorialStep("harvest_first_crops"));
+            Debug.Log($"Tutorial: Harvest check - isTutorialHarvest: {isTutorialHarvest}, CanHarvest: {InventoryManager.Instance.canHarvest(totalCrops)}, TotalCrops: {totalCrops}");
+
+            if (!isTutorialHarvest && InventoryManager.Instance.canHarvest(totalCrops) == false)
             {
                 Debug.LogWarning($"{GetStructureName()} cannot harvest: Not enough space in inventory.");
                 return "space";
             }
-
-            // int totalCrops = Mathf.RoundToInt(10);
 
             string cropName = currentCropType.ToString();
             InventoryManager.Instance.AddItem(cropName, totalCrops);
@@ -168,6 +174,10 @@ public class CropStructure : Structure
                     break;
             }
 
+            Debug.Log($"Tutorial: Triggering OnCropHarvested for {totalCrops} {currentCropType}");
+            OnCropHarvested?.Invoke(currentCropType, totalCrops);
+            Debug.Log($"Tutorial: Harvested {totalCrops} {currentCropType} from {GetStructureName()}");
+
             currentCropType = CropType.None;
             cropReady = false;
             isGrowing = false;
@@ -179,6 +189,7 @@ public class CropStructure : Structure
         }
         else
         {
+            Debug.Log($"Tutorial: Harvest failed - Crop not ready");
             return "ready";
         }
     }
@@ -241,7 +252,6 @@ public class CropStructure : Structure
         SiloStructure[] silos = FindObjectsByType<SiloStructure>(FindObjectsSortMode.None);
         float minGridDistance = float.MaxValue;
 
-        // Get the grid controller (assumes only one in scene)
         GridController gridController = FindFirstObjectByType<GridController>();
 
         if (gridController == null)
@@ -264,7 +274,7 @@ public class CropStructure : Structure
         }
 
         if (minGridDistance <= multiplierRange)
-            cropHarvestMultiplier = cropHarvestMultiplierIncrease; // or whatever bonus you want
+            cropHarvestMultiplier = cropHarvestMultiplierIncrease;
         else
             cropHarvestMultiplier = 1f;
     }
@@ -281,7 +291,7 @@ public class CropStructure : Structure
                 if (crop.CurrentCropType.ToString().Equals(cropTypes[i], System.StringComparison.OrdinalIgnoreCase))
                 {
                     multipliers[i] = crop.cropHarvestMultiplier;
-                    break; // Found the crop type, move to next
+                    break;
                 }
             }
         }
@@ -290,7 +300,6 @@ public class CropStructure : Structure
 
     public void OnPlaced()
     {
-        // base.OnPlaced();
         UpdateSiloSynergy();
     }
 
@@ -299,7 +308,6 @@ public class CropStructure : Structure
         foreach (var crop in FindObjectsByType<CropStructure>(FindObjectsSortMode.None))
         {
             crop.UpdateSiloSynergy();
-
         }
     }
 
@@ -326,9 +334,6 @@ public class CropStructure : Structure
         return null;
     }
 
-    /// <summary>
-    /// Tutorial-only method to instantly complete crop growth
-    /// </summary>
     public void InstantGrowForTutorial()
     {
         if (isGrowing && !cropReady)
@@ -336,7 +341,7 @@ public class CropStructure : Structure
             growthProgress = productionSettings.growthTime;
             cropReady = true;
             isGrowing = false;
-            UpdateCropVisual(currentCropType, 2); // Stage 2 = fully grown
+            UpdateCropVisual(currentCropType, 2);
             Debug.Log($"TUTORIAL: Instantly completed growth for {currentCropType}");
         }
     }
@@ -357,7 +362,7 @@ public class CropStructure : Structure
         }
         else
         {
-            return 'N'; //no crop
+            return 'N';
         }
     }
 }

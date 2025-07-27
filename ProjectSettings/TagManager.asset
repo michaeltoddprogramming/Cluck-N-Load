@@ -10,6 +10,7 @@ TagManager:
   - TutorialMoney
   - TutorialBuildButton
   - ShopButton
+  - TimeControls
   layers:
   - Default
   - TransparentFX

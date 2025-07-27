@@ -486,7 +486,7 @@ GameObject:
   - component: {fileID: 122739292}
   m_Layer: 5
   m_Name: PAUSE BG
-  m_TagString: ShopButton
+  m_TagString: TimeControls
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4443,7 +4443,7 @@ GameObject:
   - component: {fileID: 760890656}
   m_Layer: 5
   m_Name: ShopButton
-  m_TagString: TutorialShopButton
+  m_TagString: ShopButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

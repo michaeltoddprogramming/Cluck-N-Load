@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Linq;
 
+
 public enum TutorialCondition
 {
     // Basic Setup
@@ -92,8 +93,6 @@ public class TutorialManager : MonoBehaviour
     
     [Header("Old Man Character")]
     [SerializeField] private Sprite oldManPortrait;
-    [SerializeField] private AudioClip[] oldManVoices;
-    [SerializeField] private AudioSource voiceAudioSource;
     
     [Header("Tutorial Configuration")]
     [SerializeField] private bool enableTutorial = true;
@@ -125,6 +124,54 @@ public class TutorialManager : MonoBehaviour
 
     TutorialUIPrefab tutScript;
 
+    [SerializeField] private AudioClip[] oldManVoices;
+    [SerializeField] private AudioSource voiceAudioSource;
+    private Coroutine typingCoroutine;
+    
+private void PlayTypingWithMumble(string text)
+{
+    if (typingCoroutine != null)
+        StopCoroutine(typingCoroutine);
+    typingCoroutine = StartCoroutine(TypeTextWithMumble(text));
+}
+    
+private IEnumerator TypeTextWithMumble(string text)
+{
+    if (tutScript == null || tutScript.description == null) yield break;
+    tutScript.setDescription(""); // Clear text
+
+    // Debugging
+    Debug.Log($"voiceAudioSource: {voiceAudioSource}");
+    Debug.Log($"oldManVoices.Length: {(oldManVoices != null ? oldManVoices.Length : 0)}");
+
+    if (voiceAudioSource != null && oldManVoices != null && oldManVoices.Length > 0)
+    {
+        var clip = oldManVoices[UnityEngine.Random.Range(0, oldManVoices.Length)];
+        Debug.Log($"Playing mumble clip: {clip?.name}");
+        voiceAudioSource.clip = clip;
+        voiceAudioSource.pitch = UnityEngine.Random.Range(0.92f, 1.08f);
+        voiceAudioSource.volume = UnityEngine.Random.Range(0.55f, 0.95f);
+        voiceAudioSource.loop = true;
+        voiceAudioSource.Play();
+    }
+    else
+    {
+        Debug.LogWarning("AudioSource or mumble clips not assigned!");
+    }
+
+    foreach (char c in text)
+    {
+        tutScript.setDescription(tutScript.description.text + c);
+        yield return new WaitForSecondsRealtime(0.04f);
+    }
+
+    if (voiceAudioSource != null && voiceAudioSource.isPlaying)
+    {
+        voiceAudioSource.Stop();
+        voiceAudioSource.loop = false;
+    }
+}
+
     private int currStep = 0;
 
     string title1 = "Old Pete's Farm Fiasco!";
@@ -134,13 +181,13 @@ public class TutorialManager : MonoBehaviour
         // Step 2: Camera Controls (triggers when welcome step completes)
 
             string title2 = "Look Around Your Farm";
-        string description2 = "First things first - let's learn to look around! Use <color=purple><i>WASD</i></color></color> to move the camera, <color=purple><i>QE</i></color> to rotate, your <color=purple><i>mouse wheel</i></color> to zoom in and out, <color=purple><i>hold right click</i></color> to also move the camera. Take a moment to explore your land, get familiar with the lay of the land!";
+        string description2 = "First things first - let's learn to look around! Use <color=purple><i>W A S D</i></color></color> to move the camera, <color=purple><i> Q E </i></color> to rotate, your <color=purple><i>mouse wheel</i></color> to zoom in and out (you can also use 1 and 2), <color=purple><i>hold right click</i></color> to also move the camera (You can also push the camera with your mouse). Take a moment to explore your land, get familiar with the lay of the land!";
 
 
         // Step 3: Opening the Shop (triggers when camera step completes)
 
            string  title3 = "Open the Build Shop";
-       string  description3 = "Now, see that shop icon in the <color=purple><i>bottom left of your screen</i></color>? That's your <color=purple><i>build shop</i></color>! Click on it to see what structures you can build. We'll need to construct some buildings to get this farm running properly!";
+       string  description3 = "Now, see that shop icon in the <color=purple><i>bottom left of your screen</i></color>? That's your <color=purple><i>build shop</i></color>! Click on it to see what structures you can build, you can use <color=purple><i>R</i></color> to rotate the building! We'll need to construct some buildings to get this farm running properly!";
 
 
         // Step 4: Farm House First
@@ -567,103 +614,67 @@ public class TutorialManager : MonoBehaviour
     }
 
 
-    private void displayStuff(string title, string description)
+       private void displayStuff(string title, string description)
     {
-        tutScript.setDescription(description);
         tutScript.setTitle(title);
-        
-
-
-
-        // isTutorialActive = true;
-
-        // if (step.pauseGame)
-        // {
-        //     PauseForTutorial();
-        // }
-
-        // if (tutorialPanel != null)
-        // {
-        //     tutorialPanel.SetActive(true);
-
-        //     var canvasGroup = tutorialPanel.GetComponent<CanvasGroup>();
-        //     if (canvasGroup != null)
-        //     {
-        //         canvasGroup.alpha = 1f;
-        //         canvasGroup.interactable = true;
-        //         canvasGroup.blocksRaycasts = true;
-        //     }
-
-        //     if (tutorialTitle != null)
-        //         tutorialTitle.text = title;
-
-        //     var uiScript = tutorialPanel != null ? tutorialPanel.GetComponent<TutorialUIPrefab>() : null;
-        //     // if (uiScript != null)
-        //     //     uiScript.PlayTypingWithMumble(description);
-        //     if (tutorialDescription != null)
-        //         tutorialDescription.text = description;
-
-        //     PlayOldManVoice();
-        // }
-
-        // while (currentStep == step && isTutorialActive)
-        // {
-        //     yield return null;
-        // }
-
-        // CompleteCurrentStep();
+        if (tutScript != null)
+            tutScript.PlayTypingWithMumble(description);
+        else
+            PlayTypingWithMumble(description); // fallback
     }
+    private void SetupUI()
+    {
+        if (tutorialPanel == null)
+        {
+            GameObject tutorialUI = GameObject.Find("TutorialUI");
+            if (tutorialUI != null)
+            {
+                tutorialPanel = tutorialUI;
+                Debug.Log("Auto-found TutorialUI panel");
 
-    // private void SetupUI()
-    // {
-    //     if (tutorialPanel == null)
-    //     {
-    //         GameObject tutorialUI = GameObject.Find("TutorialUI");
-    //         if (tutorialUI != null)
-    //         {
-    //             tutorialPanel = tutorialUI;
-    //             Debug.Log("Auto-found TutorialUI panel");
+                //             var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
+                //             if (uiScript != null)
+                //             {
+                //                 if (tutorialDescription == null) tutorialDescription = uiScript.dialogueText;
+                //                 if (tutorialTitle == null) tutorialTitle = uiScript.characterNameText;
+                //                 if (nextButton == null) nextButton = uiScript.nextButton;
+                //                 if (skipButton == null) skipButton = uiScript.skipButton;
+                //                 if (characterPortrait == null) characterPortrait = uiScript.characterPortrait;
 
-    //             var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
-    //             if (uiScript != null)
-    //             {
-    //                 if (tutorialDescription == null) tutorialDescription = uiScript.dialogueText;
-    //                 if (tutorialTitle == null) tutorialTitle = uiScript.characterNameText;
-    //                 if (nextButton == null) nextButton = uiScript.nextButton;
-    //                 if (skipButton == null) skipButton = uiScript.skipButton;
-    //                 if (characterPortrait == null) characterPortrait = uiScript.characterPortrait;
+                //                 Debug.Log("Auto-assigned UI components from TutorialUIPrefab");
+                //             }
+                //         }
+                //     }
 
-    //                 Debug.Log("Auto-assigned UI components from TutorialUIPrefab");
-    //             }
-    //         }
-    //     }
+                //     if (tutorialPanel != null)
+                //     {
+                //         tutorialPanel.SetActive(false);
+                //     }
 
-    //     if (tutorialPanel != null)
-    //     {
-    //         tutorialPanel.SetActive(false);
-    //     }
+                //     if (nextButton != null)
+                //     {
+                //         nextButton.onClick.AddListener(NextTutorialStep);
+                //     }
 
-    //     if (nextButton != null)
-    //     {
-    //         nextButton.onClick.AddListener(NextTutorialStep);
-    //     }
+                //     if (skipButton != null)
+                //     {
+                //         skipButton.onClick.AddListener(SkipTutorial);
+                //     }
 
-    //     if (skipButton != null)
-    //     {
-    //         skipButton.onClick.AddListener(SkipTutorial);
-    //     }
+                //     if (startNightButton != null)
+                //     {
+                //         startNightButton.onClick.AddListener(OnStartNightClicked);
+                //         startNightButton.gameObject.SetActive(false);
+                //     }
 
-    //     if (startNightButton != null)
-    //     {
-    //         startNightButton.onClick.AddListener(OnStartNightClicked);
-    //         startNightButton.gameObject.SetActive(false);
-    //     }
-
-    //     if (characterPortrait != null && oldManPortrait != null)
-    //     {
-    //         characterPortrait.sprite = oldManPortrait;
-    //     }
-    // }
+                //     if (characterPortrait != null && oldManPortrait != null)
+                //     {
+                //         characterPortrait.sprite = oldManPortrait;
+                //     }
+                // }
+            }
+        }
+    }
 
     private void StartTutorial()
     {

@@ -15,7 +15,7 @@ public class CropStructure : Structure
     [SerializeField] private bool isGrowing;
     [SerializeField] private bool cropReady;
     [SerializeField] private float growthProgress;
-    [SerializeField] private CropProductionSettings productionSettings;
+    // [SerializeField] private CropProductionSettings productionSettings;
     [SerializeField] private NightManager nightManager; // Optional, for Inspector
 
     [Header("Crop Prefabs")]
@@ -29,13 +29,13 @@ public class CropStructure : Structure
     [SerializeField] private GameObject carrotsPrefab2;
     [SerializeField] private GameObject carrotsPrefab3;
 
-    [System.Serializable]
-    public class CropProductionSettings
-    {
-        public float growthTime = 24f; // Hours to fully grow
-        public int baseProductAmount = 10;
-        public int moneyPerProduct = 5;
-    }
+    // [System.Serializable]
+    // public class CropProductionSettings
+    // {
+    //     public float growthTime = 24f; // Hours to fully grow
+    //     public int baseProductAmount = 10;
+    //     public int moneyPerProduct = 5;
+    // }
 
     // Total crop amounts
     public int sunflowerTotal = 0;
@@ -62,7 +62,7 @@ public class CropStructure : Structure
     public bool IsGrowing => isGrowing;
     public bool CropReady => cropReady;
     public float GrowthProgress => growthProgress;
-    public CropProductionSettings ProductionSettings => productionSettings;
+    // public CropProductionSettings ProductionSettings => productionSettings;
     public float ProductionMultiplier => productionMultiplier;
     public CropType CurrentCropType => currentCropType;
 
@@ -71,10 +71,10 @@ public class CropStructure : Structure
         base.Start();
         UpdateSiloSynergy();
 
-        if (productionSettings == null)
-        {
-            productionSettings = new CropProductionSettings();
-        }
+        // if (productionSettings == null)
+        // {
+        //     productionSettings = new CropProductionSettings();
+        // }
 
         if (structureData != null && structureData.type != StructureType.CropPlot)
         {
@@ -106,15 +106,15 @@ public class CropStructure : Structure
         growthProgress += hourDelta;
         lastCheckedHour = currentHour;
 
-        int growthStage = Mathf.Min(Mathf.FloorToInt(growthProgress / (productionSettings.growthTime / 3)), 2);
-        UpdateCropVisual(currentCropType, growthStage);
+        // int growthStage = Mathf.Min(Mathf.FloorToInt(growthProgress / (productionSettings.growthTime / 3)), 2);
+        // UpdateCropVisual(currentCropType, growthStage);
 
-        if (growthProgress >= productionSettings.growthTime)
-        {
-            cropReady = true;
-            isGrowing = false;
-            growthProgress = productionSettings.growthTime;
-        }
+        // if (growthProgress >= productionSettings.growthTime)
+        // {
+        //     cropReady = true;
+        //     isGrowing = false;
+        //     growthProgress = productionSettings.growthTime;
+        // }
     }
 
     public void Plant(CropType cropType)
@@ -338,7 +338,7 @@ public class CropStructure : Structure
     {
         if (isGrowing && !cropReady)
         {
-            growthProgress = productionSettings.growthTime;
+            // growthProgress = productionSettings.growthTime;
             cropReady = true;
             isGrowing = false;
             UpdateCropVisual(currentCropType, 2);

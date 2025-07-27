@@ -206,7 +206,8 @@ public class TutorialConditionTracker : MonoBehaviour
             structure.name.ToLower().Contains("farm house") ||
             structure.name.ToLower().Contains("mainbuilding")))
         {
-            Debug.Log("Farm House placed - triggering tutorial condition!");
+            Debug.Log("Farm House placed - triggering tutorial condition!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            structure.structureData.type = StructureType.Placed;
             hasFarmHousePlaced = true;
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
             // Do not return; allow other type checks to run if needed
@@ -778,6 +779,8 @@ public class TutorialConditionTracker : MonoBehaviour
             structureName.ToLower().Contains("farm house") ||
             structureName.ToLower().Contains("mainbuilding")))
         {
+            // Debug.Log("Farm House placed - triggering tutorial condition!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            // structure
             hasFarmHousePlaced = true;
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
         }

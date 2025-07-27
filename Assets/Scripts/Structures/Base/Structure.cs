@@ -58,7 +58,7 @@ public class Structure : MonoBehaviour
     public event StructureEvent OnDestroyed;
     public delegate void StructureDestroyedEventHandler(Structure destroyedStructure);
     public event StructureDestroyedEventHandler OnStructureDestroyed;
-    
+
     // Health changed event for UI updates
     public event System.Action OnHealthChanged;
 
@@ -280,7 +280,7 @@ public class Structure : MonoBehaviour
         currentHealth -= amount;
         OnDamaged?.Invoke(this);
         OnHealthChanged?.Invoke(); // Trigger health changed event for UI
-        
+
         if (currentHealth <= 0)
         {
             Die();
@@ -452,6 +452,14 @@ public class Structure : MonoBehaviour
     public void ApplyDamage(int damage)
     {
         TakeDamage(damage);
+    }
+    
+    public void SetStructureType(StructureType type)
+    {
+        if (structureData != null)
+        {
+            structureData.type = type;
+        }
     }
 
     #endregion

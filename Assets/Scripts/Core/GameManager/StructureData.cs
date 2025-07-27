@@ -32,7 +32,7 @@ public class StructureData : ScriptableObject
     public int recruitmentCostPerAnimal = 50;
     [Tooltip("Radius for army animals to patrol around the flag.")]
     public float protectionRadius = 5f;
-    
+
 
     // [Header("SFX")]
     // [Tooltip("Background sound for the animal structure.")]
@@ -53,5 +53,6 @@ public enum StructureType
     CropPlot,
     Animal,
     Barracks,
-    Decoration
+    Decoration,
+    Placed
 }

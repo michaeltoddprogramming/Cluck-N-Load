@@ -1644,6 +1644,13 @@ MonoBehaviour:
   addAnimal: {fileID: 3334536356800067461}
   minusAnimal: {fileID: 7195102645006359369}
   animalCountText: {fileID: 7139872580638493903}
+  animalIcon1: {fileID: 3160466799800189376}
+  animalIcon2: {fileID: 7031258162202727205}
+  cowIcon: {fileID: 21300000, guid: 1a8a3cdab370cbd45bbae15953893627, type: 3}
+  chickenIcon: {fileID: 21300000, guid: c258a6f3a5c5852479652466643da2a0, type: 3}
+  goatIcon: {fileID: 21300000, guid: 6dd199c905a66f3449a203eb6d7b7e3a, type: 3}
+  pigIcon: {fileID: 21300000, guid: 43cbb8b6169580f4da49d235671a50c1, type: 3}
+  sheepIcon: {fileID: 21300000, guid: aa0f735f9d060334abc035d39cc233d1, type: 3}
 --- !u!114 &1870193486873066752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3062,8 +3069,8 @@ RectTransform:
   m_GameObject: {fileID: 7304688113481805694}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2896016361190151464}
   - {fileID: 3786570356989654574}

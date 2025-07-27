@@ -31,22 +31,22 @@ public class TutorialUIPrefab : MonoBehaviour
                 bgGroup = backgroundPanel.gameObject.AddComponent<CanvasGroup>();
 
             // Reset scale and alpha for background only
-            backgroundPanel.transform.localScale = Vector3.one * 0.7f;
+            // backgroundPanel.transform.localScale = Vector3.one * 0.7f;
             bgGroup.alpha = 0f;
             bgGroup.interactable = false;
             bgGroup.blocksRaycasts = false;
 
             // Animate scale (pop) and fade in for background only
-            LeanTween.scale(backgroundPanel.gameObject, Vector3.one, 0.35f)
-                .setEase(LeanTweenType.easeOutBack)
-                .setIgnoreTimeScale(true);
-            LeanTween.value(backgroundPanel.gameObject, 0f, 1f, 0.28f)
-                .setOnUpdate((float val) => { bgGroup.alpha = val; })
-                .setOnComplete(() => {
-                    bgGroup.interactable = true;
-                    bgGroup.blocksRaycasts = true;
-                })
-                .setIgnoreTimeScale(true);
+            // LeanTween.scale(backgroundPanel.gameObject, Vector3.one, 0.35f)
+            //     .setEase(LeanTweenType.easeOutBack)
+            //     .setIgnoreTimeScale(true);
+            // LeanTween.value(backgroundPanel.gameObject, 0f, 1f, 0.28f)
+            //     .setOnUpdate((float val) => { bgGroup.alpha = val; })
+            //     .setOnComplete(() => {
+            //         bgGroup.interactable = true;
+            //         bgGroup.blocksRaycasts = true;
+            //     })
+            //     .setIgnoreTimeScale(true);
         }
     }
 

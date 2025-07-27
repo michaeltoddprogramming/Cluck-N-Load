@@ -538,7 +538,7 @@ public class BarracksStructure : Structure
             recruitmentCostPerAnimal = minCost;
         }
     }
-    
+
     public int GetMaxAnimalCount()
     {
         return maxArmyAnimals;
@@ -552,5 +552,10 @@ public class BarracksStructure : Structure
     public int GetAnimalRecruitPrice()
     {
         return recruitmentCostPerAnimal;
+    }
+    
+    public string GetAnimalType()
+    {
+        return targetAnimalType;
     }
 }

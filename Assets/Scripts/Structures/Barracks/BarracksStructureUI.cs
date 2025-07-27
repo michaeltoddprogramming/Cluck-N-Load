@@ -23,6 +23,14 @@ public class BarracksStructureUI : BaseStructureUI
     private int animalCount = 0;
     private int maxAnimalCount = 0;
 
+    [SerializeField] public Image animalIcon1;          
+    [SerializeField] public Image animalIcon2;          
+    [SerializeField] public Sprite cowIcon;
+    [SerializeField] public Sprite chickenIcon;
+    [SerializeField] public Sprite goatIcon;
+    [SerializeField] public Sprite pigIcon;
+    [SerializeField] public Sprite sheepIcon;
+
     // private BarracksStructure barrackStructure;
 
     public override void Initialize(Structure structure)
@@ -214,7 +222,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         animalCountText.text = $"{newAnimalCount}";
 
-         animalCount = barracksStructure.GetAnimalCount();
+        animalCount = barracksStructure.GetAnimalCount();
         maxAnimalCount = barracksStructure.GetMaxAnimalCount();
 
         bool canRecruit = barracksStructure.CanRecruit(recruitAmount);
@@ -303,10 +311,58 @@ public class BarracksStructureUI : BaseStructureUI
                 recruitButton.interactable = false;
             }
         }
-        
+
         if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()))
         {
             updateStatusText($"Cannot afford {maxAnimalCount} many animals!");
+        }
+        
+        if (animalIcon1 != null)
+        {
+            if (barracksStructure.GetAnimalType() == "Cow")
+            {
+                animalIcon1.sprite = cowIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                animalIcon1.sprite = chickenIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                animalIcon1.sprite = goatIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                animalIcon1.sprite = pigIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                animalIcon1.sprite = sheepIcon;
+            }            
+        }
+
+        if (animalIcon2 != null)
+        {
+            if (barracksStructure.GetAnimalType() == "Cow")
+            {
+                animalIcon2.sprite = cowIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                animalIcon2.sprite = chickenIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                animalIcon2.sprite = goatIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                animalIcon2.sprite = pigIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                animalIcon2.sprite = sheepIcon;
+            }            
         }
     }
 

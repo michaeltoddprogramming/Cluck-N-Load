@@ -176,7 +176,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "camera_controls",
             title = "Look Around Your Farm",
-            description = "First things first - let's learn to look around! Use WASD to move the camera, QE to rotate, and your mouse wheel to zoom in and out. Take a moment to explore your land, get familiar with the lay of the land!",
+            description = "First things first - let's learn to look around! Use <color=purple><i>WASD</i></color></color> to move the camera, <color=purple><i>QE</i></color> to rotate, your <color=purple><i>mouse wheel</i></color> to zoom in and out, <color=purple><i>hold right click</i></color> to also move the camera. Take a moment to explore your land, get familiar with the lay of the land!",
             triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered
             prerequisites = new TutorialCondition[] { },
             displayDuration = 6f,
@@ -188,7 +188,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "open_shop",
             title = "Open the Build Shop",
-            description = "Now, see that hammer icon on your screen? That's your build shop! Click on it to see what structures you can build. We'll need to construct some buildings to get this farm running properly!",
+            description = "Now, see that shop icon in the <color=purple><i>bottom left of your screen</i></color>? That's your <color=purple><i>build shop</i></color>! Click on it to see what structures you can build. We'll need to construct some buildings to get this farm running properly!",
             triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered  
             prerequisites = new TutorialCondition[] { },
             displayDuration = 5f,
@@ -202,7 +202,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "build_farmhouse",
             title = "Build Your Farm House",
-            description = "Perfect! Now you can see all the buildings you can construct. Every farm needs a proper house! Look for the 'Farm House' in the shop and click on it, then click somewhere on your land to place it. This will be the heart of your operation!",
+            description = "Perfect! Now you can see all the buildings you can construct. Every farm needs a proper house! Look for the <color=purple><i>Farm House</i></color> in the shop and click on it, then click somewhere on your land to place it. This will be the heart of your operation!",
             triggerCondition = TutorialCondition.ShopOpened,
             prerequisites = new TutorialCondition[] { TutorialCondition.ShopOpened },
             displayDuration = 6f,
@@ -214,7 +214,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "place_crop_plot",
             title = "Plant Your First Crops",
-            description = "A farm ain't a farm without crops! Build a Crop Plot near your house. This is where you'll grow food - both to feed your animals and to store for tough times ahead.",
+            description = "A farm ain't a farm without crops! Build a <color=purple><i>Crop Plot</i></color> near your house. This is where you'll grow food - both to <color=purple><i>feed your animals</i></color> and to store for tough times ahead.",
             triggerCondition = TutorialCondition.FarmHousePlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.FarmHousePlaced },
             displayDuration = 5f,
@@ -226,7 +226,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "plant_first_crop",
             title = "Plant Your Seeds",
-            description = "Excellent! Now click on your crop plot and choose what to plant. I'd recommend starting with Sunflowers - they're hardy and grow well. Remember, you can only plant during the day!",
+            description = "Excellent! Now click on your crop plot and choose what to <color=purple><i>plant</i></color>. I'd recommend starting with <color=purple><i>Sunflowers</i></color> - they will be used to feed your <color=purple><i>chickens</i></color>. Remember, you can only <color=purple><i>plant during the day</i></color>!",
             triggerCondition = TutorialCondition.CropPlotPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.CropPlotPlaced },
             displayDuration = 5f,
@@ -238,7 +238,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "build_silo",
             title = "Build Storage - The Silo",
-            description = "Good work! Now you'll need somewhere to store your harvest. Build a Silo close to your crops - the closer it is, the more efficient your farming will be! This is called 'synergy' - structures work better when they're placed strategically.",
+            description = "Good work! Now you'll need somewhere to store your harvest. Build a <color=purple><i>Silo</i></color> close to your crops - the <color=purple><i>closer it is, the more efficient</i></color> your farming will be! This is called 'synergy' - structures work better when they're placed strategically.",
             triggerCondition = TutorialCondition.FirstCropPlanted,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropPlanted },
             displayDuration = 7f,
@@ -250,7 +250,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "time_controls",
             title = "Day, Night & Time Controls",
-            description = "See those time controls? You can pause time, play normally, or speed things up! Your crops grow over time, and there's a day-night cycle. During the day, you farm and build. At night... well, that's when the wolves come. But don't worry - I've made the days extra long for this tutorial so you have plenty of time to learn!",
+            description = "See those time controls on the <color=purple><i>bottom right</i></color> of your screen? You can <color=purple><i>pause time, play, or speed things up</i></color>! Your crops grow over time, and there's a day-night cycle. <color=purple><i>During the day, you farm and build. At night... well, that's when the wolves come</i></color>. But don't worry - I've made the days extra long for this tutorial so you have plenty of time to learn!",
             triggerCondition = TutorialCondition.SiloPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.SiloPlaced },
             displayDuration = 8f,
@@ -262,7 +262,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "build_chicken_coop",
             title = "Start Animal Production",
-            description = "Now let's add some livestock! Build a Chicken Coop. Chickens will lay eggs that you can collect and sell for money. Place it near your silo for better efficiency - animals eat less food when they're close to storage!",
+            description = "Now let's add some livestock! Build a <color=purple><i>Chicken Coop</i></color>. Chickens will lay eggs that you can <color=purple><i>collect and sell for money</i></color>. Place it <color=purple><i>near your silo for better efficiency</i></color> - animals <color=purple><i>eat less food</i></color> when they're close to storage!",
             triggerCondition = TutorialCondition.TimeControlsExplained,
             prerequisites = new TutorialCondition[] { TutorialCondition.TimeControlsExplained },
             displayDuration = 7f,
@@ -277,7 +277,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "harvest_first_crops",
             title = "Harvest Your Sunflowers",
-            description = "Look at that! Your sunflowers are ready to harvest! Click on the crop plot and harvest your sunflowers. You'll need these to feed your animals!",
+            description = "Look at that! Your sunflowers are ready to <color=purple><i>harvest</i></color>! Click on the <color=purple><i>crop plot</i></color> and harvest your sunflowers. You'll need these to feed your <color=purple><i>chickens</i></color>!",
             triggerCondition = TutorialCondition.FirstCropHarvested,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested },
             displayDuration = 6f,
@@ -289,7 +289,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "feed_animals",
             title = "Feed Your Chickens",
-            description = "Now that you have sunflowers, your chickens are hungry! Click on the chicken coop and feed them with your harvested sunflowers. Well-fed animals will start producing eggs!",
+            description = "Now that you have sunflowers, your chickens are hungry! Click on the <color=purple><i>chicken coop</i></color> and feed them with your harvested sunflowers. <color=purple><i>Well-fed animals</i></color> will start <color=purple><i>producing products which turns into money</i></color>!",
             triggerCondition = TutorialCondition.GameStarted, // Will be manually triggered
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstCropHarvested, TutorialCondition.FirstChickenBought },
             displayDuration = 6f,
@@ -301,7 +301,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "watch_production",
             title = "Production Starting",
-            description = "Excellent! Your chickens are now fed and producing. Take your time - when you're ready to continue, they'll quickly produce eggs for the tutorial! No rush, just click Next when you want to proceed.",
+            description = "Excellent! Your chickens are now fed and <color=purple><i>producing eggs</i></color>. They will produce eggs quickly for the tutorial! No rush, just click Next when you want to proceed.",
             triggerCondition = TutorialCondition.ChickensStartedProducing,
             prerequisites = new TutorialCondition[] { TutorialCondition.ChickensStartedProducing },
             displayDuration = 6f,
@@ -313,7 +313,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "collect_products",
             title = "Collect Your Eggs",
-            description = "Perfect! Your chickens have finished producing eggs. Click on the chicken coop and collect the eggs to earn money. This is how you'll fund your expansion and defenses!",
+            description = "Perfect! Your chickens have finished producing eggs. Click on the chicken coop and <color=purple><i>collect the eggs to earn money</i></color>. This is how you'll fund your expansion and defenses!",
             triggerCondition = TutorialCondition.AnimalProductsReady,
             prerequisites = new TutorialCondition[] { TutorialCondition.AnimalProductsReady },
             displayDuration = 6f,
@@ -325,7 +325,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "build_barracks",
             title = "Prepare Your Defenses",
-            description = "Now for the important part - defense! Those wolves I mentioned? They attack at night. Build a Barracks near your chicken coop. The barracks will recruit chickens to form an army that protects your farm!",
+            description = "Now for the important part - defense! Those wolves I mentioned? They <color=purple><i>attack at night</i></color>. Build a Barracks near your chicken coop but not too close -> <color=purple><i>if they are too close it will cost more to recruit your army animals<color=purple><i>!! The <color=purple><i>barracks will recruit chickens to form an army that protects your farm</i></color>!",
             triggerCondition = TutorialCondition.AnimalProductsCollected,
             prerequisites = new TutorialCondition[] { TutorialCondition.AnimalProductsCollected },
             displayDuration = 8f,
@@ -337,7 +337,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "place_flag",
             title = "Set Your Defense Position",
-            description = "Great! Now click on your barracks and place a flag. This flag shows your army where to gather and defend. Place it in a strategic position where your army can protect your important buildings!",
+            description = "Great! Now <color=purple><i>click on your barracks and place a flag</i></color>. This flag shows your <color=purple><i>army where to gather and defend</i></color>. Place it in a strategic position where your army can protect your important buildings!",
             triggerCondition = TutorialCondition.BarracksPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.BarracksPlaced },
             displayDuration = 6f,
@@ -349,7 +349,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "recruit_army",
             title = "Recruit Your Army",
-            description = "Perfect! Now recruit 2-3 soldier chickens from your barracks. They'll cost money and will take chickens from your coop, but they're essential for defense. Start small - 2-3 soldiers should be enough for your first night. The closer your barracks to your chicken coop, the cheaper recruitment is!",
+            description = "Perfect! Now <color=purple><i>recruit 2-3 soldier chickens</i></color> from your barracks. They'll <color=purple><i>cost money</i></color> and will <color=purple><i>take chickens from your coop</i></color>, but they're essential for defense. Start small - 2-3 soldiers should be enough for your first night. The further your barracks are to your chicken coop, the cheaper recruitment is!",
             triggerCondition = TutorialCondition.FlagPlaced,
             prerequisites = new TutorialCondition[] { TutorialCondition.FlagPlaced },
             displayDuration = 8f,
@@ -361,7 +361,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "first_night",
             title = "Ready for Your First Night?",
-            description = "Perfect! You've recruited your army and set up your defenses. When you're completely ready to face the night, click the 'Start Night' button below. The button will only be enabled when your defenses are properly set up. Take your time - you have full control!",
+            description = "Perfect! You've recruited your army and set up your defenses. When you're completely ready to face the night, click the 'Next' button below. The button will only be enabled when your defenses are properly set up. Take your time - you have full control!",
             triggerCondition = TutorialCondition.ArmyRecruited,
             prerequisites = new TutorialCondition[] { TutorialCondition.ArmyRecruited },
             displayDuration = 999f, // Wait for user to click Start Night button
@@ -375,7 +375,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "night_defense",
             title = "Watch Your Army Fight!",
-            description = "Look at them go! Your soldier chickens are defending your farm. Watch how they move to the flag position and fight off the wolves. If all your structures get destroyed, it's game over, so keep building up your defenses!",
+            description = "Look at them go! Your soldier chickens are defending your farm. Watch how they <color=purple><i>move to the flag position and fight off the wolves</i></color>. If <color=purple><i>all your structures get destroyed, it's game over</i></color>, so keep building up your defenses!",
             triggerCondition = TutorialCondition.NightStarted,
             prerequisites = new TutorialCondition[] { TutorialCondition.NightStarted },
             displayDuration = 6f,
@@ -387,7 +387,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "synergy_explanation",
             title = "Understanding Synergies",
-            description = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos near crops = better storage\n• Animals near silos = eat less food\n• Barracks near animals = cheaper recruitment\nPlan your layout carefully!",
+            description = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos <color=purple><i>near</i></color> crops = <color=purple><i>more</i></color> production\n• Animals <color=purple><i>near</i></color> silos = eat <color=purple><i>less</i></color> food\n• Barracks <color=purple><i>farther</i></color> from animals = <color=purple><i>cheaper</i></color> recruitment\nPlan your layout carefully!",
             triggerCondition = TutorialCondition.FirstWolfDefeated,
             prerequisites = new TutorialCondition[] { TutorialCondition.FirstWolfDefeated },
             displayDuration = 10f,
@@ -399,7 +399,7 @@ public class TutorialManager : MonoBehaviour
         {
             stepId = "tutorial_complete",
             title = "You're Ready to Farm!",
-            description = "Congratulations! You've learned the basics of Cluck N Load. Keep expanding your farm, try different animals, experiment with layouts, and survive as many nights as you can. Remember: Farm during the day, fight at night, and always plan ahead!\n\nGood luck, farmer!",
+            description = "Congratulations! You've learned the basics of Cluck N Load. Keep expanding your farm, try <color=purple><i>different animals</i></color>, experiment with layouts, and survive as many nights as you can. Remember: <color=purple><i>Farm during the day, fight at night</i></color>, and always plan ahead!\n\nGood luck, farmer!",
             triggerCondition = TutorialCondition.SecondDayStarted,
             prerequisites = new TutorialCondition[] { TutorialCondition.SecondDayStarted },
             displayDuration = 12f,
@@ -585,13 +585,13 @@ public class TutorialManager : MonoBehaviour
             Debug.Log("Tutorial: Preparing for open_shop step - forcing shop closed and enabling shop button");
             if (shopManager != null)
             {
-                shopManager.CloseShop();
+                // shopManager.CloseShop();
                 shopManager.ResetShopState();
                 shopManager.enableShop();
             }
             if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
             {
-                NightManager.Instance.shopManager.CloseShop();
+                // NightManager.Instance.shopManager.CloseShop();
                 NightManager.Instance.shopManager.ResetShopState();
                 if (NightManager.Instance.IsDay)
                     NightManager.Instance.shopManager.enableShop();
@@ -601,11 +601,11 @@ public class TutorialManager : MonoBehaviour
         {
             if (shopManager != null)
             {
-                shopManager.CloseShop();
+                // shopManager.CloseShop();
             }
             if (NightManager.Instance != null && NightManager.Instance.shopManager != null)
             {
-                NightManager.Instance.shopManager.CloseShop();
+                // NightManager.Instance.shopManager.CloseShop();
                 NightManager.Instance.shopManager.ResetShopState();
                 // Ensure the shop button is enabled and ready after reset
                 if (NightManager.Instance.IsDay)
@@ -777,10 +777,10 @@ public class TutorialManager : MonoBehaviour
         }
 
         // Hide UI
-        if (tutorialPanel != null)
-        {
-            tutorialPanel.SetActive(false);
-        }
+        // if (tutorialPanel != null)
+        // {
+        //     tutorialPanel.SetActive(false);
+        // }
 
         if (worldPointer != null)
         {

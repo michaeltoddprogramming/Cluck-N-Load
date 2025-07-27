@@ -18,6 +18,7 @@ public class CropStructureUI : BaseStructureUI
     [SerializeField] private Sprite SunflowerIcon;
     [SerializeField] private Sprite WheatIcon;
     [SerializeField] private Sprite carrotIcon;
+    [SerializeField] private Sprite defaultIcon;
 
     [Header("Dependencies")]
     [SerializeField] private NightManager nightManager;
@@ -545,7 +546,7 @@ public class CropStructureUI : BaseStructureUI
                 CropImage.sprite = carrotIcon;
                 break;
             default:
-                CropImage.sprite = null; // No crop selected
+                CropImage.sprite = defaultIcon; // No crop selected
                 break;
         }
     }

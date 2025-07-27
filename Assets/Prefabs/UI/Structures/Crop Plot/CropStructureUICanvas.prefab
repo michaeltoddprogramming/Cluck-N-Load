@@ -2934,8 +2934,8 @@ RectTransform:
   m_GameObject: {fileID: 7143452466373302544}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7234890508793414291}
   - {fileID: 6125727232421229004}
@@ -2943,7 +2943,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 391, y: -36}
+  m_AnchoredPosition: {x: 157, y: -36}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &7421881110213287324
@@ -3683,8 +3683,8 @@ RectTransform:
   m_GameObject: {fileID: 8457467238830219639}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4005573483857686627}
   - {fileID: 5904768538419945287}
@@ -3692,7 +3692,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1201, y: -36}
+  m_AnchoredPosition: {x: 565, y: -36}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &8730317531564735372
@@ -3881,6 +3881,7 @@ MonoBehaviour:
   SunflowerIcon: {fileID: 21300000, guid: f87e42b3ba5779e4a9f121f14af9e9fd, type: 3}
   WheatIcon: {fileID: 21300000, guid: e08cd903e3c3038419203cb865b805d8, type: 3}
   carrotIcon: {fileID: 21300000, guid: 78305be0a8acbfd4eacec4652a677ea3, type: 3}
+  defaultIcon: {fileID: 21300000, guid: 872106fd027812e458f7a8c4d231eb8f, type: 3}
   nightManager: {fileID: 0}
   errorSound: {fileID: 8300000, guid: efec1d0cfaca32c4eb555bc598644eab, type: 3}
   plantSound: {fileID: 0}

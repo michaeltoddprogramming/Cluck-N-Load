@@ -20,9 +20,15 @@ public struct DefenseReadinessReport
 
 public class TutorialConditionTracker : MonoBehaviour
 {
+    // Returns true if tutorial logic should run (not completed)
+    private bool TutorialLogicAllowed()
+    {
+        return TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialCompleted();
+    }
+
     private bool hasPlacedFirstStructure = false;
     private bool hasPlantedFirstCrop = false;
-    private bool hasHarvestedFirstCrop = false;
+    public bool hasHarvestedFirstCrop = false;
     private bool hasBoughtFirstAnimal = false;
     private bool hasCollectedFirstProduct = false;
     private bool hasRecruitedArmy = false;
@@ -31,7 +37,7 @@ public class TutorialConditionTracker : MonoBehaviour
     private bool hasDefeatedFirstWolf = false;
     private bool hasStartedSecondDay = false;
     private bool hasOpenedShop = false;
-    
+
     // Structure-specific tracking
     private bool hasFarmHousePlaced = false;
     private bool hasSiloPlaced = false;
@@ -43,17 +49,49 @@ public class TutorialConditionTracker : MonoBehaviour
     private int currentDay = 0;
     private bool isNightTime = false;
 
+    // Track initial crop counts to detect new harvests
+    private Dictionary<string, int> initialCropCounts = new Dictionary<string, int>();
+
     private void Start()
     {
+        if (!TutorialLogicAllowed()) return;
+
         // Subscribe to relevant game events
         SubscribeToGameEvents();
-        
+
+        // Subscribe to crop harvest events
+        CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        foreach (var crop in cropStructures)
+        {
+            crop.OnCropHarvested += OnCropHarvested;
+        }
+
         // Start tracking routine
         StartCoroutine(TrackGameConditions());
     }
 
+    private void OnDestroy()
+    {
+        if (!TutorialLogicAllowed()) return;
+
+        // Unsubscribe from MoneyManager events
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.OnMoneyChanged -= OnMoneyChanged;
+        }
+
+        // Unsubscribe from crop harvest events
+        CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        foreach (var crop in cropStructures)
+        {
+            crop.OnCropHarvested -= OnCropHarvested;
+        }
+    }
+
     private void SubscribeToGameEvents()
     {
+        if (!TutorialLogicAllowed()) return;
+
         // Subscribe to night manager events
         if (NightManager.Instance != null)
         {
@@ -70,11 +108,10 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private IEnumerator TrackGameConditions()
     {
+        if (!TutorialLogicAllowed()) yield break;
         while (true)
         {
             yield return new WaitForSeconds(1f); // Check every second
-
-            // DISABLED: TrackStructurePlacements() - now handled directly by BuildController
             TrackCropStatus();
             TrackAnimalStatus();
             TrackDefenseStatus();
@@ -85,6 +122,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private IEnumerator TrackDayNightChanges()
     {
+        if (!TutorialLogicAllowed()) yield break;
         bool wasNight = false;
         int lastDay = 0;
 
@@ -130,6 +168,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackStructurePlacements()
     {
+        if (!TutorialLogicAllowed()) return;
         // Count all structures in the scene (excluding BuildGhost)
         Structure[] allStructures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
         int actualStructureCount = 0;
@@ -173,6 +212,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void CheckSpecificStructureType(Structure structure)
     {
+        if (!TutorialLogicAllowed()) return;
         if (structure.structureData == null) 
         {
             Debug.LogWarning($"Structure {structure.name} has no structureData!");
@@ -187,21 +227,21 @@ public class TutorialConditionTracker : MonoBehaviour
 
         Debug.Log($"Checking structure: {structure.name}, Type: {structure.structureData.type}");
 
-        // Check for farmhouse first (by name or type)
+        // Check for farmhouse by name, regardless of type
         if (!hasFarmHousePlaced && (structure.name.ToLower().Contains("farmhouse") || 
             structure.name.ToLower().Contains("farm house") ||
-            structure.name.ToLower().Contains("mainbuilding") ||
-            structure.structureData.type == StructureType.Building))
+            structure.name.ToLower().Contains("mainbuilding")))
         {
-            Debug.Log("Farm House placed - triggering tutorial condition!");
+            Debug.Log("Farm House placed - triggering tutorial condition!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            structure.structureData.type = StructureType.Placed;
             hasFarmHousePlaced = true;
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
-            return; // Exit early since we found the farmhouse
+            // Do not return; allow other type checks to run if needed
         }
 
         switch (structure.structureData.type)
         {
-            case StructureType.Building:
+            case StructureType.Decoration:
                 // Building type already handled above in farmhouse check
                 // No need to log as unknown
                 break;
@@ -249,65 +289,102 @@ public class TutorialConditionTracker : MonoBehaviour
         }
     }
 
-    private void TrackCropStatus()
+       private void TrackCropStatus()
     {
+        Debug.Log($"[Tutorial] TrackCropStatus called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}");
+        if (!TutorialLogicAllowed()) return;
         CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-        
+        Debug.Log($"TutorialConditionTracker: Checking {cropStructures.Length} crop structures");
+    
         foreach (CropStructure crop in cropStructures)
         {
             // Check if any crop has been planted
             if (crop.CurrentCropType != CropStructure.CropType.None && !hasPlantedFirstCrop)
             {
+                Debug.Log($"[Tutorial] Crop: {crop.name}, Type={crop.CurrentCropType}, IsGrowing={crop.IsGrowing}, CropReady={crop.CropReady}");
                 hasPlantedFirstCrop = true;
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropPlanted);
-                
-                // TUTORIAL: Mark crop for future instant growth, but don't do it immediately
+                Debug.Log($"TutorialConditionTracker: First crop planted (Type: {crop.CurrentCropType}), triggering FirstCropPlanted");
+    
+                // Store initial crop counts to detect new harvests
+                initialCropCounts["Sunflower"] = InventoryManager.Instance.GetItemCount("Sunflower");
+                initialCropCounts["Wheat"] = InventoryManager.Instance.GetItemCount("Wheat");
+                initialCropCounts["Carrots"] = InventoryManager.Instance.GetItemCount("Carrots");
+                Debug.Log($"Tutorial: Initial crop counts - Sunflower: {initialCropCounts["Sunflower"]}, Wheat: {initialCropCounts["Wheat"]}, Carrots: {initialCropCounts["Carrots"]}");
+    
                 if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
                 {
-                    Debug.Log("Tutorial: Crop planted, will grow when tutorial asks for it");
+                    Debug.Log("Tutorial: Crop planted, triggering instant growth");
+                    StartCoroutine(InstantGrowCropForTutorial(crop));
                 }
             }
-
-            // Track if crops are ready for harvest - but only when tutorial is asking for it
-            if (crop.CropReady && hasPlantedFirstCrop && !hasHarvestedFirstCrop)
+    
+            // Show harvest step when crop is ready
+            if (crop.CropReady && hasPlantedFirstCrop && !hasHarvestedFirstCrop &&
+                HasCompletedTutorialStep("plant_first_crop") && !HasCompletedTutorialStep("harvest_first_crops"))
             {
-                Debug.Log("Crop is ready for harvest!");
-                CheckInventoryForHarvest();
+                Debug.Log($"TutorialConditionTracker: Crop ready for harvest: {crop.name}, Type: {crop.CurrentCropType}");
+                TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropReady); // <-- Trigger the condition!
+                TutorialStep harvestStep = TutorialManager.Instance.GetTutorialSteps().Find(s => s.stepId == "harvest_first_crops");
+                if (harvestStep != null && !TutorialManager.Instance.IsTutorialActive())
+                {
+                    harvestStep.worldPosition = crop.transform.position + Vector3.up * 3f;
+                    TutorialManager.Instance.ShowTutorialStep(harvestStep);
+                    Debug.Log($"Tutorial: Showing harvest_first_crops step for crop {crop.name}");
+                }
             }
         }
+    
+        // Check inventory for harvests
+        CheckInventoryForHarvest();
     }
 
-    private IEnumerator InstantGrowCropForTutorial(CropStructure crop)
+private void OnCropHarvested(CropStructure.CropType cropType, int amount)
+{
+    if (!TutorialLogicAllowed()) return;
+
+    Debug.Log($"Tutorial: OnCropHarvested triggered for {amount} {cropType}. Current Step: {TutorialManager.Instance?.GetCurrentStepId() ?? "None"}");
+
+    if (!hasHarvestedFirstCrop)
     {
-        yield return new WaitForSeconds(2f); // Wait 2 seconds after planting
-        
-        if (crop != null && !crop.CropReady)
-        {
-            // Use the new tutorial method for instant growth
-            crop.InstantGrowForTutorial();
-        }
+        hasHarvestedFirstCrop = true;
+        Debug.Log("Tutorial: First crop harvested, triggering FirstCropHarvested and TimeControlsExplained conditions");
+        TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropHarvested);
+        TutorialManager.Instance?.OnConditionMet(TutorialCondition.TimeControlsExplained);
+        // Force immediate inventory check to confirm harvest
+        CheckInventoryForHarvest();
     }
-
-    private void CheckInventoryForHarvest()
+}
+    public void CheckInventoryForHarvest()
     {
-        if (InventoryManager.Instance != null)
+        if (!TutorialLogicAllowed()) return;
+        if (InventoryManager.Instance != null && HasCompletedTutorialStep("plant_first_crop") && !HasCompletedTutorialStep("harvest_first_crops"))
         {
-            int totalCrops = InventoryManager.Instance.GetItemCount("Sunflower") +
-                           InventoryManager.Instance.GetItemCount("Wheat") +
-                           InventoryManager.Instance.GetItemCount("Carrots");
+            int sunflowerCount = InventoryManager.Instance.GetItemCount("Sunflower");
+            int wheatCount = InventoryManager.Instance.GetItemCount("Wheat");
+            int carrotCount = InventoryManager.Instance.GetItemCount("Carrots");
+            int totalNewCrops = (sunflowerCount - initialCropCounts.GetValueOrDefault("Sunflower", sunflowerCount)) +
+                                (wheatCount - initialCropCounts.GetValueOrDefault("Wheat", wheatCount)) +
+                                (carrotCount - initialCropCounts.GetValueOrDefault("Carrots", carrotCount));
 
-            if (totalCrops > 0 && !hasHarvestedFirstCrop)
+            Debug.Log($"Tutorial: Checking inventory for harvest - Sunflower: {sunflowerCount} (New: {sunflowerCount - initialCropCounts.GetValueOrDefault("Sunflower", sunflowerCount)}), Wheat: {wheatCount} (New: {wheatCount - initialCropCounts.GetValueOrDefault("Wheat", wheatCount)}), Carrots: {carrotCount} (New: {carrotCount - initialCropCounts.GetValueOrDefault("Carrots", carrotCount)}), Total New: {totalNewCrops}");
+
+            if (totalNewCrops > 0 && !hasHarvestedFirstCrop)
             {
                 hasHarvestedFirstCrop = true;
+                Debug.Log("Tutorial: First crop harvested detected via inventory!");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstCropHarvested);
             }
         }
+
+
     }
 
     private void TrackAnimalStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         AnimalStructure[] animalStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
-        
+
         foreach (AnimalStructure animal in animalStructures)
         {
             // Check if enough animals have been bought (require at least 3 for tutorial)
@@ -323,7 +400,7 @@ public class TutorialConditionTracker : MonoBehaviour
             {
                 Debug.Log("Animals are now producing after being fed!");
                 TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickensStartedProducing);
-                
+
                 // TUTORIAL: Speed up production for demonstration
                 if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
                 {
@@ -340,32 +417,39 @@ public class TutorialConditionTracker : MonoBehaviour
         }
     }
 
-    private IEnumerator FastTrackAnimalProductionForTutorial(AnimalStructure animal)
+private IEnumerator InstantGrowCropForTutorial(CropStructure crop)
+{
+    Debug.Log($"[Tutorial] InstantGrowCropForTutorial called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}, Crop={crop?.name}, CropType={crop?.CurrentCropType}, IsGrowing={crop?.IsGrowing}, CropReady={crop?.CropReady}");
+    if (crop != null && crop.CurrentCropType != CropStructure.CropType.None && crop.IsGrowing && !crop.CropReady)
     {
-        yield return new WaitForSeconds(5f); // Wait 5 seconds after feeding
-        
-        if (animal != null && animal.IsProducing && !animal.ProductReady)
+        crop.InstantGrowForTutorial();
+        yield return null;
+        Debug.Log($"[Tutorial] Crop {crop.name} grown instantly. Ready={crop.CropReady}, IsGrowing={crop.IsGrowing}");
+    }
+    else
+    {
+        Debug.LogWarning($"[Tutorial] Cannot grow crop instantly. Crop={crop?.name}, CropType={crop?.CurrentCropType}, IsGrowing={crop?.IsGrowing}, CropReady={crop?.CropReady}");
+        yield return null;
+    }
+}
+
+    private IEnumerator InstantCompleteAnimalProductionForTutorial(AnimalStructure animal)
+    {
+        if (!TutorialLogicAllowed()) yield break;
+        yield return new WaitForSeconds(2f); // Wait 2 seconds
+
+        if (animal != null && animal.AnimalCount > 0)
         {
-            // Force production to complete for tutorial
-            var animalType = animal.GetType();
-            var productionProgressField = animalType.GetField("productionProgress", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var productReadyField = animalType.GetField("productReady", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var isProducingField = animalType.GetField("isProducing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            if (productionProgressField != null && productReadyField != null && isProducingField != null)
-            {
-                productionProgressField.SetValue(animal, animal.ProductionSettings.productionTime);
-                productReadyField.SetValue(animal, true);
-                isProducingField.SetValue(animal, false);
-                Debug.Log("TUTORIAL: Instantly completed animal production for demonstration!");
-            }
+            // Use the new tutorial method for instant production
+            animal.InstantCompleteProductionForTutorial();
         }
     }
 
     private void TrackDefenseStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
-        
+
         foreach (BarracksStructure barrack in barracks)
         {
             // Check if flag has been placed
@@ -388,11 +472,12 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackNightStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         if (isNightTime)
         {
             // Track wolf defeats
             Wolf[] wolves = FindObjectsByType<Wolf>(FindObjectsSortMode.None);
-            
+
             // If there are no wolves but night has started, assume some were defeated
             if (wolves.Length == 0 && nightHasStarted && !hasDefeatedFirstWolf)
             {
@@ -404,6 +489,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void TrackShopStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         if (!hasOpenedShop)
         {
             // Find the shop UI manager
@@ -424,12 +510,14 @@ public class TutorialConditionTracker : MonoBehaviour
 
     private void OnMoneyChanged(int newAmount)
     {
+        if (!TutorialLogicAllowed()) return;
         // Note: MoneyEarned condition disabled for now - not needed for core tutorial flow
         // TutorialManager.Instance?.OnConditionMet(TutorialCondition.MoneyEarned);
     }
 
     public void OnProductCollected()
     {
+        if (!TutorialLogicAllowed()) return;
         if (!hasCollectedFirstProduct)
         {
             hasCollectedFirstProduct = true;
@@ -439,21 +527,14 @@ public class TutorialConditionTracker : MonoBehaviour
 
     public void OnSynergyDiscovered()
     {
+        if (!TutorialLogicAllowed()) return;
         TutorialManager.Instance?.OnConditionMet(TutorialCondition.SynergyDiscovered);
     }
 
     public void OnLandExpanded()
     {
+        if (!TutorialLogicAllowed()) return;
         TutorialManager.Instance?.OnConditionMet(TutorialCondition.LandExpanded);
-    }
-
-    private void OnDestroy()
-    {
-        // Unsubscribe from events
-        if (MoneyManager.Instance != null)
-        {
-            MoneyManager.Instance.OnMoneyChanged -= OnMoneyChanged;
-        }
     }
 
     /// <summary>
@@ -462,60 +543,57 @@ public class TutorialConditionTracker : MonoBehaviour
     /// </summary>
     private bool ShouldBlockNightProgression()
     {
+        if (!TutorialLogicAllowed()) return false;
         if (TutorialManager.Instance == null) return false;
-        
+
         // Don't block if tutorial is completed
-        if (TutorialManager.Instance.IsTutorialCompleted()) 
+        if (TutorialManager.Instance.IsTutorialCompleted())
         {
             Debug.Log("Tutorial: Not blocking night - tutorial completed");
             return false;
         }
-        
-        // CRITICAL FIX: Check if tutorial is in progress (not completed) rather than just showing a dialog
-        bool tutorialInProgress = TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialCompleted();
-        
+
         // ALWAYS block night if tutorial is in progress but first_night step hasn't been completed
-        if (tutorialInProgress && !HasCompletedTutorialStep("first_night"))
+        if (!HasCompletedTutorialStep("first_night"))
         {
             Debug.Log("Tutorial: BLOCKING night progression - tutorial in progress and first_night step not completed yet");
             return true;
         }
-        
+
         // Block night if tutorial is in progress and defenses are not fully ready
         bool defensesNotReady = !AreDefensesReadyForTutorial();
-        
-        if (tutorialInProgress && defensesNotReady)
+
+        if (defensesNotReady)
         {
             Debug.Log("Tutorial: Blocking night progression - defenses not fully ready for night phase");
             return true;
         }
-        
+
         // ADDITIONAL CHECK: Even if basic conditions are met, ensure the user has explicitly
         // completed the "recruit_army" tutorial step before allowing night
-        if (tutorialInProgress && !HasCompletedTutorialStep("recruit_army"))
+        if (!HasCompletedTutorialStep("recruit_army"))
         {
             Debug.Log("Tutorial: Blocking night progression - user hasn't completed army recruitment tutorial step");
             return true;
         }
-        
+
         // CRITICAL: Block automatic night transition during the "first_night" step
-        // This step requires user to manually click the "Start Night" button
-        if (tutorialInProgress && IsCurrentTutorialStep("first_night"))
+        if (IsCurrentTutorialStep("first_night"))
         {
             Debug.Log("Tutorial: Blocking automatic night progression - waiting for user to click Start Night button");
             return true;
         }
-        
+
         Debug.Log("Tutorial: Not blocking night progression - all conditions passed");
         return false;
     }
 
     /// <summary>
     /// Public method for NightManager and other systems to check if night progression should be blocked
-    /// This is the main method other systems should use to check if tutorial is blocking night
     /// </summary>
     public bool ShouldBlockNightTransition()
     {
+        if (!TutorialLogicAllowed()) return false;
         bool shouldBlock = ShouldBlockNightProgression();
         Debug.Log($"TUTORIAL BLOCKING CHECK: ShouldBlockNightTransition() returning {shouldBlock}");
         return shouldBlock;
@@ -527,6 +605,7 @@ public class TutorialConditionTracker : MonoBehaviour
     [ContextMenu("Debug Night Blocking Status")]
     public void DebugNightBlockingStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         Debug.Log("=== NIGHT BLOCKING DEBUG ===");
         Debug.Log($"Tutorial Manager exists: {TutorialManager.Instance != null}");
         if (TutorialManager.Instance != null)
@@ -543,55 +622,56 @@ public class TutorialConditionTracker : MonoBehaviour
     }
 
     /// <summary>
-    /// Public method for other systems to check if tutorial should prevent enemy spawning
-    /// Enhanced to include comprehensive defense readiness checks
+    /// Public method for external systems to check if tutorial should prevent enemy spawning
     /// </summary>
     public bool ShouldPreventEnemySpawning()
     {
+        if (!TutorialLogicAllowed()) return false;
         if (TutorialManager.Instance == null) return false;
-        
+
         // Allow enemies if tutorial is completed
         if (TutorialManager.Instance.IsTutorialCompleted()) return false;
-        
+
         // During tutorial, check comprehensive defense readiness
         bool tutorialInProgress = !TutorialManager.Instance.IsTutorialCompleted();
         bool defensesReady = AreDefensesReadyForTutorial();
-        
+
         if (tutorialInProgress && !defensesReady)
         {
             Debug.Log("Tutorial: Preventing enemy spawning - defenses not ready");
             return true;
         }
-        
+
         return false;
     }
-    
+
     /// <summary>
     /// Comprehensive check for defense readiness during tutorial
     /// </summary>
     private bool AreDefensesReadyForTutorial()
     {
+        if (!TutorialLogicAllowed()) return false;
         // Must have built barracks first
         if (!hasBarracksPlaced)
         {
             Debug.Log("Tutorial Defense Check: No barracks placed yet");
             return false;
         }
-        
+
         // Must have placed flag
         if (!hasPlacedFlag)
         {
             Debug.Log("Tutorial Defense Check: No flag placed yet");
             return false;
         }
-        
+
         // Must have recruited army
         if (!hasRecruitedArmy)
         {
             Debug.Log("Tutorial Defense Check: No army recruited yet");
             return false;
         }
-        
+
         // Verify barracks actually exist and have army
         BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
         if (barracks.Length == 0)
@@ -599,7 +679,7 @@ public class TutorialConditionTracker : MonoBehaviour
             Debug.Log("Tutorial Defense Check: No barracks found");
             return false;
         }
-        
+
         bool hasActiveBarracksWithArmy = false;
         foreach (BarracksStructure barrack in barracks)
         {
@@ -610,26 +690,15 @@ public class TutorialConditionTracker : MonoBehaviour
                 break;
             }
         }
-        
+
         if (!hasActiveBarracksWithArmy)
         {
             Debug.Log("Tutorial Defense Check: No active barracks with army and flag");
             return false;
         }
-        
+
         Debug.Log("Tutorial Defense Check: Defenses are ready! (Barracks + Flag + Army)");
         return true;
-    }
-
-    private IEnumerator InstantCompleteAnimalProductionForTutorial(AnimalStructure animal)
-    {
-        yield return new WaitForSeconds(2f); // Wait 2 seconds
-        
-        if (animal != null && animal.AnimalCount > 0)
-        {
-            // Use the new tutorial method for instant production
-            animal.InstantCompleteProductionForTutorial();
-        }
     }
 
     /// <summary>
@@ -638,41 +707,43 @@ public class TutorialConditionTracker : MonoBehaviour
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public void LogDefenseStatus()
     {
+        if (!TutorialLogicAllowed()) return;
         Debug.Log("=== TUTORIAL DEFENSE STATUS ===");
         Debug.Log($"Barracks Placed: {hasBarracksPlaced}");
         Debug.Log($"Flag Placed: {hasPlacedFlag}");
         Debug.Log($"Army Recruited: {hasRecruitedArmy}");
-        
+
         BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
         Debug.Log($"Barracks Found: {barracks.Length}");
-        
+
         foreach (BarracksStructure barrack in barracks)
         {
             Debug.Log($"Barracks Army Count: {barrack.ArmyAnimalCount}");
             Debug.Log($"Barracks Flag Position: {barrack.GetFlagPosition}");
             Debug.Log($"Barracks Has Active Defense: {barrack.ArmyAnimalCount > 0 && barrack.GetFlagPosition != Vector3.zero}");
         }
-        
+
         bool defensesReady = AreDefensesReadyForTutorial();
         Debug.Log($"Overall Defenses Ready: {defensesReady}");
         Debug.Log($"Should Prevent Enemy Spawning: {ShouldPreventEnemySpawning()}");
         Debug.Log("================================");
     }
-    
+
     /// <summary>
     /// Public method for external systems to check if tutorial defenses are ready
-    /// Useful for UI indicators, night manager, etc.
     /// </summary>
     public bool AreDefensesReady()
     {
+        if (!TutorialLogicAllowed()) return false;
         return AreDefensesReadyForTutorial();
     }
-    
+
     /// <summary>
     /// Get a detailed defense readiness report for UI or debugging
     /// </summary>
     public DefenseReadinessReport GetDefenseReadinessReport()
     {
+        if (!TutorialLogicAllowed()) return new DefenseReadinessReport();
         return new DefenseReadinessReport
         {
             hasBarracks = hasBarracksPlaced,
@@ -683,9 +754,10 @@ public class TutorialConditionTracker : MonoBehaviour
             isReady = AreDefensesReadyForTutorial()
         };
     }
-    
+
     private int GetTotalArmyCount()
     {
+        if (!TutorialLogicAllowed()) return 0;
         int totalArmy = 0;
         BarracksStructure[] barracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
         foreach (BarracksStructure barrack in barracks)
@@ -696,58 +768,42 @@ public class TutorialConditionTracker : MonoBehaviour
     }
 
     /// <summary>
-    /// Manually trigger crop growth for tutorial timing control
-    /// Call this when the tutorial step specifically asks for crop growth
+    /// Deprecated: Crop growth is now handled in TrackCropStatus
     /// </summary>
     public void TriggerCropGrowthForTutorial()
     {
-        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
-        {
-            Debug.LogWarning("TriggerCropGrowthForTutorial called but tutorial is not active!");
-            return;
-        }
-        
-        CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-        
-        foreach (CropStructure crop in cropStructures)
-        {
-            if (crop.CurrentCropType != CropStructure.CropType.None && !crop.CropReady)
-            {
-                Debug.Log("Tutorial: Manually growing crop for tutorial step!");
-                StartCoroutine(InstantGrowCropForTutorial(crop));
-                break; // Only grow the first planted crop
-            }
-        }
+        Debug.Log("TriggerCropGrowthForTutorial called but deprecated; growth handled in TrackCropStatus");
     }
 
     /// <summary>
     /// Called by BuildController when a structure is placed
-    /// This replaces the automatic tracking to ensure timing is correct
     /// </summary>
-    public void OnStructurePlaced(StructureType structureType, string structureName)
+        public void OnStructurePlaced(StructureType structureType, string structureName)
     {
+        if (!TutorialLogicAllowed()) return;
         Debug.Log($"TutorialConditionTracker: Structure placed - Type: {structureType}, Name: {structureName}");
-        
+    
         // Mark first structure as placed
         if (!hasPlacedFirstStructure)
         {
             hasPlacedFirstStructure = true;
             TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstStructurePlaced);
         }
-        
-        // Handle specific structure types
+    
+        // Trigger FarmHousePlaced if the name matches, regardless of type
+        if (!hasFarmHousePlaced && (structureName.ToLower().Contains("farmhouse") ||
+            structureName.ToLower().Contains("farm house") ||
+            structureName.ToLower().Contains("mainbuilding")))
+        {
+            // Debug.Log("Farm House placed - triggering tutorial condition!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            // structure
+            hasFarmHousePlaced = true;
+            TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
+        }
+    
+        // Handle specific structure types for other tutorial steps
         switch (structureType)
         {
-            case StructureType.Building:
-                // Check if it's a farmhouse by name
-                if (!hasFarmHousePlaced && (structureName.ToLower().Contains("farmhouse") || 
-                    structureName.ToLower().Contains("farm house")))
-                {
-                    hasFarmHousePlaced = true;
-                    TutorialManager.Instance?.OnConditionMet(TutorialCondition.FarmHousePlaced);
-                }
-                break;
-                
             case StructureType.Silo:
                 if (!hasSiloPlaced)
                 {
@@ -755,7 +811,6 @@ public class TutorialConditionTracker : MonoBehaviour
                     TutorialManager.Instance?.OnConditionMet(TutorialCondition.SiloPlaced);
                 }
                 break;
-                
             case StructureType.CropPlot:
                 if (!hasCropPlotPlaced)
                 {
@@ -763,17 +818,15 @@ public class TutorialConditionTracker : MonoBehaviour
                     TutorialManager.Instance?.OnConditionMet(TutorialCondition.CropPlotPlaced);
                 }
                 break;
-                
             case StructureType.Animal:
             case StructureType.AnimalPlot:
-                if (!hasChickenCoopPlaced && (structureName.ToLower().Contains("chicken") || 
-                    structureName.ToLower().Contains("coop")))
+                // FIX: Only trigger if this is a *newly placed* Chicken Coop, not just any animal structure
+                if (!hasChickenCoopPlaced && structureName.ToLower().Contains("chicken") && structureName.ToLower().Contains("coop"))
                 {
                     hasChickenCoopPlaced = true;
                     TutorialManager.Instance?.OnConditionMet(TutorialCondition.ChickenCoopPlaced);
                 }
                 break;
-                
             case StructureType.Barracks:
                 if (!hasBarracksPlaced)
                 {
@@ -787,10 +840,10 @@ public class TutorialConditionTracker : MonoBehaviour
     /// <summary>
     /// Check if a specific tutorial step has been completed
     /// </summary>
-    private bool HasCompletedTutorialStep(string stepId)
+    public bool HasCompletedTutorialStep(string stepId)
     {
         if (TutorialManager.Instance == null) return false;
-        
+
         // Check if the specific tutorial step has been marked as completed
         var tutorialSteps = TutorialManager.Instance.GetTutorialSteps();
         if (tutorialSteps != null)
@@ -803,7 +856,7 @@ public class TutorialConditionTracker : MonoBehaviour
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -813,12 +866,11 @@ public class TutorialConditionTracker : MonoBehaviour
     private bool IsCurrentTutorialStep(string stepId)
     {
         if (TutorialManager.Instance == null) return false;
-        
+
         // Check if we're currently active and the current step matches
         if (!TutorialManager.Instance.IsTutorialActive()) return false;
-        
+
         // Try to get the current step via reflection or find another way to check current step
-        // For now, we'll use a different approach - check if the step is incomplete but its prerequisites are met
         var tutorialSteps = TutorialManager.Instance.GetTutorialSteps();
         if (tutorialSteps != null)
         {
@@ -849,7 +901,43 @@ public class TutorialConditionTracker : MonoBehaviour
                 }
             }
         }
-        
+
         return false;
     }
+
+    /// <summary>
+    /// Debug method to inspect crop status and inventory
+    /// </summary>
+
+    [ContextMenu("Debug Crop Status")]
+    public void DebugCropStatus()
+    {
+        Debug.Log("=== CROP STATUS DEBUG ===");
+        Debug.Log($"Has Planted First Crop: {hasPlantedFirstCrop}");
+        Debug.Log($"Has Harvested First Crop: {hasHarvestedFirstCrop}");
+        CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        foreach (var crop in crops)
+        {
+            Debug.Log($"Crop: {crop.name}, Type: {crop.CurrentCropType}, Growing: {crop.IsGrowing}, Ready: {crop.CropReady}");
+        }
+        Debug.Log($"Initial Crop Counts: Sunflower={initialCropCounts.GetValueOrDefault("Sunflower", 0)}, Wheat={initialCropCounts.GetValueOrDefault("Wheat", 0)}, Carrots={initialCropCounts.GetValueOrDefault("Carrots", 0)}");
+        Debug.Log($"Current Inventory: Sunflower={InventoryManager.Instance?.GetItemCount("Sunflower")}, Wheat={InventoryManager.Instance?.GetItemCount("Wheat")}, Carrots={InventoryManager.Instance?.GetItemCount("Carrots")}");
+        Debug.Log($"Silo Capacity: Current={InventoryManager.Instance?.GetCurrentSiloCapacity()}, Total={InventoryManager.Instance?.GetTotalSiloCapacity()}");
+        Debug.Log($"Tutorial Step Status: plant_first_crop={HasCompletedTutorialStep("plant_first_crop")}, harvest_first_crops={HasCompletedTutorialStep("harvest_first_crops")}");
+        Debug.Log("========================");
+    }
+
+[ContextMenu("Debug Tutorial Progression")]
+public void DebugTutorialProgression()
+{
+    Debug.Log("=== TUTORIAL PROGRESSION DEBUG ===");
+    Debug.Log($"Tutorial Active: {TutorialManager.Instance?.IsTutorialActive()}");
+    Debug.Log($"Tutorial Completed: {TutorialManager.Instance?.IsTutorialCompleted()}");
+    Debug.Log($"Current Step: {TutorialManager.Instance?.GetCurrentStepId() ?? "None"}");
+    Debug.Log($"Has Planted First Crop: {hasPlantedFirstCrop}");
+    Debug.Log($"Has Harvested First Crop: {hasHarvestedFirstCrop}");
+    Debug.Log($"Initial Crop Counts: Sunflower={initialCropCounts.GetValueOrDefault("Sunflower", 0)}, Wheat={initialCropCounts.GetValueOrDefault("Wheat", 0)}, Carrots={initialCropCounts.GetValueOrDefault("Carrots", 0)}");
+    Debug.Log($"Current Inventory: Sunflower={InventoryManager.Instance?.GetItemCount("Sunflower") ?? 0}, Wheat={InventoryManager.Instance?.GetItemCount("Wheat") ?? 0}, Carrots={InventoryManager.Instance?.GetItemCount("Carrots") ?? 0}");
+    Debug.Log("================================");
+}
 }

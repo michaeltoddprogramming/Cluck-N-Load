@@ -5,8 +5,31 @@ using System.Collections.Generic;
 /// Manages the main game loop, game state, and game over conditions.
 /// Integrates with your existing GameEventManager system.
 /// </summary>
+/// 
+/// 
+
 public class GameLoopManager : MonoBehaviour
 {
+
+    // Helper to check if a structure is already registered
+    public bool IsStructureRegistered(Structure structure)
+    {
+        return allStructures.Contains(structure);
+    }
+
+    // Call this from your Game Over panel's Quit button
+
+    public void OnQuitButton()
+    {
+    #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+    #else
+        Application.Quit();
+    #endif
+    }
+
+    [Header("UI")]
+    [SerializeField] private GameObject gameOverPanel;
     public static GameLoopManager Instance { get; private set; }
 
     [Header("Game State")]
@@ -18,8 +41,9 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private int totalStructuresBuilt = 0;
 
     [Header("Game Over Conditions")]
-    [SerializeField] private bool checkFarmHouseDestruction = true;
-    [SerializeField] private bool checkAllStructuresDestroyed = false;
+    [SerializeField] private bool checkFarmHouseDestruction = false;
+    [SerializeField] private bool checkAllStructuresDestroyed = true;
+
 
     // Events
     public System.Action OnGameOver;
@@ -63,18 +87,24 @@ public class GameLoopManager : MonoBehaviour
     /// </summary>
     public void RegisterStructure(Structure structure)
     {
-        if (structure == null) return;
+        if (structure == null || !structure) return;
 
-        if (!allStructures.Contains(structure))
+        // Clean up null/destroyed entries before adding
+        allStructures.RemoveAll(s => s == null || !s);
+
+        // Debug: log if double registration is attempted
+        if (allStructures.Contains(structure))
         {
-            allStructures.Add(structure);
-            totalStructuresBuilt++;
-            
-            Debug.Log($"Structure registered: {structure.name}. Total: {allStructures.Count}");
-            
-            // Fire event through GameEventManager if available
-            GameEventManager.Instance?.OnStructurePlaced?.Invoke(structure);
+            Debug.LogWarning($"[GameLoopManager] Attempted to register structure twice: {structure.name}", structure);
+            return;
         }
+
+        allStructures.Add(structure);
+        totalStructuresBuilt++;
+        string structureName = structure != null ? structure.name : "(destroyed object)";
+        Debug.Log($"Structure registered: {structureName}. Total: {allStructures.Count}");
+        // Fire event through GameEventManager if available
+        GameEventManager.Instance?.OnStructurePlaced?.Invoke(structure);
     }
 
     /// <summary>
@@ -82,64 +112,44 @@ public class GameLoopManager : MonoBehaviour
     /// </summary>
     public void UnregisterStructure(Structure structure)
     {
-        if (structure == null) return;
+        if (structure == null || !structure) return;
+
+        // Clean up null/destroyed entries before removing
+        allStructures.RemoveAll(s => s == null || !s);
 
         if (allStructures.Contains(structure))
         {
+            string structureName = structure != null ? structure.name : "(destroyed object)";
             allStructures.Remove(structure);
-            
-            Debug.Log($"Structure unregistered: {structure.name}. Remaining: {allStructures.Count}");
-            
+            Debug.Log($"Structure unregistered: {structureName}. Remaining: {allStructures.Count}");
             // Fire event through GameEventManager if available
             GameEventManager.Instance?.OnStructureDestroyed?.Invoke(structure);
-            
             // Check game over conditions
             CheckGameOverConditions();
         }
     }
 
-    private void CheckGameOverConditions()
+   private void CheckGameOverConditions()
+{
+    if (isGameOver) return;
+
+    bool shouldGameOver = false;
+
+    // Clean up null/destroyed entries before checking
+    allStructures.RemoveAll(s => s == null || !s);
+
+    // Only trigger game over if ALL structures are destroyed
+    if (checkAllStructuresDestroyed && allStructures.Count == 0 && totalStructuresBuilt > 0)
     {
-        if (isGameOver) return;
-
-        bool shouldGameOver = false;
-
-        // Check if Farm House was destroyed (main game over condition)
-        if (checkFarmHouseDestruction)
-        {
-            bool hasFarmHouse = false;
-            foreach (var structure in allStructures)
-            {
-                // Check if it's a main building/farm house
-                if (structure.name.ToLower().Contains("farmhouse") || 
-                    structure.name.ToLower().Contains("farm house") ||
-                    structure.name.ToLower().Contains("mainbuilding") ||
-                    (structure.structureData != null && structure.structureData.type == StructureType.Building))
-                {
-                    hasFarmHouse = true;
-                    break;
-                }
-            }
-            
-            if (!hasFarmHouse && totalStructuresBuilt > 0)
-            {
-                shouldGameOver = true;
-                Debug.Log("Game Over: Farm House destroyed!");
-            }
-        }
-
-        // Check if all structures destroyed
-        if (checkAllStructuresDestroyed && allStructures.Count == 0 && totalStructuresBuilt > 0)
-        {
-            shouldGameOver = true;
-            Debug.Log("Game Over: All structures destroyed!");
-        }
-
-        if (shouldGameOver)
-        {
-            TriggerGameOver();
-        }
+        shouldGameOver = true;
+        Debug.Log("Game Over: All structures destroyed!");
     }
+
+    if (shouldGameOver)
+    {
+        TriggerGameOver();
+    }
+}
 
     public void TriggerGameOver()
     {
@@ -152,6 +162,12 @@ public class GameLoopManager : MonoBehaviour
         
         // Use your existing GameEventManager
         GameEventManager.Instance?.OnGamePaused?.Invoke();
+
+        // Show Game Over UI if assigned
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
     }
 
     public void PauseGame()

@@ -154,8 +154,33 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     showItem = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
                     break;
                 case 'D': // decorations (optional category?)
-                    displayComingSoonPanel(0);
-                    showItem = data.type == StructureType.Decoration; // or whatever type you use
+
+                    // bool hasDecorations = database.allStructures.Exists(data => data != null && data.type == StructureType.Decoration);
+
+                    // if (!hasDecorations)
+                    // {
+                    //     Debug.Log("No decoration structures found.");
+                    //     displayComingSoonPanel(0); // Optional: show "Coming Soon" panel
+                    //     return; // Stop here if nothing to show
+                    // }
+                    // else
+                    // {
+                    //     displayComingSoonPanel(1);
+                    // }
+                    
+                    // Debug.Log($"This is if the house is placed: {buildController.IsHousePlaced()}----------------------------------------------------------------------------");
+
+                    if (buildController.IsHousePlaced())
+                    {
+                        displayComingSoonPanel(0);
+                        showItem = data.type == StructureType.Placed; // or whatever type you use
+                    }
+                    else
+                    {
+                        displayComingSoonPanel(1);
+                        showItem = data.type == StructureType.Decoration; // or whatever type you use
+                    }
+
                     break;
                 default:
                     Debug.LogWarning("Invalid display category: " + display);

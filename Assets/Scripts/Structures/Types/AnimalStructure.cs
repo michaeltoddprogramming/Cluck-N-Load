@@ -3,6 +3,8 @@ using System.Collections;
 
 public class AnimalStructure : Structure
 {
+    // Registration flag to prevent double registration with NightManager
+    private bool isRegisteredWithNightManager = false;
     public enum AnimalType
     {
         Chicken,
@@ -18,8 +20,8 @@ public class AnimalStructure : Structure
     [SerializeField] private bool productReady;
     [SerializeField] private float productionProgress;
     [SerializeField] private AnimalProductionSettings productionSettings;
-    [SerializeField] private int animalCount = 5;
-    [SerializeField] private int maxAnimalCount = 10;
+    [SerializeField] private int animalCount = 0;
+    [SerializeField] private int maxAnimalCount = 5;
 
     [Header("SFX")]
     [Tooltip("Background sound for the animal structure.")]
@@ -34,7 +36,7 @@ public class AnimalStructure : Structure
     {
         public float productionTime = 24f;
         public int productAmount = 1;
-        public int moneyPerProduct = 10;
+        public int moneyPerProduct = 50;
         public int baseFoodRequired = 2;
         public int costPerAnimal = 50;
         public int boostedProduction = 0;
@@ -61,7 +63,7 @@ public class AnimalStructure : Structure
     [SerializeField] private float synergyFoodRequired = 0.8f; // food per animal when in range
     [SerializeField] private float normalFoodRequired = 1f; // food per animal when not in range
     [SerializeField] private float foodMultiplier = 1f; // food per animal when not in range
-    [SerializeField] public int baseMoneyPerProduct = 10;
+    [SerializeField] public int baseMoneyPerProduct = 50;
     [SerializeField] public int baseProductMultiplier = 1;
 
     protected override void Start()
@@ -92,9 +94,10 @@ public class AnimalStructure : Structure
 
         lastCheckedHour = nightManager != null ? nightManager.Hours + (nightManager.Minutes / 60f) : 7f;
         requiredFood = GetRequiredFood();
-        if (nightManager != null)
+        if (nightManager != null && !isRegisteredWithNightManager)
         {
             nightManager.RegisterAnimalStructure(this);
+            isRegisteredWithNightManager = true;
         }
 
         if (audioSource == null)
@@ -110,6 +113,8 @@ public class AnimalStructure : Structure
 
     private void Update()
     {
+
+
 
         if (nightManager == null || !isProducing || productReady) return;
 
@@ -180,8 +185,46 @@ public class AnimalStructure : Structure
             return;
         }
 
-        int totalProducts = productionSettings.productAmount * animalCount;
-        int totalMoneyEarned = totalProducts * productionSettings.moneyPerProduct;
+        
+        ProductionBoosts productionBoosts = FindObjectOfType<ProductionBoosts>();
+        int productPrice = 0;
+        float boostedAmount = 0f;
+
+        if (animalType == AnimalType.Chicken)
+        {
+            productPrice = productionBoosts.GetProductPrices()[0];
+            boostedAmount = productionBoosts.GetBoostedProducts()[0];
+        }
+        else if (animalType == AnimalType.Cow)
+        {
+            productPrice = productionBoosts.GetProductPrices()[1];
+            boostedAmount = productionBoosts.GetBoostedProducts()[1];
+        }
+        else if (animalType == AnimalType.Sheep)
+        {
+            productPrice = productionBoosts.GetProductPrices()[2];
+            boostedAmount = productionBoosts.GetBoostedProducts()[2];
+        }
+        else if (animalType == AnimalType.Goat)
+        {
+            productPrice = productionBoosts.GetProductPrices()[3];
+            boostedAmount = productionBoosts.GetBoostedProducts()[3];
+        }
+        else if (animalType == AnimalType.Pig)
+        {
+            productPrice = productionBoosts.GetProductPrices()[4];
+            boostedAmount = productionBoosts.GetBoostedProducts()[4];
+        }
+
+
+
+        // int totalProducts = productionSettings.productAmount * animalCount;
+        int totalProducts = (int)(productPrice * boostedAmount);
+        // int totalMoneyEarned = totalProducts * productionSettings.moneyPerProduct;
+        int totalMoneyEarned = totalProducts * animalCount;
+        // int totalMoneyEarned = totalProducts;
+
+        // Debug.Log($"products: {totalProducts}, product price: {productPrice}, money earned: {totalMoneyEarned}");
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(totalMoneyEarned);
@@ -269,10 +312,11 @@ public class AnimalStructure : Structure
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        if (nightManager != null)
+        if (nightManager != null && isRegisteredWithNightManager)
         {
             nightManager.UnregisterAnimalStructure(this);
-            }
+            isRegisteredWithNightManager = false;
+        }
     }
 
     //handles stuff for lees food if animals close to silo
@@ -420,24 +464,24 @@ public class AnimalStructure : Structure
     //     return prices;
     // }
 
-    public static int[] getProductPrices(string[] animals)
-    {
-        int[] prices = new int[animals.Length];
-        AnimalStructure[] allStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+    // public static int[] getProductPrices(string[] animals)
+    // {
+    //     int[] prices = new int[animals.Length];
+    //     AnimalStructure[] allStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
 
-        for (int i = 0; i < animals.Length; i++)
-        {
-            foreach (var structure in allStructures)
-            {
-                if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
-                {
-                    prices[i] = structure.productionSettings.moneyPerProduct;
-                    break; // Found the structure for this animal type, move to next animal
-                }
-            }
-        }
-        return prices;
-    }
+    //     for (int i = 0; i < animals.Length; i++)
+    //     {
+    //         foreach (var structure in allStructures)
+    //         {
+    //             if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
+    //             {
+    //                 prices[i] = structure.productionSettings.moneyPerProduct;
+    //                 break; // Found the structure for this animal type, move to next animal
+    //             }
+    //         }
+    //     }
+    //     return prices;
+    // }
 
     // public int[] whichProductsAreBoosted(string[] animals)
     // {
@@ -498,6 +542,8 @@ public class AnimalStructure : Structure
             }
         }
     }
+
+    Debug.Log($"Boosted products for {string.Join(", ", animals)}: {string.Join(", ", boosted)}");
     return boosted;
 }
 

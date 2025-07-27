@@ -44,7 +44,7 @@ public class BuildController : MonoBehaviour
     [SerializeField] private float synergyIndicatorHeight = 0.1f;
     [SerializeField] private GameObject synergyLineRendererPrefab;
     [SerializeField] private Canvas worldSpaceCanvas;
-    
+
     [Header("Performance Settings")]
     [SerializeField] private bool enableSynergyVisuals = true; // Allow disabling for potato devices
     [SerializeField] private int maxSynergyLines = 10; // Limit lines for performance
@@ -52,6 +52,8 @@ public class BuildController : MonoBehaviour
     private List<LineRenderer> synergyLines = new List<LineRenderer>();
     private List<GameObject> activeSynergyLines = new List<GameObject>(); // Track active synergy line GameObjects
     private Dictionary<LineRenderer, SynergyTooltip> lineTooltips = new Dictionary<LineRenderer, SynergyTooltip>();
+
+    private bool isHousePlaced = false;
 
     private class SynergyTooltip
     {
@@ -120,7 +122,7 @@ public class BuildController : MonoBehaviour
         if (itemDeleteIcon != null && itemDeleteIcon.GetComponent<Graphic>() != null)
             itemDeleteIcon.GetComponent<Graphic>().raycastTarget = false;
 
-        }
+    }
 
     void OnDestroy()
     {
@@ -212,7 +214,7 @@ public class BuildController : MonoBehaviour
         if (flowFieldManager != null)
         {
             flowFieldManager.SetBuildModeActive(false);
-            }
+        }
         if (itemDeleteIcon != null)
             itemDeleteIcon.gameObject.SetActive(false);
     }
@@ -245,93 +247,93 @@ public class BuildController : MonoBehaviour
                 Destroy(currentGhost);
                 currentGhost = null;
             }
-            }
+        }
     }
 
-               public void StartMoveModeForStructure(Structure structure)
+    public void StartMoveModeForStructure(Structure structure)
+    {
+        if (structure == null)
         {
-            if (structure == null)
+            Debug.LogWarning("Cannot start move mode: Structure is null");
+            return;
+        }
+
+        isMoveModeActive = true;
+        isBuildModeActive = false;
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+        }
+
+        movingStructure = structure;
+        originalPosition = structure.transform.position;
+        originalRotation = structure.transform.rotation;
+        originalFootprint = GetStructureFootprint(structure.gameObject);
+        currentBuildTargetPrefab = structure.structureData?.prefab;
+        // Make sure to copy the structure data for proper synergy visualization
+        currentStructureData = structure.structureData;
+        currentRotation = originalRotation;
+
+        if (currentBuildTargetPrefab == null)
+        {
+            Debug.LogWarning($"No prefab assigned to {structure.GetStructureName()}'s StructureData. Cannot create ghost.");
+            CancelMove();
+            return;
+        }
+
+        CreateGhost(currentBuildTargetPrefab);
+
+        // Copy component data for special structure types
+        if (structure is BarracksStructure barracks)
+        {
+            // Add BarracksStructure component if missing on ghost
+            BarracksStructure ghostBarracks = currentGhost.GetComponent<BarracksStructure>() ??
+                                             currentGhost.AddComponent<BarracksStructure>();
+
+            // FIX: Copy via reflection since TargetAnimalType is read-only
+            var targetField = typeof(BarracksStructure).GetField("targetAnimalType",
+                              System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (targetField != null)
             {
-                Debug.LogWarning("Cannot start move mode: Structure is null");
-                return;
+                string value = barracks.TargetAnimalType;
+                targetField.SetValue(ghostBarracks, value);
             }
-        
-            isMoveModeActive = true;
-            isBuildModeActive = false;
-            if (currentGhost != null)
+
+            // Copy the distance values which are likely writable
+            ghostBarracks.synergyMinDist = barracks.synergyMinDist;
+            ghostBarracks.synergyMaxDist = barracks.synergyMaxDist;
+        }
+        else if (structure is AnimalStructure animal)
+        {
+            // Add AnimalStructure component if missing on ghost
+            AnimalStructure ghostAnimal = currentGhost.GetComponent<AnimalStructure>() ??
+                                         currentGhost.AddComponent<AnimalStructure>();
+
+            // FIX: Use proper property or method instead of direct field access
+            // Option 1: If there's a SetAnimalType method
+            if (ghostAnimal.GetType().GetMethod("SetAnimalType") != null)
             {
-                Destroy(currentGhost);
-                currentGhost = null;
+                ghostAnimal.GetType().GetMethod("SetAnimalType").Invoke(
+                    ghostAnimal, new object[] { animal.GetAnimalType });
             }
-        
-            movingStructure = structure;
-            originalPosition = structure.transform.position;
-            originalRotation = structure.transform.rotation;
-            originalFootprint = GetStructureFootprint(structure.gameObject);
-            currentBuildTargetPrefab = structure.structureData?.prefab;
-            // Make sure to copy the structure data for proper synergy visualization
-            currentStructureData = structure.structureData;
-            currentRotation = originalRotation;
-        
-            if (currentBuildTargetPrefab == null)
+            // Option 2: Use reflection to set private field
+            else
             {
-                Debug.LogWarning($"No prefab assigned to {structure.GetStructureName()}'s StructureData. Cannot create ghost.");
-                CancelMove();
-                return;
-            }
-        
-            CreateGhost(currentBuildTargetPrefab);
-            
-            // Copy component data for special structure types
-            if (structure is BarracksStructure barracks)
-            {
-                // Add BarracksStructure component if missing on ghost
-                BarracksStructure ghostBarracks = currentGhost.GetComponent<BarracksStructure>() ?? 
-                                                 currentGhost.AddComponent<BarracksStructure>();
-                
-                // FIX: Copy via reflection since TargetAnimalType is read-only
-                var targetField = typeof(BarracksStructure).GetField("targetAnimalType", 
-                                  System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (targetField != null)
+                var field = typeof(AnimalStructure).GetField("animalType",
+                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
                 {
-                    string value = barracks.TargetAnimalType;
-                    targetField.SetValue(ghostBarracks, value);
-                }
-                
-                // Copy the distance values which are likely writable
-                ghostBarracks.synergyMinDist = barracks.synergyMinDist;
-                ghostBarracks.synergyMaxDist = barracks.synergyMaxDist;
-            }
-            else if (structure is AnimalStructure animal)
-            {
-                // Add AnimalStructure component if missing on ghost
-                AnimalStructure ghostAnimal = currentGhost.GetComponent<AnimalStructure>() ?? 
-                                             currentGhost.AddComponent<AnimalStructure>();
-                
-                // FIX: Use proper property or method instead of direct field access
-                // Option 1: If there's a SetAnimalType method
-                if (ghostAnimal.GetType().GetMethod("SetAnimalType") != null)
-                {
-                    ghostAnimal.GetType().GetMethod("SetAnimalType").Invoke(
-                        ghostAnimal, new object[] { animal.GetAnimalType });
-                }
-                // Option 2: Use reflection to set private field
-                else
-                {
-                    var field = typeof(AnimalStructure).GetField("animalType", 
-                                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (field != null)
-                    {
-                        var value = animal.GetAnimalType;
-                        field.SetValue(ghostAnimal, value);
-                    }
+                    var value = animal.GetAnimalType;
+                    field.SetValue(ghostAnimal, value);
                 }
             }
-            
-            structure.UnregisterFromGrid();
-            structure.gameObject.SetActive(false);
-            gridController.ShowGrid();
-            }
+        }
+
+        structure.UnregisterFromGrid();
+        structure.gameObject.SetActive(false);
+        gridController.ShowGrid();
+    }
 
     public void HideGhostTemporarily()
     {
@@ -470,7 +472,7 @@ public class BuildController : MonoBehaviour
                 hitTransform = hitTransform.parent;
             }
         }
-        }
+    }
 
     void PlaceMovedStructure(int x, int y)
     {
@@ -500,7 +502,10 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         DisableBuildMode();
-        }
+
+
+
+    }
 
     void CancelMove()
     {
@@ -520,7 +525,7 @@ public class BuildController : MonoBehaviour
         }
         gridController.HideGrid();
         DisableBuildMode();
-        }
+    }
 
     void UpdateGhostPosition()
     {
@@ -554,81 +559,86 @@ public class BuildController : MonoBehaviour
     }
 
     private void UpdateSynergyVisualization()
-{
-    // Modified condition to include move mode
-    if (currentGhost == null || (!isBuildModeActive && !isMoveModeActive) || isDeleteModeActive || currentStructureData == null)
-        return;
-
-    ClearSynergyVisualization();
-
-    switch (currentStructureData.type)
     {
-        case StructureType.Silo:
-            ShowSiloSynergyPreview();
-            break;
-        case StructureType.CropPlot:
-            ShowCropSynergyPreview();
-            break;
-        case StructureType.Animal:
-            ShowAnimalSynergyPreview();
-            break;
-        case StructureType.Barracks:
-            ShowBarracksSynergyPreview();
-            break;
-    }
-}
+        // Modified condition to include move mode
+        if (currentGhost == null || (!isBuildModeActive && !isMoveModeActive) || isDeleteModeActive || currentStructureData == null)
+            return;
 
-        private void ShowSiloSynergyPreview()
+        ClearSynergyVisualization();
+
+        switch (currentStructureData.type)
         {
-            // Show range indicators
-            CreateRangeIndicator(currentGhost.transform.position, 15f, potentialSynergyMaterial, "Animal Synergy Range");
-            CreateRangeIndicator(currentGhost.transform.position, 10f, potentialSynergyMaterial, "Crop Synergy Range");
-            
-            // Find animals in range
-            AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
-            foreach (var animal in animals)
+            case StructureType.Silo:
+                ShowSiloSynergyPreview();
+                break;
+            case StructureType.CropPlot:
+                ShowCropSynergyPreview();
+                break;
+            case StructureType.Animal:
+                ShowAnimalSynergyPreview();
+                break;
+            case StructureType.Barracks:
+                ShowBarracksSynergyPreview();
+                break;
+        }
+    }
+
+    private void ShowSiloSynergyPreview()
+    {
+        // Show range indicators
+        CreateRangeIndicator(currentGhost.transform.position, 15f, potentialSynergyMaterial, "Animal Synergy Range");
+        CreateRangeIndicator(currentGhost.transform.position, 10f, potentialSynergyMaterial, "Crop Synergy Range");
+
+        // Find animals in range
+        AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+        foreach (var animal in animals)
+        {
+            float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
+            if (sqrDistance <= 15f * 15f) // 225f
             {
-                float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
-                if (sqrDistance <= 15f * 15f) // 225f
-                {
-                    CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");
-                }
+                CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");
             }
-            
-            // Find crops in range with improved detection
-            CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
-            if (crops.Length == 0) {
-                // Alternative search method if no crops found through FindObjectsByType
-                var allStructures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
-                foreach (var structure in allStructures) {
-                    if (structure is CropStructure) {
-                        CropStructure crop = structure as CropStructure;
-                        float sqrDistance = (currentGhost.transform.position - crop.transform.position).sqrMagnitude;
-                        if (sqrDistance <= 10f * 10f) // 100f
-                        {
-                            // Make crop lines more visible with a bright color
-                            CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
-                        }
-                    }
-                }
-            } else {
-                foreach (var crop in crops)
+        }
+
+        // Find crops in range with improved detection
+        CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        if (crops.Length == 0)
+        {
+            // Alternative search method if no crops found through FindObjectsByType
+            var allStructures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
+            foreach (var structure in allStructures)
+            {
+                if (structure is CropStructure)
                 {
-                    if (crop == null)
-                    {
-                        Debug.LogWarning("Null crop structure in crops array!");
-                        continue;
-                    }
-                    
+                    CropStructure crop = structure as CropStructure;
                     float sqrDistance = (currentGhost.transform.position - crop.transform.position).sqrMagnitude;
                     if (sqrDistance <= 10f * 10f) // 100f
                     {
-                        // Changed from Color.yellow to something more visible
+                        // Make crop lines more visible with a bright color
                         CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
                     }
                 }
             }
         }
+        else
+        {
+            foreach (var crop in crops)
+            {
+                if (crop == null)
+                {
+                    Debug.LogWarning("Null crop structure in crops array!");
+                    continue;
+                }
+
+                float sqrDistance = (currentGhost.transform.position - crop.transform.position).sqrMagnitude;
+                if (sqrDistance <= 10f * 10f) // 100f
+                {
+                    // Changed from Color.yellow to something more visible
+                    CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
+                }
+            }
+        }
+    }
 
     private void ShowAnimalSynergyPreview()
     {
@@ -689,14 +699,14 @@ public class BuildController : MonoBehaviour
             }
         }
     }
-        private void ShowCropSynergyPreview()
-    {    
+    private void ShowCropSynergyPreview()
+    {
         // Find silos in range (reverse of the silo->crop relationship)
         SiloStructure[] silos = FindObjectsByType<SiloStructure>(FindObjectsSortMode.None);
         foreach (var silo in silos)
         {
             if (silo == null) continue;
-            
+
             float sqrDistance = (currentGhost.transform.position - silo.transform.position).sqrMagnitude;
             if (sqrDistance <= 10f * 10f) // 100f
             {
@@ -759,7 +769,7 @@ public class BuildController : MonoBehaviour
         }
     }
 
-          private LineRenderer CreateSynergyLine(Vector3 start, Vector3 end, Color color, string synergyType = "")
+    private LineRenderer CreateSynergyLine(Vector3 start, Vector3 end, Color color, string synergyType = "")
     {
         GameObject lineObj;
         if (synergyLineRendererPrefab != null)
@@ -772,35 +782,35 @@ public class BuildController : MonoBehaviour
             lr.endWidth = 0.15f;
             lr.material = new Material(Shader.Find("Sprites/Default"));
         }
-    
+
         // Raise lines slightly above ground to ensure visibility
         start.y += 0.15f;
         end.y += 0.15f;
-    
+
         LineRenderer line = lineObj.GetComponent<LineRenderer>();
         line.positionCount = 2;
         line.SetPosition(0, start);
         line.SetPosition(1, end);
         line.startColor = color;
         line.endColor = color;
-    
+
         // Create simple floating text at the midpoint of the line
         ShowSynergyText((start + end) / 2f, GetBonusSummary(synergyType, color), color);
-        
+
         synergyLines.Add(line);
         activeSynergyLines.Add(lineObj); // Track the GameObject for performance management
         return line;
     }
-    
+
     // Simple floating text method (no Canvas required)
     private void ShowSynergyText(Vector3 position, string text, Color color)
     {
         if (string.IsNullOrEmpty(text)) return;
-        
+
         // Create a GameObject for the text
         GameObject textObj = new GameObject("SynergyText");
         textObj.transform.position = new Vector3(position.x, position.y + 1f, position.z);
-        
+
         // Add TextMesh component
         TextMesh textMesh = textObj.AddComponent<TextMesh>();
         textMesh.text = text;
@@ -809,51 +819,53 @@ public class BuildController : MonoBehaviour
         textMesh.characterSize = 0.1f;
         textMesh.alignment = TextAlignment.Center;
         textMesh.anchor = TextAnchor.MiddleCenter;
-        
+
         // Add outline for better visibility
         MeshRenderer renderer = textObj.GetComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("GUI/Text Shader");
-        
+
         // Create a simple billboard script to make text face camera
         textObj.AddComponent<SimpleBillboard>();
-        
+
         // Add to synergy indicators for cleanup
         synergyIndicators.Add(textObj);
-        
-        }
-    
+
+    }
+
     // New method to create visible bonus labels
-        private void CreateVisibleBonusLabel(Vector3 start, Vector3 end, Color color, string synergyType)
+    private void CreateVisibleBonusLabel(Vector3 start, Vector3 end, Color color, string synergyType)
     {
-        if (worldSpaceCanvas == null) {
+        if (worldSpaceCanvas == null)
+        {
             Debug.LogError("Cannot create bonus label: worldSpaceCanvas is null!");
             return;
         }
-        
+
         // Get bonus text
         string bonusText = GetBonusSummary(synergyType, color);
         if (string.IsNullOrEmpty(bonusText)) return;
-        
+
         // Log for debugging
-        try {
+        try
+        {
             // Create a new TextMeshProUGUI component in a way that works reliably
             GameObject labelObj = new GameObject($"BonusLabel_{synergyType}_{Random.Range(0, 1000)}");
             labelObj.transform.SetParent(worldSpaceCanvas.transform, false);
-            
+
             // Create a panel first (white background)
             GameObject panel = new GameObject("Panel");
             panel.transform.SetParent(labelObj.transform, false);
-            
+
             // Add panel components
             Image panelImage = panel.AddComponent<Image>();
             panelImage.color = new Color(1f, 1f, 1f, 0.7f); // Semi-transparent white
             RectTransform panelRect = panel.GetComponent<RectTransform>();
             panelRect.sizeDelta = new Vector2(100, 30);
-            
+
             // Create text as child of panel
             GameObject textObj = new GameObject("BonusText");
             textObj.transform.SetParent(panel.transform, false);
-            
+
             // Add text components
             TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
             text.text = bonusText;
@@ -861,34 +873,35 @@ public class BuildController : MonoBehaviour
             text.color = color;
             text.alignment = TextAlignmentOptions.Center;
             text.fontStyle = FontStyles.Bold;
-            
+
             RectTransform textRect = textObj.GetComponent<RectTransform>();
             textRect.anchorMin = new Vector2(0, 0);
             textRect.anchorMax = new Vector2(1, 1);
             textRect.sizeDelta = Vector2.zero;
             textRect.offsetMin = new Vector2(5, 5);
             textRect.offsetMax = new Vector2(-5, -5);
-            
+
             // Position the label at the midpoint of the line
             Vector3 midpoint = (start + end) / 2f;
             midpoint.y += 0.75f; // Position above the line
             labelObj.transform.position = midpoint;
-            
+
             // Set a larger, more visible scale
             labelObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-            
+
             // Make it always face the camera
             labelObj.AddComponent<LookAtCamera>();
-            
+
             // Add to synergy indicators for cleanup
             synergyIndicators.Add(labelObj);
-            
-            }
-        catch (System.Exception e) {
+
+        }
+        catch (System.Exception e)
+        {
             Debug.LogError($"Failed to create bonus label: {e.Message}\n{e.StackTrace}");
         }
     }
-    
+
     // Helper method for shortened bonus text
     private string GetBonusSummary(string synergyType, Color color)
     {
@@ -984,7 +997,7 @@ public class BuildController : MonoBehaviour
         bool isValidPlacement = IsValidPlacement(hoveredCell.x, hoveredCell.y);
         foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
             renderer.material.color = isValidPlacement ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
-        
+
         // Add this line to show synergy lines during movement
         UpdateSynergyVisualization();
     }
@@ -1127,6 +1140,23 @@ public class BuildController : MonoBehaviour
         placedItem.name = $"Item_{x}_{y}";
         Structure structure = placedItem.GetComponent<Structure>();
 
+        if (structure.GetStructureName() == "Crop Plot")
+        {
+            TutorialManager.Instance.CheckStep4();
+        }
+        if (structure.GetStructureName() == "Silo")
+        {
+            TutorialManager.Instance.CheckStep6();
+        }
+        if (structure.GetStructureName() == "Chicken Coop")
+        {
+            TutorialManager.Instance.CheckStep8();
+        }
+        if (structure.GetStructureName() == "Chicken Barrack")
+        {
+            TutorialManager.Instance.CheckStep12();
+        }
+
         // --- Play particle effect on placement ---
         if (dustPoof != null)
         {
@@ -1148,6 +1178,16 @@ public class BuildController : MonoBehaviour
                     posMult = new Vector3(1.2f, 1.2f, 1.2f); // more position spread
                     totalMult = 1.2f; // more bubbles
                 }
+                else if (structure.GetStructureName() == "Farm House")
+                {
+                    TutorialManager.Instance.CheckStep3();
+
+
+                    isHousePlaced = true;
+                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0); // Center of building, 1 unit above
+                    posMult = new Vector3(1.2f, 1.2f, 1.2f); // more position spread
+                    totalMult = 1.2f; // more bubbles
+                }
                 else
                 {
                     effectPosition = placedItem.transform.position + new Vector3(0, 1f, 0); // Center of building, 1 unit above
@@ -1160,7 +1200,7 @@ public class BuildController : MonoBehaviour
                 effectPosition = placedItem.transform.position + new Vector3(0, 3f, 0); // Center of building, 1 unit above
                 posMult = new Vector3(2f, 2f, 2f); // more position spread
                 totalMult = 2f; // more bubbles
-            }                
+            }
 
 
             GameObject effect = Instantiate(dustPoof, effectPosition, Quaternion.identity);
@@ -1169,10 +1209,10 @@ public class BuildController : MonoBehaviour
             VisualEffect ps = effect.GetComponent<VisualEffect>();
             if (ps != null)
                 ps.SetVector3("posMult", posMult);
-                ps.SetFloat("totalMult", totalMult);
+            ps.SetFloat("totalMult", totalMult);
             ps.Play();
             Destroy(effect, 3f); // Destroy after 3 seconds (adjust as needed)
-            
+
             Debug.Log("Dust effect position: " + effect.transform.position);
         }
         // --- End particle effect ---
@@ -1221,6 +1261,7 @@ public class BuildController : MonoBehaviour
 
     void RemoveItem(int x, int y)
     {
+        Debug.Log($"Structure name: =====================================================");
         if (!gridController.IsValidCell(x, y)) return;
         GridCell cell = gridController.GetCell(x, y);
         if (cell == null || !cell.flags.isOccupied) return;
@@ -1232,6 +1273,13 @@ public class BuildController : MonoBehaviour
             Structure structure = placedItem.GetComponent<Structure>();
             if (structure is SiloStructure silo)
                 InventoryManager.Instance.UnregisterSilo(silo);
+
+            Debug.Log($"Structure name: '{structure.GetStructureName()}'");
+
+            if (structure.GetStructureName().ToLower().Contains("farm house"))
+            {
+                isHousePlaced = false;
+            }
 
             List<Vector2Int> footprint = GetStructureFootprint(placedItem);
             Destroy(placedItem);
@@ -1280,6 +1328,11 @@ public class BuildController : MonoBehaviour
                         {
                             if (gridController.IsValidCell(pos.x, pos.y))
                                 gridController.SetCellOccupied(pos.x, pos.y, false);
+                        }
+
+                        if(structure.GetStructureName().ToLower().Contains("farm house"))
+                        {
+                            isHousePlaced = false;
                         }
 
                         Destroy(placedItem);
@@ -1385,7 +1438,7 @@ public class BuildController : MonoBehaviour
     public void SetRemovalModifierKey(KeyCode newKey)
     {
         removeModifierKey = newKey;
-        }
+    }
 
     public KeyCode GetRemovalModifierKey()
     {
@@ -1401,5 +1454,10 @@ public class BuildController : MonoBehaviour
     {
         get => cursorOffset;
         set => cursorOffset = value;
+    }
+    
+    public bool IsHousePlaced()
+    {
+        return isHousePlaced;
     }
 }

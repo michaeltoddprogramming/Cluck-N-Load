@@ -56,7 +56,7 @@ public class NightManager : MonoBehaviour
     private Color dayShop = Color.white;
     private Color nightShop = Color.grey * 0.9f;
     public Image shopIcon;
-    [SerializeField] private ShopUIManager shopManager;
+    [SerializeField] public ShopUIManager shopManager;
 
     // Item delete icon
     [Header("Delete Icon")]
@@ -157,6 +157,8 @@ public class NightManager : MonoBehaviour
     private List<Coroutine> skyboxCoroutines = new List<Coroutine>();
     private List<Coroutine> lightingCoroutines = new List<Coroutine>();
 
+    // public GameObject Produc;
+
     public void RegisterWolf(Wolf wolf)
     {
         if (wolf != null && !activeWolves.Contains(wolf))
@@ -246,6 +248,8 @@ public class NightManager : MonoBehaviour
 
     private void Start()
     {
+        // AddToAllStructures addToAllStructures = FindObjectOfType<AddToAllStructures>();
+        // addToAllStructures.AddHitEffectToAllStructures();
 
 
 
@@ -341,8 +345,16 @@ public class NightManager : MonoBehaviour
 
         isFast = !isFast;
         isPaused = false;
-        
         Time.timeScale = isFast ? speedOfFast : 1f; // Fast forward or normal speed
+
+        // Trigger tutorial condition for time controls
+        var pauseManager = FindFirstObjectByType<PauseManager>();
+        if (pauseManager != null)
+        {
+            var method = pauseManager.GetType().GetMethod("TriggerTimeControlsExplained", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (method != null)
+                method.Invoke(pauseManager, null);
+        }
     }
 
     private void cropGrowthOnAll(int stage)
@@ -784,7 +796,9 @@ private void setSeason(int season)
 
     public void RegisterAnimalStructure(AnimalStructure structure)
     {
-        if (structure != null && !animalStructures.Contains(structure))
+        if (structure == null || !structure) return;
+        animalStructures.RemoveAll(s => s == null || !s);
+        if (!animalStructures.Contains(structure))
         {
             animalStructures.Add(structure);
         }
@@ -792,9 +806,9 @@ private void setSeason(int season)
 
     public void UnregisterAnimalStructure(AnimalStructure structure)
     {
-        if (structure != null && animalStructures.Remove(structure))
-        {
-        }
+        if (structure == null || !structure) return;
+        animalStructures.RemoveAll(s => s == null || !s);
+        animalStructures.Remove(structure);
     }
 
     public void RegisterBarracksStructure(BarracksStructure barracks)
@@ -835,6 +849,9 @@ private void setSeason(int season)
         float increasePercent = 1.5f; // 50% increase
         float sameProductIncreasePercent = 2f; // 100% increase
 
+        ProductionBoosts productionBoosts = FindObjectOfType<ProductionBoosts>();
+        float[] boostedProducts = new float[5];
+
         // Reset all animal production to base before applying bonuses
         foreach (AnimalStructure animalStructure in animalStructures)
         {
@@ -854,8 +871,31 @@ private void setSeason(int season)
 
             foreach (AnimalStructure animalStructure in animalStructures)
             {
-                animalStructure.updateAnimalProductionAmount(animal, sameProductIncreasePercent);
+            animalStructure.updateAnimalProductionAmount(animal, sameProductIncreasePercent);
             }
+
+            if (animal == "Ch")
+            {
+                boostedProducts[0] = sameProductIncreasePercent;                
+            }
+            else if (animal == "C")
+            {
+                boostedProducts[1] = sameProductIncreasePercent;                
+            }
+            else if (animal == "S")
+            {
+                boostedProducts[2] = sameProductIncreasePercent;                
+            }
+            else if (animal == "G")
+            {
+                boostedProducts[3] = sameProductIncreasePercent;                
+            }
+            else if (animal == "P")
+            {
+                boostedProducts[4] = sameProductIncreasePercent;                
+            }
+            
+            productionBoosts.SetBoosted(boostedProducts);
 
             string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
 
@@ -895,6 +935,50 @@ private void setSeason(int season)
                     animalStructure.updateAnimalProductionAmount(animal2, increasePercent);
                 }
 
+                if (animal1 == "Ch")
+                {
+                    boostedProducts[0] = increasePercent;                
+                }
+                else if (animal1 == "C")
+                {
+                    boostedProducts[1] = increasePercent;                
+                }
+                else if (animal1 == "S")
+                {
+                    boostedProducts[2] = increasePercent;                
+                }
+                else if (animal1 == "G")
+                {
+                    boostedProducts[3] = increasePercent;                
+                }
+                else if (animal1 == "P")
+                {
+                    boostedProducts[4] = increasePercent;                
+                }
+                
+                if (animal2 == "Ch")
+                {
+                    boostedProducts[0] = increasePercent;
+                }
+                else if (animal2 == "C")
+                {
+                    boostedProducts[1] = increasePercent;
+                }
+                else if (animal2 == "S")
+                {
+                    boostedProducts[2] = increasePercent;
+                }
+                else if (animal2 == "G")
+                {
+                    boostedProducts[3] = increasePercent;
+                }
+                else if (animal2 == "P")
+                {
+                    boostedProducts[4] = increasePercent;
+                }
+
+                productionBoosts.SetBoosted(boostedProducts);
+
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
                 StartProductionNotification(message, 5);
@@ -917,6 +1001,50 @@ private void setSeason(int season)
                     animalStructure.updateAnimalProductionAmount(animal1, increasePercent);
                     animalStructure.updateAnimalProductionAmount(animal2, increasePercent);
                 }
+
+                if (animal1 == "Ch")
+                {
+                    boostedProducts[0] = increasePercent;                
+                }
+                else if (animal1 == "C")
+                {
+                    boostedProducts[1] = increasePercent;                
+                }
+                else if (animal1 == "S")
+                {
+                    boostedProducts[2] = increasePercent;                
+                }
+                else if (animal1 == "G")
+                {
+                    boostedProducts[3] = increasePercent;                
+                }
+                else if (animal1 == "P")
+                {
+                    boostedProducts[4] = increasePercent;                
+                }
+                
+                if (animal2 == "Ch")
+                {
+                    boostedProducts[0] = increasePercent;
+                }
+                else if (animal2 == "C")
+                {
+                    boostedProducts[1] = increasePercent;
+                }
+                else if (animal2 == "S")
+                {
+                    boostedProducts[2] = increasePercent;
+                }
+                else if (animal2 == "G")
+                {
+                    boostedProducts[3] = increasePercent;
+                }
+                else if (animal2 == "P")
+                {
+                    boostedProducts[4] = increasePercent;
+                }
+
+                productionBoosts.SetBoosted(boostedProducts);
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 

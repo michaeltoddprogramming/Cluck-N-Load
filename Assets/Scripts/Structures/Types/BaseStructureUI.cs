@@ -75,7 +75,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     {
         if (structure != null && healthText != null)
         {
-            healthText.text = $"Health: {structure.GetCurrentHealth()}/{structure.GetMaxHealth()}";
+            healthText.text = $"{structure.GetCurrentHealth()}/{structure.GetMaxHealth()}";
         }
     }
 

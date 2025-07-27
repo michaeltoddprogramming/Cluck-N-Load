@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 /// <summary>
 /// Script for the main tutorial UI prefab.
@@ -8,6 +9,97 @@ using TMPro;
 /// </summary>
 public class TutorialUIPrefab : MonoBehaviour
 {
+    [Header("Talking Audio")]
+    public AudioSource mumbleSource;
+    public AudioClip[] mumbleClips;
+    public float typeSpeed = 0.04f;
+
+    private Coroutine typingCoroutine;
+    private Coroutine mumbleCoroutine;
+
+    private TutorialManager tutorialManager;
+
+
+    [SerializeField] public TextMeshProUGUI description;
+    [SerializeField] public TextMeshProUGUI Title;
+
+
+    /// <summary>
+    /// Animate the tutorial panel in with a pop/fade effect using LeanTween
+    /// </summary>
+    public void AnimatePanelIn()
+    {
+        // Only animate the background panel, never touch the root panel's CanvasGroup or scale
+        if (backgroundPanel != null)
+        {
+            // Ensure CanvasGroup is present on the background
+            var bgGroup = backgroundPanel.GetComponent<CanvasGroup>();
+            if (bgGroup == null)
+                bgGroup = backgroundPanel.gameObject.AddComponent<CanvasGroup>();
+
+            // Reset scale and alpha for background only
+            // backgroundPanel.transform.localScale = Vector3.one * 0.7f;
+            bgGroup.alpha = 0f;
+            bgGroup.interactable = false;
+            bgGroup.blocksRaycasts = false;
+
+            // Animate scale (pop) and fade in for background only
+            // LeanTween.scale(backgroundPanel.gameObject, Vector3.one, 0.35f)
+            //     .setEase(LeanTweenType.easeOutBack)
+            //     .setIgnoreTimeScale(true);
+            // LeanTween.value(backgroundPanel.gameObject, 0f, 1f, 0.28f)
+            //     .setOnUpdate((float val) => { bgGroup.alpha = val; })
+            //     .setOnComplete(() => {
+            //         bgGroup.interactable = true;
+            //         bgGroup.blocksRaycasts = true;
+            //     })
+            //     .setIgnoreTimeScale(true);
+        }
+    }
+
+    /// <summary>
+    /// Starts typewriter effect with mumble SFX
+    /// </summary>
+    public void PlayTypingWithMumble(string line)
+    {
+        if (typingCoroutine != null) StopCoroutine(typingCoroutine);
+        if (mumbleCoroutine != null) StopCoroutine(mumbleCoroutine);
+
+        typingCoroutine = StartCoroutine(TypeText(line));
+        mumbleCoroutine = StartCoroutine(PlayMumbling());
+    }
+
+    private IEnumerator TypeText(string line)
+    {
+        if (dialogueText == null) yield break;
+        dialogueText.text = "";
+        foreach (char c in line)
+        {
+            dialogueText.text += c;
+            yield return new WaitForSecondsRealtime(typeSpeed);
+        }
+
+        // Stop mumbling after text is done
+        if (mumbleCoroutine != null) StopCoroutine(mumbleCoroutine);
+        if (mumbleSource != null && mumbleSource.isPlaying) mumbleSource.Stop();
+    }
+
+    private IEnumerator PlayMumbling()
+    {
+        if (mumbleClips == null || mumbleClips.Length == 0 || mumbleSource == null) yield break;
+        while (true)
+        {
+            if (!mumbleSource.isPlaying)
+            {
+                mumbleSource.clip = mumbleClips[Random.Range(0, mumbleClips.Length)];
+                mumbleSource.pitch = Random.Range(0.92f, 1.08f); // Randomize pitch
+                mumbleSource.volume = Random.Range(0.55f, 0.95f); // Randomize volume
+                mumbleSource.Play();
+            }
+            // Wait a more random interval (sometimes quick, sometimes longer)
+            yield return new WaitForSecondsRealtime(Random.Range(0.13f, 0.44f));
+        }
+    }
     [Header("UI References - Auto-assigned")]
     public Image characterPortrait;
     public TextMeshProUGUI characterNameText;
@@ -35,6 +127,7 @@ public class TutorialUIPrefab : MonoBehaviour
     {
         // Auto-assign components if not already set
         AutoAssignComponents();
+        tutorialManager = FindFirstObjectByType<TutorialManager>();
     }
 
     private void AutoAssignComponents()
@@ -141,4 +234,25 @@ public class TutorialUIPrefab : MonoBehaviour
         portraitModelInstance.transform.localRotation = Quaternion.identity;
         portraitModelInstance.transform.localScale = Vector3.one;
     }
+
+    public void NextClicked()
+    {
+        TutorialManager.Instance.nextThing();
+    }
+
+    public void setDescription(string des)
+    {
+        description.text = des;
+    }
+
+    public void setTitle(string title)
+    {
+        Title.text = title;
+    }
+
+    public void endTut()
+    {
+        TutorialManager.Instance.endTut();
+    }
 }
+

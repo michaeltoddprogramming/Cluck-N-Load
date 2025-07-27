@@ -33,6 +33,7 @@ public class StructureData : ScriptableObject
     [Tooltip("Radius for army animals to patrol around the flag.")]
     public float protectionRadius = 5f;
 
+
     // [Header("SFX")]
     // [Tooltip("Background sound for the animal structure.")]
     // [SerializeField] public AudioClip backgroundNoise;
@@ -52,5 +53,6 @@ public enum StructureType
     CropPlot,
     Animal,
     Barracks,
-    Decoration
+    Decoration,
+    Placed
 }

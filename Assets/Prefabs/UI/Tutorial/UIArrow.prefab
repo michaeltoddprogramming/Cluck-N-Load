@@ -9,14 +9,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5277986060785199581}
-  - component: {fileID: 5762302907202223445}
   m_Layer: 5
   m_Name: UIArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &5277986060785199581
 RectTransform:
   m_ObjectHideFlags: 0
@@ -37,22 +36,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &5762302907202223445
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 292227764893978924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56c67c402fcd89d4f9046c0455f109bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  arrowImage: {fileID: 5945281543841050435}
-  animator: {fileID: 0}
-  pulseSpeed: 1
-  offset: {x: 0, y: 0}
 --- !u!1 &9192001895306169707
 GameObject:
   m_ObjectHideFlags: 0

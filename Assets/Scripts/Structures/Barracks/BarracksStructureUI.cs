@@ -12,10 +12,24 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Button setFlagColorButton;
     [SerializeField] private int recruitAmount = 1;
     [SerializeField] private GameObject flagPlacementIndicator;
+    [SerializeField] private Button addAnimal;
+    [SerializeField] private Button minusAnimal;
+    [SerializeField] private TextMeshProUGUI animalCountText;
 
     private BarracksStructure barracksStructure;
     private bool isBarracksStructure = false;
     private bool isPlacingFlag = false;
+    private int newAnimalCount = 0;
+    private int animalCount = 0;
+    private int maxAnimalCount = 0;
+
+    [SerializeField] public Image animalIcon1;
+    [SerializeField] public Image animalIcon2;
+    [SerializeField] public Sprite cowIcon;
+    [SerializeField] public Sprite chickenIcon;
+    [SerializeField] public Sprite goatIcon;
+    [SerializeField] public Sprite pigIcon;
+    [SerializeField] public Sprite sheepIcon;
 
     // private BarracksStructure barrackStructure;
 
@@ -38,7 +52,8 @@ public class BarracksStructureUI : BaseStructureUI
             recruitButton.onClick.RemoveAllListeners();
             recruitButton.onClick.AddListener(() =>
             {
-                barracksStructure.RecruitAnimals(recruitAmount);
+                recruitAnimals();
+                UpdateUI();
             });
         }
         else
@@ -74,9 +89,61 @@ public class BarracksStructureUI : BaseStructureUI
         UpdateUI();
 
         barracksStructure.playBackgroundSound();
+
+        SetupButtonListeners();
+
+        animalCount = barracksStructure.GetAnimalCount();
+        maxAnimalCount = barracksStructure.GetMaxAnimalCount();
+    }
+
+    private void Update()
+    {
+        UpdateUI();
     }
 
     // Removed Update() method for better performance - using event-driven updates instead
+
+    private void SetupButtonListeners()
+    {
+        if (addAnimal != null)
+        {
+            addAnimal.onClick.RemoveAllListeners();
+            addAnimal.onClick.AddListener(() =>
+            {
+                // animalStructure.Feed();
+                animalChange(0);
+                UpdateUI();
+            });
+        }
+        else
+        {
+        }
+        if (minusAnimal != null)
+        {
+            minusAnimal.onClick.RemoveAllListeners();
+            minusAnimal.onClick.AddListener(() =>
+            {
+                // animalStructure.Feed();
+                animalChange(1);
+                UpdateUI();
+            });
+        }
+        else
+        {
+        }
+        // if (recruitButton != null)
+        // {
+        //     recruitButton.onClick.RemoveAllListeners();
+        //     recruitButton.onClick.AddListener(() =>
+        //     {
+        //         // animalStructure.Feed();
+        //         UpdateUI();
+        //     });
+        // }
+        // else
+        // {
+        // }
+    }
 
     private void StartFlagPlacement()
     {
@@ -153,6 +220,11 @@ public class BarracksStructureUI : BaseStructureUI
             return;
         }
 
+        animalCountText.text = $"{newAnimalCount}";
+
+        animalCount = barracksStructure.GetAnimalCount();
+        maxAnimalCount = barracksStructure.GetMaxAnimalCount();
+
         bool canRecruit = barracksStructure.CanRecruit(recruitAmount);
         bool hasArmy = barracksStructure.ArmyAnimalCount > 0;
 
@@ -175,7 +247,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (armyCountText != null)
         {
-            armyCountText.text = $"Army: {barracksStructure.ArmyAnimalCount}/{barracksStructure.MaxArmyAnimals}";
+            armyCountText.text = $"{barracksStructure.ArmyAnimalCount}/{barracksStructure.MaxArmyAnimals}";
             armyCountText.color = hasArmy ? Color.green : Color.white;
         }
 
@@ -188,7 +260,7 @@ public class BarracksStructureUI : BaseStructureUI
                 int cost = barracksStructure.GetRecruitmentCost() * recruitAmount;
                 buttonText.text = $"Recruit ({cost} gold)";
             }
-            }
+        }
 
         if (placeFlagButton != null && !isPlacingFlag)
         {
@@ -206,6 +278,103 @@ public class BarracksStructureUI : BaseStructureUI
             {
                 buttonImage.color = Color.Lerp(barracksStructure.GetFlagColor, Color.white, 0.7f);
             }
+        }
+
+        if (addAnimal != null)
+        {
+            if ((newAnimalCount + animalCount) < maxAnimalCount)
+            {
+                addAnimal.interactable = true;
+            }
+            else
+            {
+                addAnimal.interactable = false;
+            }
+        }
+
+        if (minusAnimal != null)
+        {
+            if (newAnimalCount > 0)
+            {
+                minusAnimal.interactable = true;
+            }
+            else
+            {
+                minusAnimal.interactable = false;
+            }
+        }
+
+        if (recruitButton != null)
+        {
+            if (minusAnimal != null && (minusAnimal.interactable == false || !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice())))
+            {
+                recruitButton.interactable = false;
+            }
+        }
+
+        if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()))
+        {
+            updateStatusText($"Cannot afford {maxAnimalCount} many animals!");
+        }
+
+        if (animalIcon1 != null)
+        {
+            if (barracksStructure.GetAnimalType() == "Cow")
+            {
+                animalIcon1.sprite = cowIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                animalIcon1.sprite = chickenIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                animalIcon1.sprite = goatIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                animalIcon1.sprite = pigIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                animalIcon1.sprite = sheepIcon;
+            }
+        }
+
+        if (animalIcon2 != null)
+        {
+            if (barracksStructure.GetAnimalType() == "Cow")
+            {
+                animalIcon2.sprite = cowIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                animalIcon2.sprite = chickenIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                animalIcon2.sprite = goatIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                animalIcon2.sprite = pigIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                animalIcon2.sprite = sheepIcon;
+            }
+        }
+    }
+
+    private void updateStatusText(string message)
+    {
+        // Update status text
+        if (statusText != null)
+        {
+            string animalStatus = "";
+
+            statusText.text = message;
+            statusText.color = Color.red;
         }
     }
 
@@ -232,9 +401,48 @@ public class BarracksStructureUI : BaseStructureUI
             barracksStructure.OnArmyChanged -= UpdateUI;
             barracksStructure.stopBackgroundSound();
         }
-        
+
         // Call base OnDestroy
         base.OnDestroy();
+    }
+
+    private void animalChange(int flag)
+    {
+        if (flag == 0)
+        {
+            newAnimalCount += 1;
+        }
+        else if (flag == 1 && newAnimalCount > 0)
+        {
+            newAnimalCount -= 1;
+        }
+    }
+
+    // private void BuyAnimals()
+    // {
+    //     if (newAnimalCount > 0)
+    //     {
+    //         animalStructure.AddAnimals(newAnimalCount);
+    //         newAnimalCount = 0;
+    //     }
+    // }
+
+    private void recruitAnimals()
+    {
+        if (newAnimalCount > 0)
+        {
+            barracksStructure.RecruitAnimals(newAnimalCount);
+            newAnimalCount = 0;
+        }
+    }
+    
+    public void checkFlagPlacement()
+    {
+        TutorialManager.Instance.CheckStep14();   
+    }
+    public void checkAnimalBuy()
+    {
+        TutorialManager.Instance.CheckStep13();   
     }
 
 }

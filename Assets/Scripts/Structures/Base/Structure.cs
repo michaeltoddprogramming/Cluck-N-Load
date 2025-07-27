@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using System.Collections.Generic;
 using FarmDefender.Core.AI.FlowField;
@@ -6,6 +7,8 @@ using System.Collections;
 
 public class Structure : MonoBehaviour
 {
+    // Registration flag to prevent double registration
+    private bool isRegisteredWithGameLoop = false;
 
     public StructureData StructureData => structureData; // Public property for external access
 
@@ -55,7 +58,7 @@ public class Structure : MonoBehaviour
     public event StructureEvent OnDestroyed;
     public delegate void StructureDestroyedEventHandler(Structure destroyedStructure);
     public event StructureDestroyedEventHandler OnStructureDestroyed;
-    
+
     // Health changed event for UI updates
     public event System.Action OnHealthChanged;
 
@@ -96,6 +99,10 @@ public class Structure : MonoBehaviour
 
     protected virtual void Start()
     {
+        if (isRegisteredWithGameLoop)
+        {
+            Debug.LogWarning($"[Structure] Start() called but already registered: {gameObject.name}", this);
+        }
         if (gameObject.name == "BuildGhost")
         {
             return;
@@ -111,7 +118,12 @@ public class Structure : MonoBehaviour
             return;
         }
 
-        GameLoopManager.Instance?.RegisterStructure(this);
+        // Only register with GameLoopManager if not already registered (prevents double registration)
+        if (!isRegisteredWithGameLoop && GameLoopManager.Instance != null && !GameLoopManager.Instance.IsStructureRegistered(this))
+        {
+            GameLoopManager.Instance.RegisterStructure(this);
+            isRegisteredWithGameLoop = true;
+        }
 
         if (autoRegisterWithGrid && gridController != null)
         {
@@ -122,6 +134,12 @@ public class Structure : MonoBehaviour
         {
             AddColliderToStructure();
         }
+    }
+
+    // Optional: If something is calling OnEnable, ensure it doesn't re-register
+    private void OnEnable()
+    {
+        // Do not register here; registration is handled in Start only
     }
 
     public void SetAllowSelectionAndUI(bool allow)
@@ -262,7 +280,7 @@ public class Structure : MonoBehaviour
         currentHealth -= amount;
         OnDamaged?.Invoke(this);
         OnHealthChanged?.Invoke(); // Trigger health changed event for UI
-        
+
         if (currentHealth <= 0)
         {
             Die();
@@ -286,7 +304,11 @@ public class Structure : MonoBehaviour
         }
 
         // Unregister from GameLoopManager immediately
-        GameLoopManager.Instance?.UnregisterStructure(this);
+        if (isRegisteredWithGameLoop && GameLoopManager.Instance != null)
+        {
+            GameLoopManager.Instance.UnregisterStructure(this);
+            isRegisteredWithGameLoop = false;
+        }
         UnregisterFromGrid();
 
         if (destroyOnZeroHealth)
@@ -430,6 +452,14 @@ public class Structure : MonoBehaviour
     public void ApplyDamage(int damage)
     {
         TakeDamage(damage);
+    }
+    
+    public void SetStructureType(StructureType type)
+    {
+        if (structureData != null)
+        {
+            structureData.type = type;
+        }
     }
 
     #endregion

@@ -55,7 +55,7 @@ public class BarracksStructure : Structure
         {
             if (structureData.type != StructureType.Barracks)
             {
-                }
+            }
             targetAnimalType = structureData.targetAnimalType ?? "Chicken";
             armyAnimalPrefabs = structureData.armyAnimalPrefabs ?? new List<GameObject>();
             flagPrefab = structureData.flagPrefab;
@@ -149,7 +149,7 @@ public class BarracksStructure : Structure
     {
         if (flagPrefab == null)
         {
-                        return;
+            return;
         }
         guardPosition = transform.position + new Vector3(0, 2, 0);
         flag = Instantiate(flagPrefab, guardPosition, Quaternion.identity, transform);
@@ -236,13 +236,13 @@ public class BarracksStructure : Structure
     {
         if (targetAnimalStructure == null)
             return false;
-            
+
         if (MoneyManager.Instance == null)
             return false;
-            
+
         if (armyAnimals.Count + amount > maxArmyAnimals)
             return false;
-            
+
         if (!targetAnimalStructure.CanRecruit(amount))
             return false;
 
@@ -408,7 +408,7 @@ public class BarracksStructure : Structure
             if (armyAnimal != null) Destroy(armyAnimal);
         }
         if (flag != null) Destroy(flag);
-        
+
         // Call base OnDestroy
         base.OnDestroy();
     }
@@ -537,5 +537,25 @@ public class BarracksStructure : Structure
         {
             recruitmentCostPerAnimal = minCost;
         }
+    }
+
+    public int GetMaxAnimalCount()
+    {
+        return maxArmyAnimals;
+    }
+
+    public int GetAnimalCount()
+    {
+        return ArmyAnimalCount;
+    }
+
+    public int GetAnimalRecruitPrice()
+    {
+        return recruitmentCostPerAnimal;
+    }
+    
+    public string GetAnimalType()
+    {
+        return targetAnimalType;
     }
 }

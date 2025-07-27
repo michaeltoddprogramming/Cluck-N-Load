@@ -9,7 +9,7 @@ namespace FarmDefender.Core.AI.FlowField
     public class FlowFieldAgent : MonoBehaviour
     {
         [Header("Movement Settings")]
-        [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] public float moveSpeed = 5f;
         [SerializeField] private float rotationSpeed = 10f;
         
         [Header("Performance Settings")]

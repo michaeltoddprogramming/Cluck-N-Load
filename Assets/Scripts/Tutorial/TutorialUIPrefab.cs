@@ -250,9 +250,9 @@ public class TutorialUIPrefab : MonoBehaviour
         Title.text = title;
     }
 
-    // public void CheckStep2()
-    // {
-    //     TutorialManager.Instance.CheckStep2();
-    // }
+    public void endTut()
+    {
+        TutorialManager.Instance.endTut();
+    }
 }
 

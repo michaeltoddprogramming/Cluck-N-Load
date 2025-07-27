@@ -230,7 +230,7 @@ public class TutorialManager : MonoBehaviour
         // Step 20: Show Synergies
 
        string  title18 = "Understanding Synergies";
-          string   description18 = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos <color=purple><i>near</i></color> crops = <color=purple><i>more</i></color> production\n• Animals <color=purple><i>near</i></color> silos = eat <color=purple><i>less</i></color> food\n• Barracks <color=purple><i>farther</i></color> from animals = <color=purple><i>cheaper</i></color> recruitment\nPlan your layout carefully!";
+          string   description18 = "Here's a pro tip! Buildings work better when placed near each other:\n• Silos <color=purple><i>near</i></color> crops = <color=purple><i>more</i></color> production\n• Animals <color=purple><i>near</i></color> silos = eat <color=purple><i>less</i></color> food\n• Barracks <color=purple><i>farther</i></color> from animals = <color=purple><i>cheaper</i></color> recruitment\nPlan your layout carefully! <color=purple>Click next to end tutorial</color>";
 
 
         // Step 21: Complete Tutorial
@@ -261,6 +261,11 @@ public class TutorialManager : MonoBehaviour
             displayStuff(title3, description3);
             currStep++;
         }
+    }
+
+    public void endTut()
+    {
+        CompleteTutorial();
     }
 
     public void CheckStep2()
@@ -446,10 +451,7 @@ public class TutorialManager : MonoBehaviour
             displayStuff(title16, description16);
             currStep++;
             called = true;
-            if (startNightButton != null)
-            {
-                startNightButton.gameObject.SetActive(false);
-            }
+            
         }
         else
         {
@@ -465,7 +467,7 @@ public class TutorialManager : MonoBehaviour
             Debug.Log("checkCollect called+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             displayStuff(title18, description18);
             currStep++;
-            called = true;
+            called = true;             
             CompleteTutorial();
         }
         else

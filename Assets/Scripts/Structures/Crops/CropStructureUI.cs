@@ -413,20 +413,21 @@ public class CropStructureUI : BaseStructureUI
             }
             else if (isGrowing)
             {
-                float progress = cropStructure.GrowthProgress;
-                float totalTime = cropStructure.ProductionSettings.growthTime;
-                float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
-                float remainingHours = totalTime - progress;
-                float completionHour = (currentHour + remainingHours) % 24f;
-                int completionHourInt = Mathf.FloorToInt(completionHour);
-                int completionMinuteInt = Mathf.CeilToInt((completionHour - completionHourInt) * 60f);
-                if (completionMinuteInt == 60)
-                {
-                    completionHourInt = (completionHourInt + 1) % 24;
-                    completionMinuteInt = 0;
-                }
-                status = $"{cropStructure.CurrentCropType}: Growing...";
-                cropStatusText.color = Color.yellow;
+                // float progress = cropStructure.GrowthProgress;
+                // float totalTime = cropStructure.ProductionSettings.growthTime;
+                // float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                // float remainingHours = totalTime - progress;
+                // float completionHour = (currentHour + remainingHours) % 24f;
+                // int completionHourInt = Mathf.FloorToInt(completionHour);
+                // int completionMinuteInt = Mathf.CeilToInt((completionHour - completionHourInt) * 60f);
+                // if (completionMinuteInt == 60)
+                // {
+                    // completionHourInt = (completionHourInt + 1) % 24;
+                    // completionMinuteInt = 0;
+                // }
+                // status = $"{cropStructure.CurrentCropType}: Growing...";
+                status = $"Growing...";
+                // cropStatusText.color = Color.yellow;
             }
             else
             {

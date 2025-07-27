@@ -630,46 +630,49 @@ private IEnumerator TypeTextWithMumble(string text)
                 tutorialPanel = tutorialUI;
                 Debug.Log("Auto-found TutorialUI panel");
 
-    //             var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
-    //             if (uiScript != null)
-    //             {
-    //                 if (tutorialDescription == null) tutorialDescription = uiScript.dialogueText;
-    //                 if (tutorialTitle == null) tutorialTitle = uiScript.characterNameText;
-    //                 if (nextButton == null) nextButton = uiScript.nextButton;
-    //                 if (skipButton == null) skipButton = uiScript.skipButton;
-    //                 if (characterPortrait == null) characterPortrait = uiScript.characterPortrait;
+                //             var uiScript = tutorialUI.GetComponent<TutorialUIPrefab>();
+                //             if (uiScript != null)
+                //             {
+                //                 if (tutorialDescription == null) tutorialDescription = uiScript.dialogueText;
+                //                 if (tutorialTitle == null) tutorialTitle = uiScript.characterNameText;
+                //                 if (nextButton == null) nextButton = uiScript.nextButton;
+                //                 if (skipButton == null) skipButton = uiScript.skipButton;
+                //                 if (characterPortrait == null) characterPortrait = uiScript.characterPortrait;
 
-    //                 Debug.Log("Auto-assigned UI components from TutorialUIPrefab");
-    //             }
-    //         }
-    //     }
+                //                 Debug.Log("Auto-assigned UI components from TutorialUIPrefab");
+                //             }
+                //         }
+                //     }
 
-    //     if (tutorialPanel != null)
-    //     {
-    //         tutorialPanel.SetActive(false);
-    //     }
+                //     if (tutorialPanel != null)
+                //     {
+                //         tutorialPanel.SetActive(false);
+                //     }
 
-    //     if (nextButton != null)
-    //     {
-    //         nextButton.onClick.AddListener(NextTutorialStep);
-    //     }
+                //     if (nextButton != null)
+                //     {
+                //         nextButton.onClick.AddListener(NextTutorialStep);
+                //     }
 
-    //     if (skipButton != null)
-    //     {
-    //         skipButton.onClick.AddListener(SkipTutorial);
-    //     }
+                //     if (skipButton != null)
+                //     {
+                //         skipButton.onClick.AddListener(SkipTutorial);
+                //     }
 
-    //     if (startNightButton != null)
-    //     {
-    //         startNightButton.onClick.AddListener(OnStartNightClicked);
-    //         startNightButton.gameObject.SetActive(false);
-    //     }
+                //     if (startNightButton != null)
+                //     {
+                //         startNightButton.onClick.AddListener(OnStartNightClicked);
+                //         startNightButton.gameObject.SetActive(false);
+                //     }
 
-    //     if (characterPortrait != null && oldManPortrait != null)
-    //     {
-    //         characterPortrait.sprite = oldManPortrait;
-    //     }
-    // }
+                //     if (characterPortrait != null && oldManPortrait != null)
+                //     {
+                //         characterPortrait.sprite = oldManPortrait;
+                //     }
+                // }
+            }
+        }
+    }
 
     private void StartTutorial()
     {

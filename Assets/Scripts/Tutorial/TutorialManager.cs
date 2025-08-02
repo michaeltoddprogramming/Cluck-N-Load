@@ -20,6 +20,7 @@ public partial class TutorialManager : MonoBehaviour
     public AudioClip[] mumbleClips;
     public float typeSpeed = 0.04f;
     public AudioClip keyPressSound;
+    private AudioSource effectsAudioSource;
 
     [Header("Tutorial Steps")]
     public List<TutorialStep> steps = new();
@@ -44,14 +45,16 @@ public partial class TutorialManager : MonoBehaviour
 
             if (mumbleAudioSource == null)
                 mumbleAudioSource = gameObject.AddComponent<AudioSource>();
+            
+            effectsAudioSource = gameObject.AddComponent<AudioSource>();
+            effectsAudioSource.playOnAwake = false;
 
             InitializeTutorialSteps();
             skipTutorialButton?.onClick.AddListener(SkipTutorial);
+            SetupChecklist();
         }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
     private void Start()
@@ -72,13 +75,11 @@ public partial class TutorialManager : MonoBehaviour
             {
                 detectedInputs.Add(KeyCode.Mouse3);
                 UpdateKeyIndicatorVisual(KeyCode.Mouse3, true);
-                Debug.Log("Detected Mouse Wheel Up");
             }
             else if (scrollDelta < 0 && step.requiredInputs.Contains(KeyCode.Mouse4))
             {
                 detectedInputs.Add(KeyCode.Mouse4);
                 UpdateKeyIndicatorVisual(KeyCode.Mouse4, true);
-                Debug.Log("Detected Mouse Wheel Down");
             }
         }
     }
@@ -125,12 +126,16 @@ public partial class TutorialManager : MonoBehaviour
     {
         if (!waitingForStepToComplete)
             return;
-
+    
         var step = steps[currentStepIndex];
         if (step.triggerToWaitFor == trigger)
         {
             HighlightUI(step.uiToHighlight, false);
             step.onStepComplete?.Invoke();
+            
+            if (!string.IsNullOrEmpty(step.stepId))
+                MarkStepComplete(step.stepId);
+            
             waitingForStepToComplete = false;
             NextStep();
         }
@@ -139,13 +144,11 @@ public partial class TutorialManager : MonoBehaviour
     void EndTutorial()
     {
         tutorialPanel.SetActive(false);
-        Debug.Log("Tutorial finished");
     }
 
     void SkipTutorial()
     {
         tutorialPanel.SetActive(false);
-        Debug.Log("Tutorial skipped");
     }
 
     IEnumerator AutoAdvanceStep()

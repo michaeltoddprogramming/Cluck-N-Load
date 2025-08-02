@@ -14,8 +14,8 @@ public partial class TutorialManager
         {
             AudioClip randomMumble = mumbleClips[Random.Range(0, mumbleClips.Length)];
             mumbleAudioSource.clip = randomMumble;
-            mumbleAudioSource.pitch = Random.Range(0.9f, 1.1f); // Slight random pitch variation
-            mumbleAudioSource.volume = Random.Range(0.8f, 1.0f); // Slight random volume variation
+            mumbleAudioSource.pitch = Random.Range(0.9f, 1.1f);
+            mumbleAudioSource.volume = Random.Range(0.6f, 0.8f);
             mumbleAudioSource.loop = true;
             mumbleAudioSource.Play();
         }
@@ -27,8 +27,21 @@ public partial class TutorialManager
         }
         
         if (mumbleAudioSource != null && mumbleAudioSource.isPlaying)
+        {
+            float startVolume = mumbleAudioSource.volume;
+            float duration = 0.5f;
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                mumbleAudioSource.volume = Mathf.Lerp(startVolume, 0, elapsed/duration);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            
             mumbleAudioSource.Stop();
-        
+            mumbleAudioSource.volume = startVolume;
+        }
     }
 
     void UpdateCharacterPortrait(TutorialStep step)

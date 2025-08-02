@@ -20,7 +20,6 @@ public partial class TutorialManager
             {
                 detectedInputs.Add(key);
                 UpdateKeyIndicatorVisual(key, true);
-                Debug.Log($"Detected key: {key}");
             }
         }
 
@@ -29,10 +28,7 @@ public partial class TutorialManager
             : detectedInputs.Count > 0;
 
         if (shouldAdvance)
-        {
-            Debug.Log("Required inputs detected, advancing tutorial");
             Trigger(TutorialTrigger.InputDetected);
-        }
     }
 
     void ShowKeyIndicators(List<KeyCode> keys)
@@ -70,7 +66,7 @@ public partial class TutorialManager
             background.color = pressed ? Color.green : Color.white;
     
         if (pressed && keyPressSound != null)
-            mumbleAudioSource.PlayOneShot(keyPressSound, 0.7f);
+            effectsAudioSource.PlayOneShot(keyPressSound, 0.7f);
     
         if (pressed)
             LeanTween.scale(indicator, Vector3.one * 1.2f, 0.2f).setEasePunch();
@@ -104,23 +100,19 @@ public partial class TutorialManager
         float spacing = 120f; 
         return key switch
         {
-            KeyCode.Mouse0 => new Vector2(spacing * 3, spacing),      // Left Click
-            KeyCode.Mouse1 => new Vector2(spacing * 4, spacing),      // Right Click
-            KeyCode.Mouse2 => new Vector2(spacing * 2.5f, 0),         // Middle Click
-            KeyCode.Mouse3 => new Vector2(spacing * 2, -spacing),     // Mouse Wheel Up
-            KeyCode.Mouse4 => new Vector2(spacing * 3, -spacing),     // Mouse Wheel Down
-            
+            KeyCode.Mouse0 => new Vector2(spacing * 3, spacing),
+            KeyCode.Mouse1 => new Vector2(spacing * 4, spacing),
+            KeyCode.Mouse2 => new Vector2(spacing * 2.5f, 0),
+            KeyCode.Mouse3 => new Vector2(spacing * 2, -spacing),
+            KeyCode.Mouse4 => new Vector2(spacing * 3, -spacing),
             KeyCode.Alpha1 => new Vector2(-spacing * 0.5f, spacing * 2),
             KeyCode.Alpha2 => new Vector2(spacing * 0.5f, spacing * 2),
-            
             KeyCode.W => new Vector2(0, spacing),
             KeyCode.A => new Vector2(-spacing, 0),
             KeyCode.S => new Vector2(0, 0),
             KeyCode.D => new Vector2(spacing, 0),
-            
             KeyCode.Q => new Vector2(-spacing, spacing),
             KeyCode.E => new Vector2(spacing, spacing),
-            
             _ => Vector2.zero
         };
     }

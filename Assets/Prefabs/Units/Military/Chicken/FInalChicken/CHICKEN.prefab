@@ -71,9 +71,6 @@ PrefabInstance:
       addedObject: {fileID: 3983500558036602260}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14002507d9b63184d8d282d9af5b01e3, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1030249613084779036}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14002507d9b63184d8d282d9af5b01e3, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 9204603966876699588}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14002507d9b63184d8d282d9af5b01e3, type: 3}
       insertIndex: -1
@@ -87,6 +84,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14002507d9b63184d8d282d9af5b01e3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5478010523974913692}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14002507d9b63184d8d282d9af5b01e3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4072089922016021356}
   m_SourcePrefab: {fileID: 100100000, guid: 14002507d9b63184d8d282d9af5b01e3, type: 3}
 --- !u!1 &2168163027447337882 stripped
 GameObject:
@@ -183,19 +183,6 @@ CapsuleCollider:
   m_Height: 1.48
   m_Direction: 1
   m_Center: {x: 0, y: 0.39, z: 0}
---- !u!114 &1030249613084779036
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2168163027447337882}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a4104938e3aef9449b57ade1cf41549, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _unitData: {fileID: 11400000, guid: e90de8030ace52243980b4205d049f93, type: 2}
 --- !u!114 &9204603966876699588
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,7 +190,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2168163027447337882}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65f1e57da6ef4ea45a5182a8a0786265, type: 3}
   m_Name: 
@@ -212,6 +199,7 @@ MonoBehaviour:
   animalDatabase: {fileID: 11400000, guid: ac318da2cd3dd554f999d53a4d3bf7b1, type: 2}
   animator: {fileID: 6523199944477165733}
   walkAnimParam: isWalking
+  attackAnimParam: Attack
   attackAudioSource: {fileID: 4648233789209256974}
   moveAudioSource: {fileID: 7743113138674925214}
   deathAudioSource: {fileID: 4066602622406218717}
@@ -235,7 +223,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -350,7 +338,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -465,7 +453,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -580,7 +568,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -680,3 +668,16 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4072089922016021356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2168163027447337882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e981f386576c2f6448aa9975a2810af1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: 651ec1a38579c084cb9a5c381781d066, type: 2}

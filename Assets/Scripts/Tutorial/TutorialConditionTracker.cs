@@ -291,7 +291,7 @@ public class TutorialConditionTracker : MonoBehaviour
 
        private void TrackCropStatus()
     {
-        Debug.Log($"[Tutorial] TrackCropStatus called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}");
+        // Debug.Log($"[Tutorial] TrackCropStatus called. TutorialActive={TutorialManager.Instance?.IsTutorialActive()}");
         if (!TutorialLogicAllowed()) return;
         CropStructure[] cropStructures = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
         Debug.Log($"TutorialConditionTracker: Checking {cropStructures.Length} crop structures");
@@ -472,19 +472,19 @@ private IEnumerator InstantGrowCropForTutorial(CropStructure crop)
 
     private void TrackNightStatus()
     {
-        if (!TutorialLogicAllowed()) return;
-        if (isNightTime)
-        {
-            // Track wolf defeats
-            Wolf[] wolves = FindObjectsByType<Wolf>(FindObjectsSortMode.None);
+        // if (!TutorialLogicAllowed()) return;
+        // if (isNightTime)
+        // {
+        //     // Track wolf defeats
+        //     Wolf[] wolves = FindObjectsByType<Wolf>(FindObjectsSortMode.None);
 
-            // If there are no wolves but night has started, assume some were defeated
-            if (wolves.Length == 0 && nightHasStarted && !hasDefeatedFirstWolf)
-            {
-                hasDefeatedFirstWolf = true;
-                TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstWolfDefeated);
-            }
-        }
+        //     // If there are no wolves but night has started, assume some were defeated
+        //     if (wolves.Length == 0 && nightHasStarted && !hasDefeatedFirstWolf)
+        //     {
+        //         hasDefeatedFirstWolf = true;
+        //         TutorialManager.Instance?.OnConditionMet(TutorialCondition.FirstWolfDefeated);
+        //     }
+        // }
     }
 
     private void TrackShopStatus()

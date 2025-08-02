@@ -4,7 +4,7 @@ using UnityEngine;
 public class GridDataGenerator : MonoBehaviour
 {
     public MeshRenderer targetMeshRenderer; // The floor mesh renderer
-    
+
     [Header("Grid Size Options")]
     public bool useFixedGridSize = false;    // Toggle between auto and fixed size
     public int fixedGridWidth = 100;         // Fixed width when useFixedGridSize is true
@@ -45,7 +45,7 @@ public class GridDataGenerator : MonoBehaviour
 
         Bounds b = targetMeshRenderer.bounds;
         Debug.Log($"Terrain bounds: {b.size.x} x {b.size.z}");
-        
+
         gridOrigin = new Vector4(b.min.x, b.min.z, 0, 0);   // Use X and Z as our 2D origin.
         gridWorldSize = new Vector4(b.size.x, b.size.z, 0, 0); // Use size.x and size.z.
 
@@ -54,26 +54,26 @@ public class GridDataGenerator : MonoBehaviour
             // Use fixed grid size and keep the original cell size
             gridWidth = fixedGridWidth;
             gridHeight = fixedGridHeight;
-            
+
             // Keep the original cell size - don't change it!
             // Instead, expand the grid area to accommodate 100x100 cells
-            
+
             // Calculate the total world size needed for this grid
             float totalWorldWidth = gridWidth * cellSize;
             float totalWorldHeight = gridHeight * cellSize;
-            
+
             // Center the grid around the terrain center
             Vector3 terrainCenter = targetMeshRenderer.bounds.center;
-            
+
             // Override the grid origin and world size to expand beyond terrain if needed
             gridOrigin = new Vector4(
                 terrainCenter.x - totalWorldWidth * 0.5f,  // Center X
                 terrainCenter.z - totalWorldHeight * 0.5f, // Center Z
                 0, 0
             );
-            
+
             gridWorldSize = new Vector4(totalWorldWidth, totalWorldHeight, 0, 0);
-            
+
             Debug.Log($"Fixed Grid Mode: {gridWidth}x{gridHeight}, keeping cellSize: {cellSize}");
             Debug.Log($"Grid will cover area: {totalWorldWidth}x{totalWorldHeight} world units");
         }
@@ -82,7 +82,7 @@ public class GridDataGenerator : MonoBehaviour
             // Compute how many cells fit along X and Z based on cellSize:
             gridWidth = Mathf.RoundToInt(b.size.x / cellSize); // Use RoundToInt for better alignment
             gridHeight = Mathf.RoundToInt(b.size.z / cellSize);
-            
+
             Debug.Log($"Auto Grid Mode: {gridWidth}x{gridHeight}, using cellSize: {cellSize}");
         }
 
@@ -110,9 +110,10 @@ public class GridDataGenerator : MonoBehaviour
                     y = y,
                     worldPosition = new Vector3(center.x, height, center.z),  // Use calculated height
                     height = height,  // Store the height for reference
-                    flags = new GridCellFlags { 
-                        isOwned = false, 
-                        isOccupied = false, 
+                    flags = new GridCellFlags
+                    {
+                        isOwned = false,
+                        isOccupied = false,
                         isObstacle = false,
                         isVisible = false  // Start with all cells invisible
                     }
@@ -140,4 +141,13 @@ public class GridDataGenerator : MonoBehaviour
     public MeshRenderer GetTargetMeshRenderer() => targetMeshRenderer;
     public Vector4 GetGridOrigin() => gridOrigin;
     public Vector4 GetGridWorldSize() => gridWorldSize;
+
+    public Vector3 GetWorldPositionFromGridCoords(Vector2Int gridCoords)
+    {
+        // Vector4 origin = GetGridOrigin(); // X and Y are start world positions
+        Vector4 origin = GetGridOrigin();
+        float x = origin.x + gridCoords.x * cellSize + cellSize / 2f;
+        float z = origin.y + gridCoords.y * cellSize + cellSize / 2f;
+        return new Vector3(x, 0f, z); // Y is 0 assuming flat terrain
+    }
 }

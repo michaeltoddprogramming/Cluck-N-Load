@@ -7709,6 +7709,7 @@ GameObject:
   - component: {fileID: 1632256045}
   - component: {fileID: 1632256049}
   - component: {fileID: 1632256048}
+  - component: {fileID: 1632256050}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -8080,11 +8081,6 @@ MonoBehaviour:
   dayIntensity: 2
   pauseManager: {fileID: 1632256040}
   cropStructure: {fileID: 0}
-  unitSpawner: {fileID: 1884560013}
-  baseWolfCount: 3
-  additionalWolvesPerDay: 1
-  spawnInterval: 3
-  maxWolvesAtOnce: 20
 --- !u!4 &1632256035
 Transform:
   m_ObjectHideFlags: 0
@@ -8751,6 +8747,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1632256050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbee7fa43a9d1e6488dfefc409b82639, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1656515258
 GameObject:
   m_ObjectHideFlags: 0
@@ -9794,7 +9802,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1838938010
 MonoBehaviour:
   m_ObjectHideFlags: 0

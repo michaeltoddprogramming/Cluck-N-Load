@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f8073971dce46b48aa79c7cb9311b72, type: 3}
-  m_Name: Cow
+  m_Name: Sheep
   m_EditorClassIdentifier: 
-  UnitName: Cow
+  UnitName: Sheep
   Type: 0
-  Prefab: {fileID: 3736252830002851638, guid: f55dfb8588e44b144b88f36b20ff30cd, type: 3}
+  HostileType: 0
+  Prefab: {fileID: 0}
   Icon: {fileID: 0}
   Health: 100
-  AttackPower: 5
-  AttackRange: 1
+  AttackPower: 100
+  AttackRange: 10
   AttackCooldown: 1
   MovementSpeed: 3
   Cost: 0

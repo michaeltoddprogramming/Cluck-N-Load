@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f220e1df34e71d84b80902fcd0aa7d98, type: 3}
+  m_Name: Chicken
+  m_EditorClassIdentifier: 
+  UnitName: Chicken
+  Prefab: {fileID: 2168163027447337882, guid: d007a9f0ea53a9345818e2da41f194b4, type: 3}
+  MovementSpeed: 5.59
+  Type: 3
+  Health: 100
+  AttackDamage: 50
+  AttackRange: 10
+  AttackCooldown: 2
+  AttackSound: {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}
+  DeathSound: {fileID: 8300000, guid: 422058f9ead24f6419886066baf41986, type: 3}
+  HurtSound: {fileID: 0}

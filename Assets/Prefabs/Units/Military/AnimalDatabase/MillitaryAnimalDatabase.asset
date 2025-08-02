@@ -15,3 +15,5 @@ MonoBehaviour:
   allAnimals:
   - {fileID: 11400000, guid: 78fe2d22a5b06b04e868d330d2f02fc5, type: 2}
   - {fileID: 11400000, guid: dd2b6b849753158418ec3336d2960193, type: 2}
+  - {fileID: 11400000, guid: f4219f949350d6840ac6e1237d1abfb8, type: 2}
+  - {fileID: 11400000, guid: 5d283ec795d83264b9c97fd7092d443a, type: 2}

@@ -31,8 +31,8 @@ public class GameEventManager : MonoBehaviour
     public UnityEvent<TutorialCondition> OnTutorialConditionMet;
 
     [Header("Combat Events")]
-    public UnityEvent<Wolf> OnWolfSpawned;
-    public UnityEvent<Wolf> OnWolfDestroyed;
+    // public UnityEvent<Wolf> OnWolfSpawned;
+    // public UnityEvent<Wolf> OnWolfDestroyed;
     public UnityEvent OnDefenseSuccessful;
 
     private void Awake()
@@ -115,15 +115,15 @@ public class GameEventManager : MonoBehaviour
         OnTutorialConditionMet?.Invoke(condition);
     }
 
-    public void TriggerWolfSpawned(Wolf wolf)
-    {
-        OnWolfSpawned?.Invoke(wolf);
-    }
+    // public void TriggerWolfSpawned(Wolf wolf)
+    // {
+    //     OnWolfSpawned?.Invoke(wolf);
+    // }
 
-    public void TriggerWolfDestroyed(Wolf wolf)
-    {
-        OnWolfDestroyed?.Invoke(wolf);
-    }
+    // public void TriggerWolfDestroyed(Wolf wolf)
+    // {
+    //     OnWolfDestroyed?.Invoke(wolf);
+    // }
 
     public void TriggerDefenseSuccessful()
     {

@@ -12,7 +12,7 @@ public class ArmyAnimal : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator;
     [SerializeField] private string walkAnimParam = "isWalking";
-    // [SerializeField] private string attackAnimParam = "Attack";
+    [SerializeField] private string attackAnimParam = "Attack";
 
     [Header("Audio")]
     [SerializeField] private AudioSource attackAudioSource;
@@ -98,7 +98,7 @@ public class ArmyAnimal : MonoBehaviour
         {
             animator = GetComponent<Animator>();
             if (animator == null)
-                Debug.LogWarning($"{name} No Animator assigned");
+                Debug.LogWarning($"{name} No Animator assigned+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         }
     }
 
@@ -123,14 +123,16 @@ public class ArmyAnimal : MonoBehaviour
         nextAmbientSoundTime = Time.time + Random.Range(animalData.ambientSoundDelayMin, animalData.ambientSoundDelayMax);
         }
 
-    // Helper method to safely set animator parameters without errors
+//     // Helper method to safely set animator parameters without errors
     private void SafeSetAnimatorBool(string paramName, bool value)
     {
         if (animator == null) return;
-        
+
+        Debug.Log($"Setting Animator Bool: {paramName} to {value}*****************************************************************");
+
         // Try both variations of the parameter name (lowercase and capitalized)
         string[] paramVariations = { paramName, char.ToUpper(paramName[0]) + paramName.Substring(1) };
-        
+
         foreach (string variation in paramVariations)
         {
             // Check if parameter exists in the animator controller
@@ -139,11 +141,13 @@ public class ArmyAnimal : MonoBehaviour
                 if (param.name == variation && param.type == AnimatorControllerParameterType.Bool)
                 {
                     animator.SetBool(variation, value);
+                    Debug.Log($"Successfully set parameter: {variation}__________________________________________________________________________");
                     return; // Successfully set parameter, exit
                 }
             }
         }
         // Silently skip if parameter doesn't exist in any variation - no error logging needed
+        Debug.LogWarning($"Animator parameter {paramName} not found.--------------------------------------------------------------------");
     }
 
     private void Update()
@@ -172,87 +176,87 @@ public class ArmyAnimal : MonoBehaviour
             nextAmbientSoundTime = Time.time + Random.Range(animalData.ambientSoundDelayMin, animalData.ambientSoundDelayMax);
         }
 
-        if (!isAttackingEnemy)
-        {
-            GameObject enemy = FindNearestEnemy();
-            if (enemy != null && enemy.activeInHierarchy)
-            {
-                currentEnemy = enemy;
-                isAttackingEnemy = true;
-                StopMovement();
-                if (attackCoroutine != null)
-                    StopCoroutine(attackCoroutine);
-                attackCoroutine = StartCoroutine(AttackEnemyRoutine(enemy));
-                return;
-            }
-        }
+        // if (!isAttackingEnemy)
+        // {
+        //     GameObject enemy = FindNearestEnemy();
+        //     if (enemy != null && enemy.activeInHierarchy)
+        //     {
+        //         currentEnemy = enemy;
+        //         isAttackingEnemy = true;
+        //         StopMovement();
+        //         if (attackCoroutine != null)
+        //             StopCoroutine(attackCoroutine);
+        //         attackCoroutine = StartCoroutine(AttackEnemyRoutine(enemy));
+        //         return;
+        //     }
+        // }
 
-        if (!isAttackingEnemy)
-        {
-            if (!isMoving && idleTimer <= 0)
-            {
-                PickNewTargetPosition();
-                idleTimer = idleInterval;
-            }
-            MoveToTarget();
-        }
+        // if (!isAttackingEnemy)
+        // {
+        //     if (!isMoving && idleTimer <= 0)
+        //     {
+        //         PickNewTargetPosition();
+        //         idleTimer = idleInterval;
+        //     }
+        //     MoveToTarget();
+        // }
     }
 
-    private IEnumerator AttackEnemyRoutine(GameObject enemy)
-    {
-        while (enemy != null && enemy.activeInHierarchy)
-        {
-            float distance = Vector3.Distance(transform.position, enemy.transform.position);
-            if (animalData.debugAttacks)
-                if (distance > animalData.attackRange)
-            {
-                isMoving = true;
-                SafeSetAnimatorBool(walkAnimParam, true);
-                PlayMoveSound();
+//     private IEnumerator AttackEnemyRoutine(GameObject enemy)
+//     {
+//         while (enemy != null && enemy.activeInHierarchy)
+//         {
+//             float distance = Vector3.Distance(transform.position, enemy.transform.position);
+//             if (animalData.debugAttacks)
+//                 if (distance > animalData.attackRange)
+//             {
+//                 isMoving = true;
+//                 SafeSetAnimatorBool(walkAnimParam, true);
+//                 PlayMoveSound();
 
-                // Add offset to enemy position to avoid clustering
-                Vector3 offset = Random.insideUnitCircle * targetOffsetRadius;
-                Vector3 targetEnemyPos = enemy.transform.position + new Vector3(offset.x, 0, offset.y);
-                Vector3 direction = targetEnemyPos - transform.position;
-                direction.y = 0;
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, animalData.rotationSpeed * Time.deltaTime);
+//                 // Add offset to enemy position to avoid clustering
+//                 Vector3 offset = Random.insideUnitCircle * targetOffsetRadius;
+//                 Vector3 targetEnemyPos = enemy.transform.position + new Vector3(offset.x, 0, offset.y);
+//                 Vector3 direction = targetEnemyPos - transform.position;
+//                 direction.y = 0;
+//                 Quaternion targetRotation = Quaternion.LookRotation(direction);
+//                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, animalData.rotationSpeed * Time.deltaTime);
                 
-                // Apply separation during movement
-                Vector3 separation = CalculateSeparation();
-                Vector3 moveDirection = (direction.normalized + separation).normalized;
-                transform.position += moveDirection * animalData.moveSpeed * Time.deltaTime;
-            }
-            else
-            {
-                StopMovement();
-                if (Time.time >= lastAttackTime + animalData.attackCooldown)
-                {
-                    AttackEnemy(enemy);
-                    lastAttackTime = Time.time;
-                }
-            }
+//                 // Apply separation during movement
+//                 Vector3 separation = CalculateSeparation();
+//                 Vector3 moveDirection = (direction.normalized + separation).normalized;
+//                 transform.position += moveDirection * animalData.moveSpeed * Time.deltaTime;
+//             }
+//             else
+//             {
+//                 StopMovement();
+//                 if (Time.time >= lastAttackTime + animalData.attackCooldown)
+//                 {
+//                     AttackEnemy(enemy);
+//                     lastAttackTime = Time.time;
+//                 }
+//             }
 
-            if (enemy == null || !enemy.activeInHierarchy || distance > animalData.detectionRange * 1.5f)
-            {
-                if (animalData.debugAttacks)
-                    break;
-            }
+//             if (enemy == null || !enemy.activeInHierarchy || distance > animalData.detectionRange * 1.5f)
+//             {
+//                 if (animalData.debugAttacks)
+//                     break;
+//             }
 
-            yield return null;
-        }
+//             yield return null;
+//         }
 
-        isAttackingEnemy = false;
-        currentEnemy = null;
-        MoveToFlag();
-        attackCoroutine = null;
-        }
+//         isAttackingEnemy = false;
+//         currentEnemy = null;
+//         MoveToFlag();
+//         attackCoroutine = null;
+//         }
 
-    private void StopMovement()
-    {
-        isMoving = false;
-        SafeSetAnimatorBool(walkAnimParam, false);
-    }
+//     private void StopMovement()
+//     {
+//         isMoving = false;
+//         SafeSetAnimatorBool(walkAnimParam, false);
+//     }
 
     public void SetBarracks(BarracksStructure barracksStructure)
     {
@@ -359,7 +363,7 @@ public class ArmyAnimal : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, animalData.rotationSpeed * Time.deltaTime);
         transform.position += transform.forward * animalData.moveSpeed * Time.deltaTime;
-        PlayMoveSound();
+        // PlayMoveSound();
     }
 
     public void MoveToFlag()
@@ -369,256 +373,257 @@ public class ArmyAnimal : MonoBehaviour
         targetPosition = guardPosition + new Vector3(offset.x, 0, offset.y);
         isMoving = true;
         SafeSetAnimatorBool(walkAnimParam, true);
-        PlayMoveSound();
+        // PlayMoveSound();
         }
 
-    private void PickNewTargetPosition()
+//     private void PickNewTargetPosition()
+//     {
+//         if (Vector3.Distance(transform.position, guardPosition) > guardRadius)
+//         {
+//             targetPosition = guardPosition;
+//         }
+//         else
+//         {
+//             Vector2 randomCircle = Random.insideUnitCircle * guardRadius;
+//             targetPosition = guardPosition + new Vector3(randomCircle.x, 0, randomCircle.y);
+//         }
+//         // Add random offset to avoid clustering
+//         Vector2 offset = Random.insideUnitCircle * targetOffsetRadius;
+//         targetPosition += new Vector3(offset.x, 0, offset.y);
+//         isMoving = true;
+//         SafeSetAnimatorBool(walkAnimParam, true);
+//         PlayMoveSound();
+//         }
+
+//     private void MoveToTarget()
+//     {
+//         if (!isMoving) return;
+
+//         Vector3 direction = targetPosition - transform.position;
+//         direction.y = 0;
+
+//         if (direction.magnitude < 0.3f)
+//         {
+//             isMoving = false;
+//             SafeSetAnimatorBool(walkAnimParam, false);
+//             return;
+//         }
+
+//         // Apply separation force
+//         Vector3 separation = CalculateSeparation();
+//         Vector3 moveDirection = (direction.normalized + separation).normalized;
+//         Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+//         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, animalData.rotationSpeed * Time.deltaTime);
+//         transform.position += moveDirection * animalData.moveSpeed * Time.deltaTime;
+//         PlayMoveSound();
+//     }
+
+//     private Vector3 CalculateSeparation()
+//     {
+//         Vector3 separation = Vector3.zero;
+//         int nearbyCount = 0;
+
+//         Collider[] colliders = Physics.OverlapSphere(transform.position, separationRadius);
+//         foreach (Collider col in colliders)
+//         {
+//             if (col.gameObject == gameObject) continue;
+//             ArmyAnimal otherAnimal = col.GetComponent<ArmyAnimal>();
+//             if (otherAnimal != null)
+//             {
+//                 Vector3 direction = transform.position - col.transform.position;
+//                 float distance = direction.magnitude;
+//                 if (distance < separationRadius && distance > 0)
+//                 {
+//                     separation += direction.normalized / distance; // Stronger push when closer
+//                     nearbyCount++;
+//                 }
+//             }
+//         }
+
+//         if (nearbyCount > 0)
+//         {
+//             separation /= nearbyCount;
+//             separation *= separationForce;
+//             }
+
+//         return separation;
+//     }
+
+//     private void PlayMoveSound()
+//     {
+//         if (moveAudioSource == null)
+//         {
+//             Debug.LogWarning($"{name} Move AudioSource is null");
+//             return;
+//         }
+//         if (animalData.moveClips == null || animalData.moveClips.Length == 0)
+//         {
+//             Debug.LogWarning($"{name} No move clips assigned in AnimalData for {animalType}");
+//             return;
+//         }
+//         if (Time.time < lastMoveSoundTime + animalData.moveSoundDelay)
+//             return;
+//         if (Random.value > animalData.moveSoundChance)
+//             return;
+
+//         AudioClip clip = animalData.moveClips[Random.Range(0, animalData.moveClips.Length)];
+//         if (clip == null)
+//         {
+//             Debug.LogWarning($"{name} Selected move clip is null for {animalType}");
+//             return;
+//         }
+
+//         moveAudioSource.clip = clip;
+//         moveAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
+//         moveAudioSource.Play();
+//         lastMoveSoundTime = Time.time;
+        // }
+            private void PlayAmbientSound()
+{
+    if (ambientAudioSource == null)
     {
-        if (Vector3.Distance(transform.position, guardPosition) > guardRadius)
-        {
-            targetPosition = guardPosition;
-        }
-        else
-        {
-            Vector2 randomCircle = Random.insideUnitCircle * guardRadius;
-            targetPosition = guardPosition + new Vector3(randomCircle.x, 0, randomCircle.y);
-        }
-        // Add random offset to avoid clustering
-        Vector2 offset = Random.insideUnitCircle * targetOffsetRadius;
-        targetPosition += new Vector3(offset.x, 0, offset.y);
-        isMoving = true;
-        SafeSetAnimatorBool(walkAnimParam, true);
-        PlayMoveSound();
-        }
-
-    private void MoveToTarget()
+        return; // Just skip ambient sound if no audio source
+    }
+    if (animalData.ambientClips == null || animalData.ambientClips.Length == 0)
     {
-        if (!isMoving) return;
+        return; // Just skip ambient sound if no clips
+    }
+    if (Random.value > animalData.ambientSoundChance)
+        return;
 
-        Vector3 direction = targetPosition - transform.position;
-        direction.y = 0;
-
-        if (direction.magnitude < 0.3f)
-        {
-            isMoving = false;
-            SafeSetAnimatorBool(walkAnimParam, false);
-            return;
-        }
-
-        // Apply separation force
-        Vector3 separation = CalculateSeparation();
-        Vector3 moveDirection = (direction.normalized + separation).normalized;
-        Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, animalData.rotationSpeed * Time.deltaTime);
-        transform.position += moveDirection * animalData.moveSpeed * Time.deltaTime;
-        PlayMoveSound();
+    AudioClip clip = animalData.ambientClips[Random.Range(0, animalData.ambientClips.Length)];
+    if (clip == null)
+    {
+        return; // Just skip if clip is null
     }
 
-    private Vector3 CalculateSeparation()
-    {
-        Vector3 separation = Vector3.zero;
-        int nearbyCount = 0;
+    ambientAudioSource.clip = clip;
+    ambientAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
+    ambientAudioSource.Play();
+}
 
-        Collider[] colliders = Physics.OverlapSphere(transform.position, separationRadius);
-        foreach (Collider col in colliders)
-        {
-            if (col.gameObject == gameObject) continue;
-            ArmyAnimal otherAnimal = col.GetComponent<ArmyAnimal>();
-            if (otherAnimal != null)
-            {
-                Vector3 direction = transform.position - col.transform.position;
-                float distance = direction.magnitude;
-                if (distance < separationRadius && distance > 0)
-                {
-                    separation += direction.normalized / distance; // Stronger push when closer
-                    nearbyCount++;
-                }
-            }
-        }
+//     private GameObject FindNearestEnemy()
+//     {
+//         Collider[] colliders = Physics.OverlapSphere(transform.position, animalData.detectionRange);
+//         GameObject closestEnemy = null;
+//         float closestDistance = animalData.detectionRange;
 
-        if (nearbyCount > 0)
-        {
-            separation /= nearbyCount;
-            separation *= separationForce;
-            }
+//         if (animalData.debugAttacks)
+//             foreach (Collider col in colliders)
+//         {
+//             if (col == null) continue;
 
-        return separation;
-    }
+//             Wolf wolf = col.GetComponent<Wolf>();
+//             if (wolf != null && wolf.gameObject.activeInHierarchy)
+//             {
+//                 float distance = Vector3.Distance(transform.position, wolf.transform.position);
+//                 int assignedCount = CountAnimalsTargeting(wolf.gameObject);
+//                 if (animalData.debugAttacks)
+//                     if (distance < closestDistance && assignedCount < maxAnimalsPerEnemy)
+//                 {
+//                     closestDistance = distance;
+//                     closestEnemy = wolf.gameObject;
+//                 }
+//             }
+//         }
 
-    private void PlayMoveSound()
-    {
-        if (moveAudioSource == null)
-        {
-            Debug.LogWarning($"{name} Move AudioSource is null");
-            return;
-        }
-        if (animalData.moveClips == null || animalData.moveClips.Length == 0)
-        {
-            Debug.LogWarning($"{name} No move clips assigned in AnimalData for {animalType}");
-            return;
-        }
-        if (Time.time < lastMoveSoundTime + animalData.moveSoundDelay)
-            return;
-        if (Random.value > animalData.moveSoundChance)
-            return;
+//         if (closestEnemy != null)
+//         {
+//             // Enemy found - proceed with attack logic
+//         }
 
-        AudioClip clip = animalData.moveClips[Random.Range(0, animalData.moveClips.Length)];
-        if (clip == null)
-        {
-            Debug.LogWarning($"{name} Selected move clip is null for {animalType}");
-            return;
-        }
+//         return closestEnemy;
+//     }
 
-        moveAudioSource.clip = clip;
-        moveAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
-        moveAudioSource.Play();
-        lastMoveSoundTime = Time.time;
-        }    private void PlayAmbientSound()
-    {
-        if (ambientAudioSource == null)
-        {
-            return; // Just skip ambient sound if no audio source
-        }
-        if (animalData.ambientClips == null || animalData.ambientClips.Length == 0)
-        {
-            return; // Just skip ambient sound if no clips
-        }
-        if (Random.value > animalData.ambientSoundChance)
-            return;
+//     private int CountAnimalsTargeting(GameObject enemy)
+//     {
+//         int count = 0;
+//         ArmyAnimal[] animals = FindObjectsByType<ArmyAnimal>(FindObjectsSortMode.None);
+//         foreach (ArmyAnimal animal in animals)
+//         {
+//             if (animal != this && animal.currentEnemy == enemy)
+//             {
+//                 count++;
+//             }
+//         }
+//         return count;
+//     }
 
-        AudioClip clip = animalData.ambientClips[Random.Range(0, animalData.ambientClips.Length)];
-        if (clip == null)
-        {
-            return; // Just skip if clip is null
-        }
+//     public void AttackEnemy(GameObject enemy)
+//     {
+//         if (enemy == null || !enemy.activeInHierarchy) return;
 
-        ambientAudioSource.clip = clip;
-        ambientAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
-        ambientAudioSource.Play();
-    }
+//         if (animator != null)
+//             // animator.SetTrigger(attackAnimParam);
 
-    private GameObject FindNearestEnemy()
-    {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, animalData.detectionRange);
-        GameObject closestEnemy = null;
-        float closestDistance = animalData.detectionRange;
+//         if (Random.value <= animalData.attackSoundChance && attackAudioSource != null && animalData.attackClips != null && animalData.attackClips.Length > 0)
+//         {
+//             AudioClip clip = animalData.attackClips[Random.Range(0, animalData.attackClips.Length)];
+//             if (clip != null)
+//             {
+//                 attackAudioSource.clip = clip;
+//                 attackAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
+//                 attackAudioSource.Play();
+//                 }
+//             else
+//             {
+//                 Debug.LogWarning($"{name} Selected attack clip is null for {animalType}");
+//             }
+//         }
 
-        if (animalData.debugAttacks)
-            foreach (Collider col in colliders)
-        {
-            if (col == null) continue;
+//         Wolf wolf = enemy.GetComponent<Wolf>();
+//         if (wolf != null)
+//         {
+//             wolf.TakeDamage(animalData.damage);
+//         }
+//         else
+//         {
+//             enemy.SendMessage("TakeDamage", animalData.damage, SendMessageOptions.DontRequireReceiver);
+//         }
+//     }
 
-            Wolf wolf = col.GetComponent<Wolf>();
-            if (wolf != null && wolf.gameObject.activeInHierarchy)
-            {
-                float distance = Vector3.Distance(transform.position, wolf.transform.position);
-                int assignedCount = CountAnimalsTargeting(wolf.gameObject);
-                if (animalData.debugAttacks)
-                    if (distance < closestDistance && assignedCount < maxAnimalsPerEnemy)
-                {
-                    closestDistance = distance;
-                    closestEnemy = wolf.gameObject;
-                }
-            }
-        }
+//     public void TakeDamage(int amount)
+//     {
+//         currentHealth -= amount;
+//         if (currentHealth > 0 && attackAudioSource != null && animalData.attackClips != null && animalData.attackClips.Length > 0)
+//         {
+//             if (Random.value <= animalData.attackSoundChance)
+//             {
+//                 AudioClip clip = animalData.attackClips[Random.Range(0, animalData.attackClips.Length)];
+//                 if (clip != null)
+//                 {
+//                     attackAudioSource.clip = clip;
+//                     attackAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
+//                     attackAudioSource.Play();
+//                     }
+//                 else
+//                 {
+//                     Debug.LogWarning($"{name} Selected pain clip is null for {animalType}");
+//                 }
+//             }
+//         }
 
-        if (closestEnemy != null)
-        {
-            // Enemy found - proceed with attack logic
-        }
+//         if (currentHealth <= 0)
+//             Die();
+//     }
 
-        return closestEnemy;
-    }
+//     private void Die()
+//     {
+//         if (attackCoroutine != null)
+//             StopCoroutine(attackCoroutine);
 
-    private int CountAnimalsTargeting(GameObject enemy)
-    {
-        int count = 0;
-        ArmyAnimal[] animals = FindObjectsByType<ArmyAnimal>(FindObjectsSortMode.None);
-        foreach (ArmyAnimal animal in animals)
-        {
-            if (animal != this && animal.currentEnemy == enemy)
-            {
-                count++;
-            }
-        }
-        return count;
-    }
+//         if (deathAudioSource != null && animalData.deathClip != null)
+//         {
+//             deathAudioSource.clip = animalData.deathClip;
+//             deathAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
+//             deathAudioSource.Play();
+//             }
+//         else
+//         {
+//             }
 
-    public void AttackEnemy(GameObject enemy)
-    {
-        if (enemy == null || !enemy.activeInHierarchy) return;
-
-        if (animator != null)
-            // animator.SetTrigger(attackAnimParam);
-
-        if (Random.value <= animalData.attackSoundChance && attackAudioSource != null && animalData.attackClips != null && animalData.attackClips.Length > 0)
-        {
-            AudioClip clip = animalData.attackClips[Random.Range(0, animalData.attackClips.Length)];
-            if (clip != null)
-            {
-                attackAudioSource.clip = clip;
-                attackAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
-                attackAudioSource.Play();
-                }
-            else
-            {
-                Debug.LogWarning($"{name} Selected attack clip is null for {animalType}");
-            }
-        }
-
-        Wolf wolf = enemy.GetComponent<Wolf>();
-        if (wolf != null)
-        {
-            wolf.TakeDamage(animalData.damage);
-        }
-        else
-        {
-            enemy.SendMessage("TakeDamage", animalData.damage, SendMessageOptions.DontRequireReceiver);
-        }
-    }
-
-    public void TakeDamage(int amount)
-    {
-        currentHealth -= amount;
-        if (currentHealth > 0 && attackAudioSource != null && animalData.attackClips != null && animalData.attackClips.Length > 0)
-        {
-            if (Random.value <= animalData.attackSoundChance)
-            {
-                AudioClip clip = animalData.attackClips[Random.Range(0, animalData.attackClips.Length)];
-                if (clip != null)
-                {
-                    attackAudioSource.clip = clip;
-                    attackAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
-                    attackAudioSource.Play();
-                    }
-                else
-                {
-                    Debug.LogWarning($"{name} Selected pain clip is null for {animalType}");
-                }
-            }
-        }
-
-        if (currentHealth <= 0)
-            Die();
-    }
-
-    private void Die()
-    {
-        if (attackCoroutine != null)
-            StopCoroutine(attackCoroutine);
-
-        if (deathAudioSource != null && animalData.deathClip != null)
-        {
-            deathAudioSource.clip = animalData.deathClip;
-            deathAudioSource.pitch = Random.Range(animalData.minPitch, animalData.maxPitch);
-            deathAudioSource.Play();
-            }
-        else
-        {
-            }
-
-        Destroy(gameObject);
-    }
+//         Destroy(gameObject);
+//     }
 
     private void OnDrawGizmos()
     {

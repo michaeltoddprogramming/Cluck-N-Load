@@ -16,7 +16,7 @@ public enum HostileSubtype
 }
 
 [CreateAssetMenu(fileName = "NewUnit", menuName = "Units/Unit Data")]
-public class UnitData : ScriptableObject 
+public class UnitData1 : ScriptableObject 
 {
     [Header("Identity")]
     public string UnitName;

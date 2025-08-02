@@ -116,11 +116,13 @@ public class BarracksStructure : Structure
             if (armyAnimal != null)
             {
                 armyAnimal.SetActive(true);
-                ArmyAnimal animalScript = armyAnimal.GetComponent<ArmyAnimal>();
-                if (animalScript != null)
+                // ArmyAnimal animalScript = armyAnimal.GetComponent<ArmyAnimal>();
+                ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
+
+                if (unit != null)
                 {
-                    animalScript.SetTimeOfDay(true);
-                    animalScript.MoveToFlag();
+                    unit.SetTimeOfDay(true);
+                    unit.MoveToFlag();
                 }
                 else
                 {
@@ -313,17 +315,19 @@ public class BarracksStructure : Structure
             spawnPosition.y = transform.position.y;
             GameObject armyAnimal = Instantiate(prefab, spawnPosition, Quaternion.identity);
             armyAnimals.Add(armyAnimal);
-            ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
-            if (armyAnimalScript != null)
+            // ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
+            ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
+
+            if (unit != null)
             {
                 // Set animalType explicitly to match targetAnimalType
-                if (!armyAnimalScript.AnimalType.ToString().Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
-                {
-                    Debug.LogWarning($"Animal {armyAnimal.name} type {armyAnimalScript.AnimalType} does not match barracks target {targetAnimalType}");
-                }
-                armyAnimalScript.SetBarracks(this);
-                armyAnimalScript.SetGuardPosition(guardPosition, protectionRadius);
-                armyAnimalScript.SetTimeOfDay(isNightTime);
+                // if (!unit.AnimalType.ToString().Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
+                // {
+                //     Debug.LogWarning($"Animal {armyAnimal.name} type {armyAnimalScript.AnimalType} does not match barracks target {targetAnimalType}");
+                // }
+                unit.SetBarracks(this);
+                unit.SetGuardPosition(guardPosition, protectionRadius);
+                unit.SetTimeOfDay(isNightTime);
                 if (!isNightTime)
                 {
                     armyAnimal.SetActive(false);
@@ -371,13 +375,16 @@ public class BarracksStructure : Structure
         {
             if (armyAnimal != null)
             {
-                ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
-                if (armyAnimalScript != null)
+                
+                // ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
+                ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
+
+                if (unit != null)
                 {
-                    armyAnimalScript.SetGuardPosition(guardPosition, protectionRadius);
+                    unit.SetGuardPosition(guardPosition, protectionRadius);
                     if (isNightTime)
                     {
-                        armyAnimalScript.MoveToFlag();
+                        unit.MoveToFlag();
                     }
                 }
             }

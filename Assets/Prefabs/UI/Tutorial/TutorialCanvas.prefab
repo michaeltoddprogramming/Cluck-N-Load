@@ -119,6 +119,12 @@ MonoBehaviour:
   skipTutorialButton: {fileID: 467706607299118527}
   keyIndicatorPrefab: {fileID: 4618915246295084978, guid: 79c45d707e84ec447babace473589d63, type: 3}
   keyIndicatorContainer: {fileID: 1365392121108580911}
+  shopButton: {fileID: 0}
+  farmhouseButton: {fileID: 0}
+  cropPlotButton: {fileID: 0}
+  siloButton: {fileID: 0}
+  chickenCoopButton: {fileID: 0}
+  barracksButton: {fileID: 0}
   mumbleAudioSource: {fileID: 8370659335145486513}
   mumbleClips:
   - {fileID: 8300000, guid: 4eb01adda5fe46040b992efcbda5182a, type: 3}
@@ -255,7 +261,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -16.22, y: 383.16}
+  m_AnchoredPosition: {x: -84.99, y: 383.16}
   m_SizeDelta: {x: 400, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &950651958134931187

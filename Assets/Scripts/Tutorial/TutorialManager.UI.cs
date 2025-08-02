@@ -6,6 +6,98 @@ using UnityEngine.UI;
 
 public partial class TutorialManager
 {
+    // Creates a programmatic arrow
+    private void EnsureArrowExists()
+    {
+        if (tutorialArrow == null)
+        {
+            tutorialArrow = new GameObject("TutorialArrow");
+            tutorialArrow.transform.SetParent(tutorialPanel.transform, false);
+            arrowRect = tutorialArrow.AddComponent<RectTransform>();
+            arrowRect.sizeDelta = new Vector2(40, 40);
+
+            // Create triangle texture for arrow
+            Texture2D texture = new Texture2D(40, 40);
+            Color arrowColor = new Color(1f, 0.8f, 0.2f, 0.95f);
+            for (int y = 0; y < 40; y++)
+            {
+                for (int x = 0; x < 40; x++)
+                {
+                    // Triangle pointing up
+                    float normX = (float)x / 39f;
+                    float normY = (float)y / 39f;
+                    if (normY > Mathf.Abs(normX - 0.5f) * 2)
+                        texture.SetPixel(x, y, arrowColor);
+                    else
+                        texture.SetPixel(x, y, Color.clear);
+                }
+            }
+            texture.Apply();
+            Sprite triangleSprite = Sprite.Create(texture, new Rect(0, 0, 40, 40), new Vector2(0.5f, 0.5f), 100f);
+
+            // Add image to arrow
+            Image arrowImage = tutorialArrow.AddComponent<Image>();
+            arrowImage.sprite = triangleSprite;
+            arrowImage.preserveAspect = true;
+            arrowImage.color = Color.white;
+
+            tutorialArrow.SetActive(false);
+        }
+    }
+    
+public void ShowArrowPointing(GameObject target, bool show)
+{
+    if (target == null) return;
+    
+    EnsureArrowExists();
+    
+    if (show)
+    {
+        RectTransform targetRect = target.GetComponent<RectTransform>();
+        if (targetRect != null)
+        {
+            Vector3[] screenCorners = new Vector3[4];
+            targetRect.GetWorldCorners(screenCorners);
+            Vector3 targetCenter = (screenCorners[0] + screenCorners[1] + screenCorners[2] + screenCorners[3]) / 4f;
+
+            Canvas canvas = targetRect.GetComponentInParent<Canvas>();
+            RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+            Vector3[] canvasCorners = new Vector3[4];
+            canvasRect.GetWorldCorners(canvasCorners);
+            float screenWidth = canvasCorners[2].x - canvasCorners[0].x;
+            float screenHeight = canvasCorners[2].y - canvasCorners[0].y;
+            float normalizedX = (targetCenter.x - canvasCorners[0].x) / screenWidth;
+            float normalizedY = (targetCenter.y - canvasCorners[0].y) / screenHeight;
+
+            Vector3 arrowPosition;
+            Quaternion arrowRotation;
+
+            // Place arrow below target and point upwards
+            arrowPosition = targetCenter + new Vector3(0, -50, 0); // Position below target
+            arrowRotation = Quaternion.Euler(0, 0, 0); // Point upwards (default texture orientation)
+
+            arrowRect.position = arrowPosition;
+            arrowRect.rotation = arrowRotation;
+            tutorialArrow.SetActive(true);
+            LeanTween.cancel(tutorialArrow);
+            LeanTween.scale(tutorialArrow, new Vector3(1.2f, 1.2f, 1.2f), 0.5f)
+                .setLoopPingPong()
+                .setEase(LeanTweenType.easeInOutQuad);
+
+            // Animate arrow bounce upwards toward target
+            Vector3 moveOffset = new Vector3(0, -10, 0); // Bounce upward
+            LeanTween.move(tutorialArrow, arrowPosition + moveOffset, 0.6f)
+                .setLoopPingPong()
+                .setEase(LeanTweenType.easeInOutQuad);
+        }
+    }
+    else
+    {
+        tutorialArrow.SetActive(false);
+        LeanTween.cancel(tutorialArrow);
+    }
+}
+    
     private IEnumerator TypeTextWithMumble(string text)
     {
         dialogueText.text = "";
@@ -58,31 +150,74 @@ public partial class TutorialManager
             characterPortraitImage.gameObject.SetActive(false);
     }
 
-    void HighlightUI(GameObject target, bool enable)
+      public void HighlightUI(GameObject target, bool enable)
     {
         if (target == null) return;
+    
+        // Cancel any existing tweens on this object
+        LeanTween.cancel(target);
 
+        ShowArrowPointing(target,enable);
+        
+        // Get or add outline component
         Outline outline = target.GetComponent<Outline>();
         if (outline == null && enable)
         {
             outline = target.AddComponent<Outline>();
-            outline.effectColor = Color.yellow;
-            outline.effectDistance = new Vector2(5, 5);
+            outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f); // Golden yellow
+            outline.effectDistance = new Vector2(3, 3);
         }
-
+    
         if (outline != null)
         {
             outline.enabled = enable;
+            
             if (enable)
             {
-                StopCoroutine("AnimateOutline");
-                StartCoroutine(AnimateOutline(outline));
+                // Create a pulsing animation sequence
+                
+                // 1. Animate outline width
+                LeanTween.value(target, 2f, 5f, 0.8f)
+                    .setLoopPingPong()
+                    .setEase(LeanTweenType.easeInOutSine)
+                    .setOnUpdate((float val) => {
+                        outline.effectDistance = new Vector2(val, val);
+                    });
+                    
+                // 2. Animate outline color for extra visibility
+                LeanTween.value(target, 0f, 1f, 1.2f)
+                    .setLoopPingPong()
+                    .setEase(LeanTweenType.easeInOutSine)
+                    .setOnUpdate((float val) => {
+                        outline.effectColor = Color.Lerp(
+                            new Color(1f, 0.8f, 0.2f, 0.7f),  // Dim gold
+                            new Color(1f, 1f, 0.5f, 1f),      // Bright yellow
+                            val
+                        );
+                    });
+                    
+                // 3. Subtle scale animation to draw attention
+                // Only apply scale if it's a UI element to avoid affecting gameplay objects
+                if (target.GetComponent<RectTransform>() != null)
+                {
+                    // Store original scale
+                    Vector3 originalScale = target.transform.localScale;
+                    LeanTween.scale(target, originalScale * 1.05f, 0.5f)
+                        .setLoopPingPong()
+                        .setEase(LeanTweenType.easeInOutQuad);
+                }
             }
             else
             {
-                StopCoroutine("AnimateOutline");
-                outline.effectDistance = new Vector2(5, 5);
-                outline.effectColor = Color.yellow;
+                // Reset any modifications
+                outline.effectDistance = new Vector2(3, 3);
+                outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f);
+                
+                // Reset scale if it's a UI element
+                if (target.GetComponent<RectTransform>() != null)
+                {
+                    target.transform.localScale = Vector3.one;
+                }
             }
         }
     }

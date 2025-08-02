@@ -1151,52 +1151,46 @@ public class BuildController : MonoBehaviour
             {
                 if (structure.GetStructureName() == "Cow Barn")
                 {
-                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0); // Center of building, 1 unit above
-                    posMult = new Vector3(1.5f, 1.5f, 1.5f); // more position spread
-                    totalMult = 1.5f; // more bubbles
+                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0);
+                    posMult = new Vector3(1.5f, 1.5f, 1.5f);
+                    totalMult = 1.5f;
                 }
                 else if (structure.GetStructureName() == "Goat Pen")
                 {
-                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0); // Center of building, 1 unit above
-                    posMult = new Vector3(1.2f, 1.2f, 1.2f); // more position spread
-                    totalMult = 1.2f; // more bubbles
+                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0);
+                    posMult = new Vector3(1.2f, 1.2f, 1.2f);
+                    totalMult = 1.2f;
                 }
                 else if (structure.GetStructureName() == "Farm House")
                 {
-
-
                     isHousePlaced = true;
-                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0); // Center of building, 1 unit above
-                    posMult = new Vector3(1.2f, 1.2f, 1.2f); // more position spread
-                    totalMult = 1.2f; // more bubbles
-                    TutorialManager.Instance?.Trigger(TutorialTrigger.BuiltFarmHouse);
-
+                    effectPosition = placedItem.transform.position + new Vector3(0, 4f, 0);
+                    posMult = new Vector3(1.2f, 1.2f, 1.2f);
+                    totalMult = 1.2f;
                 }
                 else
                 {
-                    effectPosition = placedItem.transform.position + new Vector3(0, 1f, 0); // Center of building, 1 unit above
-                    posMult = new Vector3(1f, 1f, 1f); // more position spread
-                    totalMult = 1f; // more bubbles
+                    effectPosition = placedItem.transform.position + new Vector3(0, 1f, 0);
+                    posMult = new Vector3(1f, 1f, 1f);
+                    totalMult = 1f;
                 }
             }
             else
             {
-                effectPosition = placedItem.transform.position + new Vector3(0, 3f, 0); // Center of building, 1 unit above
-                posMult = new Vector3(2f, 2f, 2f); // more position spread
-                totalMult = 2f; // more bubbles
+                effectPosition = placedItem.transform.position + new Vector3(0, 3f, 0);
+                posMult = new Vector3(2f, 2f, 2f);
+                totalMult = 2f;
             }
 
-
             GameObject effect = Instantiate(dustPoof, effectPosition, Quaternion.identity);
-
-
             VisualEffect ps = effect.GetComponent<VisualEffect>();
             if (ps != null)
+            {
                 ps.SetVector3("posMult", posMult);
-            ps.SetFloat("totalMult", totalMult);
-            ps.Play();
-            Destroy(effect, 3f); // Destroy after 3 seconds (adjust as needed)
-
+                ps.SetFloat("totalMult", totalMult);
+                ps.Play();
+            }
+            Destroy(effect, 3f);
             Debug.Log("Dust effect position: " + effect.transform.position);
         }
         // --- End particle effect ---
@@ -1206,12 +1200,35 @@ public class BuildController : MonoBehaviour
             structure.SetAllowSelectionAndUI(false);
             StartCoroutine(EnableSelectionAfterRelease(structure));
 
-            SiloStructure silo = structure as SiloStructure;
-            if (silo != null)
+            // Handle special structure registration and tutorial triggers
+            string structureName = structure.GetStructureName().ToLower();
+            
+            // Register silo with inventory manager
+            if (structure is SiloStructure silo)
             {
                 InventoryManager.Instance.RegisterSilo(silo);
-                TutorialManager.Instance?.Trigger(TutorialTrigger.BuiltSilo); // <-- Add this line
-                
+            }
+
+            // Tutorial triggers based on structure name
+            if (structureName.Contains("silo") || structureName.Contains("storage"))
+            {
+                TutorialManager.Instance?.Trigger(TutorialTrigger.BuiltSilo);
+            }
+            else if (structureName.Contains("farm house") || structureName.Contains("farmhouse"))
+            {
+                TutorialManager.Instance?.Trigger(TutorialTrigger.BuiltFarmHouse);
+            }
+            else if (structureName.Contains("crop") || structureName.Contains("plot"))
+            {
+                TutorialManager.Instance?.Trigger(TutorialTrigger.BuiltCropPlot);
+            }
+            else if (structureName.Contains("chicken") || structureName.Contains("coop"))
+            {
+                TutorialManager.Instance?.Trigger(TutorialTrigger.BuiltChickenCoop);
+            }
+            else if (structureName.Contains("barracks"))
+            {
+                TutorialManager.Instance?.Trigger(TutorialTrigger.BuiltBarracks);
             }
         }
 
@@ -1221,18 +1238,6 @@ public class BuildController : MonoBehaviour
 
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayPlaceSound();
-
-        // // Notify tutorial system about structure placement
-        // TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
-        // if (tutorialTracker != null)
-        // {
-        //     Structure placedStructure = placedItem.GetComponent<Structure>();
-        //     if (placedStructure != null && placedStructure.structureData != null)
-        //     {
-        //         string structureName = placedStructure.structureData.structureName ?? placedStructure.name;
-        //         tutorialTracker.OnStructurePlaced(placedStructure.structureData.type, structureName);
-        //     }
-        // }
 
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0)

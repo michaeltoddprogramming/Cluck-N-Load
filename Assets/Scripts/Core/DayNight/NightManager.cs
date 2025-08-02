@@ -515,9 +515,6 @@ public class NightManager : MonoBehaviour
             RenderSettings.fogColor = sceneLight.color;
             yield return null;
         }
-
-        // Remove the problematic line entirely - coroutines will be cleaned up
-        // by Unity when the object is destroyed
     }
 
     private void OnMinutesChange(int value)
@@ -569,6 +566,18 @@ public class NightManager : MonoBehaviour
         }
         else if (value == 15)
         {
+            if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+            {
+                Coroutine tutorialSkyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
+                skyboxCoroutines.Add(tutorialSkyboxCor);
+
+                Coroutine tutorialLightCor = StartCoroutine(LightingChanges(DayToAfternoonGradient, 2f));
+                lightingCoroutines.Add(tutorialLightCor);
+
+                sceneLight.colorTemperature = 2000f;
+                return;
+            }
+
             if (clockTickingSource != null)
             {
                 clockTickingSource.Play();
@@ -591,19 +600,13 @@ public class NightManager : MonoBehaviour
                 clockTickingSource.Stop();
             }
 
-            // TUTORIAL: Check if night transition should be blocked
-            // TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
-            // if (tutorialTracker != null && tutorialTracker.ShouldBlockNightTransition())
-            // {
-            //     Debug.Log("TUTORIAL: Blocking automatic night transition - player not ready");
-            //     // Don't advance to night, stay at current hour (reset to 17 to prevent multiple triggers)
-            //     // Use direct field assignment to avoid triggering the setter again
-            //     hours = 17;
-            //     Debug.Log("TUTORIAL: Hours reset to 17, night transition blocked");
-            //     return;
-            // }
+            if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+            {
+                hours = 17;
+                return;
+            }
 
-            // Debug.Log("NightManager: Starting night at 18:00 - tutorial checks passed");
+            Debug.Log("NightManager: Starting night at 18:00 - tutorial checks passed");
             StartNight(2);
 
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
@@ -679,9 +682,6 @@ public class NightManager : MonoBehaviour
         }
 
         RenderSettings.skybox.SetTexture("_Texture1", b);
-
-        // Remove this problematic line:
-        // skyboxCoroutines.Remove(System.Array.Find(skyboxCoroutines.ToArray(), c => c == this));
     }
 
 private void setSeason(int season)
@@ -744,8 +744,13 @@ private void setSeason(int season)
             }
         }
         
+        if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+        {
+            return;
+        }
+        
         StartNotification(text, 5);
-    }    // New method to properly manage notification coroutines
+    } 
     private void StartNotification(string message, float duration)
     {
         // Stop any existing notification first
@@ -824,21 +829,6 @@ private void setSeason(int season)
         }
     }
 
-    /// <summary>
-    /// Manually start night for tutorial system - bypasses normal time progression
-    /// </summary>
-    // public void ForceStartNight()
-    // {
-    //     Debug.Log("NightManager: Manually starting night via ForceStartNight");
-        
-    //     // Set the time to night time using direct field assignment to avoid triggering OnHoursChange
-    //     hours = 18;
-        
-    //     // Directly call StartNight with tutorial flag
-    //     // Debug.Log("NightManager: Calling StartNight(1) for manual tutorial start");
-    //     StartNight(1); // Use flag 1 for manual start
-    // }
-
     public void chooseAnimalProductForSeason()
     {
         float sameProduct = Random.Range(0f, 1f);
@@ -894,6 +884,11 @@ private void setSeason(int season)
             }
             
             productionBoosts.SetBoosted(boostedProducts);
+
+            if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+            {
+                return;
+            }
 
             string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
 
@@ -1043,6 +1038,13 @@ private void setSeason(int season)
                 }
 
                 productionBoosts.SetBoosted(boostedProducts);
+
+                // Block production notifications during tutorial
+                if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+                {
+                    Debug.Log("TUTORIAL: Blocking production notification - tutorial is active");
+                    return;
+                }
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 

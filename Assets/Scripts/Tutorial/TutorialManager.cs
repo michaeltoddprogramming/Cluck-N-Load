@@ -14,6 +14,16 @@ public partial class TutorialManager : MonoBehaviour
     public Button skipTutorialButton;
     public GameObject keyIndicatorPrefab;
     public RectTransform keyIndicatorContainer;
+    private GameObject tutorialArrow;
+    private RectTransform arrowRect;
+
+    [Header("Tutorial UI References")]
+    public GameObject shopButton;
+    public GameObject farmhouseButton;
+    public GameObject cropPlotButton;
+    public GameObject siloButton;
+    public GameObject chickenCoopButton;
+    public GameObject barracksButton;
 
     [Header("Audio")]
     public AudioSource mumbleAudioSource;
@@ -153,7 +163,7 @@ public partial class TutorialManager : MonoBehaviour
 
     IEnumerator AutoAdvanceStep()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(10f);
         Trigger(TutorialTrigger.None);
     }
 }

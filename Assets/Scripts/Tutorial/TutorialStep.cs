@@ -36,6 +36,7 @@ public enum TutorialTrigger
     BuiltSilo,
     HarvestedCrop,
     BuiltChickenCoop,
+    BuiltBarracks,
     InputDetected,
     ButtonClicked
 }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 /// Manages the main game loop, game state, and game over conditions.
 /// Integrates with your existing GameEventManager system.
 /// </summary>
+/// 
+/// 
 
 public class GameLoopManager : MonoBehaviour
 {
@@ -39,8 +41,9 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private int totalStructuresBuilt = 0;
 
     [Header("Game Over Conditions")]
-    [SerializeField] private bool checkFarmHouseDestruction = true;
-    [SerializeField] private bool checkAllStructuresDestroyed = false;
+    [SerializeField] private bool checkFarmHouseDestruction = false;
+    [SerializeField] private bool checkAllStructuresDestroyed = true;
+
 
     // Events
     public System.Action OnGameOver;
@@ -129,52 +132,27 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
-    private void CheckGameOverConditions()
+   private void CheckGameOverConditions()
+{
+    if (isGameOver) return;
+
+    bool shouldGameOver = false;
+
+    // Clean up null/destroyed entries before checking
+    allStructures.RemoveAll(s => s == null || !s);
+
+    // Only trigger game over if ALL structures are destroyed
+    if (checkAllStructuresDestroyed && allStructures.Count == 0 && totalStructuresBuilt > 0)
     {
-        if (isGameOver) return;
-
-        bool shouldGameOver = false;
-
-        // Clean up null/destroyed entries before checking
-        allStructures.RemoveAll(s => s == null || !s);
-
-        // Check if Farm House was destroyed (main game over condition)
-        if (checkFarmHouseDestruction)
-        {
-            bool hasFarmHouse = false;
-            foreach (var structure in allStructures)
-            {
-                if (structure == null || !structure) continue;
-                // Check if it's a main building/farm house
-                if (structure.name.ToLower().Contains("farmhouse") || 
-                    structure.name.ToLower().Contains("farm house") ||
-                    structure.name.ToLower().Contains("mainbuilding") ||
-                    (structure.structureData != null && structure.structureData.type == StructureType.Building))
-                {
-                    hasFarmHouse = true;
-                    break;
-                }
-            }
-            
-            if (!hasFarmHouse && totalStructuresBuilt > 0)
-            {
-                shouldGameOver = true;
-                Debug.Log("Game Over: Farm House destroyed!");
-            }
-        }
-
-        // Check if all structures destroyed
-        if (checkAllStructuresDestroyed && allStructures.Count == 0 && totalStructuresBuilt > 0)
-        {
-            shouldGameOver = true;
-            Debug.Log("Game Over: All structures destroyed!");
-        }
-
-        if (shouldGameOver)
-        {
-            TriggerGameOver();
-        }
+        shouldGameOver = true;
+        Debug.Log("Game Over: All structures destroyed!");
     }
+
+    if (shouldGameOver)
+    {
+        TriggerGameOver();
+    }
+}
 
     public void TriggerGameOver()
     {

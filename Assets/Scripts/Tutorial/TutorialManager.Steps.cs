@@ -9,8 +9,7 @@ public partial class TutorialManager
         void InitializeTutorialSteps()
         {
             steps.Clear();
-            
-            // First create all the steps without action assignments
+            // STEPS FOR TESTING 
             var welcomeStep = new TutorialStep
             {
                 stepId = "welcome",
@@ -65,13 +64,12 @@ public partial class TutorialManager
                 triggerToWaitFor = TutorialTrigger.BuiltFarmHouse,
                 uiToHighlight = farmhouseButton
             };
-            // Initialize the UnityEvent if needed and add listener
             if (farmhouseStep.onStepStart == null)
                 farmhouseStep.onStepStart = new UnityEvent();
             farmhouseStep.onStepStart.AddListener(() => UpdateBuildButtonReference("Farmhouse"));
             steps.Add(farmhouseStep);
             
-            // Do the same for all other steps...
+
             var cropPlotStep = new TutorialStep
             {
                 stepId = "build_crop_plot",
@@ -97,10 +95,7 @@ public partial class TutorialManager
         barracksStep.onStepStart = new UnityEvent();
     barracksStep.onStepStart.AddListener(() => UpdateBuildButtonReference("Barracks"));
     steps.Add(barracksStep);
-            
-            // Continue this pattern for the rest of the steps...
-            // For brevity, I'll only fix a few more examples:
-            
+
             var siloStep = new TutorialStep
             {
                 stepId = "build_silo",
@@ -113,18 +108,14 @@ public partial class TutorialManager
                 siloStep.onStepStart = new UnityEvent();
             siloStep.onStepStart.AddListener(() => UpdateBuildButtonReference("Silo"));
             steps.Add(siloStep);
-            
-            // Continue adding the rest of the steps in the same pattern
         }
     
-        // Helper methods for dynamic UI element finding
+
         private void UpdateBuildButtonReference(string buildingName)
         {
-            // Find the button in the build menu
             GameObject buildMenu = GameObject.Find("ShopPanel");
             if (buildMenu != null)
             {
-                // Try to find the building button by name
                 Transform buttonTransform = buildMenu.transform.Find(buildingName + "Button");
                 if (buttonTransform != null)
                 {
@@ -139,11 +130,9 @@ public partial class TutorialManager
         
         private void HighlightLastBuiltStructure(string structureType)
         {
-            // Find the most recently built structure of the given type
             GameObject[] structures = GameObject.FindGameObjectsWithTag(structureType);
             if (structures.Length > 0)
             {
-                // Assume the last one in the array is the most recently built
                 HighlightUI(structures[structures.Length - 1], true);
             }
             else
@@ -154,7 +143,6 @@ public partial class TutorialManager
         
     private void HighlightButtonInUI(string buttonName)
     {
-        // Find buttons that match the name
         Button[] allButtons = FindObjectsOfType<Button>();
         foreach (Button btn in allButtons)
         {

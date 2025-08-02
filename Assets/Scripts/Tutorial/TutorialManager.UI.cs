@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public partial class TutorialManager
 {
-    // Creates a programmatic arrow
     private void EnsureArrowExists()
     {
         if (tutorialArrow == null)
@@ -16,7 +15,6 @@ public partial class TutorialManager
             arrowRect = tutorialArrow.AddComponent<RectTransform>();
             arrowRect.sizeDelta = new Vector2(40, 40);
 
-            // Create triangle texture for arrow
             Texture2D texture = new Texture2D(40, 40);
             Color arrowColor = new Color(1f, 0.8f, 0.2f, 0.95f);
             for (int y = 0; y < 40; y++)
@@ -35,7 +33,6 @@ public partial class TutorialManager
             texture.Apply();
             Sprite triangleSprite = Sprite.Create(texture, new Rect(0, 0, 40, 40), new Vector2(0.5f, 0.5f), 100f);
 
-            // Add image to arrow
             Image arrowImage = tutorialArrow.AddComponent<Image>();
             arrowImage.sprite = triangleSprite;
             arrowImage.preserveAspect = true;
@@ -72,9 +69,8 @@ public void ShowArrowPointing(GameObject target, bool show)
             Vector3 arrowPosition;
             Quaternion arrowRotation;
 
-            // Place arrow below target and point upwards
-            arrowPosition = targetCenter + new Vector3(0, -50, 0); // Position below target
-            arrowRotation = Quaternion.Euler(0, 0, 0); // Point upwards (default texture orientation)
+            arrowPosition = targetCenter + new Vector3(0, -50, 0); 
+            arrowRotation = Quaternion.Euler(0, 0, 0); 
 
             arrowRect.position = arrowPosition;
             arrowRect.rotation = arrowRotation;
@@ -84,8 +80,7 @@ public void ShowArrowPointing(GameObject target, bool show)
                 .setLoopPingPong()
                 .setEase(LeanTweenType.easeInOutQuad);
 
-            // Animate arrow bounce upwards toward target
-            Vector3 moveOffset = new Vector3(0, -10, 0); // Bounce upward
+            Vector3 moveOffset = new Vector3(0, -10, 0);
             LeanTween.move(tutorialArrow, arrowPosition + moveOffset, 0.6f)
                 .setLoopPingPong()
                 .setEase(LeanTweenType.easeInOutQuad);
@@ -154,17 +149,15 @@ public void ShowArrowPointing(GameObject target, bool show)
     {
         if (target == null) return;
     
-        // Cancel any existing tweens on this object
         LeanTween.cancel(target);
 
         ShowArrowPointing(target,enable);
         
-        // Get or add outline component
         Outline outline = target.GetComponent<Outline>();
         if (outline == null && enable)
         {
             outline = target.AddComponent<Outline>();
-            outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f); // Golden yellow
+            outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f);
             outline.effectDistance = new Vector2(3, 3);
         }
     
@@ -174,9 +167,9 @@ public void ShowArrowPointing(GameObject target, bool show)
             
             if (enable)
             {
-                // Create a pulsing animation sequence
+
                 
-                // 1. Animate outline width
+
                 LeanTween.value(target, 2f, 5f, 0.8f)
                     .setLoopPingPong()
                     .setEase(LeanTweenType.easeInOutSine)
@@ -184,23 +177,20 @@ public void ShowArrowPointing(GameObject target, bool show)
                         outline.effectDistance = new Vector2(val, val);
                     });
                     
-                // 2. Animate outline color for extra visibility
+
                 LeanTween.value(target, 0f, 1f, 1.2f)
                     .setLoopPingPong()
                     .setEase(LeanTweenType.easeInOutSine)
                     .setOnUpdate((float val) => {
                         outline.effectColor = Color.Lerp(
-                            new Color(1f, 0.8f, 0.2f, 0.7f),  // Dim gold
-                            new Color(1f, 1f, 0.5f, 1f),      // Bright yellow
+                            new Color(1f, 0.8f, 0.2f, 0.7f),  
+                            new Color(1f, 1f, 0.5f, 1f),      
                             val
                         );
                     });
                     
-                // 3. Subtle scale animation to draw attention
-                // Only apply scale if it's a UI element to avoid affecting gameplay objects
                 if (target.GetComponent<RectTransform>() != null)
                 {
-                    // Store original scale
                     Vector3 originalScale = target.transform.localScale;
                     LeanTween.scale(target, originalScale * 1.05f, 0.5f)
                         .setLoopPingPong()
@@ -209,11 +199,8 @@ public void ShowArrowPointing(GameObject target, bool show)
             }
             else
             {
-                // Reset any modifications
                 outline.effectDistance = new Vector2(3, 3);
                 outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f);
-                
-                // Reset scale if it's a UI element
                 if (target.GetComponent<RectTransform>() != null)
                 {
                     target.transform.localScale = Vector3.one;

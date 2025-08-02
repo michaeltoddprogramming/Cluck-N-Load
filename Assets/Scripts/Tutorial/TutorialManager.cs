@@ -1,27 +1,41 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TutorialManager : MonoBehaviour
+public partial class TutorialManager : MonoBehaviour
 {
-    [Header("UI")]
+    [Header("UI References")]
     public GameObject tutorialPanel;
     public TextMeshProUGUI dialogueText;
-    public TextMeshProUGUI titleText;                  
-    public Image characterPortraitImage;      
-    public GameObject startButton;            
+    public TextMeshProUGUI titleText;
+    public Image characterPortraitImage;
     public Button skipTutorialButton;
+    public GameObject keyIndicatorPrefab;
+    public RectTransform keyIndicatorContainer;
 
+    [Header("Audio")]
+    public AudioSource mumbleAudioSource;
+    public AudioClip[] mumbleClips;
+    public float typeSpeed = 0.04f;
+    public AudioClip keyPressSound;
 
-    [Header("Steps")]
-    public List<TutorialStep> steps = new List<TutorialStep>();
+    [Header("Tutorial Steps")]
+    public List<TutorialStep> steps = new();
 
     private int currentStepIndex = -1;
     private bool waitingForStepToComplete = false;
+    private Coroutine typingCoroutine;
 
     private static TutorialManager instance;
     public static TutorialManager Instance => instance;
+
+    private HashSet<KeyCode> detectedInputs = new();
+    private List<GameObject> keyIndicators = new();
+    private Dictionary<KeyCode, GameObject> keyIndicatorMap = new Dictionary<KeyCode, GameObject>();
+
+    //======================= UNITY =======================//
 
     private void Awake()
     {
@@ -30,9 +44,11 @@ public class TutorialManager : MonoBehaviour
             instance = this;
             tutorialPanel.SetActive(false);
 
-            // Assign skip button logic
-            if (skipTutorialButton != null)
-                skipTutorialButton.onClick.AddListener(SkipTutorial);
+            if (mumbleAudioSource == null)
+                mumbleAudioSource = gameObject.AddComponent<AudioSource>();
+
+            InitializeTutorialSteps();
+            skipTutorialButton?.onClick.AddListener(SkipTutorial);
         }
         else
         {
@@ -40,11 +56,46 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        StartTutorial();
+    }
+
+    private void Update()
+    {
+        HandleRequiredInputDetection();
+ 
+        if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
+        {
+            var step = steps[currentStepIndex];
+            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+            
+            if (scrollDelta > 0 && step.requiredInputs.Contains(KeyCode.Mouse3))
+            {
+                detectedInputs.Add(KeyCode.Mouse3);
+                UpdateKeyIndicatorVisual(KeyCode.Mouse3, true);
+                Debug.Log("Detected Mouse Wheel Up");
+            }
+            else if (scrollDelta < 0 && step.requiredInputs.Contains(KeyCode.Mouse4))
+            {
+                detectedInputs.Add(KeyCode.Mouse4);
+                UpdateKeyIndicatorVisual(KeyCode.Mouse4, true);
+                Debug.Log("Detected Mouse Wheel Down");
+            }
+        }
+    }
+
+    //======================= TUTORIAL LOGIC =======================//
+
     public void StartTutorial()
     {
-        startButton.SetActive(false);
         tutorialPanel.SetActive(true);
         currentStepIndex = -1;
+        waitingForStepToComplete = false;
+        
+        // Add initial animation for the tutorial panel
+        AnimateTutorialPanelIn();
+        
         NextStep();
     }
 
@@ -59,29 +110,20 @@ public class TutorialManager : MonoBehaviour
         }
 
         var step = steps[currentStepIndex];
+        detectedInputs.Clear();
 
-        // Update dialogue and title
-        dialogueText.text = step.instructionText;
-        if (titleText != null)
-            titleText.text = step.title;
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+        typingCoroutine = StartCoroutine(TypeTextWithMumble(step.instructionText));
 
-        // Update character portrait
-        if (characterPortraitImage != null)
-        {
-            if (step.characterSprite != null)
-            {
-                characterPortraitImage.sprite = step.characterSprite;
-                characterPortraitImage.gameObject.SetActive(true);
-            }
-            else
-            {
-                characterPortraitImage.gameObject.SetActive(false);
-            }
-        }
+        titleText.text = step.title;
 
-        // Highlight UI
-        if (step.uiToHighlight != null)
-            HighlightUI(step.uiToHighlight, true);
+        UpdateCharacterPortrait(step);
+        HighlightUI(step.uiToHighlight, true);
+        ShowKeyIndicators(step.requiredInputs);
+
+        if (step.triggerToWaitFor == TutorialTrigger.None)
+            StartCoroutine(AutoAdvanceStep());
 
         step.onStepStart?.Invoke();
         waitingForStepToComplete = true;
@@ -95,64 +137,18 @@ public class TutorialManager : MonoBehaviour
         var step = steps[currentStepIndex];
         if (step.triggerToWaitFor == trigger)
         {
-            if (step.uiToHighlight != null)
-                HighlightUI(step.uiToHighlight, false);
-
+            HighlightUI(step.uiToHighlight, false);
             step.onStepComplete?.Invoke();
             waitingForStepToComplete = false;
-
             NextStep();
         }
     }
-    
-    void HighlightUI(GameObject target, bool enable)
-    {
-        Outline outline = target.GetComponent<Outline>();
-        if (outline == null && enable)
-        {
-            outline = target.AddComponent<Outline>();
-            outline.effectColor = Color.yellow;
-            outline.effectDistance = new Vector2(5, 5);
-        }
-    
-        if (outline != null)
-        {
-            outline.enabled = enable;
-            if (enable)
-            {
-                // Animate outline thickness and color using LeanTween and a coroutine
-                StopCoroutine("AnimateOutline");
-                StartCoroutine(AnimateOutline(outline));
-            }
-            else
-            {
-                StopCoroutine("AnimateOutline");
-                outline.effectDistance = new Vector2(5, 5);
-                outline.effectColor = Color.yellow;
-            }
-        }
-    }
 
-    
-    
-private System.Collections.IEnumerator AnimateOutline(Outline outline)
-{
-    float time = 0f;
-    float duration = 0.5f;
-    Vector2 start = new Vector2(5, 5);
-    Vector2 end = new Vector2(10, 10);
-    Color startColor = Color.yellow;
-    Color endColor = Color.cyan;
-
-    while (outline.enabled)
+    void EndTutorial()
     {
-        time += Time.unscaledDeltaTime;
-        float t = Mathf.PingPong(time / duration, 1f);
-        outline.effectDistance = Vector2.Lerp(start, end, t);
-        outline.effectColor = Color.Lerp(startColor, endColor, t);
-        yield return null;
+        tutorialPanel.SetActive(false);
+        Debug.Log("Tutorial finished");
     }
-}
 
     void SkipTutorial()
     {
@@ -160,9 +156,9 @@ private System.Collections.IEnumerator AnimateOutline(Outline outline)
         Debug.Log("Tutorial skipped");
     }
 
-    void EndTutorial()
+    IEnumerator AutoAdvanceStep()
     {
-        tutorialPanel.SetActive(false);
-        Debug.Log("Tutorial finished");
+        yield return new WaitForSeconds(2f);
+        Trigger(TutorialTrigger.None);
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class TutorialStep
@@ -16,16 +17,25 @@ public class TutorialStep
     public UnityEvent onStepComplete;
 
     public Sprite characterSprite;
+    public List<KeyCode> requiredInputs = new List<KeyCode>();
+    public List<string> allowedShopItems = new List<string>();
+    public bool restrictShopToAllowedItems = false;
+    public bool waitForAllInputs = true;
+
 }
 
 public enum TutorialTrigger
-    {
-        GameStarted,
-        ShopOpened,
-        BuiltFarmHouse,
-        BuiltCropPlot,
-        PlantedCrop,
-        BuiltSilo,
-        HarvestedCrop,
-        BuiltChickenCoop
+{
+    None,
+    GameStarted,
+    CameraControlsUsed,
+    ShopOpened,
+    BuiltFarmHouse,
+    BuiltCropPlot,
+    PlantedCrop,
+    BuiltSilo,
+    HarvestedCrop,
+    BuiltChickenCoop,
+    InputDetected,
+    ButtonClicked
     }

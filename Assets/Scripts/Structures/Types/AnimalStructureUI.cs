@@ -535,15 +535,4 @@ public class AnimalStructureUI : BaseStructureUI
             // }
         }
     }
-
-
-    public void checkFeed()
-    {
-        TutorialManager.Instance.CheckStep10();   
-    }
-    public void checkCollect()
-    {
-        Debug.Log("checkCollect called----------------------------------------------------------------------------------------");
-        TutorialManager.Instance.CheckStep11();   
-    }
 }

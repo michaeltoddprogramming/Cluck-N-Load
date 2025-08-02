@@ -1140,23 +1140,6 @@ public class BuildController : MonoBehaviour
         placedItem.name = $"Item_{x}_{y}";
         Structure structure = placedItem.GetComponent<Structure>();
 
-        if (structure.GetStructureName() == "Crop Plot")
-        {
-            TutorialManager.Instance.CheckStep4();
-        }
-        if (structure.GetStructureName() == "Silo")
-        {
-            TutorialManager.Instance.CheckStep6();
-        }
-        if (structure.GetStructureName() == "Chicken Coop")
-        {
-            TutorialManager.Instance.CheckStep8();
-        }
-        if (structure.GetStructureName() == "Chicken Barrack")
-        {
-            TutorialManager.Instance.CheckStep12();
-        }
-
         // --- Play particle effect on placement ---
         if (dustPoof != null)
         {
@@ -1180,7 +1163,6 @@ public class BuildController : MonoBehaviour
                 }
                 else if (structure.GetStructureName() == "Farm House")
                 {
-                    TutorialManager.Instance.CheckStep3();
 
 
                     isHousePlaced = true;

@@ -35,8 +35,6 @@ public partial class TutorialManager : MonoBehaviour
     private List<GameObject> keyIndicators = new();
     private Dictionary<KeyCode, GameObject> keyIndicatorMap = new Dictionary<KeyCode, GameObject>();
 
-    //======================= UNITY =======================//
-
     private void Awake()
     {
         if (instance == null)
@@ -85,17 +83,11 @@ public partial class TutorialManager : MonoBehaviour
         }
     }
 
-    //======================= TUTORIAL LOGIC =======================//
-
     public void StartTutorial()
     {
         tutorialPanel.SetActive(true);
         currentStepIndex = -1;
-        waitingForStepToComplete = false;
-        
-        // Add initial animation for the tutorial panel
-        AnimateTutorialPanelIn();
-        
+        waitingForStepToComplete = false;  
         NextStep();
     }
 

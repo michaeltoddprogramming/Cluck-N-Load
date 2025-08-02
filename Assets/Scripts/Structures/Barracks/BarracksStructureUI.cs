@@ -435,14 +435,4 @@ public class BarracksStructureUI : BaseStructureUI
             newAnimalCount = 0;
         }
     }
-    
-    public void checkFlagPlacement()
-    {
-        TutorialManager.Instance.CheckStep14();   
-    }
-    public void checkAnimalBuy()
-    {
-        TutorialManager.Instance.CheckStep13();   
-    }
-
 }

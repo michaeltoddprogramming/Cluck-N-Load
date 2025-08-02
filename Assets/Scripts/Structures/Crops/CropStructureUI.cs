@@ -586,13 +586,4 @@ public class CropStructureUI : BaseStructureUI
             cropStatusText.color = Color.red;
         }
     }
-
-    public void checkStep5()
-    {        
-        TutorialManager.Instance.CheckStep5();        
-    }
-    public void checkHarvest()
-    {        
-        TutorialManager.Instance.CheckStep9();        
-    }
 }

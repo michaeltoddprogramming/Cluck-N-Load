@@ -304,20 +304,9 @@ public class NightManager : MonoBehaviour
         // Clean up any null references in the wolves list
         activeWolves.RemoveAll(wolf => wolf == null);
 
-        DebugAllAnimalProductionSettings();
-
 
         //rotate daynight icon
         rotateDayNightIcon();
-    }
-
-    public void DebugAllAnimalProductionSettings()
-    {
-        foreach (var animal in animalStructures)
-        {
-            if (animal != null)
-                animal.DebugProductionSettings();
-        }
     }
 
     public void pauseTime()

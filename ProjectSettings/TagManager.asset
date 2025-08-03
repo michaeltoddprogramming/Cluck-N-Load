@@ -11,6 +11,9 @@ TagManager:
   - TutorialBuildButton
   - ShopButton
   - TimeControls
+  - ChickenCoop
+  - ChickenBarracks
+  - CropPlot
   layers:
   - Default
   - TransparentFX

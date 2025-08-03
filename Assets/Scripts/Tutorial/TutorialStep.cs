@@ -7,15 +7,11 @@ public class TutorialStep
 {
     public string stepId;
     public string title;
-    [TextArea]
-    public string instructionText;
-
+    [TextArea] public string instructionText;
     public GameObject uiToHighlight;
     public TutorialTrigger triggerToWaitFor;
-
     public UnityEvent onStepStart;
     public UnityEvent onStepComplete;
-
     public Sprite characterSprite;
     public List<KeyCode> requiredInputs = new List<KeyCode>();
     public List<string> allowedShopItems = new List<string>();
@@ -33,10 +29,24 @@ public enum TutorialTrigger
     BuiltFarmHouse,
     BuiltCropPlot,
     PlantedCrop,
-    BuiltSilo,
     HarvestedCrop,
+    CropReady,
+    BuiltSilo,
     BuiltChickenCoop,
-    BuiltBarracks,
+    BuiltCowPen,
+    BuiltSheepPen,
+    BuiltGoatPen,
+    BuiltPigPen,
+    BuiltChickenBarracks,
+    BuiltCowBarracks,
+    BuiltSheepBarracks,
+    BuiltGoatBarracks,
+    BuiltPigBarracks,
+    BoughtFirstAnimals,
+    FedFirstAnimals,
+    CollectedFirstProducts,
+    RecruitedFirstSoldiers,
+    PlacedFirstFlag,
     InputDetected,
     ButtonClicked
 }

@@ -3,16 +3,8 @@ using System.Collections;
 
 public class AnimalStructure : Structure
 {
-    // Registration flag to prevent double registration with NightManager
-    private bool isRegisteredWithNightManager = false;
-    public enum AnimalType
-    {
-        Chicken,
-        Cow,
-        Sheep,
-        Goat,
-        Pig
-    }
+    private bool isRegisteredWithNightManager;
+    public enum AnimalType { Chicken, Cow, Sheep, Goat, Pig }
 
     [Header("Animal Settings")]
     [SerializeField] private AnimalType animalType;
@@ -20,17 +12,12 @@ public class AnimalStructure : Structure
     [SerializeField] private bool productReady;
     [SerializeField] private float productionProgress;
     [SerializeField] private AnimalProductionSettings productionSettings;
-    [SerializeField] private int animalCount = 0;
+    [SerializeField] private int animalCount;
     [SerializeField] private int maxAnimalCount = 5;
 
     [Header("SFX")]
-    [Tooltip("Background sound for the animal structure.")]
-    // [SerializeField] public AudioClip backgroundNoise;
-    // [SerializeField] public AudioSource backgroundNoise;
-    // [SerializeField] public AudioSource backgroundNoise;
-    [SerializeField] private AudioSource audioSource; // Assign in Inspector
-    [SerializeField] private AudioClip backgroundClip; // Assign in Inspector
-    private Coroutine soundCoroutine;
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip backgroundClip;
 
     public class AnimalProductionSettings
     {
@@ -39,7 +26,7 @@ public class AnimalStructure : Structure
         public int moneyPerProduct = 50;
         public int baseFoodRequired = 2;
         public int costPerAnimal = 50;
-        public int boostedProduction = 0;
+        public int boostedProduction;
     }
 
     private NightManager nightManager;
@@ -57,12 +44,11 @@ public class AnimalStructure : Structure
     public int MaxAnimalCount => maxAnimalCount;
     public string RequiredFood => requiredFood;
 
-    //synergies
-    [Header("Animal Settings")]
-    [SerializeField] private float siloSynergyRange = 15f; // blocks
-    [SerializeField] private float synergyFoodRequired = 0.8f; // food per animal when in range
-    [SerializeField] private float normalFoodRequired = 1f; // food per animal when not in range
-    [SerializeField] private float foodMultiplier = 1f; // food per animal when not in range
+    [Header("Animal Synergies")]
+    [SerializeField] private float siloSynergyRange = 15f;
+    [SerializeField] private float synergyFoodRequired = 0.8f;
+    [SerializeField] private float normalFoodRequired = 1f;
+    [SerializeField] private float foodMultiplier = 1f;
     [SerializeField] public int baseMoneyPerProduct = 50;
     [SerializeField] public int baseProductMultiplier = 1;
 
@@ -70,28 +56,12 @@ public class AnimalStructure : Structure
     {
         base.Start();
         updateSiloSynergy();
-
-        // Notify barracks to check for this coop
         BarracksStructure.UpdateAllNearbyChickenCoops();
-
-        if (structureData != null && structureData.type != StructureType.Animal)
-        {
-            }
-
         isProducing = false;
         productReady = false;
         productionProgress = 0f;
-        if (productionSettings == null)
-        {
-            productionSettings = new AnimalProductionSettings();
-        }
-
+        productionSettings ??= new AnimalProductionSettings();
         nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
-        if (nightManager == null)
-        {
-            Debug.LogError($"{GetStructureName()} cannot find NightManager!");
-        }
-
         lastCheckedHour = nightManager != null ? nightManager.Hours + (nightManager.Minutes / 60f) : 7f;
         requiredFood = GetRequiredFood();
         if (nightManager != null && !isRegisteredWithNightManager)
@@ -99,93 +69,58 @@ public class AnimalStructure : Structure
             nightManager.RegisterAnimalStructure(this);
             isRegisteredWithNightManager = true;
         }
-
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-            if (audioSource == null)
-            {
-                audioSource = gameObject.AddComponent<AudioSource>();
-                Debug.LogWarning($"{gameObject.name}: AudioSource was missing, so one was added at runtime.-------------------------------------");
-            }
-        }
+        audioSource = audioSource ?? GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
     }
 
     private void Update()
     {
-
-
-
         if (nightManager == null || !isProducing || productReady) return;
-
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
         float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;
         productionProgress += hourDelta;
         lastCheckedHour = currentHour;
-
-        if (productionProgress >= productionSettings.productionTime)
-        {
-            productionProgress = productionSettings.productionTime;
-            }
-    }
-    
-    public void DebugProductionSettings()
-{
+        if (productionProgress >= productionSettings.productionTime) productionProgress = productionSettings.productionTime;
     }
 
     public void Feed()
     {
-        if (nightManager == null || !nightManager.IsDay)
+        if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) return;
+        int foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
+        if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
         {
-            Debug.LogWarning($"{GetStructureName()} cannot feed: Feeding only allowed during the day!");
-            return;
+            InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
+            isProducing = true;
+            productReady = false;
+            productionProgress = 0f;
+            lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+            if (TutorialManager.Instance != null && animalCount >= 3) StartCoroutine(DelayedInstantCompleteForTutorial());
         }
+    }
 
-        if (!isProducing && !productReady && animalCount > 0)
+    private IEnumerator DelayedInstantCompleteForTutorial()
+    {
+        yield return new WaitForSeconds(2f);
+        if (TutorialManager.Instance != null)
         {
-            // int foodRequired = productionSettings.baseFoodRequired * animalCount * foodMultiplier;
-            // int foodRequired = Mathf.RoundToInt((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
-            int foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
-            if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
-            {
-                InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
-                isProducing = true;
-                productionProgress = 0f;
-                lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
-                }
-            else
-            {
-                Debug.LogWarning($"{GetStructureName()} cannot feed: Need {foodRequired} {requiredFood}.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"{GetStructureName()} cannot feed: Producing={isProducing}, ProductReady={productReady}, Animals={animalCount}.");
+            InstantCompleteProductionForTutorial();
+            TutorialManager.Instance.Trigger(TutorialTrigger.FedFirstAnimals);
         }
     }
 
     private string GetRequiredFood()
     {
-        switch (animalType)
+        return animalType switch
         {
-            case AnimalType.Chicken: return "Sunflower";
-            case AnimalType.Cow: return "Wheat";
-            case AnimalType.Sheep:
-            case AnimalType.Goat:
-            case AnimalType.Pig: return "Carrots";
-            default: return "Unknown";
-        }
+            AnimalType.Chicken => "Sunflower",
+            AnimalType.Cow => "Wheat",
+            AnimalType.Sheep or AnimalType.Goat or AnimalType.Pig => "Carrots",
+            _ => "Unknown"
+        };
     }
 
     public void Collect()
     {
-        if (!productReady || nightManager == null || !nightManager.IsDay)
-        {
-            Debug.LogWarning($"{GetStructureName()} cannot collect: ProductReady={productReady}, IsDay={nightManager?.IsDay}.");
-            return;
-        }
-
-        
+        if (!productReady || nightManager == null || !nightManager.IsDay) return;
         ProductionBoosts productionBoosts = FindObjectOfType<ProductionBoosts>();
         int productPrice = 0;
         float boostedAmount = 0f;
@@ -216,24 +151,14 @@ public class AnimalStructure : Structure
             boostedAmount = productionBoosts.GetBoostedProducts()[4];
         }
 
-
-
-        // int totalProducts = productionSettings.productAmount * animalCount;
         int totalProducts = (int)(productPrice * boostedAmount);
-        // int totalMoneyEarned = totalProducts * productionSettings.moneyPerProduct;
         int totalMoneyEarned = totalProducts * animalCount;
-        // int totalMoneyEarned = totalProducts;
 
-        // Debug.Log($"products: {totalProducts}, product price: {productPrice}, money earned: {totalMoneyEarned}");
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(totalMoneyEarned);
+            TutorialManager.Instance?.Trigger(TutorialTrigger.CollectedFirstProducts);
         }
-        else
-        {
-            Debug.LogError($"{GetStructureName()} cannot add money: MoneyManager not found!");
-        }
-
         productReady = false;
         isProducing = false;
         productionProgress = 0f;
@@ -242,36 +167,13 @@ public class AnimalStructure : Structure
 
     public void BuyAnimals(int amount)
     {
-        if (nightManager == null || !nightManager.IsDay)
-        {
-            Debug.LogWarning($"{GetStructureName()} cannot buy animals: Buying only allowed during the day!");
-            return;
-        }
-
-        if (animalCount >= maxAnimalCount)
-        {
-            Debug.LogWarning($"{GetStructureName()} cannot buy animals: Max animal count reached ({animalCount}/{maxAnimalCount}).");
-            return;
-        }
-
-        int availableSlots = maxAnimalCount - animalCount;
-        int animalsToBuy = Mathf.Min(amount, availableSlots);
+        if (nightManager == null || !nightManager.IsDay || animalCount >= maxAnimalCount) return;
+        int animalsToBuy = Mathf.Min(amount, maxAnimalCount - animalCount);
         int totalCost = animalsToBuy * productionSettings.costPerAnimal;
-
-        if (MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(totalCost))
+        if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(totalCost))
         {
-            if (MoneyManager.Instance.SpendMoney(totalCost))
-            {
-                AddAnimals(animalsToBuy);
-                }
-            else
-            {
-                Debug.LogWarning($"{GetStructureName()} cannot buy {animalsToBuy} {animalType}s: SpendMoney failed.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"{GetStructureName()} cannot buy {animalsToBuy} {animalType}s: Need {totalCost} gold.");
+            AddAnimals(animalsToBuy);
+            if (TutorialManager.Instance != null && animalCount >= 3) TutorialManager.Instance.Trigger(TutorialTrigger.BoughtFirstAnimals);
         }
     }
 
@@ -282,13 +184,10 @@ public class AnimalStructure : Structure
             productReady = true;
             isProducing = false;
             productionProgress = productionSettings.productionTime;
-            }
+        }
     }
 
-    public bool CanRecruit(int amount)
-    {
-        return animalCount >= amount;
-    }
+    public bool CanRecruit(int amount) => animalCount >= amount;
 
     public void RecruitAnimals(int amount)
     {
@@ -297,15 +196,14 @@ public class AnimalStructure : Structure
             animalCount -= amount;
             OnAnimalCountChanged?.Invoke();
         }
-        else
-        {
-            Debug.LogWarning($"{GetStructureName()} cannot recruit: Need {amount}, have {animalCount} {animalType}s.");
-        }
     }
 
     public void AddAnimals(int amount)
     {
-        animalCount = Mathf.Min(animalCount + amount, maxAnimalCount);
+        if (amount <= 0) return;
+        int actualAmountToAdd = Mathf.Min(amount, maxAnimalCount - animalCount);
+        if (actualAmountToAdd <= 0) return;
+        animalCount += actualAmountToAdd;
         OnAnimalCountChanged?.Invoke();
     }
 
@@ -319,110 +217,54 @@ public class AnimalStructure : Structure
         }
     }
 
-    //handles stuff for lees food if animals close to silo
     public void updateSiloSynergy()
     {
         SiloStructure[] silos = FindObjectsByType<SiloStructure>(FindObjectsSortMode.None);
         float minGridDistance = float.MaxValue;
-
-        // Get the grid controller (assumes only one in scene)
         GridController gridController = FindFirstObjectByType<GridController>();
-
         if (gridController == null)
         {
-            Debug.LogWarning("No GridController found for AnimalStructure synergy check.");
             foodMultiplier = normalFoodRequired;
             return;
         }
-
         Vector2Int animalCell = gridController.WorldToGridCoords(transform.position);
-
         foreach (SiloStructure silo in silos)
         {
             Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
             float gridDistance = Vector2Int.Distance(animalCell, siloCell);
-
-            if (gridDistance < minGridDistance)
-            {
-                minGridDistance = gridDistance;
-            }
+            minGridDistance = Mathf.Min(minGridDistance, gridDistance);
         }
-
-        if (minGridDistance <= siloSynergyRange)
-        {
-            foodMultiplier = synergyFoodRequired;
-        }
-        else
-        {
-            foodMultiplier = normalFoodRequired;
-        }
+        foodMultiplier = minGridDistance <= siloSynergyRange ? synergyFoodRequired : normalFoodRequired;
     }
 
     public static void UpdateAllAnimalSynergies()
     {
-        foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
-        {
-            animal.updateSiloSynergy();
-        }
+        foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None)) animal.updateSiloSynergy();
     }
 
     public void updateAnimalProductionAmount(string animalType, float increasePercent)
     {
-        // Use the first letter(s) to match the type
         string thisType = GetAnimalType.ToString();
-        bool matches = false;
-        bool doubleBoosted = false;
-
-        if (increasePercent == 2f)
+        bool matches = animalType switch
         {
-            doubleBoosted = true;
-        }
-
-        switch (animalType)
-        {
-            case "Ch":
-                matches = thisType.StartsWith("Chicken");
-                break;
-            case "C":
-                matches = thisType.StartsWith("Cow");
-                break;
-            case "S":
-                matches = thisType.StartsWith("Sheep");
-                break;
-            case "G":
-                matches = thisType.StartsWith("Goat");
-                break;
-            case "P":
-                matches = thisType.StartsWith("Pig");
-                break;
-            default:
-                Debug.LogWarning($"Unknown animal type: {animalType}");
-                break;
-        }
-
+            "Ch" => thisType.StartsWith("Chicken"),
+            "C" => thisType.StartsWith("Cow"),
+            "S" => thisType.StartsWith("Sheep"),
+            "G" => thisType.StartsWith("Goat"),
+            "P" => thisType.StartsWith("Pig"),
+            _ => false
+        };
         if (matches)
         {
-            // productionSettings.moneyPerProduct = (int)(productionSettings.moneyPerProduct * increasePercent);
             productionSettings.moneyPerProduct = (int)(baseMoneyPerProduct * increasePercent);
-
-            if (doubleBoosted)
-            {
-                productionSettings.boostedProduction = 2;
-                }
-            else
-            {
-                productionSettings.boostedProduction = 1;
-            }
-
-            }
+            productionSettings.boostedProduction = increasePercent == 2f ? 2 : 1;
+        }
     }
 
     public void resetAnimalProductionAmount()
     {
-        // Reset to base value (adjust as needed)
         productionSettings.moneyPerProduct = baseMoneyPerProduct;
         productionSettings.boostedProduction = baseProductMultiplier;
-        // productionSettings.productAmount = baseProductAmount;
     }
 
     public void PlayBackgroundNoise()
@@ -437,127 +279,34 @@ public class AnimalStructure : Structure
 
     public void StopBackgroundNoise()
     {
-        if (audioSource != null && backgroundClip != null && audioSource.isPlaying)
-        {
-            audioSource.Stop();
-        }
+        if (audioSource != null && backgroundClip != null && audioSource.isPlaying) audioSource.Stop();
     }
 
-    // public int[] getProductPrices(string[] animals)
-    // {
-    //     int[] prices = new int[animals.Length];
-
-    //     for (int k = 0; k < animals.Length; k++)
-    //     {
-    //         // Compare the requested animal type with this structure's animal type
-    //         if (GetAnimalType.ToString().Equals(animals[k], System.StringComparison.OrdinalIgnoreCase))
-    //         {
-    //             prices[k] = productionSettings.moneyPerProduct;
-    //             //         }
-    //         else
-    //         {
-    //             // If this structure doesn't match, you might want to return 0 or -1
-    //                 //             prices[k] = 0;
-    //         }
-    //     }
-
-    //     return prices;
-    // }
-
-    // public static int[] getProductPrices(string[] animals)
-    // {
-    //     int[] prices = new int[animals.Length];
-    //     AnimalStructure[] allStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
-
-    //     for (int i = 0; i < animals.Length; i++)
-    //     {
-    //         foreach (var structure in allStructures)
-    //         {
-    //             if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
-    //             {
-    //                 prices[i] = structure.productionSettings.moneyPerProduct;
-    //                 break; // Found the structure for this animal type, move to next animal
-    //             }
-    //         }
-    //     }
-    //     return prices;
-    // }
-
-    // public int[] whichProductsAreBoosted(string[] animals)
-    // {
-    //     int[] boosted = new int[animals.Length];
-
-    //     for (int k = 0; k < animals.Length; k++)
-    //     {
-    //         // Compare the requested animal type with this structure's animal type
-    //         if (GetAnimalType.ToString().Equals(animals[k], System.StringComparison.OrdinalIgnoreCase))
-    //         {
-    //             if (productionSettings.boostedProduction == 0)
-    //             {
-    //                 boosted[k] = 0;
-    //             }
-    //             else if (productionSettings.boostedProduction == 1)
-    //             {
-    //                 boosted[k] = 50;
-    //             }
-    //             else
-    //             {
-    //                 boosted[k] = 100;
-    //             }
-    //         }
-    //         else
-    //         {
-    //             // If this structure doesn't match, you might want to return 0 or -1
-    //                 //             boosted[k] = 0;
-    //         }
-    //     }
-
-    //     return boosted;
-    // }
-    
     public static int[] whichProductsAreBoosted(string[] animals)
-{
-    int[] boosted = new int[animals.Length];
-    AnimalStructure[] allStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
-
-    for (int i = 0; i < animals.Length; i++)
     {
-        foreach (var structure in allStructures)
-        {
-            if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
-            {
-                if (structure.productionSettings.boostedProduction == 0)
+        int[] boosted = new int[animals.Length];
+        AnimalStructure[] allStructures = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+        for (int i = 0; i < animals.Length; i++)
+            foreach (var structure in allStructures)
+                if (structure.GetAnimalType.ToString().Equals(animals[i], System.StringComparison.OrdinalIgnoreCase))
                 {
-                    boosted[i] = 0;
+                    boosted[i] = structure.productionSettings.boostedProduction switch
+                    {
+                        0 => 0,
+                        1 => 50,
+                        _ => 100
+                    };
+                    break;
                 }
-                else if (structure.productionSettings.boostedProduction == 1)
-                {
-                    boosted[i] = 50;
-                }
-                else
-                {
-                    boosted[i] = 100;
-                }
-                break; // Found the structure for this animal type, move to next animal
-            }
-        }
+        return boosted;
     }
 
-    Debug.Log($"Boosted products for {string.Join(", ", animals)}: {string.Join(", ", boosted)}");
-    return boosted;
-}
-
-/// <summary>
-    /// Tutorial-only method to instantly complete animal production
-    /// </summary>
     public void InstantCompleteProductionForTutorial()
     {
-        if (isProducing && !productReady && animalCount > 0)
-        {
-            productionProgress = productionSettings.productionTime;
-            productReady = true;
-            isProducing = false;
-            Debug.Log($"TUTORIAL: Instantly completed production for {animalType} with {animalCount} animals");
-        }
+        if (TutorialManager.Instance == null || !isProducing || animalCount <= 0) return;
+        isProducing = false;
+        productReady = true;
+        productionProgress = 1f;
+        OnAnimalCountChanged?.Invoke();
     }
 }

@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ChickenCoop
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4459f0f3e5d250b4e8ace06336c530a4, type: 3}
+      propertyPath: m_TagString
+      value: ChickenCoop
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -103,12 +107,11 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  dustPoof: {fileID: 0}
   animalType: 0
   isProducing: 0
   productReady: 0
   productionProgress: 0
-  animalCount: 5
+  animalCount: 0
   maxAnimalCount: 10
   audioSource: {fileID: 6324912615152249241}
   backgroundClip: {fileID: 8300000, guid: 0ed8e3d8e473ed447a308e5eecf66c71, type: 3}

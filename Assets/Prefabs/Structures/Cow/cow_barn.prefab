@@ -100,12 +100,11 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  dustPoof: {fileID: 0}
   animalType: 1
   isProducing: 0
   productReady: 0
   productionProgress: 0
-  animalCount: 5
+  animalCount: 0
   maxAnimalCount: 10
   audioSource: {fileID: 5106201183728980101}
   backgroundClip: {fileID: 8300000, guid: da62c192d48c92548b38eb7c9990879f, type: 3}

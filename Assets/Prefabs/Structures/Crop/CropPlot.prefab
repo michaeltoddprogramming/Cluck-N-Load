@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CropPlot
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d88e98dad5c0e194c8082d09aeb7bcfe, type: 3}
+      propertyPath: m_TagString
+      value: CropPlot
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -97,15 +101,9 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  dustPoof: {fileID: 0}
   currentCropType: 0
   isGrowing: 0
   cropReady: 0
-  growthProgress: 0
-  productionSettings:
-    growthTime: 24
-    baseProductAmount: 10
-    moneyPerProduct: 5
   nightManager: {fileID: 0}
   sunflowerPrefab1: {fileID: 936194210774049971, guid: b998b7f12627bb94dad3554f91bc5c01, type: 3}
   sunflowerPrefab2: {fileID: 4380064504038660135, guid: 7fa86abdee5fb7c4d905405d9e6d581f, type: 3}

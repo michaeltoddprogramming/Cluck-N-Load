@@ -15,18 +15,13 @@ public partial class TutorialManager
             return;
 
         foreach (KeyCode key in step.requiredInputs)
-        {
             if (Input.GetKeyDown(key))
             {
                 detectedInputs.Add(key);
                 UpdateKeyIndicatorVisual(key, true);
             }
-        }
 
-        bool shouldAdvance = step.waitForAllInputs
-            ? detectedInputs.Count >= step.requiredInputs.Count
-            : detectedInputs.Count > 0;
-
+        bool shouldAdvance = step.waitForAllInputs ? detectedInputs.Count >= step.requiredInputs.Count : detectedInputs.Count > 0;
         if (shouldAdvance)
             Trigger(TutorialTrigger.InputDetected);
     }
@@ -35,7 +30,6 @@ public partial class TutorialManager
     {
         ClearKeyIndicators();
         keyIndicatorMap.Clear();
-
         if (keyIndicatorPrefab == null || keyIndicatorContainer == null || keys == null || keys.Count == 0)
             return;
 
@@ -44,13 +38,9 @@ public partial class TutorialManager
             GameObject indicator = Instantiate(keyIndicatorPrefab, keyIndicatorContainer, false);
             indicator.name = $"Key_{key}";
             indicator.transform.localPosition = GetKeyPositionForLayout(key);
-
-            string keyText = GetKeyDisplayName(key);
-
             TextMeshProUGUI label = indicator.GetComponentInChildren<TextMeshProUGUI>();
             if (label != null)
-                label.text = keyText;
-
+                label.text = GetKeyDisplayName(key);
             keyIndicatorMap[key] = indicator;
             keyIndicators.Add(indicator);
         }
@@ -60,14 +50,14 @@ public partial class TutorialManager
     {
         if (!keyIndicatorMap.TryGetValue(key, out GameObject indicator))
             return;
-    
+
         Image background = indicator.GetComponentInChildren<Image>();
         if (background != null)
             background.color = pressed ? Color.green : Color.white;
-    
+
         if (pressed && keyPressSound != null)
             effectsAudioSource.PlayOneShot(keyPressSound, 0.7f);
-    
+
         if (pressed)
             LeanTween.scale(indicator, Vector3.one * 1.2f, 0.2f).setEasePunch();
     }
@@ -75,17 +65,16 @@ public partial class TutorialManager
     string GetKeyDisplayName(KeyCode key)
     {
         if (key.ToString().StartsWith("Alpha"))
-            return key.ToString().Substring(5); 
-        
-        switch (key)
+            return key.ToString().Substring(5);
+        return key switch
         {
-            case KeyCode.Mouse0: return "LC";
-            case KeyCode.Mouse1: return "RC";
-            case KeyCode.Mouse2: return "MWM"; 
-            case KeyCode.Mouse3: return "MWU"; 
-            case KeyCode.Mouse4: return "MWD"; 
-            default: return key.ToString();
-        }
+            KeyCode.Mouse0 => "LC",
+            KeyCode.Mouse1 => "RC",
+            KeyCode.Mouse2 => "MWM",
+            KeyCode.Mouse3 => "MWU",
+            KeyCode.Mouse4 => "MWD",
+            _ => key.ToString()
+        };
     }
 
     void ClearKeyIndicators()
@@ -97,7 +86,7 @@ public partial class TutorialManager
 
     Vector2 GetKeyPositionForLayout(KeyCode key)
     {
-        float spacing = 120f; 
+        float spacing = 120f;
         return key switch
         {
             KeyCode.Mouse0 => new Vector2(spacing * 3, spacing),

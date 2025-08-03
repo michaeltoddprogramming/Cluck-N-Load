@@ -22,7 +22,8 @@ public class EnemyData : UnitData
 
     [Header("Enemy Spawn Settings")]
     public int maxSpawnAmount = 5;
+    public int minSpawnAmount = 1;
     public int nightlySpawnMultiplier = 2;
-    public int seasonSpawnMultiplier = 5;
+    public float seasonSpawnMultiplier = 1.2f;
 
 }

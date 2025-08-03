@@ -62,12 +62,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
       insertIndex: -1
-      addedObject: {fileID: -581891216304725118}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 393887045309604206}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
-      insertIndex: -1
       addedObject: {fileID: -1150756874536464326}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
       insertIndex: -1
@@ -84,52 +78,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2650513131929189430}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7877190410718087162}
   m_SourcePrefab: {fileID: 100100000, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
 --- !u!1 &5988654711165413027 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: c1c4d6f0c539c444c91480b5a38ee470, type: 3}
   m_PrefabInstance: {fileID: 6906991767249673202}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &-581891216304725118
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5988654711165413027}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed9bef98d7c63c64a86b95500586d0e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseAttackRange: 3
-  damage: 25
-  attackCooldown: 2
-  maxHealth: 125
-  detectionRange: 20
-  globalSearchInterval: 2
-  chickenPriority: 10
-  structurePriority: 5
-  healthWeight: 0.5
-  animalCountWeight: 0.5
-  flowFieldAgent: {fileID: 0}
-  fallbackMoveRadius: 10
-  fallbackMoveInterval: 5
-  minGrowlInterval: 5
-  maxGrowlInterval: 20
---- !u!114 &393887045309604206
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5988654711165413027}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a4104938e3aef9449b57ade1cf41549, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _unitData: {fileID: 11400000, guid: 34ad9bf0aeee08f4d92f785c33c322e7, type: 2}
 --- !u!114 &-1150756874536464326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,7 +101,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   rotationSpeed: 10
-  stoppingDistance: 0.1
+  updateFrequency: 0.1
+  enableOptimizations: 1
   useInterpolation: 1
   priorityPathThreshold: 0.3
   maxPriorityPathValue: 0.7
@@ -544,3 +502,16 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &7877190410718087162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5988654711165413027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fb112acd550c6741b55fd92a8011d0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}

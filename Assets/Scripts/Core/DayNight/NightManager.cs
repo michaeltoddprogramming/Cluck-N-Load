@@ -460,6 +460,7 @@ public class NightManager : MonoBehaviour
     private void StartDay(int flag)
     {
         combatManager.StopCombat();
+        combatManager.increaseAfterNight();
         // Destroy all remaining wolves when day starts
         // foreach (Wolf wolf in activeWolves.ToList())
         // {
@@ -700,9 +701,9 @@ public class NightManager : MonoBehaviour
         // skyboxCoroutines.Remove(System.Array.Find(skyboxCoroutines.ToArray(), c => c == this));
     }
 
-private void setSeason(int season)
-{
-    currentSeason = season;
+    private void setSeason(int season)
+    {
+        currentSeason = season;
         string text;
         switch (season)
         {
@@ -759,9 +760,13 @@ private void setSeason(int season)
                     WeatherManager.Instance.ClearWeather();
             }
         }
+
+        combatManager.increaseAfterSeason();
         
         StartNotification(text, 5);
     }    // New method to properly manage notification coroutines
+
+    
     private void StartNotification(string message, float duration)
     {
         // Stop any existing notification first

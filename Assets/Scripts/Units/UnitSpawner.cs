@@ -151,65 +151,65 @@
 //         }
 //     }
 
-//     private List<Vector3> GetRandomEdgePositions(int count)
-//     {
-//         List<Vector3> positions = new List<Vector3>();
+    // public List<Vector3> GetRandomEdgePositions(int count)
+    // {
+    //     List<Vector3> positions = new List<Vector3>();
 
-//         if (_gridDataGenerator == null)
-//             return positions;
+    //     if (_gridDataGenerator == null)
+    //         return positions;
 
-//         int width = _gridDataGenerator.GetGridWidth();
-//         int height = _gridDataGenerator.GetGridHeight();
+    //     int width = _gridDataGenerator.GetGridWidth();
+    //     int height = _gridDataGenerator.GetGridHeight();
 
-//         for (int i = 0; i < count; i++)
-//         {
-//             int edge = Random.Range(0, 4);
-//             int x, y;
+    //     for (int i = 0; i < count; i++)
+    //     {
+    //         int edge = Random.Range(0, 4);
+    //         int x, y;
 
-//             switch (edge)
-//             {
-//                 case 0: // Top edge
-//                     x = Random.Range(0, width);
-//                     y = height - 1;
-//                     break;
-//                 case 1: // Right edge
-//                     x = width - 1;
-//                     y = Random.Range(0, height);
-//                     break;
-//                 case 2: // Bottom edge
-//                     x = Random.Range(0, width);
-//                     y = 0;
-//                     break;
-//                 case 3: // Left edge
-//                     x = 0;
-//                     y = Random.Range(0, height);
-//                     break;
-//                 default:
-//                     x = 0;
-//                     y = 0;
-//                     break;
-//             }
+    //         switch (edge)
+    //         {
+    //             case 0: // Top edge
+    //                 x = Random.Range(0, width);
+    //                 y = height - 1;
+    //                 break;
+    //             case 1: // Right edge
+    //                 x = width - 1;
+    //                 y = Random.Range(0, height);
+    //                 break;
+    //             case 2: // Bottom edge
+    //                 x = Random.Range(0, width);
+    //                 y = 0;
+    //                 break;
+    //             case 3: // Left edge
+    //                 x = 0;
+    //                 y = Random.Range(0, height);
+    //                 break;
+    //             default:
+    //                 x = 0;
+    //                 y = 0;
+    //                 break;
+    //         }
 
-//             GridCell cell = _gridDataGenerator.GetCell(x, y);
-//             if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied)
-//             {
-//                 Vector3 position = cell.worldPosition;
+    //         GridCell cell = _gridDataGenerator.GetCell(x, y);
+    //         if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied)
+    //         {
+    //             Vector3 position = cell.worldPosition;
 
-//                 if (edge == 0) position.z -= _edgeInset;
-//                 else if (edge == 1) position.x -= _edgeInset;
-//                 else if (edge == 2) position.z += _edgeInset;
-//                 else if (edge == 3) position.x += _edgeInset;
+    //             if (edge == 0) position.z -= _edgeInset;
+    //             else if (edge == 1) position.x -= _edgeInset;
+    //             else if (edge == 2) position.z += _edgeInset;
+    //             else if (edge == 3) position.x += _edgeInset;
 
-//                 positions.Add(position);
-//             }
-//             else
-//             {
-//                 i--;
-//             }
-//         }
+    //             positions.Add(position);
+    //         }
+    //         else
+    //         {
+    //             i--;
+    //         }
+    //     }
 
-//         return positions;
-//     }
+    //     return positions;
+    // }
 
 //     private bool IsValidSpawnPosition(Vector3 position)
 //     {

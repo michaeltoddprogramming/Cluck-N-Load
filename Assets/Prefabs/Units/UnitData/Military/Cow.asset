@@ -23,7 +23,7 @@ MonoBehaviour:
   AttackCooldown: 1
   MovementSpeed: 0.8
   Cost: 0
-  AttackSound: {fileID: 0}
+  AttackSound: {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}
   DeathSound: {fileID: 0}
   MoveSound: {fileID: 0}
   HurtSound: {fileID: 0}

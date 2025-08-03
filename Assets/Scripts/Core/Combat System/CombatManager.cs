@@ -6,6 +6,10 @@ public class CombatManager : MonoBehaviour
     private List<EnemyUnit> combatUnits = new List<EnemyUnit>();
     private bool isNight = false;
 
+    private EnemyUnit enemyUnit; 
+    private SpawnUnits spawnUnits; 
+
+
     public static CombatManager Instance { get; private set; }
 
     private void Awake()
@@ -16,6 +20,12 @@ public class CombatManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+
+    private void Start()
+    {
+        enemyUnit = FindObjectOfType<EnemyUnit>();
+        spawnUnits = FindObjectOfType<SpawnUnits>(); 
     }
 
     public void RegisterUnit(EnemyUnit unit)
@@ -116,9 +126,52 @@ public class CombatManager : MonoBehaviour
     public void StartCombat()
     {
         isNight = true;
+        spawnUnits.SpawnEnemies();
     }
     public void StopCombat()
     {
         isNight = false;
+        DestroyAllEnemies();
+        // Debug.Log("-----------------------------------------------------------");
+    }
+
+    public void DestroyAllEnemies()
+    {
+        Debug.Log("-----------------------------------------------------------");
+        EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
+        foreach (EnemyUnit enemy in enemies)
+        {
+            Destroy(enemy.gameObject);
+        }
+
+        combatUnits.Clear(); // Optional: clear tracked list if you're using one
+    }
+
+//     public void DestroyAllEnemies()
+// {
+//     EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
+//     Debug.Log($"Destroying {enemies.Length} enemies.");
+//     foreach (EnemyUnit enemy in enemies)
+//     {
+//         Debug.Log($"Destroying enemy: {enemy.name}");
+//         Destroy(enemy.gameObject);
+//     }
+//     combatUnits.Clear();
+// }
+
+    public void increaseAfterNight()
+    {
+        if (enemyUnit != null)
+        {
+            enemyUnit.increaseAfterNight();       
+        }
+    }
+
+    public void increaseAfterSeason()
+    {
+        if (enemyUnit != null)
+        {
+            enemyUnit.increaseAfterSeason();
+        }
     }
 }

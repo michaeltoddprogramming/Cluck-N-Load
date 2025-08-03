@@ -17,7 +17,7 @@ MonoBehaviour:
   MovementSpeed: 5.59
   Type: 3
   Health: 100
-  AttackDamage: 50
+  AttackDamage: 1
   AttackRange: 10
   AttackCooldown: 2
   AttackSound: {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}

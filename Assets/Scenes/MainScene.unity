@@ -3151,6 +3151,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Terrain
       objectReference: {fileID: 0}
+    - target: {fileID: 2583797304337649668, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
       propertyPath: m_LocalScale.x
       value: 10
@@ -9802,7 +9806,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1838938010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10261,6 +10265,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1884560014}
   - component: {fileID: 1884560013}
+  - component: {fileID: 1884560015}
   m_Layer: 0
   m_Name: UnitSpawner
   m_TagString: Untagged
@@ -10306,6 +10311,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1884560015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884560012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df43aaad321c5d84fad1ea4896709efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyData: {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}
+  _gridDataGenerator: {fileID: 0}
 --- !u!1 &1898407590
 GameObject:
   m_ObjectHideFlags: 0
@@ -11351,6 +11370,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: World
       objectReference: {fileID: 0}
+    - target: {fileID: 3042826381862710579, guid: 829f720d23a22e943b47aa597cba44bc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3084022898177485634, guid: 829f720d23a22e943b47aa597cba44bc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -11548,6 +11571,10 @@ PrefabInstance:
     - target: {fileID: 6962895586497866111, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
       propertyPath: m_Name
       value: Terrain
+      objectReference: {fileID: 0}
+    - target: {fileID: 6962895586497866111, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

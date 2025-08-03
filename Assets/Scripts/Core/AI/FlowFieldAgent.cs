@@ -258,26 +258,56 @@ namespace FarmDefender.Core.AI.FlowField
             return Vector2.zero;
         }
         
+        // private Vector2 GetCellFlowDirection(Vector2Int coords)
+        // {
+        //     var gridController = flowFieldManager.GridController;
+        //     GridDataGenerator dataGenerator = gridController.GetComponent<GridDataGenerator>();
+        //     if (dataGenerator == null)
+        //         return Vector2.zero;
+                
+        //     GridCell cell = dataGenerator.GetCell(coords.x, coords.y);
+        //     if (cell == null || cell.flowDirection == Vector2.zero || cell.integrationCost == int.MaxValue)
+        //     {
+        //         // Fallback: Use previous direction or target-based direction when flow field is unavailable
+        //         if (previousFlowDirection != Vector2.zero)
+        //         {
+        //             return previousFlowDirection; // Keep moving in last known direction
+        //         }
+        //         return Vector2.zero;
+        //     }
+                
+        //     return cell.flowDirection;
+        // }
+
         private Vector2 GetCellFlowDirection(Vector2Int coords)
-        {
-            var gridController = flowFieldManager.GridController;
-            GridDataGenerator dataGenerator = gridController.GetComponent<GridDataGenerator>();
-            if (dataGenerator == null)
-                return Vector2.zero;
-                
-            GridCell cell = dataGenerator.GetCell(coords.x, coords.y);
-            if (cell == null || cell.flowDirection == Vector2.zero || cell.integrationCost == int.MaxValue)
-            {
-                // Fallback: Use previous direction or target-based direction when flow field is unavailable
-                if (previousFlowDirection != Vector2.zero)
-                {
-                    return previousFlowDirection; // Keep moving in last known direction
-                }
-                return Vector2.zero;
-            }
-                
-            return cell.flowDirection;
-        }
+{
+    var gridController = flowFieldManager.GridController;
+    GridDataGenerator dataGenerator = gridController.GetComponent<GridDataGenerator>();
+    if (dataGenerator == null)
+        return Vector2.zero;
+
+    // ✅ Check bounds BEFORE accessing the cell
+    if (!dataGenerator.IsValidCell(coords.x, coords.y))
+    {
+        if (previousFlowDirection != Vector2.zero)
+            return previousFlowDirection;
+
+        return Vector2.zero;
+    }
+
+    GridCell cell = dataGenerator.GetCell(coords.x, coords.y);
+    if (cell == null || cell.flowDirection == Vector2.zero || cell.integrationCost == int.MaxValue)
+    {
+        if (previousFlowDirection != Vector2.zero)
+            return previousFlowDirection;
+
+        return Vector2.zero;
+    }
+
+    return cell.flowDirection;
+}
+
+
         
         // Public method to enable/disable movement
         public void SetMoving(bool moving)

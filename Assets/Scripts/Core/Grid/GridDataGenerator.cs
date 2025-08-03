@@ -150,4 +150,9 @@ public class GridDataGenerator : MonoBehaviour
         float z = origin.y + gridCoords.y * cellSize + cellSize / 2f;
         return new Vector3(x, 0f, z); // Y is 0 assuming flat terrain
     }
+
+    public bool IsValidCell(int x, int y)
+{
+    return x >= 0 && x < gridWidth && y >= 0 && y < gridHeight;
+}
 }

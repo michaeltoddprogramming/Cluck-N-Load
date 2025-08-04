@@ -3090,6 +3090,10 @@ PrefabInstance:
       propertyPath: shopButton
       value: 
       objectReference: {fileID: 760890651}
+    - target: {fileID: 7462987418697100228, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+      propertyPath: highlightPrefab
+      value: 
+      objectReference: {fileID: 7555342222714898371, guid: a250be0c498cb35449ff4956bc7b99dd, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

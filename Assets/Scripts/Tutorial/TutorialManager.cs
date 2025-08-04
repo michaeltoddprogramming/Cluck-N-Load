@@ -52,6 +52,12 @@ public partial class TutorialManager : MonoBehaviour
     private bool isShowingDiscovery = false;
     private TutorialStep currentDiscoveryStep;
 
+    // Add these variables to your TutorialManager class
+    private Queue<TutorialTrigger> pendingTriggers = new Queue<TutorialTrigger>();
+    private bool isProcessingStep = false;
+    private float lastStepCompletionTime = 0f;
+    private const float MIN_STEP_DURATION = 0.5f; // Minimum time between step transitions
+
     private void Awake()
     {
         if (instance == null)
@@ -92,6 +98,14 @@ public partial class TutorialManager : MonoBehaviour
                 UpdateKeyIndicatorVisual(KeyCode.Mouse4, true);
             }
         }
+
+        // Add this new logic to process queued triggers
+        if (!isProcessingStep && pendingTriggers.Count > 0)
+        {
+            TutorialTrigger nextTrigger = pendingTriggers.Dequeue();
+            Debug.Log($"Tutorial: Processing queued trigger: {nextTrigger}");
+            ProcessTrigger(nextTrigger);
+        }
     }
 
     public void StartTutorial()
@@ -102,28 +116,78 @@ public partial class TutorialManager : MonoBehaviour
         NextStep();
     }
 
+    // Replace your NextStep method with this simpler version
     void NextStep()
     {
-        currentStepIndex++;
-        if (currentStepIndex >= steps.Count)
+        // Simple safety check to prevent being stuck
+        if (isProcessingStep)
         {
-            EndTutorial();
-            return;
+            Debug.LogWarning("Tutorial: Force resetting stuck processing state");
+            isProcessingStep = false;
         }
 
-        var step = steps[currentStepIndex];
-        detectedInputs.Clear();
-        if (typingCoroutine != null)
-            StopCoroutine(typingCoroutine);
-        typingCoroutine = StartCoroutine(TypeTextWithMumble(step.instructionText));
-        titleText.text = step.title;
-        UpdateCharacterPortrait(step);
-        HighlightUI(step.uiToHighlight, true);
-        ShowKeyIndicators(step.requiredInputs);
-        if (step.triggerToWaitFor == TutorialTrigger.None)
-            StartCoroutine(AutoAdvanceStep());
-        step.onStepStart?.Invoke();
-        waitingForStepToComplete = true;
+        isProcessingStep = true;
+        StartCoroutine(ProcessNextStepSafely());
+    }
+
+    private IEnumerator ProcessNextStepSafely()
+    {
+        try
+        {
+            // Clean up current step's UI if there is one
+            if (currentStepIndex >= 0 && currentStepIndex < steps.Count)
+            {
+                var currentStep = steps[currentStepIndex];
+                if (currentStep.uiToHighlight != null)
+                    HighlightUI(currentStep.uiToHighlight, false);
+                ClearKeyIndicators();
+                CleanupAllWorldHighlights();
+                CleanupShopHighlights();
+            }
+
+            // Move to next step
+            currentStepIndex++;
+            if (currentStepIndex >= steps.Count)
+            {
+                EndTutorial();
+                yield break;
+            }
+
+            // Brief delay for stability
+            yield return new WaitForSecondsRealtime(0.1f);
+
+            // Setup new step
+            var step = steps[currentStepIndex];
+            detectedInputs.Clear();
+
+            if (typingCoroutine != null)
+                StopCoroutine(typingCoroutine);
+
+            // Set up new step content
+            typingCoroutine = StartCoroutine(TypeTextWithMumble(step.instructionText));
+            titleText.text = step.title;
+            UpdateCharacterPortrait(step);
+
+            // Highlight UI with a small delay for stability
+            yield return new WaitForSeconds(0.05f);
+            if (step.uiToHighlight != null)
+                HighlightUI(step.uiToHighlight, true);
+
+            ShowKeyIndicators(step.requiredInputs);
+
+            if (step.triggerToWaitFor == TutorialTrigger.None)
+                StartCoroutine(AutoAdvanceStep());
+
+            if (step.onStepStart != null)
+                step.onStepStart.Invoke();
+
+            waitingForStepToComplete = true;
+        }
+        finally
+        {
+            // Always reset this flag when done, even if errors occur
+            isProcessingStep = false;
+        }
     }
 
     public void RegisterDiscoveryStep(TutorialStep step)
@@ -133,21 +197,50 @@ public partial class TutorialManager : MonoBehaviour
 
     public void Trigger(TutorialTrigger trigger)
     {
+        // If already processing a step, queue this trigger
+        if (isProcessingStep)
+        {
+            pendingTriggers.Enqueue(trigger);
+            Debug.Log($"Tutorial: Queued trigger {trigger} for later processing");
+            return;
+        }
+
+        ProcessTrigger(trigger);
+    }
+
+    // New method to process triggers
+    private void ProcessTrigger(TutorialTrigger trigger)
+    {
+        Debug.Log($"Processing tutorial trigger: {trigger}");
+        
+        // First check if we're waiting for this specific trigger in the current step
         if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
             var step = steps[currentStepIndex];
             if (step.triggerToWaitFor == trigger)
             {
-                HighlightUI(step.uiToHighlight, false);
-                step.onStepComplete?.Invoke();
+                Debug.Log($"Trigger {trigger} matches current step - advancing");
+                
+                // Mark the step as not waiting anymore BEFORE calling NextStep
+                waitingForStepToComplete = false;
+                
+                // Complete the step
+                if (step.uiToHighlight != null)
+                    HighlightUI(step.uiToHighlight, false);
+                    
+                if (step.onStepComplete != null)
+                    step.onStepComplete.Invoke();
+                    
                 if (!string.IsNullOrEmpty(step.stepId))
                     MarkStepComplete(step.stepId);
-                waitingForStepToComplete = false;
+                
+                // Move to the next step
                 NextStep();
                 return;
             }
         }
 
+        // Handle discovery steps
         if (discoverySteps.ContainsKey(trigger) && !shownDiscoveries.Contains(discoverySteps[trigger].stepId))
         {
             var discoveryStep = discoverySteps[trigger];
@@ -168,7 +261,7 @@ public partial class TutorialManager : MonoBehaviour
 
     IEnumerator AutoAdvanceStep()
     {
-        yield return new WaitForSeconds(10f);
+        yield return new WaitForSecondsRealtime(10f);
         Trigger(TutorialTrigger.None);
     }
 

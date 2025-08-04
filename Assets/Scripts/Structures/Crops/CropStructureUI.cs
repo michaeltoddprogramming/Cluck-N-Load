@@ -128,21 +128,29 @@ public class CropStructureUI : BaseStructureUI
         else StartCoroutine(CloseUIAfterDelay(0.2f));
     }
 
+    // In CropStructureUI.cs, modify the DelayedInstantGrowForTutorial method
     private IEnumerator DelayedInstantGrowForTutorial(float delay)
     {
         yield return new WaitForSeconds(delay);
-        if (TutorialManager.Instance != null && cropStructure != null)
+        
+        if (cropStructure != null)
         {
-            TutorialManager.Instance.Trigger(TutorialTrigger.PlantedCrop);
-            yield return new WaitForSeconds(0.5f);
+            // First, force grow the crop
             cropStructure.ForceHarvestReadyForTutorial();
             UpdateUI();
+            
+            // Show notification
             if (notificationText != null)
             {
                 notificationText.gameObject.SetActive(true);
                 notificationText.color = Color.green;
                 notificationText.text = "Tutorial: Crop ready for harvest!";
             }
+            
+            // After crop is grown and visible, trigger the tutorial event
+            yield return new WaitForSeconds(0.5f);
+            if (TutorialManager.Instance != null)
+                TutorialManager.Instance.Trigger(TutorialTrigger.PlantedCrop);
         }
     }
 

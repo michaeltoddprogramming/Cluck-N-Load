@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using System.Collections.Generic;
 
 [System.Serializable]
 public class TutorialStep
@@ -10,43 +10,18 @@ public class TutorialStep
     [TextArea] public string instructionText;
     public GameObject uiToHighlight;
     public TutorialTrigger triggerToWaitFor;
-    public UnityEvent onStepStart;
-    public UnityEvent onStepComplete;
+    public UnityEvent onStepStart, onStepComplete;
     public Sprite characterSprite;
     public List<KeyCode> requiredInputs = new List<KeyCode>();
-    public List<string> allowedShopItems = new List<string>();
-    public bool restrictShopToAllowedItems = false;
     public bool waitForAllInputs = true;
 }
 
 public enum TutorialTrigger
 {
-    None,
-    GameStarted,
-    CameraControlsUsed,
-    ExplainMoney,
-    ShopOpened,
-    BuiltFarmHouse,
-    BuiltCropPlot,
-    PlantedCrop,
-    HarvestedCrop,
-    CropReady,
-    BuiltSilo,
-    BuiltChickenCoop,
-    BuiltCowPen,
-    BuiltSheepPen,
-    BuiltGoatPen,
-    BuiltPigPen,
-    BuiltChickenBarracks,
-    BuiltCowBarracks,
-    BuiltSheepBarracks,
-    BuiltGoatBarracks,
-    BuiltPigBarracks,
-    BoughtFirstAnimals,
-    FedFirstAnimals,
-    CollectedFirstProducts,
-    RecruitedFirstSoldiers,
-    PlacedFirstFlag,
-    InputDetected,
-    ButtonClicked
+    None, GameStarted, CameraControlsUsed, ExplainMoney, TimeControlsUsed, ShopOpened,
+    BuiltFarmHouse, BuiltCropPlot, PlantedCrop, HarvestedCrop, BuiltSilo,
+    BuiltChickenCoop, BuiltCowPen, BuiltSheepPen, BuiltGoatPen, BuiltPigPen,
+    BuiltChickenBarracks, BuiltCowBarracks, BuiltSheepBarracks, BuiltGoatBarracks, BuiltPigBarracks,
+    BoughtFirstAnimals, FedFirstAnimals, CollectedFirstProducts, RecruitedFirstSoldiers, PlacedFirstFlag,
+    InputDetected, SpringSeason, SummerSeason, FallSeason, WinterSeason, AnimalProductionBoosted
 }

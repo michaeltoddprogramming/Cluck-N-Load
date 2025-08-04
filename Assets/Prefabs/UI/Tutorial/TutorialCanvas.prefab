@@ -1489,11 +1489,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: See those time controls? You can pause time, play normally, or speed things
-    up! Your crops grow over time, and there's a day-night cycle. During the day,
-    you farm and build. At night... well, that's when the wolves come. But don't
-    worry - I've made the days extra long for this tutorial so you have plenty of
-    time to learn!
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d86e933e6ca983a45ad912f7d7fa9882, type: 2}
   m_sharedMaterial: {fileID: -5660775149628104760, guid: d86e933e6ca983a45ad912f7d7fa9882, type: 2}

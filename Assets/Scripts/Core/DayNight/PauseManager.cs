@@ -49,7 +49,7 @@ public class PauseManager : MonoBehaviour
         {
             Time.timeScale = 0;
             isPaused = true;
-            // TriggerTimeControlsExplained();
+            
         }
     }
 
@@ -59,7 +59,7 @@ public class PauseManager : MonoBehaviour
         {
             Time.timeScale = 1;
             isPaused = false;
-            // TriggerTimeControlsExplained();
+            
         }
     }
 

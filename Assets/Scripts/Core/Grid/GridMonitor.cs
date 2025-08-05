@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using FarmDefender.Core.AI.FlowField; // Add this line for the new namespace
 
 /// <summary>
 /// GridMonitor acts as a central communication hub between grid systems and AI systems.
@@ -18,8 +17,6 @@ public class GridMonitor : MonoBehaviour
     [SerializeField] private float updateThrottleTime = 0.5f;
     [SerializeField] private bool debugLogging = false;
     
-    [Header("System References")]
-    [SerializeField] private FlowFieldManager flowFieldManager; // Changed from FlowFieldGenerator
     
     // Events that systems can subscribe to
     public event Action<GridChangeType> OnGridChanged;
@@ -58,10 +55,6 @@ public class GridMonitor : MonoBehaviour
     {
         // Wait for grid to initialize before taking snapshot
         StartCoroutine(InitializeWhenGridReady());
-        
-        // Find required components if not assigned
-        if (flowFieldManager == null)
-            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
     }
     
     private IEnumerator InitializeWhenGridReady()
@@ -231,27 +224,6 @@ public class GridMonitor : MonoBehaviour
             ownershipSnapshot[cell.x, cell.y] = gridCell.flags.isOwned;
         }
         
-        // Notify subscribers of changes
-        if (structuralChanges && OnGridChanged != null)
-        {
-            OnGridChanged(GridChangeType.Structural);
-            
-            // Instead, notify the flow field manager about building destruction only
-            if (flowFieldManager != null && clearedCells.Count > 0)
-            {
-                // Only notify for destroyed buildings
-                for (int i = 0; i < clearedCells.Count; i++)
-                {
-                    flowFieldManager.NotifyBuildingDestroyed();
-                }
-                
-                if (debugLogging)
-                {
-                    Debug.Log($"Notified FlowFieldManager of {clearedCells.Count} destroyed buildings");
-                }
-            }
-        }
-        
         // Fire individual events
         if (occupiedCells.Count > 0 && OnMultipleCellsChanged != null)
         {
@@ -328,6 +300,5 @@ public enum GridChangeType
     Structural,      // Buildings/obstacles built or destroyed
     Visibility,      // Cell visibility changed
     Ownership,       // Cell ownership changed
-    FlowField,       // Flow field values changed
     Integration      // Integration field values changed
 }

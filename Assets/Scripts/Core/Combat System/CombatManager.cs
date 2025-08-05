@@ -6,8 +6,8 @@ public class CombatManager : MonoBehaviour
     private List<EnemyUnit> combatUnits = new List<EnemyUnit>();
     private bool isNight = false;
 
-    private EnemyUnit enemyUnit; 
-    private SpawnUnits spawnUnits; 
+    private EnemyUnit enemyUnit;
+    private SpawnUnits spawnUnits;
 
 
     public static CombatManager Instance { get; private set; }
@@ -25,7 +25,7 @@ public class CombatManager : MonoBehaviour
     private void Start()
     {
         enemyUnit = FindObjectOfType<EnemyUnit>();
-        spawnUnits = FindObjectOfType<SpawnUnits>(); 
+        spawnUnits = FindObjectOfType<SpawnUnits>();
     }
 
     public void RegisterUnit(EnemyUnit unit)
@@ -61,19 +61,19 @@ public class CombatManager : MonoBehaviour
         }
 
 
-        foreach (EnemyUnit enemyUnit in FindObjectsOfType<EnemyUnit>())
-        {
-            var nearbyAgro = enemyUnit.GetAggroThingsInRange();
+        // foreach (EnemyUnit enemyUnit in FindObjectsOfType<EnemyUnit>())
+        // {
+        //     var nearbyAgro = enemyUnit.GetAggroThingsInRange();
 
-            if (nearbyAgro.Count > 0 && isNight)
-            {
-                // This assumes you're just triggering a generic attack.
-                enemyUnit.Attack();
+        //     if (nearbyAgro.Count > 0 && isNight)
+        //     {
+        //         // This assumes you're just triggering a generic attack.
+        //         enemyUnit.Attack();
 
-                // Or if you want to target a specific enemy:
-                // armyUnit.Attack(nearbyEnemies[0]);
-            }
-        }
+        //         // Or if you want to target a specific enemy:
+        //         // armyUnit.Attack(nearbyEnemies[0]);
+        //     }
+        // }
 
 
 
@@ -102,27 +102,6 @@ public class CombatManager : MonoBehaviour
         // }
     }
 
-    // private Unit FindNearestEnemy(Unit unit)
-    // {
-    //     Unit closestEnemy = null;
-    //     float closestDistance = float.MaxValue;
-
-    //     foreach (Unit potentialTarget in combatUnits)
-    //     {
-    //         if (potentialTarget == unit || !potentialTarget.IsAlive || !(potentialTarget is Enemy))
-    //             continue;
-
-    //         float distance = Vector3.Distance(unit.transform.position, potentialTarget.transform.position);
-    //         if (distance < closestDistance && distance <= unit.DetectionRange)
-    //         {
-    //             closestDistance = distance;
-    //             closestEnemy = potentialTarget;
-    //         }
-    //     }
-
-    //     return closestEnemy;
-    // }
-
     public void StartCombat()
     {
         isNight = true;
@@ -132,12 +111,10 @@ public class CombatManager : MonoBehaviour
     {
         isNight = false;
         DestroyAllEnemies();
-        // Debug.Log("-----------------------------------------------------------");
     }
 
     public void DestroyAllEnemies()
     {
-        Debug.Log("-----------------------------------------------------------");
         EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
         foreach (EnemyUnit enemy in enemies)
         {
@@ -147,23 +124,11 @@ public class CombatManager : MonoBehaviour
         combatUnits.Clear(); // Optional: clear tracked list if you're using one
     }
 
-//     public void DestroyAllEnemies()
-// {
-//     EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
-//     Debug.Log($"Destroying {enemies.Length} enemies.");
-//     foreach (EnemyUnit enemy in enemies)
-//     {
-//         Debug.Log($"Destroying enemy: {enemy.name}");
-//         Destroy(enemy.gameObject);
-//     }
-//     combatUnits.Clear();
-// }
-
     public void increaseAfterNight()
     {
         if (enemyUnit != null)
         {
-            enemyUnit.increaseAfterNight();       
+            enemyUnit.increaseAfterNight();
         }
     }
 
@@ -174,4 +139,6 @@ public class CombatManager : MonoBehaviour
             enemyUnit.increaseAfterSeason();
         }
     }
+    
+    
 }

@@ -16,11 +16,15 @@ MonoBehaviour:
   Prefab: {fileID: 5988654711165413027, guid: 424555a7a34736944bc97cecac3c60df, type: 3}
   MovementSpeed: 3
   Type: 0
-  AttType: 0
+  AttType: 1
   Health: 100
   AttackDamage: 10
-  AttackRange: 10
+  AttackRange: 1000
   AttackCooldown: 1
   AttackSound: {fileID: 0}
   DeathSound: {fileID: 0}
   HurtSound: {fileID: 0}
+  maxSpawnAmount: 2
+  minSpawnAmount: 1
+  nightlySpawnMultiplier: 2
+  seasonSpawnMultiplier: 1.2

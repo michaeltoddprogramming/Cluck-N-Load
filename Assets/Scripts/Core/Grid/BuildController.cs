@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
-using FarmDefender.Core.AI.FlowField;
+// using FarmDefender.Core.AI.FlowField;
 using System.Collections;
 using UnityEngine.VFX;
 
@@ -10,7 +10,7 @@ public class BuildController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridController gridController;
-    [SerializeField] private FlowFieldManager flowFieldManager;
+    // [SerializeField] private FlowFieldManager flowFieldManager;
     [SerializeField] private OwnershipController ownershipController;
     [SerializeField] private GridMonitor gridMonitor;
 
@@ -93,8 +93,6 @@ public class BuildController : MonoBehaviour
             }
         }
 
-        if (flowFieldManager == null)
-            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
 
         if (ownershipController == null)
             ownershipController = FindFirstObjectByType<OwnershipController>();
@@ -195,8 +193,6 @@ public class BuildController : MonoBehaviour
         gridController.ShowGrid();
         if (currentBuildTargetPrefab != null && currentGhost == null)
             CreateGhost(currentBuildTargetPrefab);
-        if (flowFieldManager != null)
-            flowFieldManager.SetBuildModeActive(true);
     }
 
     public void DisableBuildMode()
@@ -211,10 +207,6 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         movingStructure = null;
-        if (flowFieldManager != null)
-        {
-            flowFieldManager.SetBuildModeActive(false);
-        }
         if (itemDeleteIcon != null)
             itemDeleteIcon.gameObject.SetActive(false);
     }

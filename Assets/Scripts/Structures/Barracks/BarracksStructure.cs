@@ -142,7 +142,26 @@ public class BarracksStructure : Structure
         {
             if (armyAnimal != null)
             {
-                armyAnimal.SetActive(false);
+                armyAnimal.SetActive(true);  
+
+                ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
+                
+                if (unit != null)
+                {
+                    unit.SetTimeOfDay(false);
+                    unit.BackToBarracks();
+                }
+            }
+        }
+    }
+
+    public void AfterBackToBarracks()
+    {
+        foreach (GameObject armyAnimal in armyAnimals)
+        {
+            if (armyAnimal != null)
+            {
+                armyAnimal.SetActive(false);  
             }
         }
     }
@@ -395,8 +414,8 @@ public class BarracksStructure : Structure
     {
         foreach (GameObject prefab in armyAnimalPrefabs)
         {
-            ArmyAnimal armyAnimal = prefab.GetComponent<ArmyAnimal>();
-            if (armyAnimal != null && armyAnimal.AnimalType.ToString().Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
+            ArmyUnit armyAnimal = prefab.GetComponent<ArmyUnit>();
+            if (armyAnimal != null && armyAnimal.GetType().ToString().Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
             {
                 return prefab;
             }
@@ -438,25 +457,25 @@ public class BarracksStructure : Structure
         OnArmyChanged?.Invoke();
     }
 
-    public void ReturnAnimal(ArmyAnimal animal) // CHANGED: Renamed from ReturnChicken
-    {
-        if (animal == null || !armyAnimals.Contains(animal.gameObject))
-        {
-            Debug.LogWarning($"{GetStructureName()}: Cannot return animal - Invalid or not in army at Time={Time.time:F2}");
-            return;
-        }
-        armyAnimals.Remove(animal.gameObject);
-        Destroy(animal.gameObject);
-        if (targetAnimalStructure != null)
-        {
-            targetAnimalStructure.AddAnimals(1);
-        }
-        else
-        {
-            Debug.LogWarning($"{GetStructureName()}: Cannot return animal - No target AnimalStructure found at Time={Time.time:F2}");
-        }
-        OnArmyChanged?.Invoke();
-    }
+    // public void ReturnAnimal(ArmyAnimal animal) // CHANGED: Renamed from ReturnChicken
+    // {
+    //     if (animal == null || !armyAnimals.Contains(animal.gameObject))
+    //     {
+    //         Debug.LogWarning($"{GetStructureName()}: Cannot return animal - Invalid or not in army at Time={Time.time:F2}");
+    //         return;
+    //     }
+    //     armyAnimals.Remove(animal.gameObject);
+    //     Destroy(animal.gameObject);
+    //     if (targetAnimalStructure != null)
+    //     {
+    //         targetAnimalStructure.AddAnimals(1);
+    //     }
+    //     else
+    //     {
+    //         Debug.LogWarning($"{GetStructureName()}: Cannot return animal - No target AnimalStructure found at Time={Time.time:F2}");
+    //     }
+    //     OnArmyChanged?.Invoke();
+    // }
 
     public static void UpdateAllNearbyChickenCoops()
     {

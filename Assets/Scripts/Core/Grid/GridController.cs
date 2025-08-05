@@ -59,7 +59,7 @@ public class GridController : MonoBehaviour
         ApplySettings();
         
         // Hide grid by default
-        HideGrid();
+        // HideGrid();
     }
 
     void Update()
@@ -149,6 +149,8 @@ public class GridController : MonoBehaviour
             }
         }
 
+        // Debug.Log($"Cells in range of {worldPos} with radius {radius}: {cellsInRange.Count}------------------------------------------------------------------------------");
+
         return cellsInRange;
     }
 
@@ -216,7 +218,7 @@ public class GridController : MonoBehaviour
         if (gridOverlayInstance != null)
         {
             gridOverlayInstance.SetActive(true);
-            }
+        }
     }
 
     public void HideGrid()

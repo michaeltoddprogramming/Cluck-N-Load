@@ -1,7 +1,6 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-using FarmDefender.Core.AI.FlowField;
 using System.Linq;
 using System.Collections;
 
@@ -44,7 +43,6 @@ public class Structure : MonoBehaviour
 
     // Private references
     private GridController gridController;
-    private FlowFieldManager flowFieldManager;
     private List<Vector2Int> occupiedCells = new List<Vector2Int>();
     private bool hasRegisteredWithGrid = false;
 
@@ -109,8 +107,6 @@ public class Structure : MonoBehaviour
         }
 
         gridController = FindFirstObjectByType<GridController>();
-        if (flowFieldManager == null)
-            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
 
         if (gridController == null)
         {
@@ -210,7 +206,6 @@ public class Structure : MonoBehaviour
         }
 
         hasRegisteredWithGrid = false;
-        UpdateFlowField();
     }
 
     private void CalculateOccupiedCells()
@@ -239,34 +234,6 @@ public class Structure : MonoBehaviour
                 }
             }
         }
-    }
-
-    private void UpdateFlowField()
-    {
-        if (flowFieldManager != null)
-        {
-            BuildController buildController = FindFirstObjectByType<BuildController>();
-            if (buildController != null && buildController.IsBuildModeActive())
-            {
-                return;
-            }
-            if (gameObject.activeInHierarchy)
-            {
-                StartCoroutine(TriggerFlowFieldUpdate());
-            }
-            else
-            {
-                Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
-                flowFieldManager.GenerateFlowField(targetCoord);
-            }
-        }
-    }
-
-    private IEnumerator TriggerFlowFieldUpdate()
-    {
-        yield return new WaitForSeconds(0.1f);
-        Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
-        flowFieldManager.GenerateFlowField(targetCoord);
     }
 
     #endregion

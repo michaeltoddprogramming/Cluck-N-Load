@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Chicken
   Prefab: {fileID: 2168163027447337882, guid: d007a9f0ea53a9345818e2da41f194b4, type: 3}
-  MovementSpeed: 5.59
+  MovementSpeed: 5
   Type: 3
   Health: 100
   AttackDamage: 1

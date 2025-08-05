@@ -132,42 +132,43 @@ private Vector3 GetRandomOutsidePosition()
 
     int width = _gridDataGenerator.GetGridWidth();
     int height = _gridDataGenerator.GetGridHeight();
+    Debug.Log($"Grid Size: {width}x{height}+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------------------------------");
 
     while (true) // Keep trying until valid
-    {
-        int side = Random.Range(0, 4);
-        int x = 0;
-        int y = 0;
-
-        switch (side)
         {
-            case 0: // Top edge
-                x = Random.Range(0, width);
-                y = height - 1;
-                break;
-            case 1: // Right edge
-                x = width - 1;
-                y = Random.Range(0, height);
-                break;
-            case 2: // Bottom edge
-                x = Random.Range(0, width);
-                y = 0;
-                break;
-            case 3: // Left edge
-                x = 0;
-                y = Random.Range(0, height);
-                break;
-        }
+            int side = Random.Range(0, 4);
+            int x = 0;
+            int y = 0;
 
-        GridCell cell = _gridDataGenerator.GetCell(x, y);
+            switch (side)
+            {
+                case 0: // Top edge
+                    x = Random.Range(0, width);
+                    y = height - 1;
+                    break;
+                case 1: // Right edge
+                    x = width - 1;
+                    y = Random.Range(0, height);
+                    break;
+                case 2: // Bottom edge
+                    x = Random.Range(0, width);
+                    y = 0;
+                    break;
+                case 3: // Left edge
+                    x = 0;
+                    y = Random.Range(0, height);
+                    break;
+            }
 
-        if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied)
-        {
-            // Spawn exactly at the grid cell position
-            return cell.worldPosition;
+            GridCell cell = _gridDataGenerator.GetCell(x, y);
+
+            if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied)
+            {
+                // Spawn exactly at the grid cell position
+                return cell.worldPosition;
+            }
+            // else retry with another random edge cell
         }
-        // else retry with another random edge cell
-    }
 }
 
 

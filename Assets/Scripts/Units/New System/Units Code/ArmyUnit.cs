@@ -16,20 +16,25 @@ public class ArmyUnit : BaseUnit
     private Transform target;
 
     private Vector3 targetPosition;
-private bool isMoving = false;
+    private bool isMoving = false;
+
+    private UnityEngine.AI.NavMeshAgent agent;
+
+    private bool hasReachedDestination = false;
 
 
     protected override void Awake()
     {
         base.Awake();
         currHealth = data.Health;
+        agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
     }
 
     private void Update()
     {
-        if (isMoving)
+        if (HasNotReachedDestination())
         {
-            MoveToTargetPosition();
+            Debug.Log("Army unit is still on its way to the barracks.____________++++++++++++++++++===============================");
         }
     }
 
@@ -61,21 +66,6 @@ private bool isMoving = false;
     public List<EnemyUnit> GetNearbyEnemies()
     {
         return GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
-
-
-        // List<EnemyUnit> nearbyUnits = new List<EnemyUnit>();
-        // Collider[] colliders = Physics.OverlapSphere(transform.position, range);
-
-        // foreach (Collider collider in colliders)
-        // {
-        //     EnemyUnit unit = collider.GetComponent<EnemyUnit>();
-        //     if (unit != null && unit != this)
-        //     {
-        //         nearbyUnits.Add(unit);
-        //     }
-        // }
-
-        // return nearbyUnits;
     }
 
     public void TakeDamage(int damage)
@@ -97,14 +87,10 @@ private bool isMoving = false;
         return currHealth <= 0;
     }
 
-    // protected override UnitData GetData()
-    // {
-    //     return data;
-    // }
-
     public void SetBarracks(BarracksStructure source)
     {
         barracks = source;
+        guardPosition = barracks.GetFlagPosition;
     }
 
     public void SetGuardPosition(Vector3 position, float radius)
@@ -123,28 +109,109 @@ private bool isMoving = false;
 
         targetPosition = guardPosition;
         isMoving = true;
+
+        MoveToTargetPosition();
     }
 
-    private void MoveToTargetPosition()
+    public void BackToBarracks()
     {
-        Vector3 direction = targetPosition - transform.position;
-        direction.y = 0;
+        if (isNightTime) return;
 
-        if (direction.magnitude < 0.2f)
+        if (barracks == null)
         {
-            isMoving = false;
+            Debug.LogWarning("No barracks set for this unit.");
             return;
         }
 
-        Vector3 moveDir = direction.normalized;
-        transform.position += moveDir * data.MovementSpeed * Time.deltaTime;
+        targetPosition = barracks.transform.position;
+        isMoving = true;
+        isNightTime = false;
+        MoveToTargetPosition();
+    }
+    
 
-        if (moveDir != Vector3.zero)
+
+
+    private void MoveToTargetPosition()
+    {
+        if (!agent.isOnNavMesh)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(moveDir);
-            float rotationSpeed = 5f; // fallback
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        // transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, data.rotationSpeed * Time.deltaTime);
+            Debug.LogWarning("Army unit not on NavMesh.");
+            return;
         }
+
+        float distance = Vector3.Distance(transform.position, targetPosition);
+
+        if (distance < agent.stoppingDistance + 0.1f)
+        {
+            agent.ResetPath();
+            isMoving = false;
+            if (!isNightTime)
+            {
+                barracks.AfterBackToBarracks();
+                gameObject.SetActive(false);
+            }
+            return;
+        }
+
+        if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
+        {
+            agent.SetDestination(targetPosition);
+        }
+
+        // Optional: Smooth manual rotation (if needed)
+        if (agent.velocity.sqrMagnitude > 0.1f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(agent.velocity.normalized);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+        }
+
+        hasReachedDestination = !agent.pathPending
+        && agent.remainingDistance <= agent.stoppingDistance
+        && (!agent.hasPath || agent.velocity.sqrMagnitude == 0f);
+    }
+
+    private bool HasNotReachedDestination()
+    {
+        if (Vector3.Distance(transform.position, targetPosition) <= 3f && !isNightTime)
+        {
+            gameObject.SetActive(false);
+            return true;
+        }
+        return false;
+    }
+
+    private void OnDrawGizmos()
+    {
+#if UNITY_EDITOR
+        if (data == null) return;
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, data.AttackRange);
+
+        // Gizmos.color = Color.yellow;
+        // Gizmos.DrawWireSphere(transform.position, data.DetectionRange);
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(guardPosition, 1f); // You can expose guard radius if needed
+
+        if (isMoving)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(transform.position, targetPosition);
+            Gizmos.DrawWireSphere(targetPosition, 0.2f);
+        }
+
+        if (currentTarget != null && currentTarget.gameObject.activeInHierarchy)
+        {
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawLine(transform.position, currentTarget.transform.position);
+        }
+#endif
+    }
+
+    public ArmyType GetArmyType()
+    {
+        return data.Type;
     }
 }

@@ -14,12 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Goat
   Prefab: {fileID: 7230617354371779946, guid: 48dd456ebc608f344be39817ab5d1d6b, type: 3}
-  MovementSpeed: 0.5
+  MovementSpeed: 2
   Type: 2
   Health: 120
   AttackDamage: 200
   AttackRange: 100
   AttackCooldown: 20
+  Acceleration: 3
+  AngularSpeed: 90
+  StoppingDistance: 3
   AttackSound: {fileID: 8300000, guid: 5fee213b7f8315e43bfe9ee6a7bf3675, type: 3}
   DeathSound: {fileID: 0}
   HurtSound: {fileID: 0}

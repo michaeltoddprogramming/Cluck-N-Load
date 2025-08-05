@@ -28,6 +28,12 @@ public class ArmyUnit : BaseUnit
         base.Awake();
         currHealth = data.Health;
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+
+        // Apply movement values from data
+        agent.speed = data.MovementSpeed;
+        agent.acceleration = data.Acceleration;
+        agent.angularSpeed = data.AngularSpeed;
+        agent.stoppingDistance = data.StoppingDistance;
     }
 
     private void Update()

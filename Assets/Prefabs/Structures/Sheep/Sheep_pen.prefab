@@ -75,6 +75,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 59ad943156f8af94bbc75e523707706c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 355306463554525635}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 59ad943156f8af94bbc75e523707706c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -576324744411646911}
   m_SourcePrefab: {fileID: 100100000, guid: 59ad943156f8af94bbc75e523707706c, type: 3}
 --- !u!1 &8633490058668250337 stripped
 GameObject:
@@ -124,7 +127,6 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  dustPoof: {fileID: 0}
   animalType: 2
   isProducing: 0
   productReady: 0
@@ -279,3 +281,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a955076890812eb4a8fa0e5a3dceb661, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!208 &-576324744411646911
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8633490058668250337}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 2.924, y: 1.5530001, z: 1.9560001}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: -0.051000003, y: 1.5130001, z: -0.012}
+  m_TimeToStationary: 0.5

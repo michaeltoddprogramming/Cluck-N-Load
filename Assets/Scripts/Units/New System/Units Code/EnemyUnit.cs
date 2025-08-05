@@ -35,10 +35,11 @@ public class EnemyUnit : BaseUnit
         currHealth = data.Health;
         _gridDataGenerator = FindObjectOfType<GridDataGenerator>();
 
-        // Improve natural movement:
-        agent.angularSpeed = 120f; // slower, smoother turning
-        agent.acceleration = 8f;   // smoother speed changes
-        agent.obstacleAvoidanceType = UnityEngine.AI.ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        // Apply movement values from data
+        agent.speed = data.MovementSpeed;
+        agent.acceleration = data.Acceleration;
+        agent.angularSpeed = data.AngularSpeed;
+        agent.stoppingDistance = data.StoppingDistance;
     }
 
 

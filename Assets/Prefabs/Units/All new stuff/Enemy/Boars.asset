@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24920995e921c7d4db9b6b990cdb5aa8, type: 3}
-  m_Name: Wolf
+  m_Name: Boars
   m_EditorClassIdentifier: 
   UnitName: Wolf
   Prefab: {fileID: 5988654711165413027, guid: 424555a7a34736944bc97cecac3c60df, type: 3}

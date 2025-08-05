@@ -14,6 +14,9 @@ public class EnemyData : UnitData
     public int AttackDamage = 10;
     public int AttackRange = 10;
     public float AttackCooldown = 1f;
+    public float Acceleration;
+    public float AngularSpeed;
+    public float StoppingDistance;
 
     [Header("Audio")]
     public AudioClip AttackSound;

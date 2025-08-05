@@ -14,12 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Sheep
   Prefab: {fileID: 6614231965860891620, guid: 7d83479355a9ff04f9c99d3ecca84fc7, type: 3}
-  MovementSpeed: 3
+  MovementSpeed: 2
   Type: 0
   Health: 100
   AttackDamage: 100
   AttackRange: 10
   AttackCooldown: 1
+  Acceleration: 6
+  AngularSpeed: 120
+  StoppingDistance: 0.5
   AttackSound: {fileID: 8300000, guid: 54663e4e08a179c4d9f4d8f3d131cd97, type: 3}
   DeathSound: {fileID: 0}
   HurtSound: {fileID: 0}

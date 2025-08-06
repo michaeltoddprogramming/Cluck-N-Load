@@ -292,7 +292,7 @@ public class BarracksStructure : Structure
         }
     }
 
-    private GameObject GetArmyAnimalPrefab()
+private GameObject GetArmyAnimalPrefab()
     {
         foreach (GameObject prefab in armyAnimalPrefabs)
         {
@@ -300,6 +300,7 @@ public class BarracksStructure : Structure
             if (armyAnimal != null && armyAnimal.GetType().ToString().Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
             {
                 return prefab;
+            }
         }
         return armyAnimalPrefabs.Count > 0 ? armyAnimalPrefabs[0] : null;
     }

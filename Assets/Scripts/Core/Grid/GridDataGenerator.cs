@@ -37,14 +37,7 @@ public class GridDataGenerator : MonoBehaviour
             return;
         }
 
-        Debug.Log($"=== GRID GENERATION DEBUG ===");
-        Debug.Log($"useFixedGridSize: {useFixedGridSize}");
-        Debug.Log($"fixedGridWidth: {fixedGridWidth}");
-        Debug.Log($"fixedGridHeight: {fixedGridHeight}");
-        Debug.Log($"cellSize: {cellSize}");
-
         Bounds b = targetMeshRenderer.bounds;
-        Debug.Log($"Terrain bounds: {b.size.x} x {b.size.z}");
 
         gridOrigin = new Vector4(b.min.x, b.min.z, 0, 0);   // Use X and Z as our 2D origin.
         gridWorldSize = new Vector4(b.size.x, b.size.z, 0, 0); // Use size.x and size.z.
@@ -74,8 +67,6 @@ public class GridDataGenerator : MonoBehaviour
 
             gridWorldSize = new Vector4(totalWorldWidth, totalWorldHeight, 0, 0);
 
-            Debug.Log($"Fixed Grid Mode: {gridWidth}x{gridHeight}, keeping cellSize: {cellSize}");
-            Debug.Log($"Grid will cover area: {totalWorldWidth}x{totalWorldHeight} world units");
         }
         else
         {
@@ -83,11 +74,7 @@ public class GridDataGenerator : MonoBehaviour
             gridWidth = Mathf.RoundToInt(b.size.x / cellSize); // Use RoundToInt for better alignment
             gridHeight = Mathf.RoundToInt(b.size.z / cellSize);
 
-            Debug.Log($"Auto Grid Mode: {gridWidth}x{gridHeight}, using cellSize: {cellSize}");
         }
-
-        Debug.Log($"FINAL GRID SIZE: {gridWidth} x {gridHeight}");
-        Debug.Log($"=== END GRID DEBUG ===");
 
         grid = new GridCell[gridWidth, gridHeight];
 

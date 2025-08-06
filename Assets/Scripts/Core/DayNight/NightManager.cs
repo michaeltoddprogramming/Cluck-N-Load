@@ -138,19 +138,7 @@ public class NightManager : MonoBehaviour
     // Structures
     private List<AnimalStructure> animalStructures = new List<AnimalStructure>();
     private List<BarracksStructure> barracksStructures = new List<BarracksStructure>();
-    public CropStructure cropStructure; // Optional, for single crop plot
 
-    [Header("Wolf Spawning")]
-    // [SerializeField] private UnitSpawner unitSpawner;
-    // [SerializeField] private int baseWolfCount = 3;
-    // [SerializeField] private int additionalWolvesPerDay = 1;
-    // [SerializeField] private float spawnInterval = 20f;
-    // [SerializeField] private int maxWolvesAtOnce = 10;
-
-    // private List<Wolf> activeWolves = new List<Wolf>();
-    // private float nextWolfSpawnTime;
-
-    // Coroutine tracking for better management
     private Coroutine seasonNotificationCoroutine = null;
     private Coroutine productionNotificationCoroutine = null;
     // private Coroutine wolfSpawnCoroutine = null;
@@ -158,109 +146,6 @@ public class NightManager : MonoBehaviour
     private List<Coroutine> lightingCoroutines = new List<Coroutine>();
 
     private CombatManager combatManager;
-
-    // public GameObject Produc;
-
-    // public void RegisterWolf(Wolf wolf)
-    // {
-    //     if (wolf != null && !activeWolves.Contains(wolf))
-    //     {
-    //         activeWolves.Add(wolf);
-    //     }
-    // }
-
-    // public void UnregisterWolf(Wolf wolf)
-    // {
-    //     if (wolf != null && activeWolves.Remove(wolf))
-    //     {
-    //         // Wolf successfully removed from tracking
-    //     }
-    // }
-
-    // Fix the SpawnWolvesOverTime coroutine
-    // private IEnumerator SpawnWolvesOverTime()
-    // {
-    //     // Check if tutorial should prevent enemy spawning
-    //     TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
-    //     if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
-    //     {
-    //         Debug.Log("Tutorial: Preventing wolf spawning - defenses not ready");
-    //         wolfSpawnCoroutine = null;
-    //         yield break;
-    //     }
-    private IEnumerator SpawnWolvesOverTime()
-    {
-        // Check if tutorial is active to prevent wolf spawning
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
-        {
-            Debug.Log("Tutorial: Preventing wolf spawning - tutorial active");
-            wolfSpawnCoroutine = null;
-            yield break;
-        }
-
-    //     // Calculate how many wolves to spawn tonight (increasing difficulty)
-    //     int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
-    //     int wolvesSpawned = 0;
-
-    //     // // Initial delay before first spawn
-    //     yield return new WaitForSeconds(3f);
-        // Initial delay before first spawn
-        yield return new WaitForSeconds(3f);
-
-    //     // Keep spawning wolves until we reach the limit or day breaks
-    //     while (wolvesSpawned < totalWolvesToSpawn && !isDay)
-    //     {
-    //         // Check again for tutorial prevention during spawning
-    //         if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
-    //         {
-    //             Debug.Log("Tutorial: Stopping wolf spawning mid-night - tutorial still active");
-    //             break;
-    //         }
-
-    //         // Don't spawn more if we're at max concurrent wolves
-    //         if (activeWolves.Count < maxWolvesAtOnce)
-    //         {
-    //             // Use new specific wolf spawner method
-    //             if (unitSpawner != null)
-    //             {
-    //                 unitSpawner.SpawnWolf();
-    //                 wolvesSpawned++;
-    //             }
-    //             else
-    //             {
-    //                 Debug.LogError("CRITICAL ERROR: UnitSpawner is null!");
-    //                 break;
-    //             }
-    //         }
-    //         else
-    //         {
-    //             // Maximum wolves reached, wait before checking again
-    //         }
-        // Keep spawning wolves until we reach the limit or day breaks
-        while (wolvesSpawned < totalWolvesToSpawn && !isDay)
-        {
-            // Don't spawn more if we're at max concurrent wolves
-            if (activeWolves.Count < maxWolvesAtOnce)
-            {
-                // Use new specific wolf spawner method
-                if (unitSpawner != null)
-                {
-                    unitSpawner.SpawnWolf();
-                    wolvesSpawned++;
-                }
-                else
-                {
-                    Debug.LogError("CRITICAL ERROR: UnitSpawner is null!");
-                    break;
-                }
-            }
-
-    //         // Wait before spawning next wolf
-    //         yield return new WaitForSeconds(spawnInterval);
-    //     }
-
-    //     wolfSpawnCoroutine = null;
-    // }
 
     private void Awake()
     {
@@ -285,11 +170,6 @@ public class NightManager : MonoBehaviour
 
     private void Start()
     {
-        // AddToAllStructures addToAllStructures = FindObjectOfType<AddToAllStructures>();
-        // addToAllStructures.AddHitEffectToAllStructures();
-
-
-
         AudioSource[] sources = GetComponents<AudioSource>();
         if (sources.Length >= 2)
         {
@@ -337,10 +217,6 @@ public class NightManager : MonoBehaviour
             Minutes += 1;
             tempSecond = 0;
         }
-
-        // Clean up any null references in the wolves list
-        // activeWolves.RemoveAll(wolf => wolf == null);
-
 
         //rotate daynight icon
         rotateDayNightIcon();
@@ -767,6 +643,8 @@ private void setSeason(int season)
         Debug.Log("Tutorial active: Suppressing regular season notification");
         return;
     }
+
+    combatManager.increaseAfterSeason();
     
     StartNotification(text, 5);
 }

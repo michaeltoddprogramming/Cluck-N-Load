@@ -7849,8 +7849,6 @@ GameObject:
   - component: {fileID: 1632256044}
   - component: {fileID: 1632256045}
   - component: {fileID: 1632256049}
-  - component: {fileID: 1632256048}
-  - component: {fileID: 1632256050}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -8221,7 +8219,6 @@ MonoBehaviour:
   nightIntensity: 0.03
   dayIntensity: 2
   pauseManager: {fileID: 1632256040}
-  cropStructure: {fileID: 0}
 --- !u!4 &1632256035
 Transform:
   m_ObjectHideFlags: 0
@@ -8296,7 +8293,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1632256031}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a679b750ab1d15a409141afb93778017, type: 3}
+  m_Script: {fileID: 11500000, guid: dbee7fa43a9d1e6488dfefc409b82639, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &1632256039
@@ -8764,18 +8761,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4fce48d2b52d444eb65cd2926f15067, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1632256048
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1632256031}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 577bc2bccfc02ca4096ffd4207f9251b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!82 &1632256049
@@ -10234,7 +10219,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1884560014}
-  - component: {fileID: 1884560013}
   - component: {fileID: 1884560015}
   m_Layer: 0
   m_Name: UnitSpawner
@@ -10243,18 +10227,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1884560013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1884560012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a679b750ab1d15a409141afb93778017, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1884560014
 Transform:
   m_ObjectHideFlags: 0

@@ -141,41 +141,53 @@ public class NightManager : MonoBehaviour
     public CropStructure cropStructure; // Optional, for single crop plot
 
     [Header("Wolf Spawning")]
-    [SerializeField] private UnitSpawner unitSpawner;
-    [SerializeField] private int baseWolfCount = 3;
-    [SerializeField] private int additionalWolvesPerDay = 1;
-    [SerializeField] private float spawnInterval = 20f;
-    [SerializeField] private int maxWolvesAtOnce = 10;
+    // [SerializeField] private UnitSpawner unitSpawner;
+    // [SerializeField] private int baseWolfCount = 3;
+    // [SerializeField] private int additionalWolvesPerDay = 1;
+    // [SerializeField] private float spawnInterval = 20f;
+    // [SerializeField] private int maxWolvesAtOnce = 10;
 
-    private List<Wolf> activeWolves = new List<Wolf>();
-    private float nextWolfSpawnTime;
+    // private List<Wolf> activeWolves = new List<Wolf>();
+    // private float nextWolfSpawnTime;
 
     // Coroutine tracking for better management
     private Coroutine seasonNotificationCoroutine = null;
     private Coroutine productionNotificationCoroutine = null;
-    private Coroutine wolfSpawnCoroutine = null;
+    // private Coroutine wolfSpawnCoroutine = null;
     private List<Coroutine> skyboxCoroutines = new List<Coroutine>();
     private List<Coroutine> lightingCoroutines = new List<Coroutine>();
 
+    private CombatManager combatManager;
+
     // public GameObject Produc;
 
-    public void RegisterWolf(Wolf wolf)
-    {
-        if (wolf != null && !activeWolves.Contains(wolf))
-        {
-            activeWolves.Add(wolf);
-        }
-    }
+    // public void RegisterWolf(Wolf wolf)
+    // {
+    //     if (wolf != null && !activeWolves.Contains(wolf))
+    //     {
+    //         activeWolves.Add(wolf);
+    //     }
+    // }
 
-    public void UnregisterWolf(Wolf wolf)
-    {
-        if (wolf != null && activeWolves.Remove(wolf))
-        {
-            // Wolf successfully removed from tracking
-        }
-    }
+    // public void UnregisterWolf(Wolf wolf)
+    // {
+    //     if (wolf != null && activeWolves.Remove(wolf))
+    //     {
+    //         // Wolf successfully removed from tracking
+    //     }
+    // }
 
     // Fix the SpawnWolvesOverTime coroutine
+    // private IEnumerator SpawnWolvesOverTime()
+    // {
+    //     // Check if tutorial should prevent enemy spawning
+    //     TutorialConditionTracker tutorialTracker = FindFirstObjectByType<TutorialConditionTracker>();
+    //     if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+    //     {
+    //         Debug.Log("Tutorial: Preventing wolf spawning - defenses not ready");
+    //         wolfSpawnCoroutine = null;
+    //         yield break;
+    //     }
     private IEnumerator SpawnWolvesOverTime()
     {
         // Check if tutorial is active to prevent wolf spawning
@@ -186,13 +198,44 @@ public class NightManager : MonoBehaviour
             yield break;
         }
 
-        // Calculate how many wolves to spawn tonight (increasing difficulty)
-        int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
-        int wolvesSpawned = 0;
+    //     // Calculate how many wolves to spawn tonight (increasing difficulty)
+    //     int totalWolvesToSpawn = baseWolfCount + (days * additionalWolvesPerDay);
+    //     int wolvesSpawned = 0;
 
+    //     // // Initial delay before first spawn
+    //     yield return new WaitForSeconds(3f);
         // Initial delay before first spawn
         yield return new WaitForSeconds(3f);
 
+    //     // Keep spawning wolves until we reach the limit or day breaks
+    //     while (wolvesSpawned < totalWolvesToSpawn && !isDay)
+    //     {
+    //         // Check again for tutorial prevention during spawning
+    //         if (tutorialTracker != null && tutorialTracker.ShouldPreventEnemySpawning())
+    //         {
+    //             Debug.Log("Tutorial: Stopping wolf spawning mid-night - tutorial still active");
+    //             break;
+    //         }
+
+    //         // Don't spawn more if we're at max concurrent wolves
+    //         if (activeWolves.Count < maxWolvesAtOnce)
+    //         {
+    //             // Use new specific wolf spawner method
+    //             if (unitSpawner != null)
+    //             {
+    //                 unitSpawner.SpawnWolf();
+    //                 wolvesSpawned++;
+    //             }
+    //             else
+    //             {
+    //                 Debug.LogError("CRITICAL ERROR: UnitSpawner is null!");
+    //                 break;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             // Maximum wolves reached, wait before checking again
+    //         }
         // Keep spawning wolves until we reach the limit or day breaks
         while (wolvesSpawned < totalWolvesToSpawn && !isDay)
         {
@@ -212,12 +255,12 @@ public class NightManager : MonoBehaviour
                 }
             }
 
-            // Wait before spawning next wolf
-            yield return new WaitForSeconds(spawnInterval);
-        }
+    //         // Wait before spawning next wolf
+    //         yield return new WaitForSeconds(spawnInterval);
+    //     }
 
-        wolfSpawnCoroutine = null;
-    }
+    //     wolfSpawnCoroutine = null;
+    // }
 
     private void Awake()
     {
@@ -231,6 +274,12 @@ public class NightManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
+        }
+
+        combatManager = FindObjectOfType<CombatManager>();
+        if (combatManager == null)
+        {
+            Debug.LogError("CombatManager not found in scene!");
         }
     }
 
@@ -290,7 +339,7 @@ public class NightManager : MonoBehaviour
         }
 
         // Clean up any null references in the wolves list
-        activeWolves.RemoveAll(wolf => wolf == null);
+        // activeWolves.RemoveAll(wolf => wolf == null);
 
 
         //rotate daynight icon
@@ -348,6 +397,9 @@ public class NightManager : MonoBehaviour
 
     private void StartNight(int flag)
     {
+
+        combatManager.StartCombat();
+
         shopManager.CloseShop();
         buildController.HideDeleteIcon();
 
@@ -375,20 +427,20 @@ public class NightManager : MonoBehaviour
         }
 
         // Start wolf spawning when night begins
-        if (unitSpawner != null)
-        {
-            // Stop only wolf spawning coroutine if active
-            if (wolfSpawnCoroutine != null)
-            {
-                StopCoroutine(wolfSpawnCoroutine);
-            }
+        // if (unitSpawner != null)
+        // {
+        //     // Stop only wolf spawning coroutine if active
+        //     if (wolfSpawnCoroutine != null)
+        //     {
+        //         StopCoroutine(wolfSpawnCoroutine);
+        //     }
             
-            wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
-        }
-        else
-        {
-            Debug.LogError("UnitSpawner reference missing in NightManager!");
-        }
+        //     wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
+        // }
+        // else
+        // {
+        //     Debug.LogError("UnitSpawner reference missing in NightManager!");
+        // }
 
         // Manage skybox coroutines
         Coroutine skyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxNight, 5f));
@@ -409,17 +461,21 @@ public class NightManager : MonoBehaviour
                 barracks.OnDayNightChanged(true);
             }
         }
-    }    private void StartDay(int flag)
+    }
+
+    private void StartDay(int flag)
     {
+        combatManager.StopCombat();
+        combatManager.increaseAfterNight();
         // Destroy all remaining wolves when day starts
-        foreach (Wolf wolf in activeWolves.ToList())
-        {
-            if (wolf != null)
-            {
-                wolf.OnDayNightChanged(false); // This should trigger the wolf to destroy itself
-            }
-        }
-        activeWolves.Clear();
+        // foreach (Wolf wolf in activeWolves.ToList())
+        // {
+        //     if (wolf != null)
+        //     {
+        //         wolf.OnDayNightChanged(false); // This should trigger the wolf to destroy itself
+        //     }
+        // }
+        // activeWolves.Clear();
 
         // Notify animal structures
         foreach (AnimalStructure structure in animalStructures)

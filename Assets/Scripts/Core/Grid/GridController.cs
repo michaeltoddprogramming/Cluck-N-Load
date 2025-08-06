@@ -29,6 +29,19 @@ public class GridController : MonoBehaviour
     private MeshRenderer targetRenderer;
     private TextureGenerator textureGenerator;
 
+    public static GridController Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
     void Start()
     {
         GridCellColorResolver.Colors = gridColors;
@@ -46,7 +59,7 @@ public class GridController : MonoBehaviour
         ApplySettings();
         
         // Hide grid by default
-        HideGrid();
+        // HideGrid();
     }
 
     void Update()
@@ -64,12 +77,12 @@ public class GridController : MonoBehaviour
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
         {
             Vector2Int gridCoords = WorldToGridCoords(hit.point);
-            
+
             // Only update the hover cell if it's within valid bounds
             if (IsValidCell(gridCoords.x, gridCoords.y))
             {
                 currentHoveredCell = gridCoords;
-                
+
                 if (targetMaterial != null)
                 {
                     targetMaterial.SetVector("_HoverCell", new Vector4(gridCoords.x, gridCoords.y, 0, 0));
@@ -77,6 +90,73 @@ public class GridController : MonoBehaviour
             }
         }
     }
+
+    //gets all enemies in a square area(animal attack radius) around the given world position 
+    public List<EnemyUnit> GetEnemiesInRange(Vector3 worldPosition, int blockRadius)
+    {
+        Vector2Int centerGridPos = WorldToGridCoords(worldPosition);
+        List<EnemyUnit> enemiesInRange = new List<EnemyUnit>();
+
+        // Define the square search area
+        for (int x = -blockRadius; x <= blockRadius; x++)
+        {
+            for (int y = -blockRadius; y <= blockRadius; y++)
+            {
+                Vector2Int offset = new Vector2Int(x, y);
+                Vector2Int checkPos = centerGridPos + offset;
+
+                if (!IsValidCell(checkPos.x, checkPos.y)) continue;
+
+                // Get world position of this grid cell center
+                // Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
+                Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
+
+                // Check for enemies at this cell using OverlapSphere
+                Collider[] hits = Physics.OverlapSphere(cellCenter, cellSize * 0.5f);
+                foreach (var hit in hits)
+                {
+                    EnemyUnit enemy = hit.GetComponent<EnemyUnit>();
+                    if (enemy != null && !enemiesInRange.Contains(enemy))
+                    {
+                        enemiesInRange.Add(enemy);
+                    }
+                }
+            }
+        }
+
+        return enemiesInRange;
+    }
+
+    public List<GridCell> GetCellsInRange(Vector3 worldPos, int radius)
+    {
+        List<GridCell> cellsInRange = new List<GridCell>();
+
+        Vector2Int centerCoords = WorldToGridCoords(worldPos);
+
+        for (int x = -radius; x <= radius; x++)
+        {
+            for (int y = -radius; y <= radius; y++)
+            {
+                Vector2Int checkCoords = centerCoords + new Vector2Int(x, y);
+                if (!IsValidCell(checkCoords.x, checkCoords.y))
+                    continue;
+
+                // Optionally: check if within radius circle for a more accurate range
+                if (x * x + y * y <= radius * radius)
+                {
+                    cellsInRange.Add(gridDataGenerator.GetCell(checkCoords.x, checkCoords.y));
+                }
+            }
+        }
+
+        // Debug.Log($"Cells in range of {worldPos} with radius {radius}: {cellsInRange.Count}------------------------------------------------------------------------------");
+
+        return cellsInRange;
+    }
+
+
+
+    
 
     void SetUpGridOverlay()
     {
@@ -138,7 +218,7 @@ public class GridController : MonoBehaviour
         if (gridOverlayInstance != null)
         {
             gridOverlayInstance.SetActive(true);
-            }
+        }
     }
 
     public void HideGrid()

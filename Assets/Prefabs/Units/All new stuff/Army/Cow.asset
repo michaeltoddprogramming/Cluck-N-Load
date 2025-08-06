@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f220e1df34e71d84b80902fcd0aa7d98, type: 3}
+  m_Name: Cow
+  m_EditorClassIdentifier: 
+  UnitName: Cow
+  Prefab: {fileID: 8917997704576204703, guid: 8bb1ae4f766bcdc4783fc72ebe65fc6b, type: 3}
+  MovementSpeed: 2.5
+  Type: 4
+  Health: 300
+  AttackDamage: 8
+  AttackRange: 4
+  AttackCooldown: 0.5
+  Acceleration: 4
+  AngularSpeed: 120
+  StoppingDistance: 2
+  AttackSound: {fileID: 8300000, guid: e689391081cbbe144b685706b48a5c37, type: 3}
+  DeathSound: {fileID: 8300000, guid: 8eeb8877cb62487438cab8040b26b019, type: 3}
+  HurtSound: {fileID: 0}
+  backgroundSound: {fileID: 8300000, guid: aad19c11dc11e7c429626fa92d58f08f, type: 3}

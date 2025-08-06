@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.UI;
 using TMPro;
+// using FarmDefender.Core.AI.FlowField;
+using System.Collections;
 using UnityEngine.VFX;
 using FarmDefender.Core.AI.FlowField;
 
@@ -11,7 +13,7 @@ public class BuildController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridController gridController;
-    [SerializeField] private FlowFieldManager flowFieldManager;
+    // [SerializeField] private FlowFieldManager flowFieldManager;
     [SerializeField] private OwnershipController ownershipController;
     [SerializeField] private GridMonitor gridMonitor;
 
@@ -76,12 +78,25 @@ public class BuildController : MonoBehaviour
         gridController = gridController ?? FindFirstObjectByType<GridController>();
         if (gridController == null)
         {
-            enabled = false;
-            return;
+            gridController = FindFirstObjectByType<GridController>();
+            if (gridController == null)
+            {
+                Debug.LogError("GridController not found. BuildController cannot function.");
+                enabled = false;
+                return;
+            }
         }
-        flowFieldManager = flowFieldManager ?? FindFirstObjectByType<FlowFieldManager>();
-        ownershipController = ownershipController ?? FindFirstObjectByType<OwnershipController>();
-        gridMonitor = gridMonitor ?? FindFirstObjectByType<GridMonitor>();
+
+
+        if (ownershipController == null)
+            ownershipController = FindFirstObjectByType<OwnershipController>();
+
+        if (gridMonitor == null)
+            gridMonitor = FindFirstObjectByType<GridMonitor>();
+
+        if (gridMonitor == null)
+            Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
+
         shopPanelUI = FindFirstObjectByType<ShopPanelUI>(FindObjectsInactive.Include);
         if (shopPanelUI != null)
         {
@@ -156,8 +171,8 @@ public class BuildController : MonoBehaviour
         isBuildModeActive = true;
         isMoveModeActive = false;
         gridController.ShowGrid();
-        if (currentBuildTargetPrefab != null && currentGhost == null) CreateGhost(currentBuildTargetPrefab);
-        flowFieldManager?.SetBuildModeActive(true);
+        if (currentBuildTargetPrefab != null && currentGhost == null)
+            CreateGhost(currentBuildTargetPrefab);
     }
 
     public void DisableBuildMode()
@@ -172,8 +187,8 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         movingStructure = null;
-        flowFieldManager?.SetBuildModeActive(false);
-        if (itemDeleteIcon != null) itemDeleteIcon.gameObject.SetActive(false);
+        if (itemDeleteIcon != null)
+            itemDeleteIcon.gameObject.SetActive(false);
     }
 
     public void ToggleBuildMode()
@@ -571,7 +586,11 @@ public class BuildController : MonoBehaviour
         textMesh.anchor = TextAnchor.MiddleCenter;
         MeshRenderer renderer = textObj.GetComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("GUI/Text Shader");
-        textObj.AddComponent<SimpleBillboard>();
+
+        // Create a simple billboard script to make text face camera
+        // textObj.AddComponent<SimpleBillboard>();
+
+        // Add to synergy indicators for cleanup
         synergyIndicators.Add(textObj);
     }
 

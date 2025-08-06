@@ -1,7 +1,6 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-using FarmDefender.Core.AI.FlowField;
 using System.Linq;
 using System.Collections;
 
@@ -44,7 +43,6 @@ public class Structure : MonoBehaviour
 
     // Private references
     private GridController gridController;
-    private FlowFieldManager flowFieldManager;
     private List<Vector2Int> occupiedCells = new List<Vector2Int>();
     private bool hasRegisteredWithGrid = false;
 
@@ -63,18 +61,18 @@ public class Structure : MonoBehaviour
     public event System.Action OnHealthChanged;
 
     // Wolf notifications
-    private static readonly List<Wolf> registeredWolves = new List<Wolf>();
+    // private static readonly List<Wolf> registeredWolves = new List<Wolf>();
 
-    public static void RegisterWolf(Wolf wolf)
-    {
-        if (wolf != null && !registeredWolves.Contains(wolf))
-            registeredWolves.Add(wolf);
-    }
+    // public static void RegisterWolf(Wolf wolf)
+    // {
+    //     if (wolf != null && !registeredWolves.Contains(wolf))
+    //         registeredWolves.Add(wolf);
+    // }
 
-    public static void UnregisterWolf(Wolf wolf)
-    {
-        registeredWolves.Remove(wolf);
-    }
+    // public static void UnregisterWolf(Wolf wolf)
+    // {
+    //     registeredWolves.Remove(wolf);
+    // }
 
     #region Unity Lifecycle
 
@@ -109,8 +107,6 @@ public class Structure : MonoBehaviour
         }
 
         gridController = FindFirstObjectByType<GridController>();
-        if (flowFieldManager == null)
-            flowFieldManager = FindFirstObjectByType<FlowFieldManager>();
 
         if (gridController == null)
         {
@@ -210,7 +206,6 @@ public class Structure : MonoBehaviour
         }
 
         hasRegisteredWithGrid = false;
-        UpdateFlowField();
     }
 
     private void CalculateOccupiedCells()
@@ -241,34 +236,6 @@ public class Structure : MonoBehaviour
         }
     }
 
-    private void UpdateFlowField()
-    {
-        if (flowFieldManager != null)
-        {
-            BuildController buildController = FindFirstObjectByType<BuildController>();
-            if (buildController != null && buildController.IsBuildModeActive())
-            {
-                return;
-            }
-            if (gameObject.activeInHierarchy)
-            {
-                StartCoroutine(TriggerFlowFieldUpdate());
-            }
-            else
-            {
-                Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
-                flowFieldManager.GenerateFlowField(targetCoord);
-            }
-        }
-    }
-
-    private IEnumerator TriggerFlowFieldUpdate()
-    {
-        yield return new WaitForSeconds(0.1f);
-        Vector2Int targetCoord = flowFieldManager.GetTargetCoordinates();
-        flowFieldManager.GenerateFlowField(targetCoord);
-    }
-
     #endregion
 
     #region Health and Damage
@@ -292,11 +259,11 @@ public class Structure : MonoBehaviour
         OnDestroyed?.Invoke(this);
         OnStructureDestroyed?.Invoke(this);
 
-        foreach (Wolf wolf in registeredWolves.ToList())
-        {
-            if (wolf != null && wolf)
-                wolf.OnTargetDestroyed(gameObject);
-        }
+        // foreach (Wolf wolf in registeredWolves.ToList())
+        // {
+        //     if (wolf != null && wolf)
+        //         wolf.OnTargetDestroyed(gameObject);
+        // }
 
         if (destructionEffectPrefab != null)
         {
@@ -325,6 +292,11 @@ public class Structure : MonoBehaviour
     public int GetMaxHealth()
     {
         return structureData != null ? structureData.health : 100;
+    }
+
+    public bool IsDead()
+    {
+        return currentHealth <= 0;
     }
 
     #endregion

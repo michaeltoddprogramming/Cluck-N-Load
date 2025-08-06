@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24920995e921c7d4db9b6b990cdb5aa8, type: 3}
+  m_Name: Bears
+  m_EditorClassIdentifier: 
+  UnitName: Bear
+  Prefab: {fileID: 7102291462086250083, guid: e17024e83b7e6b348b32a2833ba92e51, type: 3}
+  MovementSpeed: 3
+  Type: 2
+  AttType: 2
+  Health: 250
+  AttackDamage: 25
+  AttackRange: 1000
+  AttackCooldown: 1.5
+  Acceleration: 5
+  AngularSpeed: 180
+  StoppingDistance: 1.5
+  AttackSound: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
+  DeathSound: {fileID: 0}
+  HurtSound: {fileID: 8300000, guid: dff890f506ed40e48acf6f9008f8e6a2, type: 3}
+  backgroundSound: {fileID: 8300000, guid: 870a313bfc5616544aaa7dfb9203f612, type: 3}
+  maxSpawnAmount: 5
+  minSpawnAmount: 1
+  nightlySpawnMultiplier: 2
+  seasonSpawnMultiplier: 1.2

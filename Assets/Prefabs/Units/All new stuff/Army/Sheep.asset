@@ -16,10 +16,10 @@ MonoBehaviour:
   Prefab: {fileID: 6614231965860891620, guid: 7d83479355a9ff04f9c99d3ecca84fc7, type: 3}
   MovementSpeed: 2
   Type: 0
-  Health: 100
-  AttackDamage: 100
-  AttackRange: 10
-  AttackCooldown: 1
+  Health: 50
+  AttackDamage: 80
+  AttackRange: 1
+  AttackCooldown: 20
   Acceleration: 6
   AngularSpeed: 120
   StoppingDistance: 0.5

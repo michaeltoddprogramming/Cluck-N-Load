@@ -817,7 +817,7 @@ public class BuildController : MonoBehaviour
         renderer.material.shader = Shader.Find("GUI/Text Shader");
 
         // Create a simple billboard script to make text face camera
-        textObj.AddComponent<SimpleBillboard>();
+        // textObj.AddComponent<SimpleBillboard>();
 
         // Add to synergy indicators for cleanup
         synergyIndicators.Add(textObj);

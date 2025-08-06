@@ -22,6 +22,7 @@ public class EnemyData : UnitData
     public AudioClip AttackSound;
     public AudioClip DeathSound;
     public AudioClip HurtSound;
+    public AudioClip backgroundSound;
 
     [Header("Enemy Spawn Settings")]
     public int maxSpawnAmount = 5;

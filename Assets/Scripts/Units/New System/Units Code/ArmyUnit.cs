@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class ArmyUnit : BaseUnit
 {
@@ -22,6 +23,10 @@ public class ArmyUnit : BaseUnit
 
     private bool hasReachedDestination = false;
 
+    private bool isReturningToFlag = false;
+    [SerializeField] private bool doIt = false;
+    private bool isReturningAfterAttack = false;
+
 
     protected override void Awake()
     {
@@ -34,20 +39,49 @@ public class ArmyUnit : BaseUnit
         agent.acceleration = data.Acceleration;
         agent.angularSpeed = data.AngularSpeed;
         agent.stoppingDistance = data.StoppingDistance;
+
+
+        PlayBackgroundSound(data.backgroundSound);
     }
 
     private void Update()
     {
+        if (doIt)
+        {
+            ApplyRecoil();
+            doIt = false;
+        }
+        // Debug.Log($"{agent.velocity.sqrMagnitude} -------------------------------------------------------------------------------------------------------------------------");
+        if (agent.velocity.sqrMagnitude > 0.1f)
+        {
+            SetBool("isWalking", true);
+        }
+        else
+        {
+            SetBool("isWalking", false);
+        }
+
+
         if (HasNotReachedDestination())
         {
-            Debug.Log("Army unit is still on its way to the barracks.____________++++++++++++++++++===============================");
+            // Debug.Log("Army unit is still on its way to the barracks.____________++++++++++++++++++===============================");
         }
+        
+        if (isMoving)
+    {
+        MoveToTargetPosition();  // Call every frame while moving
+    }
     }
 
     protected override UnitData GetData() => data;
 
     public void Attack()
     {
+        if (isReturningAfterAttack)
+        {
+            return;
+        }
+        
         //apply cooldown
         if (Time.time < lastAttackTime + data.AttackCooldown)
         {
@@ -66,7 +100,64 @@ public class ArmyUnit : BaseUnit
         lastAttackTime = Time.time;
         PlaySound(data.AttackSound);
 
+        ApplyRecoil();
+        isReturningAfterAttack = true;
+
         currentTarget.TakeDamage(data.AttackDamage);
+    }
+
+    // private void ApplyRecoil()
+    // {
+    //     Rigidbody rb = GetComponent<Rigidbody>();
+
+    //     if (rb != null)
+    //     {
+    //         Vector3 recoilDirection = -transform.forward;
+    //         float recoilForce = 3f;
+
+    //         rb.AddForce(recoilDirection * recoilForce, ForceMode.Impulse);
+
+    //         if (!isReturningToFlag)
+    //             StartCoroutine(ReturnToFlagAfterRecoil(1f)); 
+    //     }
+    // }
+
+
+private void ApplyRecoil()
+{
+    Rigidbody rb = GetComponent<Rigidbody>();
+
+    if (rb != null)
+    {
+        Vector3 recoilDirection = -transform.forward;
+        float recoilForce = 1000f;
+
+        agent.enabled = false;
+        rb.isKinematic = false;  // enable physics
+        transform.position += new Vector3(0, 1f, 0);
+        rb.AddForce(recoilDirection * recoilForce, ForceMode.Impulse);
+
+        StartCoroutine(ReenableAgentWhenStopped(rb));
+        if (!isReturningToFlag)
+            StartCoroutine(ReturnToFlagAfterRecoil(0.1f));
+    }
+}
+
+private IEnumerator ReenableAgentWhenStopped(Rigidbody rb)
+{
+    // Wait until velocity is low (almost stopped)
+    yield return new WaitUntil(() => rb.linearVelocity.magnitude < 0.1f);
+
+    rb.isKinematic = true;   // disable physics
+    agent.enabled = true;
+}
+
+    private IEnumerator ReturnToFlagAfterRecoil(float delay)
+    {
+        isReturningToFlag = true;
+        yield return new WaitForSeconds(delay);
+        MoveToFlag();
+        isReturningToFlag = false;
     }
 
     public List<EnemyUnit> GetNearbyEnemies()
@@ -150,6 +241,12 @@ public class ArmyUnit : BaseUnit
 
         if (distance < agent.stoppingDistance + 0.1f)
         {
+            Debug.Log("16531278634568124598761263458762347895628371465 87231 59723459721349750 2309745 609273456 50972365 0978236 5097235490 762390745 5629307465 09723465 907");
+            if (isReturningAfterAttack)
+            {
+                isReturningAfterAttack = false;
+            }
+
             agent.ResetPath();
             isMoving = false;
             if (!isNightTime)
@@ -162,6 +259,7 @@ public class ArmyUnit : BaseUnit
 
         if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
         {
+            // SetBool("isWalking", true);
             agent.SetDestination(targetPosition);
         }
 

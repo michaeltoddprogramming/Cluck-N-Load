@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c32de455d67fdf449a5c86954c0506ba
+guid: 9b94a06bfa61c62419e5f1e023483840
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -31,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Run
+      name: Walk
       takeName: Armature|ArmatureAction
       internalID: 4781951162920444690
       firstFrame: 0
-      lastFrame: 30
+      lastFrame: 33
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -63,8 +63,8 @@ ModelImporter:
       name: Idle
       takeName: Armature|ArmatureAction
       internalID: -1246731831762816583
-      firstFrame: 35
-      lastFrame: 65
+      firstFrame: 34
+      lastFrame: 122
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -91,7 +91,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.3
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -146,8 +146,8 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.003
-    rootMotionBoneName: 
+    globalScale: 1
+    rootMotionBoneName: Armature
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1

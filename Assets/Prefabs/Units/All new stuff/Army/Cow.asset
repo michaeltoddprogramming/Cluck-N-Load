@@ -17,9 +17,9 @@ MonoBehaviour:
   MovementSpeed: 2.5
   Type: 4
   Health: 300
-  AttackDamage: 15
-  AttackRange: 1
-  AttackCooldown: 0.2
+  AttackDamage: 8
+  AttackRange: 4
+  AttackCooldown: 0.5
   Acceleration: 4
   AngularSpeed: 120
   StoppingDistance: 2

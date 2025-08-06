@@ -19,5 +19,6 @@ public class ArmyData : UnitData
     public AudioClip AttackSound;
     public AudioClip DeathSound;
     public AudioClip HurtSound;
+    public AudioClip backgroundSound;
     
 }

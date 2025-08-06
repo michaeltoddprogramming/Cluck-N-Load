@@ -12,21 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24920995e921c7d4db9b6b990cdb5aa8, type: 3}
   m_Name: Bears
   m_EditorClassIdentifier: 
-  UnitName: Wolf
-  Prefab: {fileID: 5988654711165413027, guid: 424555a7a34736944bc97cecac3c60df, type: 3}
-  MovementSpeed: 5.5
-  Type: 0
-  AttType: 1
-  Health: 100
-  AttackDamage: 10
+  UnitName: Bear
+  Prefab: {fileID: 7102291462086250083, guid: e17024e83b7e6b348b32a2833ba92e51, type: 3}
+  MovementSpeed: 3
+  Type: 2
+  AttType: 2
+  Health: 250
+  AttackDamage: 25
   AttackRange: 1000
-  AttackCooldown: 1
-  Acceleration: 10
-  AngularSpeed: 360
-  StoppingDistance: 1
-  AttackSound: {fileID: 0}
+  AttackCooldown: 1.5
+  Acceleration: 5
+  AngularSpeed: 180
+  StoppingDistance: 1.5
+  AttackSound: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
   DeathSound: {fileID: 0}
-  HurtSound: {fileID: 0}
+  HurtSound: {fileID: 8300000, guid: dff890f506ed40e48acf6f9008f8e6a2, type: 3}
+  backgroundSound: {fileID: 8300000, guid: 870a313bfc5616544aaa7dfb9203f612, type: 3}
   maxSpawnAmount: 5
   minSpawnAmount: 1
   nightlySpawnMultiplier: 2

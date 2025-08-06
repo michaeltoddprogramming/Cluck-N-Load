@@ -3,7 +3,6 @@ using System.Collections.Generic;
 public class EnemyUnit : BaseUnit
 {
     [SerializeField] private EnemyData data;
-    [SerializeField] private bool done = false;
     private int currHealth;
     private float lastAttackTime = 0f;
     private MonoBehaviour currentTarget;
@@ -40,6 +39,8 @@ public class EnemyUnit : BaseUnit
         agent.acceleration = data.Acceleration;
         agent.angularSpeed = data.AngularSpeed;
         agent.stoppingDistance = data.StoppingDistance;
+
+        PlayBackgroundSound(data.backgroundSound); 
     }
 
 
@@ -261,7 +262,7 @@ private void HandleTargetingAndMovement()
             {
                 lastAttackTime = Time.time;
                 PlaySound(data.AttackSound);
-                DealDamage(currentTarget);
+                Attack(currentTarget);
             }
         }
     }
@@ -441,11 +442,13 @@ private MonoBehaviour GetNearestAggroTargetOptimized()
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
             // Debug.Log("Died: ----------------------------------------------------------------------------------");
+            PlaySound(data.DeathSound);
             Die();
         }
         else
         {
             // Debug.Log("Taking damage: " + damage + "----------------------------------------------------------------------------------");
+            PlaySound(data.HurtSound);
             currHealth -= damage;
         }
     }
@@ -470,32 +473,38 @@ private MonoBehaviour GetNearestAggroTargetOptimized()
         };
     }
 
-    private void DealDamage(MonoBehaviour target)
+    private void Attack(MonoBehaviour target)
     {
         switch (target)
         {
             case ArmyUnit u:
                 u.TakeDamage(data.AttackDamage);
+                PlaySound(data.AttackSound);
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case CropStructure u:
+                PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case SiloStructure u:
+                PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             // case DefenseStructure u: u.TakeDamage(data.AttackDamage); break;
             case FarmHouseStructure u:
+                PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case BarracksStructure u:
+                PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case AnimalStructure u:
+                PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage); 
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;

@@ -143,7 +143,7 @@ public class EnemyUnit : BaseUnit
     //much better best so far
     
 
-private void HandleTargetingAndMovement()
+    private void HandleTargetingAndMovement()
     {
         if (!agent.isOnNavMesh)
         {

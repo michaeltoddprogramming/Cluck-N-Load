@@ -26,3 +26,4 @@ MonoBehaviour:
   AttackSound: {fileID: 8300000, guid: 96ff6c14209bdd041b6eadd4f794fee4, type: 3}
   DeathSound: {fileID: 0}
   HurtSound: {fileID: 0}
+  backgroundSound: {fileID: 8300000, guid: 96ff6c14209bdd041b6eadd4f794fee4, type: 3}

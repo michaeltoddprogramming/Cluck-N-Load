@@ -46,11 +46,13 @@ public partial class TutorialManager
 
         bool categoryComplete = true;
         foreach (string step in steps)
+        {
             if (!completedStepIds.Contains(step))
             {
                 categoryComplete = false;
                 break;
             }
+        }
 
         if (categoryComplete)
             AdvanceToNextCategory();
@@ -60,6 +62,7 @@ public partial class TutorialManager
     {
         string[] allCategories = new string[categories.Count];
         categories.Keys.CopyTo(allCategories, 0);
+
         int currentIndex = System.Array.IndexOf(allCategories, currentCategory);
         if (currentIndex >= 0 && currentIndex < allCategories.Length - 1)
         {
@@ -81,6 +84,7 @@ public partial class TutorialManager
     {
         GameObject headerObj = Instantiate(checklistItemPrefab, checklistContainer);
         TextMeshProUGUI headerText = headerObj.GetComponentInChildren<TextMeshProUGUI>();
+
         if (headerText != null)
         {
             headerText.text = $"<b>{currentCategory}</b>";
@@ -88,32 +92,10 @@ public partial class TutorialManager
             headerText.fontStyle = FontStyles.Bold;
             headerText.color = new Color(1f, 0.8f, 0.2f);
         }
+
         Toggle headerToggle = headerObj.GetComponentInChildren<Toggle>();
         if (headerToggle != null)
             headerToggle.gameObject.SetActive(false);
-    }
-
-    private void ApplyEnhancedToggleStyle(Toggle toggle, bool isCompleted)
-    {
-        if (toggle == null)
-            return;
-
-        toggle.isOn = isCompleted;
-        toggle.interactable = false;
-        Image checkmark = toggle.graphic as Image;
-        if (checkmark != null)
-        {
-            checkmark.color = new Color(1f, 0.9f, 0.2f);
-            if (isCompleted)
-            {
-                checkmark.transform.localScale = Vector3.zero;
-                LeanTween.scale(checkmark.gameObject, Vector3.one, 0.4f).setEase(LeanTweenType.easeOutBack).setDelay(0.1f);
-                LeanTween.rotateAroundLocal(checkmark.gameObject, Vector3.forward, 360f, 0.4f).setEase(LeanTweenType.easeOutCirc).setDelay(0.1f);
-            }
-        }
-        Image background = toggle.GetComponent<Image>();
-        if (background != null)
-            background.color = isCompleted ? new Color(0.3f, 0.8f, 0.3f, 0.7f) : new Color(0.7f, 0.7f, 0.7f, 0.4f);
     }
 
     private void AddCategorySteps()
@@ -129,16 +111,44 @@ public partial class TutorialManager
 
             GameObject itemObj = Instantiate(checklistItemPrefab, checklistContainer);
             TextMeshProUGUI itemText = itemObj.GetComponentInChildren<TextMeshProUGUI>();
+
             if (itemText != null)
             {
                 bool isCompleted = completedStepIds.Contains(stepId);
                 itemText.text = step.title;
                 itemText.color = isCompleted ? new Color(0.4f, 1f, 0.4f) : Color.white;
             }
+
             Toggle toggle = itemObj.GetComponentInChildren<Toggle>();
             if (toggle != null)
                 ApplyEnhancedToggleStyle(toggle, completedStepIds.Contains(stepId));
         }
+    }
+
+    private void ApplyEnhancedToggleStyle(Toggle toggle, bool isCompleted)
+    {
+        if (toggle == null)
+            return;
+
+        toggle.isOn = isCompleted;
+        toggle.interactable = false;
+
+        Image checkmark = toggle.graphic as Image;
+        if (checkmark != null)
+        {
+            checkmark.color = new Color(1f, 0.9f, 0.2f);
+
+            if (isCompleted)
+            {
+                checkmark.transform.localScale = Vector3.zero;
+                LeanTween.scale(checkmark.gameObject, Vector3.one, 0.4f).setEase(LeanTweenType.easeOutBack).setDelay(0.1f);
+                LeanTween.rotateAroundLocal(checkmark.gameObject, Vector3.forward, 360f, 0.4f).setEase(LeanTweenType.easeOutCirc).setDelay(0.1f);
+            }
+        }
+
+        Image background = toggle.GetComponent<Image>();
+        if (background != null)
+            background.color = isCompleted ? new Color(0.3f, 0.8f, 0.3f, 0.7f) : new Color(0.7f, 0.7f, 0.7f, 0.4f);
     }
 
     private void PlayCompletionFeedback()
@@ -159,23 +169,33 @@ public partial class TutorialManager
             {
                 Color originalColor = panelImage.color;
                 Color glowColor = new Color(1f, 1f, 0.7f, originalColor.a);
+
                 LeanTween.value(checklistPanel, 0f, 1f, 0.2f).setOnUpdate((float val) =>
                 {
                     panelImage.color = Color.Lerp(originalColor, glowColor, val);
                 }).setLoopPingPong(1).setEase(LeanTweenType.easeInOutQuad);
             }
         }
+
         UpdateChecklistUI();
     }
 
     private void AnimateChecklistCategoryChange()
     {
         CanvasGroup canvasGroup = checklistPanel.GetComponent<CanvasGroup>() ?? checklistPanel.AddComponent<CanvasGroup>();
+
         LeanTween.cancel(checklistPanel);
-        LeanTween.value(checklistPanel, 1f, 0f, 0.3f).setOnUpdate((float val) => { canvasGroup.alpha = val; }).setOnComplete(() =>
+
+        LeanTween.value(checklistPanel, 1f, 0f, 0.3f).setOnUpdate((float val) =>
+        {
+            canvasGroup.alpha = val;
+        }).setOnComplete(() =>
         {
             UpdateChecklistUI();
-            LeanTween.value(checklistPanel, 0f, 1f, 0.3f).setOnUpdate((float val) => { canvasGroup.alpha = val; });
+            LeanTween.value(checklistPanel, 0f, 1f, 0.3f).setOnUpdate((float val) =>
+            {
+                canvasGroup.alpha = val;
+            });
         });
     }
 
@@ -185,6 +205,7 @@ public partial class TutorialManager
         {
             bool newState = !checklistPanel.activeSelf;
             checklistPanel.SetActive(newState);
+
             if (newState)
             {
                 checklistPanel.transform.localScale = Vector3.one * 0.9f;

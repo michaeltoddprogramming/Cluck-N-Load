@@ -7,10 +7,9 @@ using UnityEngine.UI;
 
 public partial class TutorialManager
 {
-    // Fields at the class level
     private List<GameObject> activeWorldHighlights = new List<GameObject>();
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>();
-    public GameObject highlightPrefab; // Assign this in the Unity inspector with a prefab
+    public GameObject highlightPrefab;
     private Dictionary<GameObject, UnityAction> activeTabHandlers = new Dictionary<GameObject, UnityAction>();
 
     void InitializeTutorialSteps()
@@ -83,7 +82,6 @@ public partial class TutorialManager
             GameObject seasonDisplay = GameObject.Find("SeasonIcon") ?? GameObject.Find("Season");
             if (seasonDisplay != null)
                 HighlightUI(seasonDisplay, false);
-            Debug.Log("Season tutorial step complete - removed highlighting from season icon");
         });
         steps.Add(seasonBonusStep);
 
@@ -154,27 +152,21 @@ public partial class TutorialManager
         harvestCropStep.onStepStart.AddListener(() => HighlightLastBuiltStructure("CropPlot"));
         steps.Add(harvestCropStep);
 
-                            var chickenCoopStep = new TutorialStep
-                        {
-                            stepId = "build_chicken_coop",
-                            title = "Build a Chicken Coop",
-                            instructionText = "Time to start your poultry empire! First click the shop button in the bottom-left corner, then build a Chicken Coop to house chickens. They'll lay eggs and can be trained as scout soldiers!",
-                            triggerToWaitFor = TutorialTrigger.BuiltChickenCoop,
-                            uiToHighlight = shopButton // Highlight the shop button first
-                        };
-                        chickenCoopStep.onStepStart = new UnityEvent();
-                        chickenCoopStep.onStepStart.AddListener(() => {
-                            Debug.Log("Tutorial: Starting Chicken Coop step");
-                            
-                            // Register an event handler for when the shop opens
-                            StartCoroutine(WaitForShopToOpen("ChickenCoop"));
-                        });
-                        steps.Add(chickenCoopStep);
-                        
+        var chickenCoopStep = new TutorialStep
+        {
+            stepId = "build_chicken_coop",
+            title = "Build a Chicken Coop",
+            instructionText = "Time to start your poultry empire! First click the shop button in the bottom-left corner, then build a Chicken Coop to house chickens. They'll lay eggs and can be trained as scout soldiers!",
+            triggerToWaitFor = TutorialTrigger.BuiltChickenCoop,
+            uiToHighlight = shopButton
+        };
+        chickenCoopStep.onStepStart = new UnityEvent();
+        chickenCoopStep.onStepStart.AddListener(() => {
+            StartCoroutine(WaitForShopToOpen("ChickenCoop"));
+        });
+        steps.Add(chickenCoopStep);
 
-       
-
-                var chickenBarracksStep = new TutorialStep
+        var chickenBarracksStep = new TutorialStep
         {
             stepId = "build_chicken_barracks",
             title = "Build Chicken Barracks",
@@ -183,9 +175,6 @@ public partial class TutorialManager
         };
         chickenBarracksStep.onStepStart = new UnityEvent();
         chickenBarracksStep.onStepStart.AddListener(() => {
-            Debug.Log("Tutorial: Starting Chicken Barracks step");
-            
-            // Make sure shop is open first, then highlight the correct tab/button
             StartCoroutine(WaitForShopToOpen("ChickenBarrack"));
         });
         steps.Add(chickenBarracksStep);
@@ -358,315 +347,218 @@ public partial class TutorialManager
         });
     }
 
-        
-        private IEnumerator GuidedShopHighlight(string buildingName)
+    private IEnumerator GuidedShopHighlight(string buildingName)
+    {
+        yield return null;
+        CleanupShopHighlights();
+        yield return new WaitForSeconds(0.1f);
+        GameObject shopPanel = GameObject.Find("ShopPanel");
+        if (shopPanel == null)
+            yield break;
+        int targetTabIndex = -1;
+        string tabName = "";
+        switch (buildingName.ToLower())
         {
-            // Wait a frame to make sure shop UI is fully loaded
-            yield return null;
-            
-            // First clean up any existing shop highlights to avoid interference
-            CleanupShopHighlights();
+            case "chickencoop":
+                targetTabIndex = 0;
+                tabName = "Animals";
+                break;
+            case "farmhouse":
+                targetTabIndex = 4;
+                tabName = "Decorations";
+                break;
+            case "silo":
+            case "cropplot":
+                targetTabIndex = 2;
+                tabName = "Plants";
+                break;
+            case "chickenbarracks":
+            case "chickenbarrack":
+                targetTabIndex = 1;
+                tabName = "Army";
+                break;
+        }
+        if (targetTabIndex >= 0)
+        {
+            Transform navBar = shopPanel.transform.Find("Nav Bar");
+            if (navBar == null)
+                navBar = shopPanel.transform.Find("UI-shop/ShopPanel/Nav Bar");
+            if (navBar != null)
+            {
+                Button[] tabButtons = navBar.GetComponentsInChildren<Button>();
+                if (targetTabIndex < tabButtons.Length)
+                {
+                    Button targetTab = tabButtons[targetTabIndex];
+                    HighlightUI(targetTab.gameObject, true);
+                    UnityAction tabClickHandler = null;
+                    tabClickHandler = () => {
+                        HighlightUI(targetTab.gameObject, false);
+                        StartCoroutine(HighlightItemAfterTabSelected(shopPanel, buildingName));
+                    };
+                    if (activeTabHandlers.TryGetValue(targetTab.gameObject, out UnityAction oldHandler))
+                        targetTab.onClick.RemoveListener(oldHandler);
+                    targetTab.onClick.AddListener(tabClickHandler);
+                    activeTabHandlers[targetTab.gameObject] = tabClickHandler;
+                }
+            }
+        }
+    }
 
-            yield return new WaitForSeconds(0.1f);
-            
-            GameObject shopPanel = GameObject.Find("ShopPanel");
-            if (shopPanel == null)
+    private Coroutine activeShopHighlightCoroutine;
+    private void UpdateBuildButtonReference(string buildingName)
+    {
+        if (activeShopHighlightCoroutine != null)
+        {
+            StopCoroutine(activeShopHighlightCoroutine);
+            activeShopHighlightCoroutine = null;
+        }
+        CleanupShopHighlights();
+        activeShopHighlightCoroutine = StartCoroutine(GuidedShopHighlight(buildingName));
+    }
+
+    private IEnumerator HighlightItemAfterTabSelected(GameObject shopPanel, string buildingName)
+    {
+        yield return new WaitForSeconds(0.2f);
+        CleanupShopItemHighlights(shopPanel);
+        string searchName = buildingName.ToLowerInvariant();
+        string singularName = searchName.EndsWith("s") ? searchName.Substring(0, searchName.Length - 1) : searchName;
+        string pluralName = searchName.EndsWith("s") ? searchName : searchName + "s";
+        bool found = false;
+        foreach (TextMeshProUGUI text in shopPanel.GetComponentsInChildren<TextMeshProUGUI>(true))
+        {
+            string textContent = text.text.Replace(" ", "").ToLowerInvariant();
+            if (textContent.Contains(searchName) || textContent.Contains(singularName) || textContent.Contains(pluralName))
             {
-                Debug.LogWarning("Shop panel not found");
-                yield break;
-            }
-            
-            // First highlight the correct navigation tab
-            int targetTabIndex = -1;
-            string tabName = "";
-            
-            switch (buildingName.ToLower())
-            {
-                case "chickencoop":
-                    targetTabIndex = 0;
-                    tabName = "Animals";
-                    break;
-                case "farmhouse":
-                    targetTabIndex = 4; // Decorations tab
-                    tabName = "Decorations";
-                    break;
-                case "silo":
-                case "cropplot":
-                    targetTabIndex = 2;
-                    tabName = "Plants";
-                    break;
-                case "chickenbarracks":
-                case "chickenbarrack": // Add this case to match the string in chickenBarracksStep
-                    targetTabIndex = 1;
-                    tabName = "Army";
-                    break;
-            }
-            
-            if (targetTabIndex >= 0)
-            {
-                // Find the navbar
-                Transform navBar = shopPanel.transform.Find("Nav Bar");
-                if (navBar == null)
+                Button button = text.GetComponentInParent<Button>();
+                if (button != null)
                 {
-                    navBar = shopPanel.transform.Find("UI-shop/ShopPanel/Nav Bar");
+                    HighlightUI(button.gameObject, true);
+                    found = true;
+                    break;
                 }
-                
-                if (navBar != null)
+            }
+        }
+        if (!found)
+        {
+            foreach (Button button in shopPanel.GetComponentsInChildren<Button>(true))
+            {
+                string buttonName = button.gameObject.name.ToLowerInvariant();
+                if (buttonName.Contains(searchName) || buttonName.Contains(singularName) || buttonName.Contains(pluralName))
                 {
-                    Button[] tabButtons = navBar.GetComponentsInChildren<Button>();
-                    
-                    // Log tabs for debugging
-                    Debug.Log($"Found {tabButtons.Length} tab buttons");
-                    
-                    if (targetTabIndex < tabButtons.Length)
+                    HighlightUI(button.gameObject, true);
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void CleanupShopHighlights()
+    {
+        foreach (Outline outline in FindObjectsByType<Outline>(FindObjectsSortMode.None))
+        {
+            if (outline.enabled)
+            {
+                outline.enabled = false;
+                LeanTween.cancel(outline.gameObject);
+                Button button = outline.GetComponent<Button>();
+                if (button != null)
+                {
+                    button.colors = new ColorBlock
                     {
-                        // Highlight the tab button
-                        Button targetTab = tabButtons[targetTabIndex];
-                        HighlightUI(targetTab.gameObject, true);
-                        
-                        Debug.Log($"Tutorial: Highlighted {tabName} navigation tab. Waiting for user to click...");
-                        
-                        // Register for tab click event - make sure to clean up old handlers first
-                        UnityAction tabClickHandler = null;
-                        tabClickHandler = () => {
-                            // When tab is clicked, remove highlight and highlight the item
-                            HighlightUI(targetTab.gameObject, false);
-                            StartCoroutine(HighlightItemAfterTabSelected(shopPanel, buildingName));
-                            
-                            // Don't remove the listener here - we'll do it in cleanup
-                        };
-                        
-                        // Remove any previous handlers for this tab
-                        if (activeTabHandlers.TryGetValue(targetTab.gameObject, out UnityAction oldHandler))
-                        {
-                            targetTab.onClick.RemoveListener(oldHandler);
-                        }
-                        
-                        // Add the new handler and store it
-                        targetTab.onClick.AddListener(tabClickHandler);
-                        activeTabHandlers[targetTab.gameObject] = tabClickHandler;
-                    }
+                        normalColor = Color.white,
+                        highlightedColor = new Color(0.9f, 0.9f, 0.9f),
+                        pressedColor = new Color(0.8f, 0.8f, 0.8f),
+                        selectedColor = new Color(0.9f, 0.9f, 0.9f),
+                        disabledColor = new Color(0.8f, 0.8f, 0.8f, 0.5f),
+                        colorMultiplier = 1f,
+                        fadeDuration = 0.1f
+                    };
                 }
             }
         }
-                // Add this at the class level
-        private Coroutine activeShopHighlightCoroutine;
-        
-        private void UpdateBuildButtonReference(string buildingName)
+        foreach (var entry in activeTabHandlers)
         {
-            // Cancel any existing highlight coroutine first
-            if (activeShopHighlightCoroutine != null)
+            if (entry.Key != null)
             {
-                StopCoroutine(activeShopHighlightCoroutine);
-                activeShopHighlightCoroutine = null;
+                Button button = entry.Key.GetComponent<Button>();
+                if (button != null)
+                {
+                    button.onClick.RemoveListener(entry.Value);
+                    HighlightUI(entry.Key, false);
+                }
             }
-            
-            // Clean up any existing highlights
-            CleanupShopHighlights();
-            
-            // Start a new highlight coroutine
-            activeShopHighlightCoroutine = StartCoroutine(GuidedShopHighlight(buildingName));
         }
-                private IEnumerator HighlightItemAfterTabSelected(GameObject shopPanel, string buildingName)
-        {
-            // Give UI time to update after tab switch
-            yield return new WaitForSeconds(0.2f);
-            
-            // Clean up any previous item highlights first
+        activeTabHandlers.Clear();
+        GameObject shopPanel = GameObject.Find("ShopPanel");
+        if (shopPanel != null)
             CleanupShopItemHighlights(shopPanel);
-            
-            // Handle singular/plural variations
-            string searchName = buildingName.ToLowerInvariant();
-            string singularName = searchName.EndsWith("s") ? searchName.Substring(0, searchName.Length - 1) : searchName;
-            string pluralName = searchName.EndsWith("s") ? searchName : searchName + "s";
-            
-            // Now find and highlight the correct item
-            bool found = false;
-            foreach (TextMeshProUGUI text in shopPanel.GetComponentsInChildren<TextMeshProUGUI>(true))
-            {
-                string textContent = text.text.Replace(" ", "").ToLowerInvariant();
-                
-                // Check against multiple variations of the name
-                if (textContent.Contains(searchName) || textContent.Contains(singularName) || textContent.Contains(pluralName))
-                {
-                    // Found the text! Get the button component from parent
-                    Button button = text.GetComponentInParent<Button>();
-                    if (button != null)
-                    {
-                        Debug.Log($"Found shop button with text '{text.text}' for: {buildingName}");
-                        HighlightUI(button.gameObject, true);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            
-            // If not found by text, try finding it by the GameObject name
-            if (!found)
-            {
-                foreach (Button button in shopPanel.GetComponentsInChildren<Button>(true))
-                {
-                    string buttonName = button.gameObject.name.ToLowerInvariant();
-                    if (buttonName.Contains(searchName) || buttonName.Contains(singularName) || buttonName.Contains(pluralName))
-                    {
-                        Debug.Log($"Found shop button by name '{button.gameObject.name}' for: {buildingName}");
-                        HighlightUI(button.gameObject, true);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (!found)
-                Debug.LogWarning($"Failed to find shop button for: {buildingName}");
-        }
-        
-        // New method to clean up shop highlights
-        private void CleanupShopHighlights()
+    }
+
+    private IEnumerator WaitForBuildingPlacement(TutorialTrigger triggerToWait, string stepId)
+    {
+        bool buildingPlaced = false;
+        while (!buildingPlaced)
         {
-            // First, find ALL UI elements with outlines and disable them
-            foreach (Outline outline in FindObjectsByType<Outline>(FindObjectsSortMode.None))
-            {
-                if (outline.enabled)
-                {
-                    outline.enabled = false;
-                    
-                    // Also cancel any LeanTween animations on this object
-                    LeanTween.cancel(outline.gameObject);
-                    
-                    // If this is a button, make sure it has default colors
-                    Button button = outline.GetComponent<Button>();
-                    if (button != null)
-                    {
-                        button.colors = new ColorBlock
-                        {
-                            normalColor = Color.white,
-                            highlightedColor = new Color(0.9f, 0.9f, 0.9f),
-                            pressedColor = new Color(0.8f, 0.8f, 0.8f),
-                            selectedColor = new Color(0.9f, 0.9f, 0.9f),
-                            disabledColor = new Color(0.8f, 0.8f, 0.8f, 0.5f),
-                            colorMultiplier = 1f,
-                            fadeDuration = 0.1f
-                        };
-                    }
-                }
-            }
-            
-            // Clean up tab handlers
-            foreach (var entry in activeTabHandlers)
-            {
-                if (entry.Key != null)
-                {
-                    Button button = entry.Key.GetComponent<Button>();
-                    if (button != null)
-                    {
-                        button.onClick.RemoveListener(entry.Value);
-                        HighlightUI(entry.Key, false);
-                    }
-                }
-            }
-            activeTabHandlers.Clear();
-            
-            // Also clean up any shop panel items with outlines
-            GameObject shopPanel = GameObject.Find("ShopPanel");
-            if (shopPanel != null)
-            {
-                CleanupShopItemHighlights(shopPanel);
-            }
+            yield return new WaitForSeconds(0.5f);
+            if (completedStepIds.Contains(stepId))
+                buildingPlaced = true;
         }
-         // Add this helper method near the end of your TutorialManager class
-        private IEnumerator WaitForBuildingPlacement(TutorialTrigger triggerToWait, string stepId)
+        CleanupShopHighlights();
+    }
+
+    private void CleanupShopItemHighlights(GameObject shopPanel)
+    {
+        Button[] allButtons = shopPanel.GetComponentsInChildren<Button>(true);
+        foreach (Button button in allButtons)
         {
-            bool buildingPlaced = false;
-            while (!buildingPlaced)
-            {
-                // Wait a short time then check if trigger happened
-                yield return new WaitForSeconds(0.5f);
-                
-                if (completedStepIds.Contains(stepId))
-                {
-                    buildingPlaced = true;
-                }
-            }
-            
-            // Building was placed - clean up any lingering highlights
-            CleanupShopHighlights();
+            Outline outline = button.GetComponent<Outline>();
+            if (outline != null && outline.enabled)
+                HighlightUI(button.gameObject, false);
         }
-        private void CleanupShopItemHighlights(GameObject shopPanel)
-        {
-            // Find all highlighted buttons in the shop and remove their highlights
-            Button[] allButtons = shopPanel.GetComponentsInChildren<Button>(true);
-            foreach (Button button in allButtons)
-            {
-                Outline outline = button.GetComponent<Outline>();
-                if (outline != null && outline.enabled)
-                {
-                    HighlightUI(button.gameObject, false);
-                }
-            }
-        }
-        
+    }
+
     private void HighlightLastBuiltStructure(string structureType)
     {
-        Debug.Log($"Looking for structure of type: {structureType}");
         GameObject[] structures = GameObject.FindGameObjectsWithTag(structureType);
         if (structures.Length > 0)
         {
             HighlightWorldStructure(structures[structures.Length - 1], true);
-            Debug.Log($"Found {structures.Length} structures with tag {structureType}, highlighting the last one");
             return;
         }
-
         foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
-{
+        {
             if (structure.gameObject.name.Contains(structureType))
             {
                 HighlightWorldStructure(structure.gameObject, true);
-                Debug.Log($"Found structure by name: {structure.gameObject.name}");
                 return;
             }
         }
-        Debug.LogWarning($"No structure found with tag or name: {structureType}");
     }
 
     private void HighlightWorldStructure(GameObject structure, bool enable)
     {
         if (structure == null) return;
-
-        Debug.Log($"Highlighting world structure: {structure.name}, enable: {enable}");
         LeanTween.cancel(structure);
-
         if (!originalScales.ContainsKey(structure))
-        {
             originalScales[structure] = structure.transform.localScale;
-        }
-
         Transform highlightIndicator = structure.transform.Find("TutorialHighlight");
-
         if (highlightIndicator == null && enable)
         {
             if (highlightPrefab == null)
-            {
-                Debug.LogError("Highlight prefab is not assigned in the inspector!");
                 return;
-            }
-
             GameObject highlight = Instantiate(highlightPrefab, structure.transform);
             highlight.transform.localPosition = new Vector3(0, 3.5f, 0);
             highlight.name = "TutorialHighlight";
             activeWorldHighlights.Add(highlight);
-
-            // Ensure the prefab has a bright golden yellow color
-            // Adjust these in the prefab itself, but for reference, set in code if needed
             Renderer arrowRenderer = highlight.GetComponentInChildren<Renderer>();
             if (arrowRenderer != null)
             {
                 Material mat = arrowRenderer.material;
-                mat.color = new Color(1f, 1f, 0f); // Bright yellow
+                mat.color = new Color(1f, 1f, 0f);
                 mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", new Color(1f, 1f, 0f) * 1.5f); // Stronger emission
+                mat.SetColor("_EmissionColor", new Color(1f, 1f, 0f) * 1.5f);
             }
-
             Light light = highlight.GetComponentInChildren<Light>();
             if (light != null)
             {
@@ -674,12 +566,10 @@ public partial class TutorialManager
                 light.intensity = 2f;
                 light.range = 5f;
             }
-
             LeanTween.moveLocalY(highlight, highlight.transform.localPosition.y + 1.0f, 0.5f)
                 .setLoopPingPong()
                 .setIgnoreTimeScale(true)
                 .setEase(LeanTweenType.easeInOutQuad);
-
             LeanTween.scale(structure, structure.transform.localScale * 1.08f, 0.5f)
                 .setLoopPingPong()
                 .setIgnoreTimeScale(true)
@@ -688,14 +578,12 @@ public partial class TutorialManager
         else if (highlightIndicator != null)
         {
             highlightIndicator.gameObject.SetActive(enable);
-
             if (enable)
             {
                 LeanTween.moveLocalY(highlightIndicator.gameObject, highlightIndicator.transform.localPosition.y + 1.0f, 0.5f)
                     .setLoopPingPong()
                     .setIgnoreTimeScale(true)
                     .setEase(LeanTweenType.easeInOutQuad);
-
                 LeanTween.scale(structure, structure.transform.localScale * 1.08f, 0.5f)
                     .setLoopPingPong()
                     .setIgnoreTimeScale(true)
@@ -735,12 +623,9 @@ public partial class TutorialManager
         foreach (GameObject highlight in activeWorldHighlights)
         {
             if (highlight != null)
-            {
                 Destroy(highlight);
-            }
         }
         activeWorldHighlights.Clear();
-
         foreach (var kvp in originalScales)
         {
             if (kvp.Key != null)
@@ -761,7 +646,6 @@ public partial class TutorialManager
             if (highlight != null)
                 Destroy(highlight.gameObject);
         }
-
         foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
         {
             if (structure.gameObject.name.Contains(structureType))
@@ -773,21 +657,15 @@ public partial class TutorialManager
         }
     }
 
-                            // Add this new method to wait for shop to open
-                        private IEnumerator WaitForShopToOpen(string buildingToHighlight)
-                        {
-                            // Wait until shop panel exists in the scene
-                            GameObject shopPanel = null;
-                            while (shopPanel == null)
-                            {
-                                shopPanel = GameObject.Find("ShopPanel");
-                                yield return new WaitForSeconds(0.2f);
-                            }
-                            
-                            // Shop is now open - we can highlight the buttons inside
-                            Debug.Log("Tutorial: Shop panel found, now highlighting building button");
-                            yield return new WaitForSeconds(0.3f); // Give time for shop to fully initialize
-                            UpdateBuildButtonReference(buildingToHighlight);
-                        }
-        
+    private IEnumerator WaitForShopToOpen(string buildingToHighlight)
+    {
+        GameObject shopPanel = null;
+        while (shopPanel == null)
+        {
+            shopPanel = GameObject.Find("ShopPanel");
+            yield return new WaitForSeconds(0.2f);
+        }
+        yield return new WaitForSeconds(0.3f);
+        UpdateBuildButtonReference(buildingToHighlight);
+    }
 }

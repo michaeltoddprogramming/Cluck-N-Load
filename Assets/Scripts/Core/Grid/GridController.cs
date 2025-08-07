@@ -7,10 +7,10 @@ public class GridController : MonoBehaviour
     [Header("Terrain & Overlay Settings")]
     [SerializeField] private GameObject terrainSource;
     [SerializeField] private Material gridOverlayMaterial;
-    
+
     [Header("Debug Options")]
     [SerializeField] private bool alwaysShowGrid = false;
-    
+
     private GameObject gridOverlayInstance;
     private Vector2Int currentHoveredCell;
 
@@ -45,19 +45,19 @@ public class GridController : MonoBehaviour
     void Start()
     {
         GridCellColorResolver.Colors = gridColors;
-    
+
         if (gridDataGenerator == null)
             gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
-    
+
         if (gridDataGenerator == null)
         {
             Debug.LogError("GridDataGenerator not found in scene.");
             return;
         }
-    
+
         SetUpGridOverlay();
         ApplySettings();
-        
+
         // Hide grid by default
         // HideGrid();
     }
@@ -156,7 +156,7 @@ public class GridController : MonoBehaviour
 
 
 
-    
+
 
     void SetUpGridOverlay()
     {
@@ -228,7 +228,7 @@ public class GridController : MonoBehaviour
             gridOverlayInstance.SetActive(false);
         }
     }
-    
+
     public bool IsGridVisible()
     {
         return gridOverlayInstance != null && gridOverlayInstance.activeSelf;
@@ -298,11 +298,11 @@ public class GridController : MonoBehaviour
     public void SetCellOccupied(int x, int y, bool occupied)
     {
         if (!IsValidCell(x, y)) return;
-        
+
         GridCell cell = gridDataGenerator.GetCell(x, y);
         cell.flags.isOccupied = occupied;
         gridDataGenerator.grid[x, y] = cell;
-        
+
         // Update texture to reflect changes
         textureGenerator.UpdateTexture();
     }
@@ -311,12 +311,12 @@ public class GridController : MonoBehaviour
     {
         return currentHoveredCell;
     }
-    
+
     public Material GetTargetMaterial()
     {
         return targetMaterial;
     }
-    
+
     public void UpdateGridTexture()
     {
         textureGenerator.UpdateTexture();
@@ -328,12 +328,12 @@ public class GridController : MonoBehaviour
         return cellSize;
     }
 
-    public int TextureWidth 
+    public int TextureWidth
     {
         get => gridDataGenerator != null ? gridDataGenerator.GetGridWidth() : 0;
     }
 
-    public int TextureHeight 
+    public int TextureHeight
     {
         get => gridDataGenerator != null ? gridDataGenerator.GetGridHeight() : 0;
     }

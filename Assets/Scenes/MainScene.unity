@@ -8296,6 +8296,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbee7fa43a9d1e6488dfefc409b82639, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxTimeSpan: 20
+  minTimeSpan: 5
+  nightlyScale: 0.9
+  seasonScale: 0.5
+  allEnemyData:
+  - {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}
+  - {fileID: 11400000, guid: c0a54c791569ae4479782394f2901f1b, type: 2}
+  - {fileID: 11400000, guid: aa8c850b7eca6b2468f489a333cc415a, type: 2}
+  - {fileID: 11400000, guid: 30e48aeed0a514f4ab64f14cb134051e, type: 2}
+  season: 0
 --- !u!114 &1632256039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10254,7 +10264,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df43aaad321c5d84fad1ea4896709efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyData: {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}
+  wolf: {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}
+  racoon: {fileID: 11400000, guid: c0a54c791569ae4479782394f2901f1b, type: 2}
+  bear: {fileID: 11400000, guid: 30e48aeed0a514f4ab64f14cb134051e, type: 2}
+  boar: {fileID: 11400000, guid: aa8c850b7eca6b2468f489a333cc415a, type: 2}
   _gridDataGenerator: {fileID: 0}
 --- !u!1 &1924309105
 GameObject:

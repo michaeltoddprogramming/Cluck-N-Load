@@ -28,4 +28,4 @@ MonoBehaviour:
   recruitmentRange: 4000
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
-  protectionRadius: 5
+  protectionRadius: 2

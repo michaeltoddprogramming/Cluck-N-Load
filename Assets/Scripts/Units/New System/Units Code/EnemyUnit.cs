@@ -3,6 +3,7 @@ using System.Collections.Generic;
 public class EnemyUnit : BaseUnit
 {
     [SerializeField] private EnemyData data;
+
     private int currHealth;
     private float lastAttackTime = 0f;
     private MonoBehaviour currentTarget;
@@ -15,6 +16,13 @@ public class EnemyUnit : BaseUnit
     private float targetSearchCooldown = 0.5f;
     private float lastTargetSearchTime = 0f;
     private bool hasNoTarget = false;
+
+    public int currentMaxSpawn;
+
+    public int currentMinSpawn;
+
+    public bool retreating = false;
+    private Vector3 destination;
 
     // protected override void Awake()
     // {
@@ -40,7 +48,7 @@ public class EnemyUnit : BaseUnit
         agent.angularSpeed = data.AngularSpeed;
         agent.stoppingDistance = data.StoppingDistance;
 
-        PlayBackgroundSound(data.backgroundSound); 
+        PlayBackgroundSound(data.backgroundSound);
     }
 
 
@@ -52,7 +60,22 @@ public class EnemyUnit : BaseUnit
 
     private void Update()
     {
-        if (hasNoTarget)
+
+        // currentMaxSpawn = data.maxSpawnAmount;
+        // currentMinSpawn = data.minSpawnAmount;
+        if (retreating)
+        {
+            if (retreating && Vector3.Distance(transform.position, destination) < 5f)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            return;
+        }
+
+
+
+        if (hasNoTarget && !retreating)
         {
             if (Time.time - lastTargetSearchTime >= 10f)
             {
@@ -72,7 +95,7 @@ public class EnemyUnit : BaseUnit
                 return;
             }
         }
-        
+
         if (Time.time - lastTargetSearchTime > targetSearchCooldown || currentTarget == null || IsTargetDead(currentTarget))
         {
             currentTarget = GetNearestAggroTargetOptimized();
@@ -87,61 +110,14 @@ public class EnemyUnit : BaseUnit
 
         HandleTargetingAndMovement();
         AttackIfInRange();
+
+
     }
+
+
     protected override UnitData GetData() => data;
 
-    //better movement, but still not perfect shaking
-
-    // private void HandleTargetingAndMovement()
-    // {
-    //     if (!agent.isOnNavMesh)
-    //     {
-    //         Debug.LogWarning("Agent not on NavMesh, skipping movement");
-    //         return;
-    //     }
-
-    //     // Acquire or switch target
-    //     if (currentTarget == null || IsTargetDead(currentTarget))
-    //     {
-    //         currentTarget = GetNearestAggroTarget();
-    //         if (currentTarget == null)
-    //         {
-    //             hasAttackPosition = false;
-    //             agent.ResetPath();
-    //             return;
-    //         }
-
-    //         // When target changes, calculate new attack position
-    //         SetAttackPosition();
-    //     }
-
-    //     if (!hasAttackPosition)
-    //     {
-    //         SetAttackPosition();
-    //     }
-
-    //     // Distance to the attack position
-    //     float distance = Vector3.Distance(transform.position, currentAttackPosition);
-
-    //     if (distance > agent.stoppingDistance)
-    //     {
-    //         agent.SetDestination(currentAttackPosition);
-    //     }
-    //     else
-    //     {
-    //         agent.ResetPath();  // stop moving when close enough
-    //     }
-
-    //     if (agent.velocity.sqrMagnitude > 0.1f)
-    //     {
-    //         Quaternion targetRotation = Quaternion.LookRotation(agent.velocity.normalized);
-    //         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f); // Adjust 5f to change rotation speed
-    //     }
-
-    // }
-
     //much better best so far
-    
 
     private void HandleTargetingAndMovement()
     {
@@ -302,87 +278,117 @@ public class EnemyUnit : BaseUnit
     //     return nearest;
     // }
 
-private MonoBehaviour GetNearestAggroTargetOptimized()
-{
-    Collider[] hits = Physics.OverlapSphere(transform.position, data.AttackRange);
-    MonoBehaviour nearest = null;
-    float closestDist = float.MaxValue;
-
-    foreach (var col in hits)
+    private MonoBehaviour GetNearestAggroTargetOptimized()
     {
-        MonoBehaviour candidate = null;
+        Collider[] hits = Physics.OverlapSphere(transform.position, data.AttackRange);
+        MonoBehaviour nearest = null;
+        float closestDist = float.MaxValue;
 
-        switch (data.AttType)
+        foreach (var col in hits)
         {
-            case AttType.Animals:
-                candidate = col.GetComponent<ArmyUnit>();
-                break;
+            MonoBehaviour candidate = null;
 
-            case AttType.Resources:
-                CropStructure crop = col.GetComponent<CropStructure>();
-                if (crop != null)
-                    candidate = crop;
-                else
-                {
-                    SiloStructure silo = col.GetComponent<SiloStructure>();
-                    if (silo != null)
-                        candidate = silo;
-                }
-                break;
+            switch (data.AttType)
+            {
+                case AttType.Animals:
+                    candidate = col.GetComponent<ArmyUnit>();
+                    break;
 
-            case AttType.Buildings:
-                {
-                    FarmHouseStructure farmHouse = col.GetComponent<FarmHouseStructure>();
-                    if (farmHouse != null)
-                        candidate = farmHouse;
+                case AttType.Resources:
+                    CropStructure crop = col.GetComponent<CropStructure>();
+                    if (crop != null)
+                        candidate = crop;
                     else
                     {
-                        CropStructure crop2 = col.GetComponent<CropStructure>();
-                        if (crop2 != null)
-                            candidate = crop2;
+                        SiloStructure silo = col.GetComponent<SiloStructure>();
+                        if (silo != null)
+                            candidate = silo;
+                    }
+                    break;
+
+                case AttType.Buildings:
+                    {
+                        FarmHouseStructure farmHouse = col.GetComponent<FarmHouseStructure>();
+                        if (farmHouse != null)
+                            candidate = farmHouse;
                         else
                         {
-                            SiloStructure silo2 = col.GetComponent<SiloStructure>();
-                            if (silo2 != null)
-                                candidate = silo2;
+                            CropStructure crop2 = col.GetComponent<CropStructure>();
+                            if (crop2 != null)
+                                candidate = crop2;
                             else
                             {
-                                BarracksStructure barracks = col.GetComponent<BarracksStructure>();
-                                if (barracks != null)
-                                    candidate = barracks;
+                                SiloStructure silo2 = col.GetComponent<SiloStructure>();
+                                if (silo2 != null)
+                                    candidate = silo2;
                                 else
                                 {
-                                    AnimalStructure animal = col.GetComponent<AnimalStructure>();
-                                    if (animal != null)
-                                        candidate = animal;
+                                    BarracksStructure barracks = col.GetComponent<BarracksStructure>();
+                                    if (barracks != null)
+                                        candidate = barracks;
+                                    else
+                                    {
+                                        AnimalStructure animal = col.GetComponent<AnimalStructure>();
+                                        if (animal != null)
+                                            candidate = animal;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                break;
-        }
+                    break;
+            }
 
-        if (candidate != null && !IsTargetDead(candidate))
-        {
-            float dist = Vector3.Distance(transform.position, candidate.transform.position);
-            if (dist < closestDist)
+            if (candidate != null && !IsTargetDead(candidate))
             {
-                closestDist = dist;
-                nearest = candidate;
+                float dist = Vector3.Distance(transform.position, candidate.transform.position);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    nearest = candidate;
+                }
             }
         }
-    }
 
-    // If nothing found, fallback to center of map
-    if (nearest == null)
-    {
-        hasNoTarget = true;
-        agent.SetDestination(Vector3.zero); // You can change this to any other fallback location
-    }
+        // If nothing found, attack the nearest target of any type
+        if (nearest == null)
+        {
+            // Fallback: find the nearest *any* target if no preferred AttType target was found
+            Collider[] fallbackHits = Physics.OverlapSphere(transform.position, data.AttackRange);
 
-    return nearest;
-}
+            foreach (var col in fallbackHits)
+            {
+                MonoBehaviour candidate = null;
+
+                if (col.TryGetComponent<ArmyUnit>(out var army)) candidate = army;
+                else if (col.TryGetComponent<CropStructure>(out var crop)) candidate = crop;
+                else if (col.TryGetComponent<SiloStructure>(out var silo)) candidate = silo;
+                else if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
+                else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
+                else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
+
+                if (candidate != null && !IsTargetDead(candidate))
+                {
+                    float dist = Vector3.Distance(transform.position, candidate.transform.position);
+                    if (dist < closestDist)
+                    {
+                        closestDist = dist;
+                        nearest = candidate;
+                    }
+                }
+            }
+        }
+
+
+        //still nothing found, go to map center
+        if (nearest == null)
+        {
+            hasNoTarget = true;
+            agent.SetDestination(Vector3.zero); // You can change this to any other fallback location
+        }
+
+        return nearest;
+    }
 
 
 
@@ -505,23 +511,82 @@ private MonoBehaviour GetNearestAggroTargetOptimized()
                 break;
             case AnimalStructure u:
                 PlaySound(data.AttackSound);
-                u.TakeDamage(data.AttackDamage); 
+                u.TakeDamage(data.AttackDamage);
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
         }
     }
 
-    
-    public void increaseAfterNight()
-    {
-        data.maxSpawnAmount += data.nightlySpawnMultiplier;
-        data.minSpawnAmount += data.nightlySpawnMultiplier;
-    }
-    public void increaseAfterSeason()
-    {
-        data.maxSpawnAmount = (int)(data.maxSpawnAmount * data.seasonSpawnMultiplier);
-        data.minSpawnAmount = (int)(data.minSpawnAmount * data.seasonSpawnMultiplier);
 
-        data.nightlySpawnMultiplier = (int)(data.nightlySpawnMultiplier * data.seasonSpawnMultiplier);
+    // public void increaseAfterNight()
+    // {
+    //     // data.maxSpawnAmount += data.nightlySpawnMultiplier;
+    //     // data.minSpawnAmount += data.nightlySpawnMultiplier;
+    //     // Debug.Log($"max: {data.maxSpawnAmount} min: {data.minSpawnAmount}************************************************");
+
+    // }
+    // public void increaseAfterSeason()
+    // {
+    //     // data.maxSpawnAmount = (int)(data.maxSpawnAmount * data.seasonSpawnMultiplier);
+    //     // data.minSpawnAmount = (int)(data.minSpawnAmount * data.seasonSpawnMultiplier);
+    //     // Debug.Log($"max: {data.maxSpawnAmount} min: {data.minSpawnAmount}===============================================");
+
+    //     // data.nightlySpawnMultiplier = (int)(data.nightlySpawnMultiplier * data.seasonSpawnMultiplier);
+    //     // Debug.Log($"nightly things: {data.nightlySpawnMultiplier}=====================================================");
+    // }
+
+    private Vector3 GetRandomOutsidePosition()
+    {
+        if (_gridDataGenerator == null) return Vector3.zero;
+
+        int width = _gridDataGenerator.GetGridWidth();
+        int height = _gridDataGenerator.GetGridHeight();
+        // Debug.Log($"Grid Size: {width}x{height}+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------------------------------");
+
+        while (true) // Keep trying until valid
+        {
+            int side = Random.Range(0, 4);
+            int x = 0;
+            int y = 0;
+
+            switch (side)
+            {
+                case 0: // Top edge
+                    x = Random.Range(0, width);
+                    y = height - 1;
+                    break;
+                case 1: // Right edge
+                    x = width - 1;
+                    y = Random.Range(0, height);
+                    break;
+                case 2: // Bottom edge
+                    x = Random.Range(0, width);
+                    y = 0;
+                    break;
+                case 3: // Left edge
+                    x = 0;
+                    y = Random.Range(0, height);
+                    break;
+            }
+
+            GridCell cell = _gridDataGenerator.GetCell(x, y);
+
+            if (cell != null && !cell.flags.isObstacle && !cell.flags.isOccupied)
+            {
+                // Spawn exactly at the grid cell position
+                return cell.worldPosition;
+            }
+            // else retry with another random edge cell
+        }
+    }
+
+    public void stopCombat()
+    {
+        retreating = true;
+        currentTarget = null;
+        destination = GetRandomOutsidePosition();
+        Debug.Log($"destination: {destination}");
+
+        agent.SetDestination(destination);
     }
 }

@@ -1,13 +1,22 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class CombatManager : MonoBehaviour
 {
+    [SerializeField] private float maxTimeSpan = 10f;
+    [SerializeField] private float minTimeSpan = 5f;
+    [SerializeField] private float nightlyScale = 0.9f;
+    [SerializeField] private float seasonScale = 0.5f;
+    [SerializeField] private List<EnemyData> allEnemyData;
     private List<EnemyUnit> combatUnits = new List<EnemyUnit>();
     private bool isNight = false;
+    private bool increaseAfterSeason1 = false;
+    private bool increaseAfterNight1 = false;
 
     private EnemyUnit enemyUnit;
-    private SpawnUnits spawnUnits;
+    public SpawnUnits spawnUnits;
+    public int season;
 
 
     public static CombatManager Instance { get; private set; }
@@ -20,12 +29,14 @@ public class CombatManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        spawnUnits = FindObjectOfType<SpawnUnits>();
     }
 
     private void Start()
     {
         enemyUnit = FindObjectOfType<EnemyUnit>();
-        spawnUnits = FindObjectOfType<SpawnUnits>();
+        // spawnUnits = FindObjectOfType<SpawnUnits>();
     }
 
     public void RegisterUnit(EnemyUnit unit)
@@ -46,6 +57,20 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
+
+        // if (isNight && increaseAfterNight1)
+        // {
+        //     increaseAfterNight1 = false;
+        //     enemyUnit.increaseAfterNight();
+        // }
+
+        // if (isNight && increaseAfterSeason1)
+        // {
+        //     increaseAfterSeason1 = false;
+        //     enemyUnit.increaseAfterSeason();
+        // }
+
+
         foreach (ArmyUnit armyUnit in FindObjectsOfType<ArmyUnit>())
         {
             List<EnemyUnit> nearbyEnemies = armyUnit.GetNearbyEnemies();
@@ -100,45 +125,125 @@ public class CombatManager : MonoBehaviour
         //         // }
         //     }
         // }
+
+
     }
 
     public void StartCombat()
     {
+        if (increaseAfterNight1)
+        {
+            increaseAfterNight1 = false;
+            afterNight();
+        }
+
+        if (increaseAfterSeason1)
+        {
+            increaseAfterSeason1 = false;
+            afterSeason();
+        }
+
         isNight = true;
-        spawnUnits.SpawnEnemies();
+        // spawnUnits.SpawnEnemies();
+        StartCoroutine(SpawnEnemies());
     }
     public void StopCombat()
     {
         isNight = false;
-        DestroyAllEnemies();
-    }
-
-    public void DestroyAllEnemies()
-    {
         EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
         foreach (EnemyUnit enemy in enemies)
         {
-            Destroy(enemy.gameObject);
+            enemy.stopCombat();
         }
-
-        combatUnits.Clear(); // Optional: clear tracked list if you're using one
+        // DestroyAllEnemies();
     }
+
+    // public void DestroyAllEnemies()
+    // {
+    //     EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
+    //     foreach (EnemyUnit enemy in enemies)
+    //     {
+    //         Destroy(enemy.gameObject);
+    //     }
+
+    //     combatUnits.Clear(); // Optional: clear tracked list if you're using one
+    // }
 
     public void increaseAfterNight()
     {
-        if (enemyUnit != null)
-        {
-            enemyUnit.increaseAfterNight();
-        }
+        // increaseAfterNight1 = true;
+        spawnUnits.increaseAfterNight();
+    }
+
+    private void afterNight()
+    {
+        // EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
+        // foreach (EnemyUnit enemy in enemies)
+        // {
+        //     // enemy.increaseAfterSeason();
+        //     enemyUnit.increaseAfterNight();
+        // }
+        // foreach (EnemyData data in allEnemyData)
+        // {
+        //     data.maxSpawnAmount += data.nightlySpawnMultiplier;
+        //     data.minSpawnAmount += data.nightlySpawnMultiplier;
+        //     Debug.Log($"max: {data.maxSpawnAmount} min: {data.minSpawnAmount}************************************************");
+        // }
     }
 
     public void increaseAfterSeason()
     {
-        if (enemyUnit != null)
+        // increaseAfterSeason1 = true;        
+        spawnUnits.increaseAfterSeason();
+    }
+
+    private void afterSeason()
+    {
+        // EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
+        // foreach (EnemyUnit enemy in enemies)
+        // {
+        //     enemy.increaseAfterSeason();
+        // }
+        // data.maxSpawnAmount = (int)(data.maxSpawnAmount * data.seasonSpawnMultiplier);
+        // data.minSpawnAmount = (int)(data.minSpawnAmount * data.seasonSpawnMultiplier);
+        // Debug.Log($"max: {data.maxSpawnAmount} min: {data.minSpawnAmount}===============================================");
+
+        // data.nightlySpawnMultiplier = (int)(data.nightlySpawnMultiplier * data.seasonSpawnMultiplier);
+        // Debug.Log($"nightly things: {data.nightlySpawnMultiplier}=====================================================");
+
+    }
+
+    public void scaleTimeNightly()
+    {
+        maxTimeSpan *= nightlyScale;
+        minTimeSpan /= nightlyScale;
+    }
+
+    public void scaleTimeBySeason()
+    {
+        maxTimeSpan *= seasonScale;
+        minTimeSpan /= seasonScale;
+    }
+
+    private IEnumerator SpawnEnemies()
+    {
+        while (isNight)
         {
-            enemyUnit.increaseAfterSeason();
+            spawnUnits.SpawnEnemies(season);
+
+            float delay = Random.Range(minTimeSpan, maxTimeSpan);
+
+            // Debug.Log($"Spawning enemies in {delay} seconds...-----------------------------------------------------");
+
+            yield return new WaitForSeconds(delay);
         }
     }
-    
-    
+
+    public void SetSeason(int newSeason)
+    {
+        // Debug.Log($"Setting season to {newSeason}-------------------------------------------------------------------------------------------------------------------------------");
+        season = newSeason;
+    }
+
+
 }

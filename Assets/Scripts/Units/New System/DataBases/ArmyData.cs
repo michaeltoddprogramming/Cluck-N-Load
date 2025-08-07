@@ -15,10 +15,15 @@ public class ArmyData : UnitData
     public float AngularSpeed;
     public float StoppingDistance;
 
+
+    [Header("Roaming around flag")]
+    public float RoamRadius = 4f;
+    public float RoamInterval = 2f;
+
     [Header("Audio")]
     public AudioClip AttackSound;
     public AudioClip DeathSound;
     public AudioClip HurtSound;
     public AudioClip backgroundSound;
-    
+
 }

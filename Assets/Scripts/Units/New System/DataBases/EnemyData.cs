@@ -30,4 +30,20 @@ public class EnemyData : UnitData
     public int nightlySpawnMultiplier = 2;
     public float seasonSpawnMultiplier = 1.2f;
 
+    // public void increaseAfterNight()
+    // {
+    //     maxSpawnAmount += nightlySpawnMultiplier;
+    //     minSpawnAmount += nightlySpawnMultiplier;
+    //     Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}************************************************");
+
+    // }
+    // public void increaseAfterSeason()
+    // {
+    //     maxSpawnAmount = (int)(maxSpawnAmount * seasonSpawnMultiplier);
+    //     minSpawnAmount = (int)(minSpawnAmount * seasonSpawnMultiplier);
+    //     Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}===============================================");
+
+    //     nightlySpawnMultiplier = (int)(nightlySpawnMultiplier * seasonSpawnMultiplier);
+    //     Debug.Log($"nightly things: {nightlySpawnMultiplier}=====================================================");
+    // }
 }

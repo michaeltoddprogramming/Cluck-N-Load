@@ -146,6 +146,7 @@ public class NightManager : MonoBehaviour
     private List<Coroutine> lightingCoroutines = new List<Coroutine>();
 
     private CombatManager combatManager;
+    private bool isFirstDay = true;
 
     private void Awake()
     {
@@ -198,6 +199,7 @@ public class NightManager : MonoBehaviour
         seasonNotification.gameObject.SetActive(false);
         productionNotification.gameObject.SetActive(false);
         setSeason(1);
+        combatManager.SetSeason(1);
         // chooseAnimalProductForSeason();
     }
 
@@ -273,6 +275,7 @@ public class NightManager : MonoBehaviour
 
     private void StartNight(int flag)
     {
+        isFirstDay = false;
 
         combatManager.StartCombat();
 
@@ -286,7 +289,7 @@ public class NightManager : MonoBehaviour
         shopIcon.color = nightShop;
         isDay = false;
         buttonText.text = "End Night";
-        
+
         // Set weather for night: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
         {
@@ -310,7 +313,7 @@ public class NightManager : MonoBehaviour
         //     {
         //         StopCoroutine(wolfSpawnCoroutine);
         //     }
-            
+
         //     wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
         // }
         // else
@@ -341,8 +344,16 @@ public class NightManager : MonoBehaviour
 
     private void StartDay(int flag)
     {
-        combatManager.StopCombat();
-        combatManager.increaseAfterNight();
+        if (isFirstDay)
+        {
+            combatManager.StopCombat();
+        }
+        else
+        {
+            combatManager.StopCombat();
+            combatManager.scaleTimeNightly();
+            combatManager.increaseAfterNight();
+        }
         // Destroy all remaining wolves when day starts
         // foreach (Wolf wolf in activeWolves.ToList())
         // {
@@ -585,89 +596,97 @@ public class NightManager : MonoBehaviour
         RenderSettings.skybox.SetTexture("_Texture1", b);
     }
 
-private void setSeason(int season)
-{
-    currentSeason = season;
-    string text;
-    switch (season)
+    private void setSeason(int season)
     {
-        case 1:
-            if (yearsChanged)
-            {
-                text = $"Year {Years} done!!\nSpring!!!!";
-                seasonIcon.sprite = spring;
+        currentSeason = season;
+        string text;
+        switch (season)
+        {
+            case 1:
+                if (yearsChanged)
+                {
+                    text = $"Year {Years} done!!\nSpring!!!!";
+                    seasonIcon.sprite = spring;
+                    if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                        TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
+                }
+                else
+                {
+                    text = "Spring!!";
+                    seasonIcon.sprite = spring;
+                    if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                        TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
+                }
+                break;
+            case 2:
+                yearsChanged = false;
+                text = "Summer!!";
+                seasonIcon.sprite = summer;
                 if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                    TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
+                    TutorialManager.Instance.Trigger(TutorialTrigger.SummerSeason);
+                break;
+            case 3:
+                text = "Fall!!";
+                seasonIcon.sprite = fall;
+                if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                    TutorialManager.Instance.Trigger(TutorialTrigger.FallSeason);
+                break;
+            case 4:
+                text = "Winter!!";
+                seasonIcon.sprite = winter;
+                if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                    TutorialManager.Instance.Trigger(TutorialTrigger.WinterSeason);
+                break;
+            default:
+                text = "";
+                break;
+        }
+
+        // Set weather for season change
+        SetSeasonWeather();
+
+        // Always call chooseAnimalProductForSeason (it will handle tutorial appropriately now)
+        chooseAnimalProductForSeason();
+
+        // Debug.Log($"Setting season to {season} with notification: {text}+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        if (!isFirstDay)
+        {
+            combatManager.increaseAfterSeason();
+            combatManager.scaleTimeBySeason();
+        }
+
+        combatManager.SetSeason(season);
+
+        // Only show season notification if not in tutorial
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            Debug.Log("Tutorial active: Suppressing regular season notification");
+            return;
+        }
+
+
+        StartNotification(text, 5);
+    }
+
+    private void SetSeasonWeather()
+    {
+        if (WeatherManager.Instance != null)
+        {
+            if (currentSeason == 4)
+            {
+                WeatherManager.Instance.SpawnSnow();
             }
             else
             {
-                text = "Spring!!";
-                seasonIcon.sprite = spring;
-                if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                    TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
+                float rainChance = 0.3f;
+                float roll = Random.value;
+                if (roll < rainChance)
+                    WeatherManager.Instance.SpawnRain();
+                else
+                    WeatherManager.Instance.ClearWeather();
             }
-            break;
-        case 2:
-            yearsChanged = false;
-            text = "Summer!!";
-            seasonIcon.sprite = summer;
-            if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                TutorialManager.Instance.Trigger(TutorialTrigger.SummerSeason);
-            break;
-        case 3:
-            text = "Fall!!";
-            seasonIcon.sprite = fall;
-            if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                TutorialManager.Instance.Trigger(TutorialTrigger.FallSeason);
-            break;
-        case 4:
-            text = "Winter!!";
-            seasonIcon.sprite = winter;
-            if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                TutorialManager.Instance.Trigger(TutorialTrigger.WinterSeason);
-            break;                
-        default:
-            text = "";
-            break;
-    }
-    
-    // Set weather for season change
-    SetSeasonWeather();
-    
-    // Always call chooseAnimalProductForSeason (it will handle tutorial appropriately now)
-    chooseAnimalProductForSeason();
-    
-    // Only show season notification if not in tutorial
-    if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
-    {
-        Debug.Log("Tutorial active: Suppressing regular season notification");
-        return;
-    }
-
-    combatManager.increaseAfterSeason();
-    
-    StartNotification(text, 5);
-}
-
-private void SetSeasonWeather()
-{
-    if (WeatherManager.Instance != null)
-    {
-        if (currentSeason == 4)
-        {
-            WeatherManager.Instance.SpawnSnow();
-        }
-        else
-        {
-            float rainChance = 0.3f;
-            float roll = Random.value;
-            if (roll < rainChance)
-                WeatherManager.Instance.SpawnRain();
-            else
-                WeatherManager.Instance.ClearWeather();
         }
     }
-}
     private void StartNotification(string message, float duration)
     {
         // Stop any existing notification first
@@ -750,7 +769,7 @@ private void SetSeasonWeather()
     {
         // Declare once at the beginning
         ProductionBoosts productionBoosts = FindFirstObjectByType<ProductionBoosts>();
-        
+
         if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
         {
             // Now just use the already declared variable
@@ -759,7 +778,7 @@ private void SetSeasonWeather()
                 float[] normalValues = new float[5] { 1f, 1f, 1f, 1f, 1f };
                 productionBoosts.SetBoosted(normalValues);
             }
-            
+
             Debug.Log("Tutorial active: Skipping automatic season bonus explanation");
             return; // Skip all the complex bonus logic during tutorial
         }
@@ -792,30 +811,30 @@ private void SetSeasonWeather()
 
             foreach (AnimalStructure animalStructure in animalStructures)
             {
-            animalStructure.updateAnimalProductionAmount(animal, sameProductIncreasePercent);
+                animalStructure.updateAnimalProductionAmount(animal, sameProductIncreasePercent);
             }
 
             if (animal == "Ch")
             {
-                boostedProducts[0] = sameProductIncreasePercent;                
+                boostedProducts[0] = sameProductIncreasePercent;
             }
             else if (animal == "C")
             {
-                boostedProducts[1] = sameProductIncreasePercent;                
+                boostedProducts[1] = sameProductIncreasePercent;
             }
             else if (animal == "S")
             {
-                boostedProducts[2] = sameProductIncreasePercent;                
+                boostedProducts[2] = sameProductIncreasePercent;
             }
             else if (animal == "G")
             {
-                boostedProducts[3] = sameProductIncreasePercent;                
+                boostedProducts[3] = sameProductIncreasePercent;
             }
             else if (animal == "P")
             {
-                boostedProducts[4] = sameProductIncreasePercent;                
+                boostedProducts[4] = sameProductIncreasePercent;
             }
-            
+
             productionBoosts.SetBoosted(boostedProducts);
 
             if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
@@ -863,25 +882,25 @@ private void SetSeasonWeather()
 
                 if (animal1 == "Ch")
                 {
-                    boostedProducts[0] = increasePercent;                
+                    boostedProducts[0] = increasePercent;
                 }
                 else if (animal1 == "C")
                 {
-                    boostedProducts[1] = increasePercent;                
+                    boostedProducts[1] = increasePercent;
                 }
                 else if (animal1 == "S")
                 {
-                    boostedProducts[2] = increasePercent;                
+                    boostedProducts[2] = increasePercent;
                 }
                 else if (animal1 == "G")
                 {
-                    boostedProducts[3] = increasePercent;                
+                    boostedProducts[3] = increasePercent;
                 }
                 else if (animal1 == "P")
                 {
-                    boostedProducts[4] = increasePercent;                
+                    boostedProducts[4] = increasePercent;
                 }
-                
+
                 if (animal2 == "Ch")
                 {
                     boostedProducts[0] = increasePercent;
@@ -927,7 +946,7 @@ private void SetSeasonWeather()
                     animalStructure.updateAnimalProductionAmount(animal1, increasePercent);
                     animalStructure.updateAnimalProductionAmount(animal2, increasePercent);
                 }
-                
+
                 if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
                 {
                     bool anyBoost = false;
@@ -939,7 +958,7 @@ private void SetSeasonWeather()
                             break;
                         }
                     }
-                    
+
                     if (anyBoost)
                     {
                         TutorialManager.Instance.Trigger(TutorialTrigger.AnimalProductionBoosted);
@@ -966,7 +985,7 @@ private void SetSeasonWeather()
                 {
                     boostedProducts[4] = increasePercent;
                 }
-                
+
                 if (animal2 == "Ch")
                 {
                     boostedProducts[0] = increasePercent;
@@ -1011,26 +1030,26 @@ private void SetSeasonWeather()
     }
 
     // New helper method to show simplified tutorial explanation
-            public void ShowSimplifiedTutorialSeasonBonus()
+    public void ShowSimplifiedTutorialSeasonBonus()
+    {
+        Debug.Log("Tutorial: Showing simplified season bonus explanation");
+
+        // During tutorial, we'll just show a message explaining the concept
+        string tutorialMessage = "Each season brings <b>special bonuses</b> to your farm animals!\n\nAfter completing the tutorial, you'll see which animals produce more each season.";
+
+        // Show a notification that doesn't overwhelm with details
+        StartProductionNotification(tutorialMessage, 7f);
+
+        // Don't actually apply any bonuses during tutorial
+        // Change variable name to avoid conflict with the one in chooseAnimalProductForSeason
+        ProductionBoosts productionBoostsManager = FindFirstObjectByType<ProductionBoosts>();
+        if (productionBoostsManager != null)
         {
-            Debug.Log("Tutorial: Showing simplified season bonus explanation");
-            
-            // During tutorial, we'll just show a message explaining the concept
-            string tutorialMessage = "Each season brings <b>special bonuses</b> to your farm animals!\n\nAfter completing the tutorial, you'll see which animals produce more each season.";
-            
-            // Show a notification that doesn't overwhelm with details
-            StartProductionNotification(tutorialMessage, 7f);
-            
-            // Don't actually apply any bonuses during tutorial
-            // Change variable name to avoid conflict with the one in chooseAnimalProductForSeason
-            ProductionBoosts productionBoostsManager = FindFirstObjectByType<ProductionBoosts>();
-            if (productionBoostsManager != null)
-            {
-                // Reset all bonuses to normal (1.0f)
-                float[] normalValues = new float[5] { 1f, 1f, 1f, 1f, 1f };
-                productionBoostsManager.SetBoosted(normalValues);
-            }
+            // Reset all bonuses to normal (1.0f)
+            float[] normalValues = new float[5] { 1f, 1f, 1f, 1f, 1f };
+            productionBoostsManager.SetBoosted(normalValues);
         }
+    }
     private string determineAnimalProduct(int product)
     {
         switch (product)
@@ -1083,11 +1102,11 @@ private void SetSeasonWeather()
     /// </summary>
     private bool IsInTutorialMode()
     {
-        return TutorialManager.Instance != null && 
-               TutorialManager.Instance.IsTutorialActive() && 
+        return TutorialManager.Instance != null &&
+               TutorialManager.Instance.IsTutorialActive() &&
                TutorialManager.Instance.enabled;
     }
-    
+
 
     private void rotateDayNightIcon()
     {

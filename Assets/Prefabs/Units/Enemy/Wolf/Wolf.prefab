@@ -157,8 +157,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.64, y: 1.15, z: 1.99}
+  m_Center: {x: 0.03, y: 0.59, z: 0.21}
 --- !u!114 &3226007662016291319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,6 +175,12 @@ MonoBehaviour:
   backgroundAudioSource: {fileID: 4523313558861113796}
   animator: {fileID: 4556398229813284515}
   data: {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}
+  currentMaxSpawn: 0
+  currentMinSpawn: 0
+  retreating: 0
+  jumpCheckDistance: 1.5
+  jumpHeight: 20
+  jumpDuration: 0.5
 --- !u!195 &1038109364193293033
 NavMeshAgent:
   m_ObjectHideFlags: 0

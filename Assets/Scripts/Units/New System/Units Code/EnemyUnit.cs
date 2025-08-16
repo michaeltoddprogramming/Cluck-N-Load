@@ -151,12 +151,19 @@ public class EnemyUnit : BaseUnit
 
         if (mainTarget == null || IsTargetDead(mainTarget))
         {
+            Debug.Log("ieruehfweiurhgiouwrehjtgoiujhwrtoiugjorwijtgiorjtgoirjtgoijertgoijretgoreitjgersotighj");
             mainTarget = GetNearestAggroTargetOptimized();
             if (mainTarget == null)
             {
                 agent.ResetPath();
                 return;
             }
+
+            // Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
+            // directionToTarget.y = 0; // keep rotation only on horizontal plane
+            // if (directionToTarget != Vector3.zero)
+            //     transform.rotation = Quaternion.LookRotation(directionToTarget);
+
         }
 
         // currentTarget = mainTarget;
@@ -172,11 +179,22 @@ public class EnemyUnit : BaseUnit
                             path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
 
         // if (!pathFound || path.status != UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        if (agent.CalculatePath(mainTarget.transform.position, path) && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        {
+            // A valid path exists, so stop targeting the obstacle
+            obstacleTarget = null;
+            currentTarget = mainTarget;
+        }
         if (!pathComplete)
         {
+            // Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
+            // directionToTarget.y = 0; // keep rotation only on horizontal plane
+            // if (directionToTarget != Vector3.zero)
+            //     transform.rotation = Quaternion.LookRotation(directionToTarget);
             // MonoBehaviour block = GetBlockingObject(path);
-            obstacleTarget = GetBlockingObject();
-            Debug.Log("obsticle Target assigned: " + obstacleTarget);
+            // obstacleTarget = GetBlockingObject(path);
+            obstacleTarget = GetBlockingObjectDirect();
+            // Debug.Log("obsticle Target assigned: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             if (obstacleTarget != null)
             {
                 Debug.Log("obsticle Target not null: " + obstacleTarget);
@@ -189,7 +207,7 @@ public class EnemyUnit : BaseUnit
             else
             {
                 currentTarget = mainTarget; // fallback
-                Debug.Log("Fallabck-------------------------------------");
+                // Debug.Log("Fallabck-------------------------------------");
             }
 
             // Debug.Log("currentarget is new: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++");
@@ -214,7 +232,9 @@ public class EnemyUnit : BaseUnit
         }
 
         Collider targetCollider = currentTarget.GetComponent<Collider>();
-        Vector3 newAttackPosition = targetCollider != null ? targetCollider.ClosestPoint(transform.position) : currentTarget.transform.position;
+        // Vector3 newAttackPosition = targetCollider != null ? targetCollider.ClosestPoint(transform.position) : currentTarget.transform.position;
+        Vector3 newAttackPosition = targetCollider.ClosestPoint(transform.position);
+        newAttackPosition = Vector3.MoveTowards(newAttackPosition, transform.position, 0.5f); // 0.5 units closer
 
         if (currentAttackPosition == Vector3.zero ||
         Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
@@ -350,13 +370,13 @@ public class EnemyUnit : BaseUnit
         }
 
         // Small idle sway when stopped ------------------------ had this
-        if (!agent.hasPath)
-        {
-            float swayAmount = 0.05f;
-            float swaySpeed = 2f;
-            Vector3 swayOffset = new Vector3(Mathf.Sin(Time.time * swaySpeed), 0, Mathf.Cos(Time.time * swaySpeed)) * swayAmount;
-            transform.position += swayOffset * Time.deltaTime;
-        }
+        // if (!agent.hasPath)
+        // {
+        //     float swayAmount = 0.05f;
+        //     float swaySpeed = 2f;
+        //     Vector3 swayOffset = new Vector3(Mathf.Sin(Time.time * swaySpeed), 0, Mathf.Cos(Time.time * swaySpeed)) * swayAmount;
+        //     transform.position += swayOffset * Time.deltaTime;
+        // }
     }
 
     // private MonoBehaviour GetBlockingObject(UnityEngine.AI.NavMeshPath path)
@@ -380,18 +400,93 @@ public class EnemyUnit : BaseUnit
     //     }
     //     return null;
     // }
-    private MonoBehaviour GetBlockingObject()
+
+    // private MonoBehaviour GetBlockingObjectDirect()
+    // {
+    //     if (mainTarget == null) return null;
+
+    //     Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
+    //     float distanceToTarget = Vector3.Distance(transform.position, mainTarget.transform.position);
+
+    //     if (Physics.Raycast(transform.position + Vector3.up * 0.5f, directionToTarget, out RaycastHit hit, distanceToTarget))
+    //     {
+    //         if (hit.collider.CompareTag("Jumpable"))
+    //             return hit.collider.GetComponent<DefenseStructure>();
+    //     }
+
+    //     return null;
+    // }
+    private MonoBehaviour GetBlockingObjectDirect()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * 1f, 1f);
-        foreach (var hit in hits)
+        if (mainTarget == null) return null;
+
+        Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
+        float distanceToTarget = Vector3.Distance(transform.position, mainTarget.transform.position);
+
+        // Offsets for multiple rays to cover wider obstacles
+        Vector3[] offsets = { Vector3.zero, Vector3.left * 0.5f, Vector3.right * 0.5f };
+
+        foreach (var offset in offsets)
         {
-            if (hit.CompareTag("Jumpable")) // or Layer check
+            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f + offset;
+            Debug.DrawRay(rayOrigin, directionToTarget * distanceToTarget, Color.red, 0.5f);
+
+            if (Physics.Raycast(rayOrigin, directionToTarget, out RaycastHit hit, distanceToTarget))
             {
-                return hit.GetComponent<DefenseStructure>();
+                if (hit.collider.CompareTag("Jumpable"))
+                {
+                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    return hit.collider.GetComponent<DefenseStructure>();
+                }
             }
         }
+
         return null;
     }
+
+
+    // private MonoBehaviour GetBlockingObject(UnityEngine.AI.NavMeshPath path)
+    // {
+    //     // UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+    //     // if (!agent.CalculatePath(mainTarget.transform.position, path))
+    //     // return null;
+
+    //     // Debug.Log("2342342334244444444444444444444444444444z44444444444444444444444444444444444444");
+    //     Debug.Log("Path corners count: " + path.corners.Length);
+    //     for (int i = 0; i < path.corners.Length - 1; i++)
+    //     {
+    //         Debug.Log("7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777");
+    //         Debug.DrawLine(path.corners[i], path.corners[i + 1], Color.red, 2f);
+    //         Vector3 start = path.corners[i];
+    //         Vector3 end = path.corners[i + 1];
+    //         Vector3 dir = (end - start).normalized;
+    //         float dist = Vector3.Distance(start, end) + 60f;
+
+    //         if (Physics.Raycast(start, dir, out RaycastHit hit, dist))
+    //         {
+    //             Debug.Log("Hit: " + hit.collider.name + " | Tag: " + hit.collider.tag + "**************************************************************************************************************");
+    //             if (hit.collider.CompareTag("Jumpable"))
+    //                 return hit.collider.GetComponent<DefenseStructure>();
+    //         }
+    //         else
+    //         {
+    //             Debug.Log("Raycast missed from " + start + " to " + end);
+    //         }
+    //     }
+    //     return null;
+    // }
+    // private MonoBehaviour GetBlockingObject()
+    // {
+    //     Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * 1f, 1f);
+    //     foreach (var hit in hits)
+    //     {
+    //         if (hit.CompareTag("Jumpable")) // or Layer check
+    //         {
+    //             return hit.GetComponent<DefenseStructure>();
+    //         }
+    //     }
+    //     return null;
+    // }
 
     private IEnumerator JumpOver(Collider wall)
     {
@@ -449,7 +544,7 @@ public class EnemyUnit : BaseUnit
         float distanceBetween = Vector3.Distance(closestPointEnemy, closestPointTarget);
 
         // Attack range buffer (tweak this)
-        float attackRange = 0.1f;
+        float attackRange = 2f;
 
         if (distanceBetween <= attackRange)
         {

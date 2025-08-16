@@ -38,6 +38,10 @@ public class LoadingScreenController : MonoBehaviour
         "Explore every corner for hidden treasures!"
     };
 
+    [SerializeField] private Image fadeImage;
+[SerializeField] private float fadeDuration = 1.5f;
+
+
     private AsyncOperation sceneLoadOperation;
     private float displayedProgress = 0f;
     private float timeElapsed = 0f;
@@ -168,9 +172,30 @@ public class LoadingScreenController : MonoBehaviour
         waitingForKeyPress = true;
     }
 
-    void ActivateScene()
+void ActivateScene()
+{
+    if (sceneLoadOperation != null)
     {
-        if (sceneLoadOperation != null)
-            sceneLoadOperation.allowSceneActivation = true;
+        StartCoroutine(FadeAndActivate());
     }
+}
+
+IEnumerator FadeAndActivate()
+{
+    float elapsed = 0f;
+    Color c = fadeImage.color;
+
+    // Fade alpha from 0 → 1
+    while (elapsed < fadeDuration)
+    {
+        elapsed += Time.deltaTime;
+        float alpha = Mathf.Clamp01(elapsed / fadeDuration);
+        fadeImage.color = new Color(c.r, c.g, c.b, alpha);
+        yield return null;
+    }
+
+    // Finally allow the scene activation
+    sceneLoadOperation.allowSceneActivation = true;
+}
+
 }

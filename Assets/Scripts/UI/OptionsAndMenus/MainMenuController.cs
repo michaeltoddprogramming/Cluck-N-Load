@@ -25,7 +25,10 @@ public class MainMenuController : MonoBehaviour
             saveSelectionMenu.SetActive(false); // Ensure hidden at start
 
         if (backgroundMusic != null && !backgroundMusic.isPlaying)
+        {
             backgroundMusic.Play();
+            DontDestroyOnLoad(backgroundMusic.gameObject);
+        }
     }
 
     private IEnumerator AnimateSkyboxRotation()

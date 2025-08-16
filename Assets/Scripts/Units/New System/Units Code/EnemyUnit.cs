@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 public class EnemyUnit : BaseUnit
 {
     [SerializeField] private EnemyData data;
@@ -23,6 +24,14 @@ public class EnemyUnit : BaseUnit
 
     public bool retreating = false;
     private Vector3 destination;
+
+    //jumping
+    [SerializeField] private float jumpCheckDistance = 1.5f;
+    [SerializeField] private float jumpHeight = 20f;
+    [SerializeField] private float jumpDuration = 0.5f;
+    private MonoBehaviour mainTarget; // the building
+    // private MonoBehaviour obstacleTarget; // wall temporarily
+    private MonoBehaviour obstacleTarget; // wall temporarily
 
     // protected override void Awake()
     // {
@@ -127,55 +136,211 @@ public class EnemyUnit : BaseUnit
             return;
         }
 
-        if (currentTarget == null || IsTargetDead(currentTarget))
+        // if (currentTarget == null || IsTargetDead(currentTarget))
+        // {
+        //     // currentTarget = GetNearestAggroTarget();
+        //     currentTarget = GetNearestAggroTargetOptimized();
+        //     if (currentTarget == null)
+        //     {
+        //         agent.ResetPath();
+        //         return;
+        //     }
+        //     // Reset stored position when target changes
+        //     // currentAttackPosition = Vector3.zero;
+        // }
+
+        if (mainTarget == null || IsTargetDead(mainTarget))
         {
-            // currentTarget = GetNearestAggroTarget();
-            currentTarget = GetNearestAggroTargetOptimized();
-            if (currentTarget == null)
+            mainTarget = GetNearestAggroTargetOptimized();
+            if (mainTarget == null)
             {
                 agent.ResetPath();
                 return;
             }
-            // Reset stored position when target changes
-            currentAttackPosition = Vector3.zero;
         }
 
-        Collider targetCollider = currentTarget.GetComponent<Collider>();
+        // currentTarget = mainTarget;
 
-        Vector3 newAttackPosition;
+        // Debug.Log("main target is set " + mainTarget);
 
-        if (targetCollider != null)
+        // UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+        // bool pathFound = agent.CalculatePath(currentTarget.transform.position, path);
+        // bool pathFound = agent.CalculatePath(mainTarget.transform.position, path);
+
+        UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+        bool pathComplete = agent.CalculatePath(mainTarget.transform.position, path) ||
+                            path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
+
+        // if (!pathFound || path.status != UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        if (!pathComplete)
         {
-            newAttackPosition = targetCollider.ClosestPoint(transform.position);
-
-            // Add a fixed random offset only once when we pick the target (to avoid jitter)
-            if (currentAttackPosition == Vector3.zero ||
-                Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
+            // MonoBehaviour block = GetBlockingObject(path);
+            obstacleTarget = GetBlockingObject();
+            Debug.Log("obsticle Target assigned: " + obstacleTarget);
+            if (obstacleTarget != null)
             {
-                currentAttackPosition = newAttackPosition + new Vector3(Random.Range(-0.3f, 0.3f), 0, Random.Range(-0.3f, 0.3f));
+                Debug.Log("obsticle Target not null: " + obstacleTarget);
+                // obstacleTarget = block;
+                currentTarget = obstacleTarget;
+                // obstacleTarget = block;
+                // mainTarget = block;
+                // obstacleTarget = GetBlockingObject();
             }
+            else
+            {
+                currentTarget = mainTarget; // fallback
+                Debug.Log("Fallabck-------------------------------------");
+            }
+
+            // Debug.Log("currentarget is new: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++");
+            // if (obstacleTarget != null)
+            // {
+            //     currentTarget = obstacleTarget;
+            //     Debug.Log("currentarget is new: " + currentTarget + "--------------------------------------------------------------");
+            // }
+            // No valid path, attack obstacles in the way
+            // MonoBehaviour blockingObject = GetBlockingObject();
+            // if (blockingObject != null)
+            // {
+            //     currentTarget = blockingObject; // temporarily target the wall
+            //     AttackIfInRange(); // start attacking immediately if in range
+            //     return; // skip normal movement this frame
+            // }
         }
         else
         {
-            newAttackPosition = currentTarget.transform.position;
+            obstacleTarget = null;
+            currentTarget = mainTarget;
+        }
 
-            if (currentAttackPosition == Vector3.zero ||
-                Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
-            {
-                currentAttackPosition = newAttackPosition;
-            }
+        Collider targetCollider = currentTarget.GetComponent<Collider>();
+        Vector3 newAttackPosition = targetCollider != null ? targetCollider.ClosestPoint(transform.position) : currentTarget.transform.position;
+
+        if (currentAttackPosition == Vector3.zero ||
+        Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
+        {
+            currentAttackPosition = newAttackPosition;
         }
 
         float distance = Vector3.Distance(transform.position, currentAttackPosition);
 
         if (distance > agent.stoppingDistance)
-        {
             agent.SetDestination(currentAttackPosition);
-        }
         else
-        {
             agent.ResetPath();
-        }
+
+
+        // if (currentTarget != null &&
+        // Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
+        // {
+        //     agent.SetDestination(currentTarget.transform.position);
+        // }
+
+        // Debug.Log("this si the currtarget: " + currentTarget + "---------------------------------------");
+        // if (currentTarget != null && Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
+        // {
+        //     agent.SetDestination(currentTarget.transform.position);
+        // }
+
+        // Set destination once
+        // if (currentTarget != null)
+        // {
+        //     if (Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
+        //     {
+        //         agent.SetDestination(currentTarget.transform.position);
+        //     }
+        // }
+
+        // if (obstacleTarget != null)
+        // {
+        //     UnityEngine.AI.NavMeshPath path1 = new UnityEngine.AI.NavMeshPath();
+        //     bool pathFound1 = agent.CalculatePath(mainTarget.transform.position, path1);
+        //     if (pathFound1 && path1.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        //     {
+        //         currentTarget = mainTarget;
+        //         obstacleTarget = null;
+        //     }
+        // }
+
+        // if (currentTarget != null)
+        // {
+        //     // Only update the destination if it's far from the previous destination
+        //     if (Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
+        //     {
+        //         agent.SetDestination(currentTarget.transform.position);
+        //     }
+        //     //  agent.SetDestination(currentTarget.transform.position);
+        // }
+
+        // SetAttackPosition();
+
+        // Check for walls in front
+        // if (Physics.Raycast(transform.position + Vector3.up * 0.5f, transform.forward, out RaycastHit hit, jumpCheckDistance))
+        // {
+        //     if (hit.collider.CompareTag("Jumpable"))
+        //     {
+        //         StartCoroutine(JumpOver(hit.collider));
+        //         return; // Skip normal movement this frame
+        //     }
+        // }
+
+        // Collider targetCollider = currentTarget.GetComponent<Collider>();
+
+        // Vector3 newAttackPosition;
+
+        // if (Vector3.Distance(transform.position, currentAttackPosition) > agent.stoppingDistance)
+        // {
+        //     agent.SetDestination(currentAttackPosition);
+        // }
+        // else
+        // {
+        //     agent.ResetPath();
+        // }
+
+        //had this------------------------
+        // if (targetCollider != null)
+        // {
+        //     newAttackPosition = targetCollider.ClosestPoint(transform.position);
+
+        //     // Add a fixed random offset only once when we pick the target (to avoid jitter)
+        //     if (currentAttackPosition == Vector3.zero ||
+        //         Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
+        //     {
+        //         currentAttackPosition = newAttackPosition + new Vector3(Random.Range(-0.3f, 0.3f), 0, Random.Range(-0.3f, 0.3f));
+        //     }
+        // }
+        // else
+        // {
+        //     newAttackPosition = currentTarget.transform.position;
+
+        //     if (currentAttackPosition == Vector3.zero ||
+        //         Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
+        //     {
+        //         currentAttackPosition = newAttackPosition;
+        //     }
+        // }
+
+        // float distance = Vector3.Distance(transform.position, currentAttackPosition);
+
+        // MonoBehaviour targetToCheck = obstacleTarget != null ? obstacleTarget : currentTarget;
+
+
+        //had this--------------------
+        // if (distance > agent.stoppingDistance)
+        // {
+        //     if (obstacleTarget == null)
+        //     {
+        //         agent.SetDestination(currentAttackPosition);
+        //     }
+        //     else
+        //     {
+        //         agent.SetDestination(obstacleTarget.transform.position);
+        //     }
+        // }
+        // else
+        // {
+        //     agent.ResetPath();
+        // }
 
         // Smooth rotation toward movement
         if (agent.velocity.sqrMagnitude > 0.1f)
@@ -184,7 +349,7 @@ public class EnemyUnit : BaseUnit
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
         }
 
-        // Small idle sway when stopped
+        // Small idle sway when stopped ------------------------ had this
         if (!agent.hasPath)
         {
             float swayAmount = 0.05f;
@@ -194,24 +359,78 @@ public class EnemyUnit : BaseUnit
         }
     }
 
+    // private MonoBehaviour GetBlockingObject(UnityEngine.AI.NavMeshPath path)
+    // {
+    //     for (int i = 0; i < path.corners.Length - 1; i++)
+    //     {
+    //         Vector3 start = path.corners[i];
+    //         Vector3 end = path.corners[i + 1];
+    //         Vector3 dir = (end - start).normalized;
+    //         float dist = Vector3.Distance(start, end);
 
-    private void SetAttackPosition()
+    //         if (Physics.Raycast(start, dir, out RaycastHit hit, dist))
+    //         {
+    //             // Only treat walls/structures as blocking objects
+    //             Debug.DrawRay(start, dir * dist, Color.red, 1f);
+    //             if (hit.collider.CompareTag("Jumpable"))
+    //             {
+    //                 return hit.collider.GetComponent<DefenseStructure>();
+    //             }
+    //         }
+    //     }
+    //     return null;
+    // }
+    private MonoBehaviour GetBlockingObject()
     {
-        if (currentTarget == null) return;
-
-        Collider targetCollider = currentTarget.GetComponent<Collider>();
-        if (targetCollider != null)
+        Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * 1f, 1f);
+        foreach (var hit in hits)
         {
-            // Get closest point on the target collider to this enemy's current position
-            currentAttackPosition = targetCollider.ClosestPoint(transform.position);
+            if (hit.CompareTag("Jumpable")) // or Layer check
+            {
+                return hit.GetComponent<DefenseStructure>();
+            }
         }
-        else
-        {
-            currentAttackPosition = currentTarget.transform.position;
-        }
-
-        hasAttackPosition = true;
+        return null;
     }
+
+    private IEnumerator JumpOver(Collider wall)
+    {
+        agent.enabled = false;
+
+        Vector3 startPos = transform.position;
+        Vector3 endPos = wall.transform.position + wall.transform.forward * 1f; // adjust distance past wall
+        float elapsed = 0f;
+
+        while (elapsed < jumpDuration)
+        {
+            float t = elapsed / jumpDuration;
+            transform.position = Vector3.Lerp(startPos, endPos, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * jumpHeight;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = endPos;
+        agent.enabled = true;
+    }
+
+
+    // private void SetAttackPosition()
+    // {
+    //     if (currentTarget == null) return;
+
+    //     Collider targetCollider = currentTarget.GetComponent<Collider>();
+    //     if (targetCollider != null)
+    //     {
+    //         // Get closest point on the target collider to this enemy's current position
+    //         currentAttackPosition = targetCollider.ClosestPoint(transform.position);
+    //     }
+    //     else
+    //     {
+    //         currentAttackPosition = currentTarget.transform.position;
+    //     }
+
+    //     hasAttackPosition = true;
+    // }
 
     private void AttackIfInRange()
     {
@@ -292,6 +511,7 @@ public class EnemyUnit : BaseUnit
             {
                 case AttType.Animals:
                     candidate = col.GetComponent<ArmyUnit>();
+                    // Debug.Log("animal attack: " + candidate);
                     break;
 
                 case AttType.Resources:
@@ -304,6 +524,11 @@ public class EnemyUnit : BaseUnit
                         if (silo != null)
                             candidate = silo;
                     }
+                    break;
+
+                case AttType.Defense:
+                    candidate = col.GetComponent<DefenseStructure>();
+                    // Debug.Log("Defence attack: " + candidate);
                     break;
 
                 case AttType.Buildings:
@@ -336,6 +561,7 @@ public class EnemyUnit : BaseUnit
                             }
                         }
                     }
+                    // Debug.Log("building attack: " + candidate);
                     break;
             }
 
@@ -353,6 +579,7 @@ public class EnemyUnit : BaseUnit
         // If nothing found, attack the nearest target of any type
         if (nearest == null)
         {
+            Debug.Log("There was nothing so we go for anything!");
             // Fallback: find the nearest *any* target if no preferred AttType target was found
             Collider[] fallbackHits = Physics.OverlapSphere(transform.position, data.AttackRange);
 
@@ -366,6 +593,11 @@ public class EnemyUnit : BaseUnit
                 else if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
                 else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
                 else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
+                else if (col.TryGetComponent<DefenseStructure>(out var defense))
+                {
+                    candidate = defense;
+                    Debug.Log("WE found a defense");
+                }
 
                 if (candidate != null && !IsTargetDead(candidate))
                 {
@@ -392,56 +624,56 @@ public class EnemyUnit : BaseUnit
 
 
 
-    public List<object> GetAggroThingsInRange()
-    {
-        List<object> targets = new();
-        GridController grid = GridController.Instance;
+    // public List<object> GetAggroThingsInRange()
+    // {
+    //     List<object> targets = new();
+    //     GridController grid = GridController.Instance;
 
-        // Get all cells within attack range (radius in grid cells)
-        List<GridCell> cellsInRange = grid.GetCellsInRange(transform.position, data.AttackRange);
+    //     // Get all cells within attack range (radius in grid cells)
+    //     List<GridCell> cellsInRange = grid.GetCellsInRange(transform.position, data.AttackRange);
 
-        foreach (GridCell cell in cellsInRange)
-        {
-            Vector3 cellWorldPos = cell.worldPosition;
-            Collider[] hits = Physics.OverlapSphere(cellWorldPos, grid.GetCellSize() * 0.4f);
+    //     foreach (GridCell cell in cellsInRange)
+    //     {
+    //         Vector3 cellWorldPos = cell.worldPosition;
+    //         Collider[] hits = Physics.OverlapSphere(cellWorldPos, grid.GetCellSize() * 0.4f);
 
-            foreach (Collider col in hits)
-            {
-                switch (data.AttType)
-                {
-                    case AttType.Animals:
-                        ArmyUnit army = col.GetComponent<ArmyUnit>();
-                        if (army != null && !army.IsDead() && !targets.Contains(army)) targets.Add(army);
-                        break;
+    //         foreach (Collider col in hits)
+    //         {
+    //             switch (data.AttType)
+    //             {
+    //                 case AttType.Animals:
+    //                     ArmyUnit army = col.GetComponent<ArmyUnit>();
+    //                     if (army != null && !army.IsDead() && !targets.Contains(army)) targets.Add(army);
+    //                     break;
 
-                    case AttType.Resources:
-                        if (col.GetComponent<CropStructure>() is var crop && crop != null) targets.Add(crop);
-                        if (col.GetComponent<SiloStructure>() is var silo && silo != null) targets.Add(silo);
-                        break;
+    //                 case AttType.Resources:
+    //                     if (col.GetComponent<CropStructure>() is var crop && crop != null) targets.Add(crop);
+    //                     if (col.GetComponent<SiloStructure>() is var silo && silo != null) targets.Add(silo);
+    //                     break;
 
-                    case AttType.Defense:
-                        // if (col.GetComponent<DefenseStructure>() is var def && def != null) targets.Add(def);
-                        break;
+    //                 case AttType.Defense:
+    //                     if (col.GetComponent<DefenseStructure>() is var def && def != null) targets.Add(def);
+    //                     break;
 
-                    case AttType.Buildings:
-                        AddIfFound<FarmHouseStructure>(col, targets);
-                        AddIfFound<CropStructure>(col, targets);
-                        AddIfFound<SiloStructure>(col, targets);
-                        AddIfFound<BarracksStructure>(col, targets);
-                        AddIfFound<AnimalStructure>(col, targets);
-                        break;
-                }
-            }
-        }
+    //                 case AttType.Buildings:
+    //                     AddIfFound<FarmHouseStructure>(col, targets);
+    //                     AddIfFound<CropStructure>(col, targets);
+    //                     AddIfFound<SiloStructure>(col, targets);
+    //                     AddIfFound<BarracksStructure>(col, targets);
+    //                     AddIfFound<AnimalStructure>(col, targets);
+    //                     break;
+    //             }
+    //         }
+    //     }
 
-        return targets;
+    //     return targets;
 
-        void AddIfFound<T>(Collider col, List<object> list) where T : MonoBehaviour
-        {
-            T comp = col.GetComponent<T>();
-            if (comp != null && !list.Contains(comp)) list.Add(comp);
-        }
-    }
+    //     void AddIfFound<T>(Collider col, List<object> list) where T : MonoBehaviour
+    //     {
+    //         T comp = col.GetComponent<T>();
+    //         if (comp != null && !list.Contains(comp)) list.Add(comp);
+    //     }
+    // }
 
     public void TakeDamage(int damage)
     {
@@ -471,7 +703,7 @@ public class EnemyUnit : BaseUnit
             ArmyUnit u => u.IsDead(),
             CropStructure u => u.IsDead(),
             SiloStructure u => u.IsDead(),
-            // DefenseStructure u => u.IsDead(),
+            DefenseStructure u => u.IsDead(),
             FarmHouseStructure u => u.IsDead(),
             BarracksStructure u => u.IsDead(),
             AnimalStructure u => u.IsDead(),
@@ -491,6 +723,9 @@ public class EnemyUnit : BaseUnit
             case CropStructure u:
                 PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
+                DamageAnimation anim = u.GetComponent<DamageAnimation>();
+                if (anim != null)
+                    anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case SiloStructure u:
@@ -498,7 +733,13 @@ public class EnemyUnit : BaseUnit
                 u.TakeDamage(data.AttackDamage);
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
-            // case DefenseStructure u: u.TakeDamage(data.AttackDamage); break;
+            case DefenseStructure u:
+                u.TakeDamage(data.AttackDamage);
+                PlaySound(data.AttackSound);
+                anim = u.GetComponent<DamageAnimation>();
+                if (anim != null)
+                    anim.PlayDamageHitEffect();
+                break;
             case FarmHouseStructure u:
                 PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
@@ -587,6 +828,34 @@ public class EnemyUnit : BaseUnit
         destination = GetRandomOutsidePosition();
         Debug.Log($"destination: {destination}");
 
+        if (!agent.isOnNavMesh)
+        {
+            return;
+        }
+
         agent.SetDestination(destination);
     }
+
+    // private IEnumerator TryActionCoroutine()
+    // {
+    //     while (!actionSucceeded)
+    //     {
+    //         // Try your action
+    //         actionSucceeded = TryAction();
+
+    //         if (!actionSucceeded)
+    //         {
+    //             // Wait 2 seconds before trying again
+    //             yield return new WaitForSeconds(2f);
+    //         }
+    //     }
+
+    //     // Action succeeded, continue
+    //     Debug.Log("Action succeeded!");
+    // }
+
+    // private bool moveAnimal(Vector3 end)
+    // {
+    //     agent.SetDestination(end);
+    // }
 }

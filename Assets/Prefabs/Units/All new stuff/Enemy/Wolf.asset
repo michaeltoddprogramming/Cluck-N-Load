@@ -16,7 +16,7 @@ MonoBehaviour:
   Prefab: {fileID: 7102291462086250083, guid: e17024e83b7e6b348b32a2833ba92e51, type: 3}
   MovementSpeed: 5.5
   Type: 0
-  AttType: 0
+  AttType: 2
   Health: 75
   AttackDamage: 15
   AttackRange: 1000

@@ -8305,6 +8305,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c0a54c791569ae4479782394f2901f1b, type: 2}
   - {fileID: 11400000, guid: aa8c850b7eca6b2468f489a333cc415a, type: 2}
   - {fileID: 11400000, guid: 30e48aeed0a514f4ab64f14cb134051e, type: 2}
+  spawnUnits: {fileID: 0}
   season: 0
 --- !u!114 &1632256039
 MonoBehaviour:

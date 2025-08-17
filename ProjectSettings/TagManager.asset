@@ -15,6 +15,7 @@ TagManager:
   - ChickenBarracks
   - CropPlot
   - TutorialHighlight
+  - Jumpable
   layers:
   - Default
   - TransparentFX

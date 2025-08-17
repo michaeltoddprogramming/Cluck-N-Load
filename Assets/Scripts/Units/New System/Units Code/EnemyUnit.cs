@@ -433,11 +433,51 @@ public class EnemyUnit : BaseUnit
 
             if (Physics.Raycast(rayOrigin, directionToTarget, out RaycastHit hit, distanceToTarget))
             {
-                if (hit.collider.CompareTag("Jumpable"))
+                // if (hit.collider.CompareTag("Jumpable"))
+                // {
+                //     Debug.Log("Blocking object detected: " + hit.collider.name);
+                //     return hit.collider.GetComponent<DefenseStructure>();
+                // }
+                if (hit.collider.GetComponent<DefenseStructure>() != null)
                 {
                     Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<DefenseStructure>();
                 }
+                else if (hit.collider.GetComponent<AnimalStructure>() != null)
+                {
+                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    return hit.collider.GetComponent<AnimalStructure>();
+                }
+                else if (hit.collider.GetComponent<BarracksStructure>() != null)
+                {
+                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    return hit.collider.GetComponent<BarracksStructure>();
+                }
+                else if (hit.collider.GetComponent<Structure>() != null)
+                {
+                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    return hit.collider.GetComponent<Structure>();
+                }
+                else if (hit.collider.GetComponent<CropStructure>() != null)
+                {
+                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    return hit.collider.GetComponent<CropStructure>();
+                }
+                else if (hit.collider.GetComponent<FarmHouseStructure>() != null)
+                {
+                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    return hit.collider.GetComponent<FarmHouseStructure>();
+                }
+                // else if (hit.collider.GetComponent<CropStructure>() != null)
+                // {
+                //     Debug.Log("Blocking object detected: " + hit.collider.name);
+                //     return hit.collider.GetComponent<CropStructure>();
+                // }
+                // else if (hit.collider.GetComponent<CropStructure>() != null)
+                // {
+                //     Debug.Log("Blocking object detected: " + hit.collider.name);
+                //     return hit.collider.GetComponent<CropStructure>();
+                // }
             }
         }
 

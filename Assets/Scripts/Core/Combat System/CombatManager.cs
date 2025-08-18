@@ -77,56 +77,75 @@ public class CombatManager : MonoBehaviour
 
             if (nearbyEnemies.Count > 0 && isNight)
             {
-                // This assumes you're just triggering a generic attack.
+
                 armyUnit.Attack();
+
+                // }
+                // if(armyUnit.ArmyType == Sheep)
+                // This assumes you're just triggering a generic attack.
 
                 // Or if you want to target a specific enemy:
                 // armyUnit.Attack(nearbyEnemies[0]);
+
             }
+
+            // if (nearbyEnemies.Count > 0 && isNight) // Only attack at night
+            // {
+            //     if (armyUnit is SheepUnit sheep)
+            //     {
+            //         // If it's a SheepUnit, let it handle its own attack logic
+            //         sheep.Attack();
+            //     }
+            //     else
+            //     {
+            //         // All other ArmyUnits use the normal attack
+            //         armyUnit.Attack();
+            //     }
+            // }
+
+
+            // foreach (EnemyUnit enemyUnit in FindObjectsOfType<EnemyUnit>())
+            // {
+            //     var nearbyAgro = enemyUnit.GetAggroThingsInRange();
+
+            //     if (nearbyAgro.Count > 0 && isNight)
+            //     {
+            //         // This assumes you're just triggering a generic attack.
+            //         enemyUnit.Attack();
+
+            //         // Or if you want to target a specific enemy:
+            //         // armyUnit.Attack(nearbyEnemies[0]);
+            //     }
+            // }
+
+
+
+            // foreach (EnemyUnit unit in combatUnits)
+            // {
+            //     if (unit is EnemyUnit)
+            //     {
+            //         List<EnemyUnit> nearbyUnits = armyUnit.GetNearbyUnits(armyUnit.GetData().MovementSpeed); // Example range
+
+            //         foreach (EnemyUnit nearbyUnit in nearbyUnits)
+            //         {
+            //             if (nearbyUnit is EnemyUnit) // Example filtering
+            //             {
+            //                 // Handle combat logic here
+            //                 Debug.Log($"{armyUnit.name} found nearby unit: {nearbyUnit.name}");
+            //             }
+            //         }
+
+
+            //         // Unit target = FindNearestEnemy(armyUnit);
+            //         // if (target != null)
+            //         // {
+            //         //     armyUnit.Attack(target);
+            //         // }
+            //     }
+            // }
+
+
         }
-
-
-        // foreach (EnemyUnit enemyUnit in FindObjectsOfType<EnemyUnit>())
-        // {
-        //     var nearbyAgro = enemyUnit.GetAggroThingsInRange();
-
-        //     if (nearbyAgro.Count > 0 && isNight)
-        //     {
-        //         // This assumes you're just triggering a generic attack.
-        //         enemyUnit.Attack();
-
-        //         // Or if you want to target a specific enemy:
-        //         // armyUnit.Attack(nearbyEnemies[0]);
-        //     }
-        // }
-
-
-
-        // foreach (EnemyUnit unit in combatUnits)
-        // {
-        //     if (unit is EnemyUnit)
-        //     {
-        //         List<EnemyUnit> nearbyUnits = armyUnit.GetNearbyUnits(armyUnit.GetData().MovementSpeed); // Example range
-
-        //         foreach (EnemyUnit nearbyUnit in nearbyUnits)
-        //         {
-        //             if (nearbyUnit is EnemyUnit) // Example filtering
-        //             {
-        //                 // Handle combat logic here
-        //                 Debug.Log($"{armyUnit.name} found nearby unit: {nearbyUnit.name}");
-        //             }
-        //         }
-
-
-        //         // Unit target = FindNearestEnemy(armyUnit);
-        //         // if (target != null)
-        //         // {
-        //         //     armyUnit.Attack(target);
-        //         // }
-        //     }
-        // }
-
-
     }
 
     public void StartCombat()

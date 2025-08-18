@@ -233,14 +233,14 @@ public class BarracksStructureUI : BaseStructureUI
             if (barracksStructure.GetTargetStructure != null)
             {
                 AnimalStructure target = barracksStructure.GetTargetStructure;
-                statusText.text = $"Target: {target.GetStructureName()} (Chicken)\n" +
+                statusText.text = $"Target: {target.GetStructureName()}\n" +
                                   $"Animals: {target.AnimalCount}/{target.MaxAnimalCount}\n" +
                                   $"Army: {barracksStructure.ArmyAnimalCount}/{barracksStructure.MaxArmyAnimals}";
                 statusText.color = Color.white;
             }
             else
             {
-                statusText.text = "No Chicken structure found!";
+                statusText.text = "No structure found!";
                 statusText.color = Color.red;
             }
         }

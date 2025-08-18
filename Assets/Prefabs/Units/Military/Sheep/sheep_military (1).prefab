@@ -72,7 +72,7 @@ PrefabInstance:
       addedObject: {fileID: 5889167501081701986}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b0e6e4425131e84c948ccded3241493, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 78407781543869536}
+      addedObject: {fileID: 3957695942067779229}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b0e6e4425131e84c948ccded3241493, type: 3}
       insertIndex: -1
       addedObject: {fileID: 929053349437667903}
@@ -161,7 +161,7 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &78407781543869536
+--- !u!114 &3957695942067779229
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -170,14 +170,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 6614231965860891620}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e981f386576c2f6448aa9975a2810af1, type: 3}
+  m_Script: {fileID: 11500000, guid: 334f40119cf33a74d8a4998776a3b7d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   soundEffectSource: {fileID: 929053349437667903}
   backgroundAudioSource: {fileID: 6448520029359389035}
   animator: {fileID: 459794416696134436}
   data: {fileID: 11400000, guid: cc3a249b25994474487ec83611dc01d5, type: 2}
-  doIt: 0
+  recoilForce: 20
+  Recoil: 0
+  data1: {fileID: 11400000, guid: cc3a249b25994474487ec83611dc01d5, type: 2}
+  explosionRadius: 30
+  explosionDamage: 50
+  minEnemiesToExplode: 3
 --- !u!82 &929053349437667903
 AudioSource:
   m_ObjectHideFlags: 0

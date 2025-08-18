@@ -53,7 +53,7 @@ public class ArmyUnit : BaseUnit
         PlayBackgroundSound(data.backgroundSound);
     }
 
-    private void Update()
+    public void Update()
     {
         if (Recoil)
         {
@@ -91,8 +91,9 @@ public class ArmyUnit : BaseUnit
 
     protected override UnitData GetData() => data;
 
-    public void Attack()
+    public virtual void Attack()
     {
+        Debug.Log("it attacked 98475923459234985723498475982347598723498057293875982347598237459807234985723908475");
         if (isReturningAfterAttack)
         {
             return;
@@ -249,7 +250,6 @@ public class ArmyUnit : BaseUnit
     public void BackToBarracks()
     {
         if (isNightTime) return;
-
         if (barracks == null)
         {
             Debug.LogWarning("No barracks set for this unit.");
@@ -258,7 +258,7 @@ public class ArmyUnit : BaseUnit
 
         targetPosition = barracks.transform.position;
         isMoving = true;
-        isNightTime = false;
+        // isNightTime = false;
         MoveToTargetPosition();
     }
 
@@ -321,7 +321,7 @@ public class ArmyUnit : BaseUnit
         return false;
     }
 
-    private void OnDrawGizmos()
+    protected virtual void OnDrawGizmos()
     {
 #if UNITY_EDITOR
         if (data == null) return;

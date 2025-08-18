@@ -47,6 +47,10 @@ public class BarracksStructure : Structure
     public float synergyMaxDist = 20f;
     public float synergyDiscount = 0.8f;
 
+    private List<GameObject> sheepUnits = new List<GameObject>();
+    private List<GameObject> sheepFlags = new List<GameObject>();
+    // private List<GameObject> sheep = new List<GameObject>();
+
     protected override void Start()
     {
         base.Start();
@@ -120,10 +124,10 @@ public class BarracksStructure : Structure
         {
             if (armyAnimal != null)
             {
-                armyAnimal.SetActive(true);  
+                armyAnimal.SetActive(true);
 
                 ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
-                
+
                 if (unit != null)
                 {
                     unit.SetTimeOfDay(false);
@@ -139,7 +143,7 @@ public class BarracksStructure : Structure
         {
             if (armyAnimal != null)
             {
-                armyAnimal.SetActive(false);  
+                armyAnimal.SetActive(false);
             }
         }
     }
@@ -195,7 +199,7 @@ public class BarracksStructure : Structure
 
     private bool CanRecruitSilent(int amount)
     {
-        if (targetAnimalStructure == null || MoneyManager.Instance == null || 
+        if (targetAnimalStructure == null || MoneyManager.Instance == null ||
             armyAnimals.Count + amount > maxArmyAnimals || !targetAnimalStructure.CanRecruit(amount))
             return false;
         return true;
@@ -211,6 +215,7 @@ public class BarracksStructure : Structure
     public void RecruitAnimals(int amount)
     {
         if (!CanRecruitWithLogging(amount) || !MoneyManager.Instance.SpendMoney(amount * recruitmentCostPerAnimal)) return;
+
         targetAnimalStructure.RecruitAnimals(amount);
         for (int i = 0; i < amount; i++)
         {
@@ -227,22 +232,52 @@ public class BarracksStructure : Structure
 
             if (unit != null)
             {
+                if (targetAnimalType == "Sheep")
+                {
+                    sheepUnits.Add(armyAnimal);
+
+                    // GameObject sheepFlag = Instantiate(flagPrefab, armyAnimal.transform.position + new Vector3(0, 2, 0), Quaternion.identity, transform);
+                    // Renderer sheepFlagRenderer = sheepFlag.GetComponentInChildren<Renderer>();
+                    // if (sheepFlagRenderer != null) sheepFlagRenderer.material.color = flagColor;
+
+                    // sheepFlags.Add(sheepFlag);
+                    unit.SetBarracks(this);
+                    unit.SetGuardPosition(guardPosition, protectionRadius);
+                    unit.SetTimeOfDay(isNightTime);
+
+                    // sheepFlags.Add(armyAnimal.transform.position + new Vector3(0, 2, 0));
+                    // sheepFlags[armyAnimals.Count - 1].add(transform.position + spawnOffset);
+                    // unit.SetBarracks(this);
+                    // unit.SetGuardPosition(sheepFlags[armyAnimal.Count - 1], protectionRadius);
+                    // unit.SetTimeOfDay(isNightTime);
+                    if (!isNightTime)
+                    {
+                        armyAnimal.SetActive(false);
+                    }
+                    else
+                    {
+                        armyAnimal.SetActive(true);
+                    }
+                }
+                else
+                {
+                    unit.SetBarracks(this);
+                    unit.SetGuardPosition(guardPosition, protectionRadius);
+                    unit.SetTimeOfDay(isNightTime);
+                    if (!isNightTime)
+                    {
+                        armyAnimal.SetActive(false);
+                    }
+                    else
+                    {
+                        armyAnimal.SetActive(true);
+                    }
+                }
                 // Set animalType explicitly to match targetAnimalType
                 // if (!unit.AnimalType.ToString().Equals(targetAnimalType, System.StringComparison.OrdinalIgnoreCase))
                 // {
                 //     Debug.LogWarning($"Animal {armyAnimal.name} type {armyAnimalScript.AnimalType} does not match barracks target {targetAnimalType}");
                 // }
-                unit.SetBarracks(this);
-                unit.SetGuardPosition(guardPosition, protectionRadius);
-                unit.SetTimeOfDay(isNightTime);
-                if (!isNightTime)
-                {
-                    armyAnimal.SetActive(false);
-                }
-                else
-                {
-                    armyAnimal.SetActive(true);
-                }
             }
             else
             {
@@ -258,31 +293,65 @@ public class BarracksStructure : Structure
     public void PlaceFlag(Vector3 position)
     {
         flagPlacementSounds();
-        if (flag != null) flag.transform.position = position;
+
+        if (targetAnimalType == "Sheep")
+        {
+            // Only add a new flag if we haven't placed enough flags yet
+            if (sheepFlags.Count < sheepUnits.Count)
+            {
+                GameObject sheepFlag = Instantiate(flagPrefab, position, Quaternion.identity, transform);
+                Renderer sheepFlagRenderer = sheepFlag.GetComponentInChildren<Renderer>();
+                if (sheepFlagRenderer != null) sheepFlagRenderer.material.color = flagColor;
+
+                sheepFlags.Add(sheepFlag);
+                ArmyUnit unit = sheepUnits[sheepFlags.Count - 1].GetComponent<ArmyUnit>();
+                if (unit != null)
+                {
+                    unit.SetGuardPosition(position, protectionRadius);
+                    if (isNightTime) unit.MoveToFlag();
+                }
+            }
+
+            // Update each sheep to its corresponding flag
+            // for (int i = 0; i < sheepUnits.Count; i++)
+            // {
+            //     ArmyUnit unit = sheepUnits[i].GetComponent<ArmyUnit>();
+            //     if (unit != null && i < sheepFlags.Count)
+            //     {
+            //         unit.SetGuardPosition(sheepFlags[i].transform.position, protectionRadius);
+            //         if (isNightTime)
+            //         {
+            //             unit.MoveToFlag();
+            //         }
+            //     }
+            // }
+
+        }
         else
         {
-            flag = Instantiate(flagPrefab, position, Quaternion.identity, transform);
-            flagRenderer = flag.GetComponentInChildren<Renderer>();
-            if (flagRenderer != null) flagRenderer.material.color = flagColor;
+            if (flag != null) flag.transform.position = position;
+            else
+            {
+                flag = Instantiate(flagPrefab, position, Quaternion.identity, transform);
+                flagRenderer = flag.GetComponentInChildren<Renderer>();
+                if (flagRenderer != null) flagRenderer.material.color = flagColor;
+            }
+            guardPosition = position;
+            UpdateArmyAnimalPositions();
         }
-        guardPosition = position;
-        UpdateArmyAnimalPositions();
         if (armyAnimals.Count >= 1) TutorialManager.Instance?.Trigger(TutorialTrigger.PlacedFirstFlag);
     }
 
     private void UpdateArmyAnimalPositions()
     {
-        foreach (GameObject armyAnimal in armyAnimals)
+        if (targetAnimalType == "Sheep")
         {
-            if (armyAnimal != null)
+            for (int k = 0; k < sheepUnits.Count; k++)
             {
-                
-                // ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
-                ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
-
-                if (unit != null)
+                ArmyUnit unit = sheepUnits[k].GetComponent<ArmyUnit>();
+                if (unit != null && k < sheepFlags.Count)
                 {
-                    unit.SetGuardPosition(guardPosition, protectionRadius);
+                    unit.SetGuardPosition(sheepFlags[k].transform.position, protectionRadius);
                     if (isNightTime)
                     {
                         unit.MoveToFlag();
@@ -290,9 +359,29 @@ public class BarracksStructure : Structure
                 }
             }
         }
+        else
+        {
+            foreach (GameObject armyAnimal in armyAnimals)
+            {
+                if (armyAnimal != null)
+                {
+                    // ArmyAnimal armyAnimalScript = armyAnimal.GetComponent<ArmyAnimal>();
+                    ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
+
+                    if (unit != null)
+                    {
+                        unit.SetGuardPosition(guardPosition, protectionRadius);
+                        if (isNightTime)
+                        {
+                            unit.MoveToFlag();
+                        }
+                    }
+                }
+            }
+        }
     }
 
-private GameObject GetArmyAnimalPrefab()
+    private GameObject GetArmyAnimalPrefab()
     {
         foreach (GameObject prefab in armyAnimalPrefabs)
         {

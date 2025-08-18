@@ -931,7 +931,7 @@ public class EnemyUnit : BaseUnit
         }
         else
         {
-            // Debug.Log("Taking damage: " + damage + "----------------------------------------------------------------------------------");
+            Debug.Log("Taking damage: " + damage + "----------------------------------------------------------------------------------");
             PlaySound(data.HurtSound);
             currHealth -= damage;
         }

@@ -57,7 +57,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         // Link the close button to the ShopUIManager's CloseShop method
         if (closeButton != null)
         {
-            closeButton.onClick.AddListener(() => {
+            closeButton.onClick.AddListener(() =>
+            {
                 if (ShopUIManager.Instance != null)
                 {
                     ShopUIManager.Instance.CloseShop();
@@ -119,7 +120,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             Debug.LogWarning("StructureDatabase is empty. No structures to display.");
             return;
         }
-        
+
         // Clear previous items
         foreach (Transform child in contentParent)
         {
@@ -146,7 +147,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     showItem = data.type == StructureType.Barracks;
                     break;
                 case 'S': // defense
-                    displayComingSoonPanel(0);
+                    displayComingSoonPanel(1);
                     showItem = data.type == StructureType.Defense;
                     break;
                 case 'P': // plant (silo or crop plot)
@@ -167,12 +168,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     // {
                     //     displayComingSoonPanel(1);
                     // }
-                    
+
                     // Debug.Log($"This is if the house is placed: {buildController.IsHousePlaced()}----------------------------------------------------------------------------");
 
                     if (buildController.IsHousePlaced())
                     {
-                        displayComingSoonPanel(0);
+                        displayComingSoonPanel(1);
                         showItem = data.type == StructureType.Placed; // or whatever type you use
                     }
                     else
@@ -205,11 +206,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void displayComingSoonPanel(int num)
     {
-        if(num == 0 && !comingSoonPanel.activeSelf)
+        if (num == 0 && !comingSoonPanel.activeSelf)
         {
             comingSoonPanel.SetActive(true);
         }
-        else if(num == 1 && comingSoonPanel.activeSelf)
+        else if (num == 1 && comingSoonPanel.activeSelf)
         {
             comingSoonPanel.SetActive(false);
         }
@@ -245,21 +246,21 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
 
         isShopOpen = false;
-        
+
         // Make sure to re-enable controls before deactivating the panel
         // This ensures controls are restored even if OnPointerExit doesn't trigger
         if (cameraController != null)
         {
             cameraController.TemporarilyDisableMouseControls(false);
         }
-        
+
         // Re-enable ghost if it was active before
         if (buildController != null && wasGhostActiveBeforeHover)
         {
             buildController.RestoreGhost();
             wasGhostActiveBeforeHover = false;
         }
-        
+
         gameObject.SetActive(false);
         OnShopClosed.Invoke();
     }
@@ -274,14 +275,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         // Only react if the shop panel is actually visible in the scene
         if (!gameObject.activeSelf) return;
-        
+
         // Temporarily disable build ghost and placement
         if (buildController != null && buildController.IsBuildModeActive())
         {
             wasGhostActiveBeforeHover = true;
             buildController.HideGhostTemporarily();
         }
-        
+
         // Temporarily disable only mouse camera controls
         if (cameraController != null)
         {
@@ -294,14 +295,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         // Only react if the shop panel is actually visible in the scene
         if (!gameObject.activeSelf) return;
-        
+
         // Re-enable build ghost and placement if it was active before
         if (buildController != null && wasGhostActiveBeforeHover)
         {
             buildController.RestoreGhost();
             wasGhostActiveBeforeHover = false;
         }
-        
+
         // Re-enable mouse camera controls
         if (cameraController != null)
         {

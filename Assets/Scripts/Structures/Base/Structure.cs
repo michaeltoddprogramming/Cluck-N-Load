@@ -425,7 +425,7 @@ public class Structure : MonoBehaviour
     {
         TakeDamage(damage);
     }
-    
+
     public void SetStructureType(StructureType type)
     {
         if (structureData != null)

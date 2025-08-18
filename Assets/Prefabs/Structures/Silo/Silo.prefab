@@ -115,7 +115,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38fc64b467ba9c4f85d6232afb72860, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitSound: {fileID: 0}
+  hitSound: {fileID: 8300000, guid: 87a84578a2a3f7f40bf53bb1569c0483, type: 3}
 --- !u!114 &2441110783270547538
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,11 +139,11 @@ NavMeshObstacle:
   serializedVersion: 3
   m_Shape: 1
   m_Extents: {x: 1.4510001, y: 3.1490002, z: 1.2670001}
-  m_MoveThreshold: 0.1
+  m_MoveThreshold: 1
   m_Carve: 1
-  m_CarveOnlyStationary: 1
+  m_CarveOnlyStationary: 0
   m_Center: {x: -0.008, y: 3.078, z: -0.14600001}
-  m_TimeToStationary: 0.5
+  m_TimeToStationary: 0.2
 --- !u!65 &-4937866017938651325
 BoxCollider:
   m_ObjectHideFlags: 0

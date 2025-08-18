@@ -552,7 +552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38fc64b467ba9c4f85d6232afb72860, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitSound: {fileID: 0}
+  hitSound: {fileID: 8300000, guid: 87a84578a2a3f7f40bf53bb1569c0483, type: 3}
 --- !u!114 &1709764676354524248
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -597,8 +597,8 @@ NavMeshObstacle:
   serializedVersion: 3
   m_Shape: 1
   m_Extents: {x: 1.9200001, y: 1.1730001, z: 1.217}
-  m_MoveThreshold: 0.1
+  m_MoveThreshold: 1
   m_Carve: 1
-  m_CarveOnlyStationary: 1
+  m_CarveOnlyStationary: 0
   m_Center: {x: -0.99600005, y: 1.139, z: -0.483}
-  m_TimeToStationary: 0.5
+  m_TimeToStationary: 0.2

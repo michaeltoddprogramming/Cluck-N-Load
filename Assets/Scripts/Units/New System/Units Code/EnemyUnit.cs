@@ -84,6 +84,7 @@ public class EnemyUnit : BaseUnit
 
 
 
+        HandleTargetingAndMovement();
         if (hasNoTarget && !retreating)
         {
             if (Time.time - lastTargetSearchTime >= 10f)
@@ -117,7 +118,7 @@ public class EnemyUnit : BaseUnit
             return;
         }
 
-        HandleTargetingAndMovement();
+        // HandleTargetingAndMovement();
         AttackIfInRange();
 
 
@@ -153,9 +154,12 @@ public class EnemyUnit : BaseUnit
         {
             Debug.Log("ieruehfweiurhgiouwrehjtgoiujhwrtoiugjorwijtgiorjtgoirjtgoijertgoijretgoreitjgersotighj");
             mainTarget = GetNearestAggroTargetOptimized();
+            Debug.Log("mainTarget: " + mainTarget + "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
             if (mainTarget == null)
             {
+                Debug.Log("`````````````````````````````````````````````````````````````````````````````````` NULL");
                 agent.ResetPath();
+                // Debug.LogError("sdofligvbrhuygbhvifjusrdhjbikflderas;hijuo;fhouj;gfsdhoujn;garefdoihujb;tgedfoihuj;bngfedohujn;agdsfouhj;asfdrgg");
                 return;
             }
 
@@ -172,82 +176,189 @@ public class EnemyUnit : BaseUnit
 
         // UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
         // bool pathFound = agent.CalculatePath(currentTarget.transform.position, path);
+
+        // UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
         // bool pathFound = agent.CalculatePath(mainTarget.transform.position, path);
 
-        UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
-        bool pathComplete = agent.CalculatePath(mainTarget.transform.position, path) ||
-                            path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
+        // if (pathFound || path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        // {
+        //     Debug.Log("sidrfugh guiherguih         1 1 1  1 1 1 1 1  1 1 1  1 1  1 1  1 1 11  1  1  1 1 1 1 1  1 1 1 1 1 1 1 1 1 1 1  1");
+        //     return;
+        // }
+        // if (pathFound == true)
+        // {
+        //     Debug.Log("path found.////////////////////////////////////////////////////////////////////////////");
+        // }
+        // else
+        // {
+        //     Debug.Log("No path exists! Attack wall.6546546546564554456645645645654654645465564564645654456");
+        //     // Path exists, move normally
+        //     // agent.SetDestination(mainTarget.transform.position);
+        // }
 
-        // if (!pathFound || path.status != UnityEngine.AI.NavMeshPathStatus.PathComplete)
-        if (agent.CalculatePath(mainTarget.transform.position, path) && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        if (!agent.enabled) Debug.LogError("Agent disabled");
+        Debug.Log($"isOnNavMesh={agent.isOnNavMesh} areaMask={agent.areaMask}");
+
+        UnityEngine.AI.NavMeshHit startHit, endHit;
+        bool startOk = UnityEngine.AI.NavMesh.SamplePosition(agent.transform.position, out startHit, 2f, agent.areaMask);
+        bool endOk = UnityEngine.AI.NavMesh.SamplePosition(mainTarget.transform.position, out endHit, 2f, agent.areaMask);
+        Debug.Log($"startOk={startOk} endOk={endOk} start={startHit.position} end={endHit.position}");
+
+
+        // Debug.Log($"calc ok={ok} status={path.status} corners={(path.corners != null ? path.corners.Length : 0)}");
+        if (endOk)
         {
-            // A valid path exists, so stop targeting the obstacle
-            obstacleTarget = null;
-            currentTarget = mainTarget;
-        }
-        if (!pathComplete)
-        {
-            // Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
-            // directionToTarget.y = 0; // keep rotation only on horizontal plane
-            // if (directionToTarget != Vector3.zero)
-            //     transform.rotation = Quaternion.LookRotation(directionToTarget);
-            // MonoBehaviour block = GetBlockingObject(path);
-            // obstacleTarget = GetBlockingObject(path);
-            obstacleTarget = GetBlockingObjectDirect();
-            // Debug.Log("obsticle Target assigned: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            if (obstacleTarget != null)
+            Debug.Log("please))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
+            UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+            bool ok2 = agent.CalculatePath(endHit.position, path);
+            bool ok = agent.CalculatePath(mainTarget.transform.position, path);
+            // bool pathExists = agent.CalculatePath(mainTarget.transform.position, path)
+            //       && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
+            if (ok)
             {
-                Debug.Log("obsticle Target not null: " + obstacleTarget);
-                // obstacleTarget = block;
-                currentTarget = obstacleTarget;
-                // obstacleTarget = block;
-                // mainTarget = block;
-                // obstacleTarget = GetBlockingObject();
+                currentTarget = mainTarget;
+                Debug.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yayayayayayya");
+
+            }
+            else if (ok2)
+            {
+                currentTarget = mainTarget;
+                Debug.Log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,yayayayayayya");
             }
             else
             {
-                currentTarget = mainTarget; // fallback
-                // Debug.Log("Fallabck-------------------------------------");
+                Debug.Log("..............................................................................................");
             }
-
-            // Debug.Log("currentarget is new: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++");
-            // if (obstacleTarget != null)
-            // {
-            //     currentTarget = obstacleTarget;
-            //     Debug.Log("currentarget is new: " + currentTarget + "--------------------------------------------------------------");
-            // }
-            // No valid path, attack obstacles in the way
-            // MonoBehaviour blockingObject = GetBlockingObject();
-            // if (blockingObject != null)
-            // {
-            //     currentTarget = blockingObject; // temporarily target the wall
-            //     AttackIfInRange(); // start attacking immediately if in range
-            //     return; // skip normal movement this frame
-            // }
         }
         else
         {
-            obstacleTarget = null;
-            currentTarget = mainTarget;
+            Debug.Log("??????????????????????????????????????????????????????????????????????nah");
+            if (obstacleTarget == null)
+            {
+                obstacleTarget = GetBlockingObjectDirect();
+                if (obstacleTarget != null)
+                {
+                    currentTarget = obstacleTarget;
+                }
+                else
+                {
+                    Debug.Log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+                    return;
+                }
+                Debug.Log("WOWOWOWOWOOWOWOWOWOWOWOWOWOWOWOOWOWOWOWOWOWOWOOWOWOWOWOWWOWOOWOWOWOWOWOWOWOOWOWOWWOWOWOWOWOWOOWOWOWOWOWOWOWOWOWOOWOOWOWOWOW ");
+
+            }
+            else
+            {
+
+                currentTarget = obstacleTarget;
+                Debug.Log("neeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+                // currentTarget = mainTarget;
+
+            }
         }
 
-        Collider targetCollider = currentTarget.GetComponent<Collider>();
-        // Vector3 newAttackPosition = targetCollider != null ? targetCollider.ClosestPoint(transform.position) : currentTarget.transform.position;
-        Vector3 newAttackPosition = targetCollider.ClosestPoint(transform.position);
-        newAttackPosition = Vector3.MoveTowards(newAttackPosition, transform.position, 0.5f); // 0.5 units closer
+        // bool pathComplete = agent.CalculatePath(mainTarget.transform.position, path);
+        // bool pathComplete = agent.CalculatePath(mainTarget.transform.position, path) ||
+        //                     path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
 
-        if (currentAttackPosition == Vector3.zero ||
-        Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
-        {
-            currentAttackPosition = newAttackPosition;
-        }
+        // if (!pathFound || path.status != UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        // if (agent.CalculatePath(mainTarget.transform.position, path) && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        // {
+        //     Debug.Log("it has done this>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        //     // A valid path exists, so stop targeting the obstacle
+        //     obstacleTarget = null;
+        //     currentTarget = mainTarget;
+        // }
 
-        float distance = Vector3.Distance(transform.position, currentAttackPosition);
+        //--------------------------------------------------------------
+        // if (path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+        // {
+        //     Debug.Log("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        //     // There is a valid path on the NavMesh
+        //     obstacleTarget = null;
+        //     currentTarget = mainTarget;
+        //     // agent.SetDestination(mainTarget.transform.position); // follow the path normally
+        // }
+        // if (!pathComplete)
+        // {
+        //     // Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
+        //     // directionToTarget.y = 0; // keep rotation only on horizontal plane
+        //     // if (directionToTarget != Vector3.zero)
+        //     //     transform.rotation = Quaternion.LookRotation(directionToTarget);
+        //     // MonoBehaviour block = GetBlockingObject(path);
+        //     // obstacleTarget = GetBlockingObject(path);
+        //     obstacleTarget = GetBlockingObjectDirect();
+        //     // Debug.Log("obsticle Target assigned: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        //     if (obstacleTarget != null)
+        //     {
+        //         Debug.Log("obsticle Target not null: " + obstacleTarget);
+        //         // obstacleTarget = block;
+        //         currentTarget = obstacleTarget;
+        //         // obstacleTarget = block;
+        //         // mainTarget = block;
+        //         // obstacleTarget = GetBlockingObject();
+        //     }
+        //     else
+        //     {
+        //         currentTarget = mainTarget; // fallback
+        //         // Debug.Log("Fallabck-------------------------------------");
+        //     }
 
-        if (distance > agent.stoppingDistance)
-            agent.SetDestination(currentAttackPosition);
-        else
-            agent.ResetPath();
+        //     // Debug.Log("currentarget is new: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++");
+        //     // if (obstacleTarget != null)
+        //     // {
+        //     //     currentTarget = obstacleTarget;
+        //     //     Debug.Log("currentarget is new: " + currentTarget + "--------------------------------------------------------------");
+        //     // }
+        //     // No valid path, attack obstacles in the way
+        //     // MonoBehaviour blockingObject = GetBlockingObject();
+        //     // if (blockingObject != null)
+        //     // {
+        //     //     currentTarget = blockingObject; // temporarily target the wall
+        //     //     AttackIfInRange(); // start attacking immediately if in range
+        //     //     return; // skip normal movement this frame
+        //     // }
+        // }
+        // else
+        // {
+        //     Debug.Log("WEeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+        //     obstacleTarget = null;
+        //     currentTarget = mainTarget;
+        // }
+        // //--------------------------------------------------------
+        // float distance = Vector3.Distance(transform.position, currentTarget.transform.position);
+        // if (distance <= data.StoppingDistance)
+        // {
+        //     agent.ResetPath();
+        // }
+        // else
+        // {
+        //     Debug.Log("current target is: " + currentTarget + "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
+        //     agent.SetDestination(currentTarget.transform.position);
+
+        // }
+        agent.SetDestination(currentTarget.transform.position);
+
+        // agent.SetDestination(currentTarget.transform.position);
+
+        // Collider targetCollider = currentTarget.GetComponent<Collider>();
+        // // Vector3 newAttackPosition = targetCollider != null ? targetCollider.ClosestPoint(transform.position) : currentTarget.transform.position;
+        // Vector3 newAttackPosition = targetCollider.ClosestPoint(transform.position);
+        // newAttackPosition = Vector3.MoveTowards(newAttackPosition, transform.position, 1.5f); // 0.5 units closer
+
+        // if (currentAttackPosition == Vector3.zero ||
+        // Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
+        // {
+        //     currentAttackPosition = newAttackPosition;
+        // }
+
+        // float distance = Vector3.Distance(transform.position, currentAttackPosition);
+
+        // if (distance > agent.stoppingDistance)
+        //     agent.SetDestination(currentAttackPosition);
+        // else
+        //     agent.ResetPath();
 
 
         // if (currentTarget != null &&
@@ -866,6 +977,9 @@ public class EnemyUnit : BaseUnit
             case SiloStructure u:
                 PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
+                anim = u.GetComponent<DamageAnimation>();
+                if (anim != null)
+                    anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case DefenseStructure u:
@@ -878,16 +992,25 @@ public class EnemyUnit : BaseUnit
             case FarmHouseStructure u:
                 PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
+                anim = u.GetComponent<DamageAnimation>();
+                if (anim != null)
+                    anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case BarracksStructure u:
                 PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
+                anim = u.GetComponent<DamageAnimation>();
+                if (anim != null)
+                    anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case AnimalStructure u:
                 PlaySound(data.AttackSound);
                 u.TakeDamage(data.AttackDamage);
+                anim = u.GetComponent<DamageAnimation>();
+                if (anim != null)
+                    anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
         }

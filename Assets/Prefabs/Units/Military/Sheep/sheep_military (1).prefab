@@ -183,6 +183,10 @@ MonoBehaviour:
   explosionRadius: 30
   explosionDamage: 50
   minEnemiesToExplode: 3
+  beep1: {fileID: 8300000, guid: 400b90bf00d6acd43b4376779ee0b193, type: 3}
+  beep2: {fileID: 8300000, guid: 64afb66df5bc67f4caad61e2931ff4db, type: 3}
+  beep3: {fileID: 8300000, guid: 1129bc32a1958f54eb95de8f47236c98, type: 3}
+  doIt: 0
 --- !u!82 &929053349437667903
 AudioSource:
   m_ObjectHideFlags: 0

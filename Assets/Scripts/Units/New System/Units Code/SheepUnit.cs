@@ -8,6 +8,12 @@ public class SheepUnit : ArmyUnit
     [SerializeField] private int explosionRadius = 3;
     [SerializeField] private int explosionDamage = 50;
     [SerializeField] private int minEnemiesToExplode = 30;
+    [SerializeField] public AudioClip beep1;
+    [SerializeField] public AudioClip beep2;
+    [SerializeField] public AudioClip beep3;
+
+    private int lastBeepStage = 0;
+
     private bool hasExploded = false;
     public bool doIt = false;
     protected override void Awake()
@@ -39,6 +45,26 @@ public class SheepUnit : ArmyUnit
         {
             CameraShake.Instance.ShakeAtPosition(transform.position);
             doIt = false;
+        }
+
+        List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRange(transform.position, explosionRadius);
+
+        int count = enemies.Count;
+
+        if (count >= 1 && lastBeepStage < 1)
+        {
+            PlaySound(beep1);
+            lastBeepStage = 1;
+        }
+        else if (count >= 2 && lastBeepStage < 2)
+        {
+            PlaySound(beep2);
+            lastBeepStage = 2;
+        }
+        else if (count >= 3 && lastBeepStage < 3)
+        {
+            PlaySound(beep3);
+            lastBeepStage = 3;
         }
     }
 

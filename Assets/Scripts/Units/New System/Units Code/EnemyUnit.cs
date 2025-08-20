@@ -69,6 +69,16 @@ public class EnemyUnit : BaseUnit
 
     private void Update()
     {
+        if (agent.velocity.sqrMagnitude > 0.1f)
+        {
+            // Moving → set Speed to 1
+            SetFloat("speed", 1f);
+        }
+        else
+        {
+            // Idle → set Speed to 0
+            SetFloat("speed", 0f);
+        }
 
         // currentMaxSpawn = data.maxSpawnAmount;
         // currentMinSpawn = data.minSpawnAmount;
@@ -702,7 +712,8 @@ public class EnemyUnit : BaseUnit
             if (Time.time >= lastAttackTime + data.AttackCooldown)
             {
                 lastAttackTime = Time.time;
-                PlaySound(data.AttackSound);
+                // PlaySound(data.AttackSound);
+                SetTrigger("Attack");
                 Attack(currentTarget);
             }
         }
@@ -964,6 +975,9 @@ public class EnemyUnit : BaseUnit
             case ArmyUnit u:
                 u.TakeDamage(data.AttackDamage);
                 PlaySound(data.AttackSound);
+                // DamageAnimation anim = u.GetComponent<DamageAnimation>();
+                // if (anim != null)
+                //     anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case CropStructure u:

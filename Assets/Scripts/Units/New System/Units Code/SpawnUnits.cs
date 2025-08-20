@@ -28,6 +28,7 @@ public class SpawnUnits : MonoBehaviour
 
     public void SpawnEnemies(int season)
     {
+        Debug.Log("this si the current season :" + season + "uaeydefgwoeuirygyihuofreiygufreigferwighuyfrewghifrewahgifdshgfdshgkfsdhjgfdshjgfds");
         if (wolf == null || _gridDataGenerator == null || racoon == null || bear == null || boar == null)
         {
             Debug.LogWarning("Missing EnemyData or GridDataGenerator!");
@@ -54,6 +55,35 @@ public class SpawnUnits : MonoBehaviour
                         }
                     }
 
+                    // spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+
+                    // for (int i = 0; i < spawnCount; i++)
+                    // {
+                    //     Vector3 spawnPosition = GetRandomOutsidePosition();
+                    //     GameObject enemyInstance = Instantiate(boar.Prefab, spawnPosition, Quaternion.identity);
+
+                    //     EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+                    //     if (enemyUnit != null)
+                    //     {
+                    //         CombatManager.Instance.RegisterUnit(enemyUnit);
+                    //     }
+                    // }
+
+
+                    // spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+
+                    // for (int i = 0; i < spawnCount; i++)
+                    // {
+                    //     Vector3 spawnPosition = GetRandomOutsidePosition();
+                    //     GameObject enemyInstance = Instantiate(racoon.Prefab, spawnPosition, Quaternion.identity);
+                    //     Debug.Log("We spawned a racoon: " + enemyInstance + "-------------------------------------------------------");
+                    //     EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+                    //     if (enemyUnit != null)
+                    //     {
+                    //         CombatManager.Instance.RegisterUnit(enemyUnit);
+                    //     }
+                    // }
+
                 }
                 break;
             case 2:
@@ -79,7 +109,7 @@ public class SpawnUnits : MonoBehaviour
                     {
                         Vector3 spawnPosition = GetRandomOutsidePosition();
                         GameObject enemyInstance = Instantiate(racoon.Prefab, spawnPosition, Quaternion.identity);
-
+                        Debug.Log("We spawned a racoon: " + enemyInstance + "-------------------------------------------------------");
                         EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
                         if (enemyUnit != null)
                         {

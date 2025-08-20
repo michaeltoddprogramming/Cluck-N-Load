@@ -260,7 +260,7 @@ public class CombatManager : MonoBehaviour
 
     public void SetSeason(int newSeason)
     {
-        // Debug.Log($"Setting season to {newSeason}-------------------------------------------------------------------------------------------------------------------------------");
+        Debug.Log($"Setting season to {newSeason}-------------------------------------------------------------------------------------------------------------------------------");
         season = newSeason;
     }
 

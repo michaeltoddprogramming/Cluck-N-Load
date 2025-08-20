@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Boars
   m_EditorClassIdentifier: 
   UnitName: Boar
-  Prefab: {fileID: 7102291462086250083, guid: e17024e83b7e6b348b32a2833ba92e51, type: 3}
+  Prefab: {fileID: 5545345481935957960, guid: d5f9e8b2b8f8d9345a9b0eba864ba4f9, type: 3}
   MovementSpeed: 4.5
   Type: 3
   AttType: 3
@@ -24,10 +24,10 @@ MonoBehaviour:
   Acceleration: 7
   AngularSpeed: 250
   StoppingDistance: 1.2
-  AttackSound: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
-  DeathSound: {fileID: 0}
-  HurtSound: {fileID: 8300000, guid: dff890f506ed40e48acf6f9008f8e6a2, type: 3}
-  backgroundSound: {fileID: 8300000, guid: 870a313bfc5616544aaa7dfb9203f612, type: 3}
+  AttackSound: {fileID: 8300000, guid: 58a4c3e5ebdd664408b2733b5e217575, type: 3}
+  DeathSound: {fileID: 8300000, guid: eb08ab7409ba78046a60c598c4efce78, type: 3}
+  HurtSound: {fileID: 8300000, guid: 4c0ef3afda1b5014c8fa05da882a0156, type: 3}
+  backgroundSound: {fileID: 8300000, guid: 36efe7900415e6846ade8e7c87b02da6, type: 3}
   maxSpawnAmount: 2
   minSpawnAmount: 1
   nightlySpawnMultiplier: 2

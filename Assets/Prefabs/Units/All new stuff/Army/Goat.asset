@@ -23,7 +23,9 @@ MonoBehaviour:
   Acceleration: 3
   AngularSpeed: 90
   StoppingDistance: 3
-  AttackSound: {fileID: 8300000, guid: 5fee213b7f8315e43bfe9ee6a7bf3675, type: 3}
-  DeathSound: {fileID: 0}
-  HurtSound: {fileID: 0}
+  RoamRadius: 4
+  RoamInterval: 2
+  AttackSound: {fileID: 8300000, guid: c586b4ed61915f145856243ffdcf7e48, type: 3}
+  DeathSound: {fileID: 8300000, guid: fdafdb547a384e24696e14f3b49658ba, type: 3}
+  HurtSound: {fileID: 8300000, guid: 526e8ec95f42ada419520197a8fa5624, type: 3}
   backgroundSound: {fileID: 8300000, guid: 5fee213b7f8315e43bfe9ee6a7bf3675, type: 3}

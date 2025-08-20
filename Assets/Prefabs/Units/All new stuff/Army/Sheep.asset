@@ -25,7 +25,7 @@ MonoBehaviour:
   StoppingDistance: 0.5
   RoamRadius: 4
   RoamInterval: 2
-  AttackSound: {fileID: 8300000, guid: e3105b148c047fd4dbb2feb8142ed0b2, type: 3}
-  DeathSound: {fileID: 0}
-  HurtSound: {fileID: 0}
+  AttackSound: {fileID: 8300000, guid: 1ae9067b608efab46bb901a327f21cfb, type: 3}
+  DeathSound: {fileID: 8300000, guid: 8a951f36a16ffb146a6b485baf6b88d6, type: 3}
+  HurtSound: {fileID: 8300000, guid: 9362a91c3b956da41bf324e524577cf0, type: 3}
   backgroundSound: {fileID: 8300000, guid: 54663e4e08a179c4d9f4d8f3d131cd97, type: 3}

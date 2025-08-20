@@ -3,6 +3,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using TMPro;
+using UnityEngine.UI;
 
 public class Structure : MonoBehaviour
 {
@@ -41,6 +43,16 @@ public class Structure : MonoBehaviour
     [Tooltip("Show debug information")]
     public bool showDebugInfo = false;
 
+    [Header("UI")]
+    [SerializeField] private GameObject healthBarPrefab;
+    private GameObject healthBarInstance;
+    private Slider healthBarSlider;
+    private TextMeshProUGUI healthBarText;
+    private CanvasGroup healthBarCanvasGroup;
+    private Color healthyColor = new Color(0.2f, 1f, 0.2f);
+    private Color midColor = new Color(1f, 0.9f, 0.2f);
+    private Color dangerColor = new Color(1f, 0.2f, 0.2f);
+
     // Private references
     private GridController gridController;
     private List<Vector2Int> occupiedCells = new List<Vector2Int>();
@@ -49,6 +61,8 @@ public class Structure : MonoBehaviour
     // Selection properties
     private GameObject selectionIndicator;
     private bool isSelected = false;
+
+
 
     // Events
     public delegate void StructureEvent(Structure structure);
@@ -130,6 +144,50 @@ public class Structure : MonoBehaviour
         {
             AddColliderToStructure();
         }
+
+        if (healthBarPrefab != null)
+        {
+            healthBarInstance = Instantiate(healthBarPrefab, transform);
+
+            // Dynamically position above the structure
+            Renderer renderer = GetComponentInChildren<Renderer>();
+            float heightOffset = 2.0f; // Extra offset above the top
+            float yPos = renderer != null ? renderer.bounds.size.y + heightOffset : heightOffset;
+            healthBarInstance.transform.localPosition = new Vector3(0, yPos, 0);
+
+            healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
+            healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
+            healthBarCanvasGroup = healthBarInstance.GetComponent<CanvasGroup>();
+            UpdateHealthBar();
+        }
+        OnHealthChanged += UpdateHealthBar;
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarSlider != null)
+        {
+            float pct = Mathf.Clamp01((float)GetCurrentHealth() / GetMaxHealth());
+            healthBarSlider.value = pct;
+            healthBarSlider.fillRect.GetComponent<Image>().color =
+                pct > 0.6f ? healthyColor : pct > 0.3f ? midColor : dangerColor;
+
+            if (healthBarText != null)
+                healthBarText.text = $"{GetCurrentHealth()} / {GetMaxHealth()}";
+
+            // Animate feedback
+            if (healthBarCanvasGroup != null)
+            {
+                LeanTween.cancel(healthBarInstance);
+                healthBarCanvasGroup.alpha = 1f;
+                LeanTween.alphaCanvas(healthBarCanvasGroup, 0.7f, 0.3f).setLoopPingPong(1);
+                if (pct < 0.3f)
+                {
+                    LeanTween.moveLocalX(healthBarInstance, healthBarInstance.transform.localPosition.x + 0.1f, 0.1f)
+                    .setLoopPingPong(2);
+                }
+            }
+        }
     }
 
     // Optional: If something is calling OnEnable, ensure it doesn't re-register
@@ -154,7 +212,13 @@ public class Structure : MonoBehaviour
             UnregisterFromGrid();
         }
         // Moved UnregisterStructure to Die to avoid delay
+
+         if (healthBarInstance != null)
+        {
+            Destroy(healthBarInstance);
+        }
     }
+    
 
     #endregion
 

@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3eceed2a2932ec742a85bd63e277bd8a, type: 3}
   m_Name: Sheep
   m_EditorClassIdentifier: 
+  RequiredFood: Carrots
+  ProductName: Wool
   animalType: 2
   targetAnimalType: Sheep
   maxHealth: 100

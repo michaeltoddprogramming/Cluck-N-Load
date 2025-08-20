@@ -281,6 +281,8 @@ public class NightManager : MonoBehaviour
 
         shopManager.CloseShop();
         buildController.HideDeleteIcon();
+        if (ItemHoverPanel.Instance != null)
+            ItemHoverPanel.Instance.Hide();
 
         // Advance crops to stage 1
         cropGrowthOnAll(1);

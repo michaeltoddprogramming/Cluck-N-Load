@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "AnimalData", menuName = "Game/Animal Data")]
 public class AnimalData : ScriptableObject
 {
+    public string RequiredFood;    // "Sunflower", "Wheat", "Carrots"
+    public string ProductName;     // "Eggs", "Milk", "Wool", "Cheese", "Bacon"
     public AnimalStructure.AnimalType animalType;
     public string targetAnimalType; // Should match animalType.ToString(), e.g., "Chicken"
     public int maxHealth = 100;

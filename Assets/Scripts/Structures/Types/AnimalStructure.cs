@@ -45,10 +45,10 @@ public class AnimalStructure : Structure
     public string RequiredFood => requiredFood;
 
     [Header("Animal Synergies")]
-    [SerializeField] private float siloSynergyRange = 15f;
-    [SerializeField] private float synergyFoodRequired = 0.8f;
-    [SerializeField] private float normalFoodRequired = 1f;
-    [SerializeField] private float foodMultiplier = 1f;
+    [SerializeField] public float siloSynergyRange = 15f;
+    [SerializeField] public float synergyFoodRequired = 0.8f;
+    [SerializeField] public float normalFoodRequired = 1f;
+    [SerializeField] public float foodMultiplier = 1f;
     [SerializeField] public int baseMoneyPerProduct = 50;
     [SerializeField] public int baseProductMultiplier = 1;
 

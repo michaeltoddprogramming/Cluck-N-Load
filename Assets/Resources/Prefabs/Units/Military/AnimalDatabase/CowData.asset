@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3eceed2a2932ec742a85bd63e277bd8a, type: 3}
   m_Name: CowData
   m_EditorClassIdentifier: 
+  RequiredFood: Wheat
+  ProductName: Milk
   animalType: 1
   targetAnimalType: Cow
   maxHealth: 100

@@ -12,23 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3eceed2a2932ec742a85bd63e277bd8a, type: 3}
   m_Name: ChickenData
   m_EditorClassIdentifier: 
+  RequiredFood: Sunflower
+  ProductName: Eggs
   animalType: 0
   targetAnimalType: Chicken
+  maxHealth: 50
   moveSpeed: 3
   rotationSpeed: 5
   attackRange: 3
   detectionRange: 20
   damage: 10
   attackCooldown: 1.2
-  debugAttacks: 1
-  maxHealth: 50
-  attackClips:
-  - {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}
-  moveClips:
-  - {fileID: 8300000, guid: b623210da8d20bc4a8beabd9a2e9cc6e, type: 3}
-  deathClip: {fileID: 8300000, guid: 422058f9ead24f6419886066baf41986, type: 3}
-  attackSoundChance: 0.8
-  moveSoundChance: 0.5
   moveSoundDelay: 0.5
+  moveSoundChance: 0.5
+  attackSoundChance: 0.8
+  ambientClips: []
+  ambientSoundDelayMin: 5
+  ambientSoundDelayMax: 10
+  ambientSoundChance: 0.7
   minPitch: 0.8
   maxPitch: 1.2
+  moveClips:
+  - {fileID: 8300000, guid: b623210da8d20bc4a8beabd9a2e9cc6e, type: 3}
+  attackClips:
+  - {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}
+  deathClip: {fileID: 8300000, guid: 422058f9ead24f6419886066baf41986, type: 3}
+  debugAttacks: 1

@@ -111,8 +111,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 64, y: -14}
-  m_SizeDelta: {x: 120, y: 120}
+  m_AnchoredPosition: {x: 104, y: 7.999956}
+  m_SizeDelta: {x: 143.5, y: 194.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4537609130028753242
 CanvasRenderer:
@@ -247,7 +247,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -40}
-  m_SizeDelta: {x: 660.0498, y: 237.66}
+  m_SizeDelta: {x: 660.0498, y: 268.15}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7817849113725063471
 CanvasRenderer:
@@ -314,14 +314,14 @@ RectTransform:
   m_GameObject: {fileID: 1954176447723943704}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 656589974779958515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 42}
+  m_AnchoredPosition: {x: 0, y: 86}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3107055094976816553
@@ -803,8 +803,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -66, y: -14}
-  m_SizeDelta: {x: 120, y: 120}
+  m_AnchoredPosition: {x: -106, y: 8}
+  m_SizeDelta: {x: 143.5, y: 194.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3635311247212279993
 CanvasRenderer:
@@ -1073,11 +1073,11 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 16
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: 0
+  m_characterSpacing: 10
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1105,7 +1105,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -32.079468, y: -34.645508, z: -32.58252, w: -16.116913}
+  m_margin: {x: -176.28247, y: -34.645508, z: -172.62604, w: -16.116913}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -1138,8 +1138,8 @@ RectTransform:
   m_GameObject: {fileID: 3237250106467196746}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.1, y: 1.1, z: 1.1}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7642868146798355827}
   - {fileID: 2286694839295132696}
@@ -1151,8 +1151,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 225, y: 0}
-  m_SizeDelta: {x: 207.9, y: 237.66}
+  m_AnchoredPosition: {x: 161, y: 0}
+  m_SizeDelta: {x: 302.1, y: 237.66}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3877833019143873962
 CanvasRenderer:
@@ -1673,6 +1673,7 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
+  healthBarPrefab: {fileID: 0}
   targetAnimalType: Chicken
   armyAnimalPrefabs: []
   flagPrefab: {fileID: 0}
@@ -2034,7 +2035,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -18}
+  m_AnchoredPosition: {x: 0, y: 10.6}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1109268832345964740
@@ -2092,13 +2093,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 64
+  m_fontSizeBase: 64
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 16
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -2153,7 +2154,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7642868146798355827
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2792,7 +2793,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -80}
-  m_SizeDelta: {x: 265.48, y: 120}
+  m_SizeDelta: {x: 555.4, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2165972335160450349
 CanvasRenderer:
@@ -2876,9 +2877,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: -8090860008486070274}
-        m_TargetAssemblyTypeName: BarracksStructureUI, Assembly-CSharp
-        m_MethodName: checkAnimalBuy
+      - m_Target: {fileID: 1870193486873066752}
+        m_TargetAssemblyTypeName: BarracksStructure, Assembly-CSharp
+        m_MethodName: playRecruitSound
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1870193486873066752}
+        m_TargetAssemblyTypeName: BarracksStructure, Assembly-CSharp
+        m_MethodName: UpdateAllNearbyChickenCoops
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3193,8 +3206,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -237, y: 3}
-  m_SizeDelta: {x: 120, y: 120}
+  m_AnchoredPosition: {x: -270, y: 3}
+  m_SizeDelta: {x: 93.6, y: 244.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8469189664954407391
 CanvasRenderer:
@@ -3439,8 +3452,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 30, y: 3}
-  m_SizeDelta: {x: 120, y: 120}
+  m_AnchoredPosition: {x: -63, y: 3}
+  m_SizeDelta: {x: 93.6, y: 244.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1339710856414563803
 CanvasRenderer:
@@ -3773,8 +3786,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -104, y: 3}
-  m_SizeDelta: {x: 120, y: 120}
+  m_AnchoredPosition: {x: -167, y: 3}
+  m_SizeDelta: {x: 93.6, y: 244.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5210486282693646988
 CanvasRenderer:

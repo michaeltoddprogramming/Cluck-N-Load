@@ -196,7 +196,9 @@ MonoBehaviour:
   backgroundAudioSource: {fileID: 7743113138674925214}
   animator: {fileID: 6523199944477165733}
   data: {fileID: 11400000, guid: 651ec1a38579c084cb9a5c381781d066, type: 2}
-  doIt: 0
+  recoilForce: 20
+  Recoil: 0
+  healthBarPrefab: {fileID: 4122911237217708408, guid: 5901a419293af0a41829f449f21dc8a0, type: 3}
 --- !u!82 &4648233789209256974
 AudioSource:
   m_ObjectHideFlags: 0

@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 5292122009345309693}
   - component: {fileID: 3584585836820235379}
   m_Layer: 0
-  m_Name: HealthBarCanvas
+  m_Name: HealthBarCanvasAnimals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -140,7 +140,7 @@ RectTransform:
   m_GameObject: {fileID: 4122911237217708408}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.08, y: 0.08, z: 0.08}
+  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4495492491803862264}

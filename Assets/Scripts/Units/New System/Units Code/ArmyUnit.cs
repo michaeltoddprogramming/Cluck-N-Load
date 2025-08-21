@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using TMPro;
+using UnityEngine.UI;
 
 public class ArmyUnit : BaseUnit
 {
@@ -33,24 +35,64 @@ public class ArmyUnit : BaseUnit
     private bool isRoaming = false;
     private Coroutine roamingRoutine = null;
 
+    [SerializeField] private GameObject healthBarPrefab;
+    private GameObject healthBarInstance;
+    private Slider healthBarSlider;
+    private TextMeshProUGUI healthBarText;
+    private CanvasGroup healthBarCanvasGroup;
 
-    protected override void Awake()
+
+        protected override void Awake()
     {
         base.Awake();
         currHealth = data.Health;
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-
+    
         roamRadius = data.RoamRadius;
         roamInterval = data.RoamInterval;
-
+    
         // Apply movement values from data
         agent.speed = data.MovementSpeed;
         agent.acceleration = data.Acceleration;
         agent.angularSpeed = data.AngularSpeed;
         agent.stoppingDistance = data.StoppingDistance;
-
-
+    
         PlayBackgroundSound(data.backgroundSound);
+    
+        // Instantiate health bar but keep hidden
+        if (healthBarPrefab != null && healthBarInstance == null)
+        {
+            healthBarInstance = Instantiate(healthBarPrefab, transform);
+            var rect = healthBarInstance.GetComponent<RectTransform>();
+            if (rect != null)
+                rect.localPosition = new Vector3(0, 2.5f, 0); // Adjust Y as needed
+            healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
+            healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
+            healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
+            healthBarInstance.SetActive(false); // Start hidden
+        }
+    }
+
+        private void UpdateHealthBar()
+    {
+        if (healthBarSlider != null)
+        {
+            float pct = Mathf.Clamp01((float)currHealth / data.Health);
+            healthBarSlider.value = pct;
+            if (healthBarText != null)
+                healthBarText.text = $"{currHealth} / {data.Health}";
+    
+            bool showBar = currHealth < data.Health && currHealth > 0;
+            if (healthBarCanvasGroup != null)
+            {
+                healthBarCanvasGroup.alpha = showBar ? 1f : 0f;
+                healthBarCanvasGroup.interactable = showBar;
+                healthBarCanvasGroup.blocksRaycasts = showBar;
+            }
+            if (healthBarInstance != null)
+                healthBarInstance.SetActive(showBar);
+                
+        }
     }
 
     private void Update()
@@ -191,17 +233,20 @@ public class ArmyUnit : BaseUnit
         return GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
     }
 
-    public void TakeDamage(int damage)
+       public void TakeDamage(int damage)
     {
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
             PlaySound(data.DeathSound);
+            currHealth = 0;
+            UpdateHealthBar();
             Die();
         }
         else
         {
             PlaySound(data.HurtSound);
             currHealth -= damage;
+            UpdateHealthBar();
         }
     }
 

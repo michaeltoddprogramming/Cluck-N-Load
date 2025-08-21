@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine.UI;
 public class EnemyUnit : BaseUnit
 {
     [SerializeField] private EnemyData data;
@@ -16,6 +18,12 @@ public class EnemyUnit : BaseUnit
     private float targetSearchCooldown = 0.5f;
     private float lastTargetSearchTime = 0f;
     private bool hasNoTarget = false;
+
+    [SerializeField] private GameObject healthBarPrefab;
+    private GameObject healthBarInstance;
+    private Slider healthBarSlider;
+    private TextMeshProUGUI healthBarText;
+    private CanvasGroup healthBarCanvasGroup;
 
     public int currentMaxSpawn;
 
@@ -49,6 +57,19 @@ public class EnemyUnit : BaseUnit
         agent.stoppingDistance = data.StoppingDistance;
 
         PlayBackgroundSound(data.backgroundSound);
+
+        // Instantiate health bar but keep hidden
+        if (healthBarPrefab != null && healthBarInstance == null)
+        {
+            healthBarInstance = Instantiate(healthBarPrefab, transform);
+            var rect = healthBarInstance.GetComponent<RectTransform>();
+            if (rect != null)
+                rect.localPosition = new Vector3(0, 2.5f, 0); // Adjust Y as needed
+            healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
+            healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
+            healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
+            healthBarInstance.SetActive(false); // Start hidden
+        }
     }
 
 
@@ -443,19 +464,42 @@ public class EnemyUnit : BaseUnit
         }
     }
 
+    private void UpdateHealthBar()
+    {
+        if (healthBarSlider != null)
+        {
+            float pct = Mathf.Clamp01((float)currHealth / data.Health);
+            healthBarSlider.value = pct;
+            if (healthBarText != null)
+                healthBarText.text = $"{currHealth} / {data.Health}";
+
+            bool showBar = currHealth < data.Health && currHealth > 0;
+            if (healthBarCanvasGroup != null)
+            {
+                healthBarCanvasGroup.alpha = showBar ? 1f : 0f;
+                healthBarCanvasGroup.interactable = showBar;
+                healthBarCanvasGroup.blocksRaycasts = showBar;
+            }
+            if (healthBarInstance != null)
+                healthBarInstance.SetActive(showBar);
+        }
+    }
+
+    // Update TakeDamage to show health bar only when damaged:
     public void TakeDamage(int damage)
     {
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
-            // Debug.Log("Died: ----------------------------------------------------------------------------------");
             PlaySound(data.DeathSound);
+            currHealth = 0;
+            UpdateHealthBar();
             Die();
         }
         else
         {
-            // Debug.Log("Taking damage: " + damage + "----------------------------------------------------------------------------------");
             PlaySound(data.HurtSound);
             currHealth -= damage;
+            UpdateHealthBar();
         }
     }
 

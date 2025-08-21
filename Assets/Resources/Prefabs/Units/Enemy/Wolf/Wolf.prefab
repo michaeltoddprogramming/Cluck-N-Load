@@ -175,6 +175,10 @@ MonoBehaviour:
   backgroundAudioSource: {fileID: 4523313558861113796}
   animator: {fileID: 4556398229813284515}
   data: {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}
+  healthBarPrefab: {fileID: 4122911237217708408, guid: 70a90b75acc63044ab90bcb22ae89cf1, type: 3}
+  currentMaxSpawn: 0
+  currentMinSpawn: 0
+  retreating: 0
 --- !u!195 &1038109364193293033
 NavMeshAgent:
   m_ObjectHideFlags: 0

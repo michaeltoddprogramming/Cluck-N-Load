@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -107,6 +106,8 @@ public class Structure : MonoBehaviour
         {
             selectionIndicator.SetActive(false);
         }
+        
+        OnHealthChanged += UpdateHealthBar;
     }
 
     protected virtual void Start()
@@ -145,50 +146,67 @@ public class Structure : MonoBehaviour
             AddColliderToStructure();
         }
 
-        if (healthBarPrefab != null)
+            // Instantiate health bar if prefab is assigned
+    if (healthBarPrefab != null && healthBarInstance == null)
+    {
+        healthBarInstance = Instantiate(healthBarPrefab, transform);
+
+        // Position the health bar above the structure
+        var rect = healthBarInstance.GetComponent<RectTransform>();
+        if (rect != null)
         {
-            healthBarInstance = Instantiate(healthBarPrefab, transform);
-
-            // Dynamically position above the structure
-            Renderer renderer = GetComponentInChildren<Renderer>();
-            float heightOffset = 2.0f; // Extra offset above the top
-            float yPos = renderer != null ? renderer.bounds.size.y + heightOffset : heightOffset;
-            healthBarInstance.transform.localPosition = new Vector3(0, yPos, 0);
-
-            healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
-            healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
-            healthBarCanvasGroup = healthBarInstance.GetComponent<CanvasGroup>();
-            UpdateHealthBar();
+            rect.localPosition = new Vector3(0, 6f, 0); // Adjust Y as needed for your models
         }
-        OnHealthChanged += UpdateHealthBar;
+        healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
+        healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
+        healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
+        healthBarInstance.SetActive(false); // Start hidden
+    }
     }
 
-    private void UpdateHealthBar()
+   private void UpdateHealthBar()
+{
+    if (healthBarSlider != null)
     {
-        if (healthBarSlider != null)
+        Debug.Log($"Updating health bar for {gameObject.name}: {GetCurrentHealth()}/{GetMaxHealth()}");
+        float pct = Mathf.Clamp01((float)GetCurrentHealth() / GetMaxHealth());
+        healthBarSlider.value = pct;
+        healthBarSlider.fillRect.GetComponent<Image>().color =
+            pct > 0.6f ? healthyColor : pct > 0.3f ? midColor : dangerColor;
+
+        if (healthBarText != null)
+            healthBarText.text = $"{GetCurrentHealth()} / {GetMaxHealth()}";
+
+        // Only show health bar if not at full health
+        if (healthBarCanvasGroup != null)
         {
-            float pct = Mathf.Clamp01((float)GetCurrentHealth() / GetMaxHealth());
-            healthBarSlider.value = pct;
-            healthBarSlider.fillRect.GetComponent<Image>().color =
-                pct > 0.6f ? healthyColor : pct > 0.3f ? midColor : dangerColor;
+            bool showBar = GetCurrentHealth() < GetMaxHealth();
+            healthBarCanvasGroup.alpha = showBar ? 1f : 0f;
+            healthBarCanvasGroup.interactable = showBar;
+            healthBarCanvasGroup.blocksRaycasts = showBar;
+            healthBarInstance.SetActive(showBar);
+        }
 
-            if (healthBarText != null)
-                healthBarText.text = $"{GetCurrentHealth()} / {GetMaxHealth()}";
-
-            // Animate feedback
-            if (healthBarCanvasGroup != null)
+        // Animate feedback if showing
+        if (healthBarCanvasGroup != null && GetCurrentHealth() < GetMaxHealth())
+        {
+            LeanTween.cancel(healthBarInstance);
+            LeanTween.alphaCanvas(healthBarCanvasGroup, 0.7f, 0.3f).setLoopPingPong(1);
+            if (pct < 0.3f)
             {
-                LeanTween.cancel(healthBarInstance);
-                healthBarCanvasGroup.alpha = 1f;
-                LeanTween.alphaCanvas(healthBarCanvasGroup, 0.7f, 0.3f).setLoopPingPong(1);
-                if (pct < 0.3f)
-                {
-                    LeanTween.moveLocalX(healthBarInstance, healthBarInstance.transform.localPosition.x + 0.1f, 0.1f)
+                LeanTween.moveLocalX(healthBarInstance, healthBarInstance.transform.localPosition.x + 0.1f, 0.1f)
                     .setLoopPingPong(2);
-                }
             }
         }
+
+        if (healthBarInstance != null)
+            Debug.Log($"Health bar instance active: {healthBarInstance.activeSelf}");
     }
+    else
+    {
+        Debug.LogWarning($"HealthBarSlider is null for {gameObject.name}");
+    }
+}
 
     // Optional: If something is calling OnEnable, ensure it doesn't re-register
     private void OnEnable()

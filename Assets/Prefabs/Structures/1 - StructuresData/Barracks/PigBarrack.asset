@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Pig Barrack
   description: Housing quarters for farm defenders to rest and prepare.
-  prefab: {fileID: 4222961760227805080, guid: deb403fe84b7b1649bf0a839c421ae0b, type: 3}
+  prefab: {fileID: 127442347093937361, guid: bd7a7a41cb5fc2049b5b4624aa7246ba, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50

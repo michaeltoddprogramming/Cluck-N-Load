@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Sheep Barrack
   description: Housing quarters for farm defenders to rest and prepare.
-  prefab: {fileID: 4222961760227805080, guid: db22cff296fb76b44bd330afc7094d02, type: 3}
+  prefab: {fileID: 3399988313665195093, guid: aef5802cc54b24f498314b25d54fbd15, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50

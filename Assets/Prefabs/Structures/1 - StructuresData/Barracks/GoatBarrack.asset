@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Goat Barrack
   description: Housing quarters for farm defenders to rest and prepare.
-  prefab: {fileID: 4222961760227805080, guid: 1eb92778785a8da4d90a339f51346da0, type: 3}
+  prefab: {fileID: 5808619500396567147, guid: b18305c600899ca419fa2b21d0fa41f5, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50

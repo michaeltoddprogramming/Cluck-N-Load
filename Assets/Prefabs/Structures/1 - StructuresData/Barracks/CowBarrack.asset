@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Cow Barrack
   description: Housing quarters for farm defenders to rest and prepare.
-  prefab: {fileID: 4222961760227805080, guid: 07f2549d802357147b1d73db35f24ed1, type: 3}
+  prefab: {fileID: 7501336543757764166, guid: db5ee0fcb6d9d3e448435df9d568c448, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50

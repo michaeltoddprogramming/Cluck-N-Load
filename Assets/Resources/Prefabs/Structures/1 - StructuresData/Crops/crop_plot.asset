@@ -23,7 +23,7 @@ MonoBehaviour:
   targetAnimalType: 
   armyAnimalPrefabs: []
   flagPrefab: {fileID: 0}
-  recruitmentRange: 4000
+  recruitmentRange: 100
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
   protectionRadius: 5

@@ -43,17 +43,17 @@ public class SpawnUnits : MonoBehaviour
                 {
                     int spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
 
-                    // for (int i = 0; i < spawnCount; i++)
-                    // {
-                    //     Vector3 spawnPosition = GetRandomOutsidePosition();
-                    //     GameObject enemyInstance = Instantiate(wolf.Prefab, spawnPosition, Quaternion.identity);
+                    for (int i = 0; i < spawnCount; i++)
+                    {
+                        Vector3 spawnPosition = GetRandomOutsidePosition();
+                        GameObject enemyInstance = Instantiate(wolf.Prefab, spawnPosition, Quaternion.identity);
 
-                    //     EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
-                    //     if (enemyUnit != null)
-                    //     {
-                    //         CombatManager.Instance.RegisterUnit(enemyUnit);
-                    //     }
-                    // }
+                        EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+                        if (enemyUnit != null)
+                        {
+                            CombatManager.Instance.RegisterUnit(enemyUnit);
+                        }
+                    }
 
                     // spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
 
@@ -70,34 +70,34 @@ public class SpawnUnits : MonoBehaviour
                     // }
 
 
-                    spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+                    // spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
 
-                    for (int i = 0; i < spawnCount; i++)
-                    {
-                        Vector3 spawnPosition = GetRandomOutsidePosition();
-                        GameObject enemyInstance = Instantiate(racoon.Prefab, spawnPosition, Quaternion.identity);
-                        Debug.Log("We spawned a racoon: " + enemyInstance + "-------------------------------------------------------");
-                        EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
-                        if (enemyUnit != null)
-                        {
-                            CombatManager.Instance.RegisterUnit(enemyUnit);
-                        }
-                    }
+                    // for (int i = 0; i < spawnCount; i++)
+                    // {
+                    //     Vector3 spawnPosition = GetRandomOutsidePosition();
+                    //     GameObject enemyInstance = Instantiate(racoon.Prefab, spawnPosition, Quaternion.identity);
+                    //     Debug.Log("We spawned a racoon: " + enemyInstance + "-------------------------------------------------------");
+                    //     EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+                    //     if (enemyUnit != null)
+                    //     {
+                    //         CombatManager.Instance.RegisterUnit(enemyUnit);
+                    //     }
+                    // }
 
 
-                    spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+                    // spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
 
-                    for (int i = 0; i < spawnCount; i++)
-                    {
-                        Vector3 spawnPosition = GetRandomOutsidePosition();
-                        GameObject enemyInstance = Instantiate(bear.Prefab, spawnPosition, Quaternion.identity);
+                    // for (int i = 0; i < spawnCount; i++)
+                    // {
+                    //     Vector3 spawnPosition = GetRandomOutsidePosition();
+                    //     GameObject enemyInstance = Instantiate(bear.Prefab, spawnPosition, Quaternion.identity);
 
-                        EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
-                        if (enemyUnit != null)
-                        {
-                            CombatManager.Instance.RegisterUnit(enemyUnit);
-                        }
-                    }
+                    //     EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+                    //     if (enemyUnit != null)
+                    //     {
+                    //         CombatManager.Instance.RegisterUnit(enemyUnit);
+                    //     }
+                    // }
 
                 }
                 break;

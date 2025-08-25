@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eceed2a2932ec742a85bd63e277bd8a, type: 3}
+  m_Name: Sheep
+  m_EditorClassIdentifier: 
+  RequiredFood: Carrots
+  ProductName: Wool
+  animalType: 2
+  targetAnimalType: Sheep
+  maxHealth: 100
+  moveSpeed: 3
+  rotationSpeed: 5
+  attackRange: 2
+  detectionRange: 10
+  damage: 10
+  attackCooldown: 1
+  moveSoundDelay: 2
+  moveSoundChance: 0.5
+  attackSoundChance: 0.8
+  ambientClips:
+  - {fileID: 8300000, guid: da62c192d48c92548b38eb7c9990879f, type: 3}
+  ambientSoundDelayMin: 5
+  ambientSoundDelayMax: 10
+  ambientSoundChance: 0.7
+  minPitch: 0.8
+  maxPitch: 1.2
+  moveClips:
+  - {fileID: 8300000, guid: b623210da8d20bc4a8beabd9a2e9cc6e, type: 3}
+  attackClips:
+  - {fileID: 8300000, guid: e689391081cbbe144b685706b48a5c37, type: 3}
+  deathClip: {fileID: 8300000, guid: 8eeb8877cb62487438cab8040b26b019, type: 3}
+  debugAttacks: 1

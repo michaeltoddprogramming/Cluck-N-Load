@@ -28,6 +28,7 @@ public class BuildController : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private RectTransform itemDeleteIcon;
     [SerializeField] public GameObject dustPoof;
+    [SerializeField] private CanvasGroup buildControlsPanelGroup;
 
     [Header("Delete Mode Settings")]
     [SerializeField] private Vector2 cursorOffset = new Vector2(15f, 15f);
@@ -163,13 +164,25 @@ public class BuildController : MonoBehaviour
         if (isMoveModeActive && currentGhost != null) UpdateGhostPositionForMove();
     }
 
-    public void EnableBuildMode()
+        public void EnableBuildMode()
     {
+        Debug.Log("EnableBuildMode called");
         isBuildModeActive = true;
         isMoveModeActive = false;
         gridController.ShowGrid();
         if (currentBuildTargetPrefab != null && currentGhost == null)
             CreateGhost(currentBuildTargetPrefab);
+    
+        if (buildControlsPanelGroup != null)
+        {
+            buildControlsPanelGroup.alpha = 1f;
+            buildControlsPanelGroup.interactable = true;
+            buildControlsPanelGroup.blocksRaycasts = true;
+        }
+        else
+        {
+            Debug.LogWarning("BuildControlsPanel reference is null!");
+        }
     }
 
     public void DisableBuildMode()
@@ -186,6 +199,13 @@ public class BuildController : MonoBehaviour
         movingStructure = null;
         if (itemDeleteIcon != null)
             itemDeleteIcon.gameObject.SetActive(false);
+
+        if (buildControlsPanelGroup != null)
+        {
+            buildControlsPanelGroup.alpha = 0f;
+            buildControlsPanelGroup.interactable = false;
+            buildControlsPanelGroup.blocksRaycasts = false;
+        }
     }
 
     public void ToggleBuildMode()

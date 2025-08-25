@@ -150,8 +150,9 @@ public class InventoryManager : MonoBehaviour
 
     public int GetTotalSiloCapacity()
     {
-        totalCapacity = silos.Count * totalPerSilo;
-        return totalCapacity;
+        if (silos.Count == 0)
+            return 25; // Default starting capacity
+        return silos.Count * totalPerSilo;
     }
 
     public int GetCurrentSiloCapacity()

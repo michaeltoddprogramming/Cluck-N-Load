@@ -15,7 +15,7 @@ MonoBehaviour:
   structureName: Chicken Coop
   description: 'A cozy shelter where chickens live and lay eggs. Keeps them safe
     and happy.  '
-  prefab: {fileID: 24278512715701046, guid: 0738cd73459085040abbc5df1507dfa9, type: 3}
+  prefab: {fileID: 1313508487122907495, guid: eb07cdb48a98bdd438af01cf439e63b8, type: 3}
   icon: {fileID: 21300000, guid: edf6e7cff72ddd64ca638184f059f553, type: 3}
   type: 8
   cost: 50

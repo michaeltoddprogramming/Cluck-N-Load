@@ -1,0 +1,1486 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0876a39f507e45142a645a4fe9dd37df, type: 3}
+  m_Name: '[Audio Manager] Audio Library Asset'
+  m_EditorClassIdentifier: 
+  library:
+    list:
+    - key: bear-attack-f611456f-06bf-4825-9445-f2c5a236e17a
+      value:
+        key: bear-attack
+        id: bear-attack-f611456f-06bf-4825-9445-f2c5a236e17a
+        defaultKey: bear-attack-f611456f-06bf-4825-9445-f2c5a236e17a
+        value: {fileID: 8300000, guid: a1899514e2635c046ac76660b78a753a, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Bear/bear-attack.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: bear-background-97891757-832e-44cc-b3f8-6471dce39a7d
+      value:
+        key: bear-background
+        id: bear-background-97891757-832e-44cc-b3f8-6471dce39a7d
+        defaultKey: bear-background-97891757-832e-44cc-b3f8-6471dce39a7d
+        value: {fileID: 8300000, guid: ece4e43a0a14c174ab85962076b2dfc9, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Bear/bear-background.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: bear-die-fd66e737-7fd4-41e0-b327-c1ddddf55872
+      value:
+        key: bear-die
+        id: bear-die-fd66e737-7fd4-41e0-b327-c1ddddf55872
+        defaultKey: bear-die-fd66e737-7fd4-41e0-b327-c1ddddf55872
+        value: {fileID: 8300000, guid: 2ca6600384effcb4aba77a3d1ca90ef9, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Bear/bear-die.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: bear-hurt-1ddbead5-e721-4252-8f32-447ee3d2e011
+      value:
+        key: bear-hurt
+        id: bear-hurt-1ddbead5-e721-4252-8f32-447ee3d2e011
+        defaultKey: bear-hurt-1ddbead5-e721-4252-8f32-447ee3d2e011
+        value: {fileID: 8300000, guid: 7fb940354a2291649ac17071400f2026, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Bear/bear-hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: boar_attack-d520bd35-fe35-49b1-ab43-de78882739cd
+      value:
+        key: boar_attack
+        id: boar_attack-d520bd35-fe35-49b1-ab43-de78882739cd
+        defaultKey: boar_attack-d520bd35-fe35-49b1-ab43-de78882739cd
+        value: {fileID: 8300000, guid: 58a4c3e5ebdd664408b2733b5e217575, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Boar/boar_attack.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: boar_background-1e35a5c1-2a65-44e7-8d13-74384b3cda87
+      value:
+        key: boar_background
+        id: boar_background-1e35a5c1-2a65-44e7-8d13-74384b3cda87
+        defaultKey: boar_background-1e35a5c1-2a65-44e7-8d13-74384b3cda87
+        value: {fileID: 8300000, guid: 36efe7900415e6846ade8e7c87b02da6, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Boar/boar_background.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: boar_die-ba4f5b71-9432-401a-882c-1c8a448c467e
+      value:
+        key: boar_die
+        id: boar_die-ba4f5b71-9432-401a-882c-1c8a448c467e
+        defaultKey: boar_die-ba4f5b71-9432-401a-882c-1c8a448c467e
+        value: {fileID: 8300000, guid: eb08ab7409ba78046a60c598c4efce78, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Boar/boar_die.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: boar_hurt-7eb2efc2-ed61-42ab-9bc7-fba296a65be1
+      value:
+        key: boar_hurt
+        id: boar_hurt-7eb2efc2-ed61-42ab-9bc7-fba296a65be1
+        defaultKey: boar_hurt-7eb2efc2-ed61-42ab-9bc7-fba296a65be1
+        value: {fileID: 8300000, guid: 4c0ef3afda1b5014c8fa05da882a0156, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Boar/boar_hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: racoon_attack-973738ad-9533-4ca6-a3a9-182dc9f83517
+      value:
+        key: racoon_attack
+        id: racoon_attack-973738ad-9533-4ca6-a3a9-182dc9f83517
+        defaultKey: racoon_attack-973738ad-9533-4ca6-a3a9-182dc9f83517
+        value: {fileID: 8300000, guid: ba98dbfb416a7864382802842560c1e4, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Racoon/racoon_attack.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: racoon_background-d36ce57d-d85b-40d6-8103-1cff2304a0ff
+      value:
+        key: racoon_background
+        id: racoon_background-d36ce57d-d85b-40d6-8103-1cff2304a0ff
+        defaultKey: racoon_background-d36ce57d-d85b-40d6-8103-1cff2304a0ff
+        value: {fileID: 8300000, guid: 02c557336db3bef4b8df228fc68b0a05, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Racoon/racoon_background.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: racoon_die1-7ddadbba-ab77-476c-a6bc-ddddd1a63cd3
+      value:
+        key: racoon_die1
+        id: racoon_die1-7ddadbba-ab77-476c-a6bc-ddddd1a63cd3
+        defaultKey: racoon_die1-7ddadbba-ab77-476c-a6bc-ddddd1a63cd3
+        value: {fileID: 8300000, guid: 6b849b13b36b2e748837e9cfffb92a0f, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Racoon/racoon_die1.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: racoon_hurt-74eedccf-a1e8-461d-9652-1005a1b9d3f3
+      value:
+        key: racoon_hurt
+        id: racoon_hurt-74eedccf-a1e8-461d-9652-1005a1b9d3f3
+        defaultKey: racoon_hurt-74eedccf-a1e8-461d-9652-1005a1b9d3f3
+        value: {fileID: 8300000, guid: 4483623da20638448a975ba2501cc9b5, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Racoon/racoon_hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: whimper-5b8d6b98-7dd9-4ff1-a112-e909c2b70f9a
+      value:
+        key: whimper
+        id: whimper-5b8d6b98-7dd9-4ff1-a112-e909c2b70f9a
+        defaultKey: whimper-5b8d6b98-7dd9-4ff1-a112-e909c2b70f9a
+        value: {fileID: 8300000, guid: e0a21b84f72d2ce439a2bf687703c388, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Wolf/Hurt/whimper.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: wolf-die-81b5c0af-e23d-4a95-a64e-450579f344bd
+      value:
+        key: wolf-die
+        id: wolf-die-81b5c0af-e23d-4a95-a64e-450579f344bd
+        defaultKey: wolf-die-81b5c0af-e23d-4a95-a64e-450579f344bd
+        value: {fileID: 8300000, guid: 7b0841ab96974e249804d83be3e4fbc4, type: 3}
+        path: Assets/Resources/Sounds/Animal/Enemy/Wolf/wolf-die.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: chicken hurt-a685b80e-5011-41f4-834c-c27a1c359172
+      value:
+        key: chicken hurt
+        id: chicken hurt-a685b80e-5011-41f4-834c-c27a1c359172
+        defaultKey: chicken hurt-a685b80e-5011-41f4-834c-c27a1c359172
+        value: {fileID: 8300000, guid: 2a7521a84cf06c449974bacb749e4f2a, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/chicken hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: chickenShooting-d23a521f-d487-4422-aa79-f07124a68893
+      value:
+        key: chickenShooting
+        id: chickenShooting-d23a521f-d487-4422-aa79-f07124a68893
+        defaultKey: chickenShooting-d23a521f-d487-4422-aa79-f07124a68893
+        value: {fileID: 8300000, guid: a6087dd91524db5479b35b011bb72828, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/chickenShooting.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: chickenShotgun-96ca70ca-8f18-4d76-b4ff-3b45d7485bde
+      value:
+        key: chickenShotgun
+        id: chickenShotgun-96ca70ca-8f18-4d76-b4ff-3b45d7485bde
+        defaultKey: chickenShotgun-96ca70ca-8f18-4d76-b4ff-3b45d7485bde
+        value: {fileID: 8300000, guid: 68642a98c4f766a4b8e269fd29624f1d, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/chickenShotgun.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: cow_die-758057db-555f-4d42-919d-ac7d4aeecdc6
+      value:
+        key: cow_die
+        id: cow_die-758057db-555f-4d42-919d-ac7d4aeecdc6
+        defaultKey: cow_die-758057db-555f-4d42-919d-ac7d4aeecdc6
+        value: {fileID: 8300000, guid: c7180ed0c6841ad4b953a338ec94232c, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Cow/cow_die.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: cow_hurt-ab9b1b4f-6bf8-460d-a287-922d8ef03cab
+      value:
+        key: cow_hurt
+        id: cow_hurt-ab9b1b4f-6bf8-460d-a287-922d8ef03cab
+        defaultKey: cow_hurt-ab9b1b4f-6bf8-460d-a287-922d8ef03cab
+        value: {fileID: 8300000, guid: 5e09a0f65437bd74eb6e7adfef0f7c14, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Cow/cow_hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: goat_attack-bae6e209-e4bf-471f-bf51-860cc8de66c6
+      value:
+        key: goat_attack
+        id: goat_attack-bae6e209-e4bf-471f-bf51-860cc8de66c6
+        defaultKey: goat_attack-bae6e209-e4bf-471f-bf51-860cc8de66c6
+        value: {fileID: 8300000, guid: c586b4ed61915f145856243ffdcf7e48, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Goat/goat_attack.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: goat_death-a798abc1-4252-48aa-b9d4-a1e6a055ed9b
+      value:
+        key: goat_death
+        id: goat_death-a798abc1-4252-48aa-b9d4-a1e6a055ed9b
+        defaultKey: goat_death-a798abc1-4252-48aa-b9d4-a1e6a055ed9b
+        value: {fileID: 8300000, guid: fdafdb547a384e24696e14f3b49658ba, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Goat/goat_death.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: goat_hurt-8d156293-260e-40ea-934e-4d6f6e8bfc65
+      value:
+        key: goat_hurt
+        id: goat_hurt-8d156293-260e-40ea-934e-4d6f6e8bfc65
+        defaultKey: goat_hurt-8d156293-260e-40ea-934e-4d6f6e8bfc65
+        value: {fileID: 8300000, guid: 526e8ec95f42ada419520197a8fa5624, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Goat/goat_hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: pig_attack-27f16468-aa92-47e5-ab0e-dcd7142ceaf8
+      value:
+        key: pig_attack
+        id: pig_attack-27f16468-aa92-47e5-ab0e-dcd7142ceaf8
+        defaultKey: pig_attack-27f16468-aa92-47e5-ab0e-dcd7142ceaf8
+        value: {fileID: 8300000, guid: cc99635244502ad44ae076d229bbdb1e, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Pig/pig_attack.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: pig_die-04534c8e-c23f-4647-a1ef-ef087b3bb413
+      value:
+        key: pig_die
+        id: pig_die-04534c8e-c23f-4647-a1ef-ef087b3bb413
+        defaultKey: pig_die-04534c8e-c23f-4647-a1ef-ef087b3bb413
+        value: {fileID: 8300000, guid: a57065893d8667344aeb1a1b18ff1996, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Pig/pig_die.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: pig_hurt-fbfc3967-b2ed-4198-82f9-77fed67ab946
+      value:
+        key: pig_hurt
+        id: pig_hurt-fbfc3967-b2ed-4198-82f9-77fed67ab946
+        defaultKey: pig_hurt-fbfc3967-b2ed-4198-82f9-77fed67ab946
+        value: {fileID: 8300000, guid: d8dac1d487e8fb9469f34a87e7f3d644, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/Pig/pig_hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: sheep_attack-2fc8da16-e7ee-4c0e-a21b-3f144f247f0c
+      value:
+        key: sheep_attack
+        id: sheep_attack-2fc8da16-e7ee-4c0e-a21b-3f144f247f0c
+        defaultKey: sheep_attack-2fc8da16-e7ee-4c0e-a21b-3f144f247f0c
+        value: {fileID: 8300000, guid: 1ae9067b608efab46bb901a327f21cfb, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/sheep/sheep_attack.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: sheep_beep1-756d4a28-1290-443a-a726-ae8f73b0636f
+      value:
+        key: sheep_beep1
+        id: sheep_beep1-756d4a28-1290-443a-a726-ae8f73b0636f
+        defaultKey: sheep_beep1-756d4a28-1290-443a-a726-ae8f73b0636f
+        value: {fileID: 8300000, guid: 400b90bf00d6acd43b4376779ee0b193, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/sheep/sheep_beep1.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: sheep_beep2-8e24a59a-f404-4df2-ac0a-3c6fbb591e31
+      value:
+        key: sheep_beep2
+        id: sheep_beep2-8e24a59a-f404-4df2-ac0a-3c6fbb591e31
+        defaultKey: sheep_beep2-8e24a59a-f404-4df2-ac0a-3c6fbb591e31
+        value: {fileID: 8300000, guid: 64afb66df5bc67f4caad61e2931ff4db, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/sheep/sheep_beep2.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: sheep_beep3-dd62a03c-979b-483f-8cc8-66802c1c0810
+      value:
+        key: sheep_beep3
+        id: sheep_beep3-dd62a03c-979b-483f-8cc8-66802c1c0810
+        defaultKey: sheep_beep3-dd62a03c-979b-483f-8cc8-66802c1c0810
+        value: {fileID: 8300000, guid: 1129bc32a1958f54eb95de8f47236c98, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/sheep/sheep_beep3.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: sheep_die-d0a8a327-1d26-4fbc-a8fb-7ccb0b50f7b4
+      value:
+        key: sheep_die
+        id: sheep_die-d0a8a327-1d26-4fbc-a8fb-7ccb0b50f7b4
+        defaultKey: sheep_die-d0a8a327-1d26-4fbc-a8fb-7ccb0b50f7b4
+        value: {fileID: 8300000, guid: 8a951f36a16ffb146a6b485baf6b88d6, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/sheep/sheep_die.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: sheep_hurt-a58605a2-056c-4e9e-a3fa-23199340aab4
+      value:
+        key: sheep_hurt
+        id: sheep_hurt-a58605a2-056c-4e9e-a3fa-23199340aab4
+        defaultKey: sheep_hurt-a58605a2-056c-4e9e-a3fa-23199340aab4
+        value: {fileID: 8300000, guid: 9362a91c3b956da41bf324e524577cf0, type: 3}
+        path: Assets/Resources/Sounds/Animal/Military/sheep/sheep_hurt.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Click Noise-0ad90b87-a51d-4f4a-a6d1-a7505407b78a
+      value:
+        key: Click Noise
+        id: Click Noise-0ad90b87-a51d-4f4a-a6d1-a7505407b78a
+        defaultKey: Click Noise-0ad90b87-a51d-4f4a-a6d1-a7505407b78a
+        value: {fileID: 8300000, guid: ef18212c4563cf641a915c7176cba4d7, type: 3}
+        path: Assets/Resources/Sounds/Building/Click Noise.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: delete_building-89eb6e3e-306f-4a9d-b926-0d5ae4a2b1c4
+      value:
+        key: delete_building
+        id: delete_building-89eb6e3e-306f-4a9d-b926-0d5ae4a2b1c4
+        defaultKey: delete_building-89eb6e3e-306f-4a9d-b926-0d5ae4a2b1c4
+        value: {fileID: 8300000, guid: be4131072b32d0545bd9bfec1192e15b, type: 3}
+        path: Assets/Resources/Sounds/Building/delete_building.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Money Spent-9690acfb-9c6c-4226-a477-dc3b10b0ed62
+      value:
+        key: Money Spent
+        id: Money Spent-9690acfb-9c6c-4226-a477-dc3b10b0ed62
+        defaultKey: Money Spent-9690acfb-9c6c-4226-a477-dc3b10b0ed62
+        value: {fileID: 8300000, guid: e3105b148c047fd4dbb2feb8142ed0b2, type: 3}
+        path: Assets/Resources/Sounds/Building/Money Spent.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: No Funds-faef1724-a009-4bc5-9912-ba1f106679df
+      value:
+        key: No Funds
+        id: No Funds-faef1724-a009-4bc5-9912-ba1f106679df
+        defaultKey: No Funds-faef1724-a009-4bc5-9912-ba1f106679df
+        value: {fileID: 8300000, guid: 5507a2f6d9647234f905ab49d01bccdb, type: 3}
+        path: Assets/Resources/Sounds/Building/No Funds.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: PLACE_BUILDING-ffd5cf43-1080-429d-a71c-c89ec150e0cc
+      value:
+        key: PLACE_BUILDING
+        id: PLACE_BUILDING-ffd5cf43-1080-429d-a71c-c89ec150e0cc
+        defaultKey: PLACE_BUILDING-ffd5cf43-1080-429d-a71c-c89ec150e0cc
+        value: {fileID: 8300000, guid: ba8325c8e7aec9540ae0e3db39c5b640, type: 3}
+        path: Assets/Resources/Sounds/Building/PLACE_BUILDING.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: day_sound-2a043132-38ce-4675-bb20-cb12cdb0f9c9
+      value:
+        key: day_sound
+        id: day_sound-2a043132-38ce-4675-bb20-cb12cdb0f9c9
+        defaultKey: day_sound-2a043132-38ce-4675-bb20-cb12cdb0f9c9
+        value: {fileID: 8300000, guid: cd491168445395246b75a93e5b15bbb5, type: 3}
+        path: Assets/Resources/Sounds/Day/day_sound.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: night_sound-5383c3dc-db9b-4291-9f6e-6323503e21a4
+      value:
+        key: night_sound
+        id: night_sound-5383c3dc-db9b-4291-9f6e-6323503e21a4
+        defaultKey: night_sound-5383c3dc-db9b-4291-9f6e-6323503e21a4
+        value: {fileID: 8300000, guid: 11b0291c33fa8014fb3cc1ff870101cc, type: 3}
+        path: Assets/Resources/Sounds/Night/night_sound.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: feeding-sound-9f2e516a-fd63-4096-8ba6-8934422150fa
+      value:
+        key: feeding-sound
+        id: feeding-sound-9f2e516a-fd63-4096-8ba6-8934422150fa
+        defaultKey: feeding-sound-9f2e516a-fd63-4096-8ba6-8934422150fa
+        value: {fileID: 8300000, guid: d574c3c51cc8426488dfde4f9327683f, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animal pens/feeding-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Chicken-pen-28278457-fe42-4e29-a7bd-3fe1461fbdd1
+      value:
+        key: Chicken-pen
+        id: Chicken-pen-28278457-fe42-4e29-a7bd-3fe1461fbdd1
+        defaultKey: Chicken-pen-28278457-fe42-4e29-a7bd-3fe1461fbdd1
+        value: {fileID: 8300000, guid: 0ed8e3d8e473ed447a308e5eecf66c71, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animal pens/Final-sounds/Chicken-pen.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Cows-pen-a752ead9-ae4b-4826-8363-e6d22194589b
+      value:
+        key: Cows-pen
+        id: Cows-pen-a752ead9-ae4b-4826-8363-e6d22194589b
+        defaultKey: Cows-pen-a752ead9-ae4b-4826-8363-e6d22194589b
+        value: {fileID: 8300000, guid: da62c192d48c92548b38eb7c9990879f, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animal pens/Final-sounds/Cows-pen.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Goat-pen-95c092bf-0fa7-47ad-a3fc-a39425530955
+      value:
+        key: Goat-pen
+        id: Goat-pen-95c092bf-0fa7-47ad-a3fc-a39425530955
+        defaultKey: Goat-pen-95c092bf-0fa7-47ad-a3fc-a39425530955
+        value: {fileID: 8300000, guid: b91f931e2b36d494fa1bbdf046ba1c39, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animal pens/Final-sounds/Goat-pen.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Pig-pen-19b7cad8-b44f-4ea6-8002-4ef8456dff3e
+      value:
+        key: Pig-pen
+        id: Pig-pen-19b7cad8-b44f-4ea6-8002-4ef8456dff3e
+        defaultKey: Pig-pen-19b7cad8-b44f-4ea6-8002-4ef8456dff3e
+        value: {fileID: 8300000, guid: ca19259be979afe4894d49f58fcc160c, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animal pens/Final-sounds/Pig-pen.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Sheep-pen-3862020b-4f00-401b-95ff-4d557c871cdc
+      value:
+        key: Sheep-pen
+        id: Sheep-pen-3862020b-4f00-401b-95ff-4d557c871cdc
+        defaultKey: Sheep-pen-3862020b-4f00-401b-95ff-4d557c871cdc
+        value: {fileID: 8300000, guid: ee85b2716834d16498eccefaf133d74c, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animal pens/Final-sounds/Sheep-pen.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: Dead Chicken Sound Effect [KhYD3swHfPc]-4052be2e-b42a-4800-93e8-9b14f42559ff
+      value:
+        key: 'Dead Chicken Sound Effect [KhYD3swHfPc]'
+        id: Dead Chicken Sound Effect [KhYD3swHfPc]-4052be2e-b42a-4800-93e8-9b14f42559ff
+        defaultKey: Dead Chicken Sound Effect [KhYD3swHfPc]-4052be2e-b42a-4800-93e8-9b14f42559ff
+        value: {fileID: 8300000, guid: 422058f9ead24f6419886066baf41986, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Chicken/Dead Chicken Sound Effect
+          [KhYD3swHfPc].mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: shortChicken-sound-f206239a-5f1b-4af8-926e-ee5d62af584f
+      value:
+        key: shortChicken-sound
+        id: shortChicken-sound-f206239a-5f1b-4af8-926e-ee5d62af584f
+        defaultKey: shortChicken-sound-f206239a-5f1b-4af8-926e-ee5d62af584f
+        value: {fileID: 8300000, guid: e06cafbdbeaa7a74aa0b62f79346cae9, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Chicken/shortChicken-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: CowDeath-fa910c34-bc0f-4cb9-a45f-f7cc9f102374
+      value:
+        key: CowDeath
+        id: CowDeath-fa910c34-bc0f-4cb9-a45f-f7cc9f102374
+        defaultKey: CowDeath-fa910c34-bc0f-4cb9-a45f-f7cc9f102374
+        value: {fileID: 8300000, guid: 8eeb8877cb62487438cab8040b26b019, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Cow/CowDeath.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: CowGun-ddaa4a49-6859-4566-b508-39982edd355d
+      value:
+        key: CowGun
+        id: CowGun-ddaa4a49-6859-4566-b508-39982edd355d
+        defaultKey: CowGun-ddaa4a49-6859-4566-b508-39982edd355d
+        value: {fileID: 8300000, guid: e689391081cbbe144b685706b48a5c37, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Cow/CowGun.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: shortCow-sound-20faa948-b75e-4c81-9c08-a4c8243ae44c
+      value:
+        key: shortCow-sound
+        id: shortCow-sound-20faa948-b75e-4c81-9c08-a4c8243ae44c
+        defaultKey: shortCow-sound-20faa948-b75e-4c81-9c08-a4c8243ae44c
+        value: {fileID: 8300000, guid: aad19c11dc11e7c429626fa92d58f08f, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Cow/shortCow-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: shortGoat-sound-1ba9e04b-4cbc-4a05-812a-5c9c4d1f5d5a
+      value:
+        key: shortGoat-sound
+        id: shortGoat-sound-1ba9e04b-4cbc-4a05-812a-5c9c4d1f5d5a
+        defaultKey: shortGoat-sound-1ba9e04b-4cbc-4a05-812a-5c9c4d1f5d5a
+        value: {fileID: 8300000, guid: 5fee213b7f8315e43bfe9ee6a7bf3675, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Goat/shortGoat-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: shortPig-sound-b1931792-b050-4752-9813-c5822c84fac8
+      value:
+        key: shortPig-sound
+        id: shortPig-sound-b1931792-b050-4752-9813-c5822c84fac8
+        defaultKey: shortPig-sound-b1931792-b050-4752-9813-c5822c84fac8
+        value: {fileID: 8300000, guid: 96ff6c14209bdd041b6eadd4f794fee4, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Pig/shortPig-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: shortSheep-sound-9f7a0de3-ec3f-4d5b-957c-e3f14856f777
+      value:
+        key: shortSheep-sound
+        id: shortSheep-sound-9f7a0de3-ec3f-4d5b-957c-e3f14856f777
+        defaultKey: shortSheep-sound-9f7a0de3-ec3f-4d5b-957c-e3f14856f777
+        value: {fileID: 8300000, guid: 54663e4e08a179c4d9f4d8f3d131cd97, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/Sheep/shortSheep-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: SmallFootsteps-sound-60c4c191-8e90-46a4-895f-4a7ce1c6de89
+      value:
+        key: SmallFootsteps-sound
+        id: SmallFootsteps-sound-60c4c191-8e90-46a4-895f-4a7ce1c6de89
+        defaultKey: SmallFootsteps-sound-60c4c191-8e90-46a4-895f-4a7ce1c6de89
+        value: {fileID: 8300000, guid: b623210da8d20bc4a8beabd9a2e9cc6e, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/SmallFootsteps-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: bite-1dc202c0-937b-4c8d-adf2-c48e44348332
+      value:
+        key: bite
+        id: bite-1dc202c0-937b-4c8d-adf2-c48e44348332
+        defaultKey: bite-1dc202c0-937b-4c8d-adf2-c48e44348332
+        value: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/WOlf/bite.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: drowling-e7f832d9-b5f1-4f38-95bc-c8029f70ba73
+      value:
+        key: drowling
+        id: drowling-e7f832d9-b5f1-4f38-95bc-c8029f70ba73
+        defaultKey: drowling-e7f832d9-b5f1-4f38-95bc-c8029f70ba73
+        value: {fileID: 8300000, guid: 870a313bfc5616544aaa7dfb9203f612, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/WOlf/drowling.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: whimper-17525ca6-eb6c-4bc8-b37e-441c63c1c58e
+      value:
+        key: whimper
+        id: whimper-17525ca6-eb6c-4bc8-b37e-441c63c1c58e
+        defaultKey: whimper-17525ca6-eb6c-4bc8-b37e-441c63c1c58e
+        value: {fileID: 8300000, guid: dff890f506ed40e48acf6f9008f8e6a2, type: 3}
+        path: Assets/Resources/Sounds/SFX/Animals/WOlf/Hurt/whimper.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: StructureDamage1-4f2f8456-6a81-4b83-881f-6812a1e56a8a
+      value:
+        key: StructureDamage1
+        id: StructureDamage1-4f2f8456-6a81-4b83-881f-6812a1e56a8a
+        defaultKey: StructureDamage1-4f2f8456-6a81-4b83-881f-6812a1e56a8a
+        value: {fileID: 8300000, guid: 4a542d1584549b24d8a477441b9bbf3d, type: 3}
+        path: Assets/Resources/Sounds/SFX/Damage/StructureDamage1.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: StructureDamage2-87507b22-fa83-4b46-9a9c-5857e4bcb647
+      value:
+        key: StructureDamage2
+        id: StructureDamage2-87507b22-fa83-4b46-9a9c-5857e4bcb647
+        defaultKey: StructureDamage2-87507b22-fa83-4b46-9a9c-5857e4bcb647
+        value: {fileID: 8300000, guid: 87a84578a2a3f7f40bf53bb1569c0483, type: 3}
+        path: Assets/Resources/Sounds/SFX/Damage/StructureDamage2.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: barrackBackground-sound-0ce47fd0-c684-431f-b09c-1c5c4d7dbb29
+      value:
+        key: barrackBackground-sound
+        id: barrackBackground-sound-0ce47fd0-c684-431f-b09c-1c5c4d7dbb29
+        defaultKey: barrackBackground-sound-0ce47fd0-c684-431f-b09c-1c5c4d7dbb29
+        value: {fileID: 8300000, guid: 634abd56cc9ca2b42b56d41b90790c46, type: 3}
+        path: Assets/Resources/Sounds/SFX/Structures/Baracks/barrackBackground-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: flag-sound-4cd26c6a-62d5-443f-8725-e39209cf5265
+      value:
+        key: flag-sound
+        id: flag-sound-4cd26c6a-62d5-443f-8725-e39209cf5265
+        defaultKey: flag-sound-4cd26c6a-62d5-443f-8725-e39209cf5265
+        value: {fileID: 8300000, guid: cf09bf3de20e9a042b92691f9521a0bf, type: 3}
+        path: Assets/Resources/Sounds/SFX/Structures/Baracks/flag-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: doubleProduction-sound-00ff4d49-10b4-4f61-8bbd-f2a791e678a6
+      value:
+        key: doubleProduction-sound
+        id: doubleProduction-sound-00ff4d49-10b4-4f61-8bbd-f2a791e678a6
+        defaultKey: doubleProduction-sound-00ff4d49-10b4-4f61-8bbd-f2a791e678a6
+        value: {fileID: 8300000, guid: 8725a4ff5984f3647ab9f3d03d55b829, type: 3}
+        path: Assets/Resources/Sounds/SFX/Structures/Crops/doubleProduction-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: harvest_sound-bfc40345-b216-4c5b-b2e5-ddc24b21e230
+      value:
+        key: harvest_sound
+        id: harvest_sound-bfc40345-b216-4c5b-b2e5-ddc24b21e230
+        defaultKey: harvest_sound-bfc40345-b216-4c5b-b2e5-ddc24b21e230
+        value: {fileID: 8300000, guid: 5d36cfd24745d054fb85e7b0afaf3bb9, type: 3}
+        path: Assets/Resources/Sounds/SFX/Structures/Crops/harvest_sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: plant-sound-ea143e92-bd61-41dd-bbb2-94e8178554c4
+      value:
+        key: plant-sound
+        id: plant-sound-ea143e92-bd61-41dd-bbb2-94e8178554c4
+        defaultKey: plant-sound-ea143e92-bd61-41dd-bbb2-94e8178554c4
+        value: {fileID: 8300000, guid: 85ae2d8282eb65b4b9078271d506e94b, type: 3}
+        path: Assets/Resources/Sounds/SFX/Structures/Crops/plant-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: flag-sound-501bac41-e0d8-459d-adcf-626fbb91636e
+      value:
+        key: flag-sound
+        id: flag-sound-501bac41-e0d8-459d-adcf-626fbb91636e
+        defaultKey: flag-sound-501bac41-e0d8-459d-adcf-626fbb91636e
+        value: {fileID: 8300000, guid: 9a4f9d5ec684b6244a78000bc665c8ea, type: 3}
+        path: Assets/Resources/Sounds/SFX/Structures/Flag/flag-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: open-sound-8305aa88-1741-4af1-838c-aace72e3f29a
+      value:
+        key: open-sound
+        id: open-sound-8305aa88-1741-4af1-838c-aace72e3f29a
+        defaultKey: open-sound-8305aa88-1741-4af1-838c-aace72e3f29a
+        value: {fileID: 8300000, guid: b6853ee267067d346ab1156bb9e35760, type: 3}
+        path: Assets/Resources/Sounds/SFX/Structures/Silo/open-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: clock-sound-a0267c62-3d50-4470-b8de-10351a85ace4
+      value:
+        key: clock-sound
+        id: clock-sound-a0267c62-3d50-4470-b8de-10351a85ace4
+        defaultKey: clock-sound-a0267c62-3d50-4470-b8de-10351a85ace4
+        value: {fileID: 8300000, guid: 450136b51a30e2e4c8621e440d678121, type: 3}
+        path: Assets/Resources/Sounds/SFX/Time sounds/clock-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: rooster-sound-7c65a5f6-b021-470b-8b22-e46d9fc2ea9a
+      value:
+        key: rooster-sound
+        id: rooster-sound-7c65a5f6-b021-470b-8b22-e46d9fc2ea9a
+        defaultKey: rooster-sound-7c65a5f6-b021-470b-8b22-e46d9fc2ea9a
+        value: {fileID: 8300000, guid: 7fb012b1a70c7824884603d17cc2e78f, type: 3}
+        path: Assets/Resources/Sounds/SFX/Time sounds/rooster-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: yearPassed-sound-0b7fa983-49cb-4d60-9d7c-1b449edd5b4b
+      value:
+        key: yearPassed-sound
+        id: yearPassed-sound-0b7fa983-49cb-4d60-9d7c-1b449edd5b4b
+        defaultKey: yearPassed-sound-0b7fa983-49cb-4d60-9d7c-1b449edd5b4b
+        value: {fileID: 8300000, guid: 90684f4a364076e45972eea58b067924, type: 3}
+        path: Assets/Resources/Sounds/SFX/Time sounds/yearPassed-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: talking_1-f1b59979-5f00-4907-b726-d7420d037cb7
+      value:
+        key: talking_1
+        id: talking_1-f1b59979-5f00-4907-b726-d7420d037cb7
+        defaultKey: talking_1-f1b59979-5f00-4907-b726-d7420d037cb7
+        value: {fileID: 8300000, guid: 4eb01adda5fe46040b992efcbda5182a, type: 3}
+        path: Assets/Resources/Sounds/SFX/Tutorial/talking_1.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: talking_2-b354e853-ed91-4a32-b905-204b0c7d065e
+      value:
+        key: talking_2
+        id: talking_2-b354e853-ed91-4a32-b905-204b0c7d065e
+        defaultKey: talking_2-b354e853-ed91-4a32-b905-204b0c7d065e
+        value: {fileID: 8300000, guid: 73c15ed4448be3a4799b62982b2e5f21, type: 3}
+        path: Assets/Resources/Sounds/SFX/Tutorial/talking_2.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: close-ui-sound-6395ed75-493a-4477-9754-a21eb9466c5d
+      value:
+        key: close-ui-sound
+        id: close-ui-sound-6395ed75-493a-4477-9754-a21eb9466c5d
+        defaultKey: close-ui-sound-6395ed75-493a-4477-9754-a21eb9466c5d
+        value: {fileID: 8300000, guid: 21a85df303b094b428497b6b4a5ca424, type: 3}
+        path: Assets/Resources/Sounds/SFX/UI/close-ui-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: error-sound-5ae7f911-e78b-48fa-9176-b2e85cc6a62b
+      value:
+        key: error-sound
+        id: error-sound-5ae7f911-e78b-48fa-9176-b2e85cc6a62b
+        defaultKey: error-sound-5ae7f911-e78b-48fa-9176-b2e85cc6a62b
+        value: {fileID: 8300000, guid: efec1d0cfaca32c4eb555bc598644eab, type: 3}
+        path: Assets/Resources/Sounds/SFX/UI/error-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: moneySpend-sound-d5960052-bd4a-46fe-8947-49ab470af755
+      value:
+        key: moneySpend-sound
+        id: moneySpend-sound-d5960052-bd4a-46fe-8947-49ab470af755
+        defaultKey: moneySpend-sound-d5960052-bd4a-46fe-8947-49ab470af755
+        value: {fileID: 8300000, guid: 3af9ad9d5c321f64785d879b05a2fe9b, type: 3}
+        path: Assets/Resources/Sounds/SFX/UI/moneySpend-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: pause-df6d0c57-5dda-439b-addc-64ba006d2869
+      value:
+        key: pause
+        id: pause-df6d0c57-5dda-439b-addc-64ba006d2869
+        defaultKey: pause-df6d0c57-5dda-439b-addc-64ba006d2869
+        value: {fileID: 8300000, guid: 3dc122d9ccf75f84685b99287a816505, type: 3}
+        path: Assets/Resources/Sounds/SFX/UI/pause.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: SelectingItem-sound-426162ef-330d-419d-9bfb-de900d7f8d21
+      value:
+        key: SelectingItem-sound
+        id: SelectingItem-sound-426162ef-330d-419d-9bfb-de900d7f8d21
+        defaultKey: SelectingItem-sound-426162ef-330d-419d-9bfb-de900d7f8d21
+        value: {fileID: 8300000, guid: c9c9d89b94e3f4546a87b96547f22e53, type: 3}
+        path: Assets/Resources/Sounds/SFX/UI/Shop/SelectingItem-sound.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: ui-pop-up-d2d7906f-89db-4c6a-b609-985cc3c3a2f4
+      value:
+        key: ui-pop-up
+        id: ui-pop-up-d2d7906f-89db-4c6a-b609-985cc3c3a2f4
+        defaultKey: ui-pop-up-d2d7906f-89db-4c6a-b609-985cc3c3a2f4
+        value: {fileID: 8300000, guid: e3c5022150d38444dac29489895c83bc, type: 3}
+        path: Assets/Resources/Sounds/SFX/UI/ui-pop-up.wav
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+    - key: rain-inside-a-car-113602-f2761e63-9265-4afd-a481-ae28184ab69a
+      value:
+        key: rain-inside-a-car-113602
+        id: rain-inside-a-car-113602-f2761e63-9265-4afd-a481-ae28184ab69a
+        defaultKey: rain-inside-a-car-113602-f2761e63-9265-4afd-a481-ae28184ab69a
+        value: {fileID: 8300000, guid: 162b58e3eb3ce20409a5def0eccf6267, type: 3}
+        path: Assets/Resources/Sounds/Weather/rain-inside-a-car-113602.mp3
+        dynamicStartTime:
+          time: 0
+          threshold: 0
+          option: 1
+          tabPos: 1
+        defaultSettings:
+          volume: 1
+          pitch: 1
+        showDynamicTime: 0
+        metaData:
+          category: 
+          tags: []
+  groups:
+    list: []
+  mixers:
+    list: []
+  categories: []
+  tags: []

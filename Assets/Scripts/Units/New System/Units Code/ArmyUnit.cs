@@ -42,23 +42,23 @@ public class ArmyUnit : BaseUnit
     private CanvasGroup healthBarCanvasGroup;
 
 
-        protected override void Awake()
+    protected override void Awake()
     {
         base.Awake();
         currHealth = data.Health;
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-    
+
         roamRadius = data.RoamRadius;
         roamInterval = data.RoamInterval;
-    
+
         // Apply movement values from data
         agent.speed = data.MovementSpeed;
         agent.acceleration = data.Acceleration;
         agent.angularSpeed = data.AngularSpeed;
         agent.stoppingDistance = data.StoppingDistance;
-    
+
         PlayBackgroundSound(data.backgroundSound);
-    
+
         // Instantiate health bar but keep hidden
         if (healthBarPrefab != null && healthBarInstance == null)
         {
@@ -73,7 +73,7 @@ public class ArmyUnit : BaseUnit
         }
     }
 
-        private void UpdateHealthBar()
+    private void UpdateHealthBar()
     {
         if (healthBarSlider != null)
         {
@@ -81,7 +81,7 @@ public class ArmyUnit : BaseUnit
             healthBarSlider.value = pct;
             if (healthBarText != null)
                 healthBarText.text = $"{currHealth} / {data.Health}";
-    
+
             bool showBar = currHealth < data.Health && currHealth > 0;
             if (healthBarCanvasGroup != null)
             {
@@ -91,7 +91,7 @@ public class ArmyUnit : BaseUnit
             }
             if (healthBarInstance != null)
                 healthBarInstance.SetActive(showBar);
-                
+
         }
     }
 
@@ -168,7 +168,7 @@ public class ArmyUnit : BaseUnit
         }
 
         lastAttackTime = Time.time;
-        PlaySound(data.AttackSound);
+        PlaySound(data.AttackSound, 'a');
 
         ApplyRecoil();
         isReturningAfterAttack = true;
@@ -234,18 +234,18 @@ public class ArmyUnit : BaseUnit
         return GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
     }
 
-       public void TakeDamage(int damage)
+    public void TakeDamage(int damage)
     {
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
-            PlaySound(data.DeathSound);
+            PlaySound(data.DeathSound, 'd');
             currHealth = 0;
             UpdateHealthBar();
             Die();
         }
         else
         {
-            PlaySound(data.HurtSound);
+            PlaySound(data.HurtSound, 'h');
             currHealth -= damage;
             UpdateHealthBar();
         }

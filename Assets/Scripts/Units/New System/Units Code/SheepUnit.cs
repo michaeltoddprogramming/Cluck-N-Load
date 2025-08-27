@@ -53,17 +53,17 @@ public class SheepUnit : ArmyUnit
 
         if (count >= 1 && lastBeepStage < 1)
         {
-            PlaySound(beep1);
+            PlaySound(beep1, 's');
             lastBeepStage = 1;
         }
         else if (count >= 2 && lastBeepStage < 2)
         {
-            PlaySound(beep2);
+            PlaySound(beep2, 's');
             lastBeepStage = 2;
         }
         else if (count >= 3 && lastBeepStage < 3)
         {
-            PlaySound(beep3);
+            PlaySound(beep3, 's');
             lastBeepStage = 3;
         }
     }
@@ -82,7 +82,7 @@ public class SheepUnit : ArmyUnit
 
     private void explode(List<EnemyUnit> enemies)
     {
-        PlaySound(data1.AttackSound);
+        PlaySound(data1.AttackSound, 'a');
         // CameraShake.Instance.TriggerShakeAtPosition(transform.position, 15f, 0.5f, 0.3f);
         // CameraShake.Instance.TriggerShake(0.3f, 0.5f);
         // CameraShake.Instance.Shake(1.5f, 0.4f);

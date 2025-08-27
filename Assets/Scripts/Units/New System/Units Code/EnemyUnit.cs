@@ -33,10 +33,12 @@ public class EnemyUnit : BaseUnit
     public bool retreating = false;
     private Vector3 destination;
 
+
     //jumping
     [SerializeField] private float jumpCheckDistance = 1.5f;
     [SerializeField] private float jumpHeight = 20f;
     [SerializeField] private float jumpDuration = 0.5f;
+    // [SerializeField] private bool dead = false;
     private MonoBehaviour mainTarget; // the building
     // private MonoBehaviour obstacleTarget; // wall temporarily
     private MonoBehaviour obstacleTarget; // wall temporarily
@@ -90,6 +92,14 @@ public class EnemyUnit : BaseUnit
 
     private void Update()
     {
+        // if (dead == true)
+        // {
+        //     Debug.Log("I have sadly died |~|~|~||~|~|~||~||~|||~|~||~|~|~|~|||~|~|~|~||~|~|~|~|~|siuhohuifowrihufrehiuoerihuhewriuiweisufrghsireufhgiuershtgiuhrestuig");
+        //     PlaySound(data.DeathSound, 'd');
+        //     currHealth = 0;
+        //     UpdateHealthBar();
+        //     Die();
+        // }
         if (agent.velocity.sqrMagnitude > 0.1f)
         {
             // Moving → set Speed to 1
@@ -979,7 +989,8 @@ public class EnemyUnit : BaseUnit
     {
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
-            PlaySound(data.DeathSound);
+            Debug.Log("I have sadly died |~|~|~||~|~|~||~||~|||~|~||~|~|~|~|||~|~|~|~||~|~|~|~|~|siuhohuifowrihufrehiuoerihuhewriuiweisufrghsireufhgiuershtgiuhrestuig");
+            PlaySound(data.DeathSound, 'd');
             currHealth = 0;
             UpdateHealthBar();
             Die();
@@ -987,7 +998,7 @@ public class EnemyUnit : BaseUnit
         else
         {
             Debug.Log("Taking damage: " + damage + "----------------------------------------------------------------------------------");
-            PlaySound(data.HurtSound);
+            PlaySound(data.HurtSound, 'h');
             currHealth -= damage;
             UpdateHealthBar();
         }
@@ -1019,14 +1030,14 @@ public class EnemyUnit : BaseUnit
         {
             case ArmyUnit u:
                 u.TakeDamage(data.AttackDamage);
-                PlaySound(data.AttackSound);
+                PlaySound(data.AttackSound, 'a');
                 // DamageAnimation anim = u.GetComponent<DamageAnimation>();
                 // if (anim != null)
                 //     anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case CropStructure u:
-                PlaySound(data.AttackSound);
+                PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 DamageAnimation anim = u.GetComponent<DamageAnimation>();
                 if (anim != null)
@@ -1034,7 +1045,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case SiloStructure u:
-                PlaySound(data.AttackSound);
+                PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 anim = u.GetComponent<DamageAnimation>();
                 if (anim != null)
@@ -1043,13 +1054,13 @@ public class EnemyUnit : BaseUnit
                 break;
             case DefenseStructure u:
                 u.TakeDamage(data.AttackDamage);
-                PlaySound(data.AttackSound);
+                PlaySound(data.AttackSound, 'a');
                 anim = u.GetComponent<DamageAnimation>();
                 if (anim != null)
                     anim.PlayDamageHitEffect();
                 break;
             case FarmHouseStructure u:
-                PlaySound(data.AttackSound);
+                PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 anim = u.GetComponent<DamageAnimation>();
                 if (anim != null)
@@ -1057,7 +1068,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case BarracksStructure u:
-                PlaySound(data.AttackSound);
+                PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 anim = u.GetComponent<DamageAnimation>();
                 if (anim != null)
@@ -1065,7 +1076,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case AnimalStructure u:
-                PlaySound(data.AttackSound);
+                PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 anim = u.GetComponent<DamageAnimation>();
                 if (anim != null)

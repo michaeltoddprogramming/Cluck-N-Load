@@ -6,24 +6,37 @@ public abstract class BaseUnit : MonoBehaviour
     [SerializeField] public AudioSource backgroundAudioSource;
     [SerializeField] private Animator animator;
 
+    private SoundLimiter limiter;
+
     // protected int currentHealth;
 
     protected virtual void Awake()
     {
-        animator = GetComponent<Animator>();       
+        animator = GetComponent<Animator>();
+        limiter = GetComponent<SoundLimiter>();
     }
 
-    protected void PlaySound(AudioClip clip)
+    protected void PlaySound(AudioClip clip, char type)
     {
         if (clip != null && soundEffectSource != null)
-            soundEffectSource.PlayOneShot(clip);
+        {
+            if (type == 'a') // attack
+                limiter.PlayAttack(clip);
+            else if (type == 'h') // hurt
+                limiter.PlayHurt(clip);
+            else if (type == 'd') // death
+                limiter.PlayDeath(clip);
+            // soundEffectSource.PlayOneShot(clip);
+            else if (type == 's') // simple sound, no limit
+                soundEffectSource.PlayOneShot(clip);
+        }
     }
     protected void PlayBackgroundSound(AudioClip clip)
     {
         if (clip != null && backgroundAudioSource != null)
             backgroundAudioSource.clip = clip;
-            backgroundAudioSource.loop = true;
-            backgroundAudioSource.Play();
+        backgroundAudioSource.loop = true;
+        backgroundAudioSource.Play();
     }
 
     protected virtual void Die()

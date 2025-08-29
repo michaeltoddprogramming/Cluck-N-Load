@@ -122,7 +122,7 @@ MonoBehaviour:
   healthBarPrefab: {fileID: 4122911237217708408, guid: 23bbe51596d340c4387e655f58390f62, type: 3}
   targetAnimalType: Chicken
   armyAnimalPrefabs:
-  - {fileID: 2168163027447337882, guid: d007a9f0ea53a9345818e2da41f194b4, type: 3}
+  - {fileID: 5973305448664574062, guid: 2ae7546f9858ccc4a9d96f2137695a01, type: 3}
   flagPrefab: {fileID: 7043309248494615266, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5

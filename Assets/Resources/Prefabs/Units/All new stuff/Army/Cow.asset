@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Cow
   m_EditorClassIdentifier: 
   UnitName: Cow
-  Prefab: {fileID: 8917997704576204703, guid: 8bb1ae4f766bcdc4783fc72ebe65fc6b, type: 3}
+  Prefab: {fileID: 8917997704576204703, guid: 678a4490a28719f4b89021704d2319e7, type: 3}
   MovementSpeed: 2.5
   Type: 4
   Health: 300

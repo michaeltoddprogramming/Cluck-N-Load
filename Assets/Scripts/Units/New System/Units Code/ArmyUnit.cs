@@ -41,6 +41,8 @@ public class ArmyUnit : BaseUnit
     private TextMeshProUGUI healthBarText;
     private CanvasGroup healthBarCanvasGroup;
 
+    public bool shoot = false;
+
 
     protected override void Awake()
     {
@@ -97,19 +99,32 @@ public class ArmyUnit : BaseUnit
 
     public void Update()
     {
-        if (Recoil)
+        if (currentTarget != null)
         {
-            ApplyRecoil();
-            Recoil = false;
+            FaceTarget();
         }
+        // if (shoot)
+        // {
+        // playVFX();
+        // ShootingVFX shootingVFX = GetComponent<ShootingVFX>();
+        // Vector3 here = new Vector3(0f, 3f, 0f);
+        // shootingVFX.Shoot(here);
+        // shoot = false;
+        // }
+        // if (Recoil)
+        // {
+        //     ApplyRecoil();
+        //     Recoil = false;
+        // }
         // Debug.Log($"{agent.velocity.sqrMagnitude} -------------------------------------------------------------------------------------------------------------------------");
         if (agent.velocity.sqrMagnitude > 0.1f)
         {
-            SetBool("isWalking", true);
+            SetFloat("speed", 1f);
         }
         else
         {
-            SetBool("isWalking", false);
+            SetFloat("speed", 0f);
+            // SetBool("isWalking", false);
         }
 
 
@@ -135,7 +150,7 @@ public class ArmyUnit : BaseUnit
 
     public virtual void Attack()
     {
-        Debug.Log("it attacked 98475923459234985723498475982347598723498057293875982347598237459807234985723908475");
+        // Debug.Log("it attacked 98475923459234985723498475982347598723498057293875982347598237459807234985723908475");
         if (isReturningAfterAttack)
         {
             return;
@@ -168,10 +183,20 @@ public class ArmyUnit : BaseUnit
         }
 
         lastAttackTime = Time.time;
+        if (data.AttackSound != null)
+        {
+            Debug.Log("here is the attacj sounf: " + data.AttackSound);
+
+        }
+
+        SetTrigger("Attack");
+
         PlaySound(data.AttackSound, 'a');
 
-        ApplyRecoil();
-        isReturningAfterAttack = true;
+        playVFX();
+
+        // ApplyRecoil();
+        // isReturningAfterAttack = true;
 
         currentTarget.TakeDamage(data.AttackDamage);
     }
@@ -193,24 +218,24 @@ public class ArmyUnit : BaseUnit
     // }
 
 
-    private void ApplyRecoil()
-    {
-        Rigidbody rb = GetComponent<Rigidbody>();
+    // private void ApplyRecoil()
+    // {
+    //     Rigidbody rb = GetComponent<Rigidbody>();
 
-        if (rb != null)
-        {
-            Vector3 recoilDirection = -transform.forward;
+    //     if (rb != null)
+    //     {
+    //         Vector3 recoilDirection = -transform.forward;
 
-            agent.enabled = false;
-            rb.isKinematic = false;  // enable physics
-            transform.position += new Vector3(0, 1f, 0);
-            rb.AddForce(recoilDirection * recoilForce, ForceMode.Impulse);
+    //         agent.enabled = false;
+    //         rb.isKinematic = false;  // enable physics
+    //         transform.position += new Vector3(0, 1f, 0);
+    //         rb.AddForce(recoilDirection * recoilForce, ForceMode.Impulse);
 
-            StartCoroutine(ReenableAgentWhenStopped(rb));
-            if (!isReturningToFlag)
-                StartCoroutine(ReturnToFlagAfterRecoil(0.1f));
-        }
-    }
+    //         StartCoroutine(ReenableAgentWhenStopped(rb));
+    //         if (!isReturningToFlag)
+    //             StartCoroutine(ReturnToFlagAfterRecoil(0.1f));
+    //     }
+    // }
 
     private IEnumerator ReenableAgentWhenStopped(Rigidbody rb)
     {
@@ -322,11 +347,11 @@ public class ArmyUnit : BaseUnit
 
         if (distance < agent.stoppingDistance + 0.1f)
         {
-            Debug.Log("16531278634568124598761263458762347895628371465 87231 59723459721349750 2309745 609273456 50972365 0978236 5097235490 762390745 5629307465 09723465 907");
-            if (isReturningAfterAttack)
-            {
-                isReturningAfterAttack = false;
-            }
+            // Debug.Log("16531278634568124598761263458762347895628371465 87231 59723459721349750 2309745 609273456 50972365 0978236 5097235490 762390745 5629307465 09723465 907");
+            // if (isReturningAfterAttack)
+            // {
+            //     isReturningAfterAttack = false;
+            // }
 
             agent.ResetPath();
             isMoving = false;
@@ -430,6 +455,69 @@ public class ArmyUnit : BaseUnit
             roamingRoutine = null;
             isRoaming = false;
             agent.ResetPath();
+        }
+    }
+
+    private void FaceTarget()
+    {
+        if (currentTarget == null) return;
+
+        // Direction to the target (ignore Y if you don't want it tilting up/down)
+        Vector3 direction = currentTarget.transform.position - transform.position;
+        direction.y = 0f; // Keep only horizontal rotation
+
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f); // Smooth rotation
+        }
+    }
+
+    public Vector3 GetTargetCenter(EnemyUnit enemy)
+    {
+        // Try to get the collider
+        Collider col = enemy.GetComponent<Collider>();
+        if (col != null)
+        {
+            return col.bounds.center; // Center of the bounding box (height + width + depth)
+        }
+
+        // Fallback: just aim 1 unit above base
+        return enemy.transform.position + Vector3.up * 1f;
+    }
+
+    private void playVFX()
+    {
+        if (data.Type == ArmyType.Chicken)
+        {
+            ShootingVFX shootingVFX = GetComponent<ShootingVFX>();
+
+            Vector3 targetPosition = GetTargetCenter(currentTarget);
+
+            shootingVFX.Shoot(targetPosition);
+            // return;
+        }
+        else if (data.Type == ArmyType.Cow)
+        {
+            CowShootingVFX cowShootingVFX = GetComponent<CowShootingVFX>();
+
+            Vector3 targetPosition = GetTargetCenter(currentTarget);
+
+            cowShootingVFX.ShootCow(targetPosition);
+            // return;
+        }
+        else if (data.Type == ArmyType.Goat)
+        {
+            GoatShootingVFX goatShootingVFX = GetComponent<GoatShootingVFX>();
+
+            Vector3 targetPosition = GetTargetCenter(currentTarget);
+
+            goatShootingVFX.ShootSniper(targetPosition);
+            // return;
+        }
+        else
+        {
+
         }
     }
 }

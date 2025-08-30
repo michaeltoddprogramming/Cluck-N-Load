@@ -70,7 +70,7 @@ public class SheepUnit : ArmyUnit
 
     public override void Attack()
     {
-        Debug.Log("private sheep sodiruhoiuwertiuwehiughwreiughiuerthugheruhgiuerhtgiouerhiougheriouthgiuerhgiuerhtuig");
+        // Debug.Log("private sheep sodiruhoiuwertiuwehiughwreiughiuerthugheruhgiuerhtgiouerhiougheriouthgiuerhgiuerhtuig");
         List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRange(transform.position, explosionRadius);
 
         if (enemies.Count >= minEnemiesToExplode && !hasExploded)
@@ -92,7 +92,7 @@ public class SheepUnit : ArmyUnit
         CameraShake.Instance.ShakeAtPosition(transform.position);
         foreach (var enemy in enemies)
         {
-            Debug.Log("I did damageqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
+            // Debug.Log("I did damageqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
             enemy.TakeDamage(explosionDamage);
         }
 

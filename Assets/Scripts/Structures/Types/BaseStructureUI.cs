@@ -6,6 +6,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 {
     [SerializeField] protected TextMeshProUGUI structureNameText;
     [SerializeField] protected TextMeshProUGUI healthText;
+    [SerializeField] protected TextMeshProUGUI description;
     [SerializeField] protected Button closeButton;
     [SerializeField] protected Button moveButton;
 
@@ -19,7 +20,9 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
         if (structureNameText != null) structureNameText.text = structure.GetStructureName();
         UpdateHealthDisplay();
-        
+
+        if (description != null) description.text = structure.GetDescription();
+
         if (structure != null)
             structure.OnHealthChanged += UpdateHealthDisplay;
 
@@ -45,6 +48,12 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
         if (structure != null && healthText != null)
             healthText.text = $"{structure.GetCurrentHealth()}/{structure.GetMaxHealth()}";
     }
+
+    // protected virtual void DisplayDescription()
+    // {
+    //     if (structure != null && description != null)
+    //         description.text = $"{structure.GetDescription()}";
+    // }
 
     protected virtual void OnDestroy()
     {

@@ -106,7 +106,7 @@ public class Structure : MonoBehaviour
         {
             selectionIndicator.SetActive(false);
         }
-        
+
         OnHealthChanged += UpdateHealthBar;
     }
 
@@ -146,67 +146,67 @@ public class Structure : MonoBehaviour
             AddColliderToStructure();
         }
 
-            // Instantiate health bar if prefab is assigned
-    if (healthBarPrefab != null && healthBarInstance == null)
-    {
-        healthBarInstance = Instantiate(healthBarPrefab, transform);
-
-        // Position the health bar above the structure
-        var rect = healthBarInstance.GetComponent<RectTransform>();
-        if (rect != null)
+        // Instantiate health bar if prefab is assigned
+        if (healthBarPrefab != null && healthBarInstance == null)
         {
-            rect.localPosition = new Vector3(0, 6f, 0); // Adjust Y as needed for your models
-        }
-        healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
-        healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
-        healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
-        healthBarInstance.SetActive(false); // Start hidden
-    }
-    }
+            healthBarInstance = Instantiate(healthBarPrefab, transform);
 
-   private void UpdateHealthBar()
-{
-    if (healthBarSlider != null)
-    {
-        Debug.Log($"Updating health bar for {gameObject.name}: {GetCurrentHealth()}/{GetMaxHealth()}");
-        float pct = Mathf.Clamp01((float)GetCurrentHealth() / GetMaxHealth());
-        healthBarSlider.value = pct;
-        healthBarSlider.fillRect.GetComponent<Image>().color =
-            pct > 0.6f ? healthyColor : pct > 0.3f ? midColor : dangerColor;
-
-        if (healthBarText != null)
-            healthBarText.text = $"{GetCurrentHealth()} / {GetMaxHealth()}";
-
-        // Only show health bar if not at full health
-        if (healthBarCanvasGroup != null)
-        {
-            bool showBar = GetCurrentHealth() < GetMaxHealth();
-            healthBarCanvasGroup.alpha = showBar ? 1f : 0f;
-            healthBarCanvasGroup.interactable = showBar;
-            healthBarCanvasGroup.blocksRaycasts = showBar;
-            healthBarInstance.SetActive(showBar);
-        }
-
-        // Animate feedback if showing
-        if (healthBarCanvasGroup != null && GetCurrentHealth() < GetMaxHealth())
-        {
-            LeanTween.cancel(healthBarInstance);
-            LeanTween.alphaCanvas(healthBarCanvasGroup, 0.7f, 0.3f).setLoopPingPong(1);
-            if (pct < 0.3f)
+            // Position the health bar above the structure
+            var rect = healthBarInstance.GetComponent<RectTransform>();
+            if (rect != null)
             {
-                LeanTween.moveLocalX(healthBarInstance, healthBarInstance.transform.localPosition.x + 0.1f, 0.1f)
-                    .setLoopPingPong(2);
+                rect.localPosition = new Vector3(0, 6f, 0); // Adjust Y as needed for your models
             }
+            healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
+            healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
+            healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
+            healthBarInstance.SetActive(false); // Start hidden
         }
+    }
 
-        if (healthBarInstance != null)
-            Debug.Log($"Health bar instance active: {healthBarInstance.activeSelf}");
-    }
-    else
+    private void UpdateHealthBar()
     {
-        Debug.LogWarning($"HealthBarSlider is null for {gameObject.name}");
+        if (healthBarSlider != null)
+        {
+            Debug.Log($"Updating health bar for {gameObject.name}: {GetCurrentHealth()}/{GetMaxHealth()}");
+            float pct = Mathf.Clamp01((float)GetCurrentHealth() / GetMaxHealth());
+            healthBarSlider.value = pct;
+            healthBarSlider.fillRect.GetComponent<Image>().color =
+                pct > 0.6f ? healthyColor : pct > 0.3f ? midColor : dangerColor;
+
+            if (healthBarText != null)
+                healthBarText.text = $"{GetCurrentHealth()} / {GetMaxHealth()}";
+
+            // Only show health bar if not at full health
+            if (healthBarCanvasGroup != null)
+            {
+                bool showBar = GetCurrentHealth() < GetMaxHealth();
+                healthBarCanvasGroup.alpha = showBar ? 1f : 0f;
+                healthBarCanvasGroup.interactable = showBar;
+                healthBarCanvasGroup.blocksRaycasts = showBar;
+                healthBarInstance.SetActive(showBar);
+            }
+
+            // Animate feedback if showing
+            if (healthBarCanvasGroup != null && GetCurrentHealth() < GetMaxHealth())
+            {
+                LeanTween.cancel(healthBarInstance);
+                LeanTween.alphaCanvas(healthBarCanvasGroup, 0.7f, 0.3f).setLoopPingPong(1);
+                if (pct < 0.3f)
+                {
+                    LeanTween.moveLocalX(healthBarInstance, healthBarInstance.transform.localPosition.x + 0.1f, 0.1f)
+                        .setLoopPingPong(2);
+                }
+            }
+
+            if (healthBarInstance != null)
+                Debug.Log($"Health bar instance active: {healthBarInstance.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning($"HealthBarSlider is null for {gameObject.name}");
+        }
     }
-}
 
     // Optional: If something is calling OnEnable, ensure it doesn't re-register
     private void OnEnable()
@@ -231,12 +231,12 @@ public class Structure : MonoBehaviour
         }
         // Moved UnregisterStructure to Die to avoid delay
 
-         if (healthBarInstance != null)
+        if (healthBarInstance != null)
         {
             Destroy(healthBarInstance);
         }
     }
-    
+
 
     #endregion
 
@@ -517,4 +517,9 @@ public class Structure : MonoBehaviour
     }
 
     #endregion
+
+    public string GetDescription()
+    {
+        return structureData != null ? structureData.description : "No description available.";
+    }
 }

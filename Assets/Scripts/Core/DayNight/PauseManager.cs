@@ -5,35 +5,39 @@ using System.Collections.Generic;
 public class PauseManager : MonoBehaviour
 {
     [SerializeField] private ShopUIManager shopManager;
+    private NightManager nightManager;
+    // private ItemHoverPanel itemHoverPanel;
     private bool isPaused = false;
     // private static bool hasExplainedTimeControls = false;
 
     void Start()
     {
-        
+        nightManager = GetComponent<NightManager>();
+        // itemHoverPanel = GetComponent<ItemHoverPanel>();
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetButtonDown("Pause"))
+        if (Input.GetButtonDown("Pause"))
         {
-            if(isPaused)
+            if (isPaused)
             {
                 playGame();
-                shopManager.enableShop();
+                // shopManager.enableShop();
             }
             else
             {
                 pauseGame();
-                shopManager.disableShop();
-            }        
+                // shopManager.disableShop();
+            }
         }
     }
 
     public void pausedOrPlay()
     {
-        if(isPaused)
+        if (isPaused)
         {
             playGame();
         }
@@ -45,22 +49,31 @@ public class PauseManager : MonoBehaviour
 
     public void pauseGame()
     {
-        if(!isPaused)
+        if (!isPaused)
         {
-            Time.timeScale = 0;
+            nightManager.pauseTime();
+            shopManager.disableShop();
+            // itemHoverPanel.HideImmediate();
+            ItemHoverPanel.Instance.HideImmediate();
             isPaused = true;
-            
         }
     }
 
     public void playGame()
     {
-        if(isPaused)
+
+        if (isPaused)
         {
-            Time.timeScale = 1;
+            nightManager.playTime();
+            nightManager.PlayEnableShop();
             isPaused = false;
-            
         }
+        // if (isPaused)
+        // {
+        //     Time.timeScale = 1;
+        //     isPaused = false;
+
+        // }
     }
 
     // private void TriggerTimeControlsExplained()
@@ -72,4 +85,4 @@ public class PauseManager : MonoBehaviour
     //             TutorialManager.Instance.OnConditionMet(TutorialCondition.TimeControlsExplained);
     //     }
     // }
-    }
+}

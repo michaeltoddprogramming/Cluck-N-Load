@@ -58,11 +58,11 @@ public class SheepUnit : ArmyUnit
         base.Update();
 
 
-        if (doIt)
-        {
-            CameraShake.Instance.ShakeAtPosition(transform.position);
-            doIt = false;
-        }
+        // if (doIt)
+        // {
+        //     CameraShake.Instance.ShakeAtPosition(transform.position);
+        //     doIt = false;
+        // }
 
         List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
 
@@ -74,17 +74,17 @@ public class SheepUnit : ArmyUnit
             lastBeepStage = 0;
         }
 
-        if (count >= 1 && lastBeepStage < 1 && !hasExploded)
+        if (count >= 1 && lastBeepStage < 1)
         {
             PlaySound(beep1, 's');
             lastBeepStage = 1;
         }
-        else if (count >= 2 && lastBeepStage < 2 && !hasExploded)
+        else if (count >= 2 && lastBeepStage < 2)
         {
             PlaySound(beep2, 's');
             lastBeepStage = 2;
         }
-        else if (count >= 3 && lastBeepStage < 3 && !hasExploded)
+        else if (count >= 3 && lastBeepStage < 3)
         {
             PlaySound(beep3, 's');
             lastBeepStage = 3;
@@ -121,5 +121,6 @@ public class SheepUnit : ArmyUnit
 
         // gameObject.SetActive(false);
         hasExploded = true;
+        Die();
     }
 }

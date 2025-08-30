@@ -228,10 +228,16 @@ public class NightManager : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f; // Pauses everything that uses Time.deltaTime           // Add to pause, play, and fast forward button click handlers
+        shopManager.CloseShop();
+        shopButton.interactable = false;
+        shopIcon.color = nightShop;
     }
 
     public void playTime()
     {
+        // shopManager.CloseShop();
+        shopButton.interactable = false;
+        // shopIcon.color = nightShop;
         isPaused = false;
         isFast = false;
         speedUp = 1f;

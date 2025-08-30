@@ -515,6 +515,15 @@ public class ArmyUnit : BaseUnit
             goatShootingVFX.ShootSniper(targetPosition);
             // return;
         }
+        else if (data.Type == ArmyType.Pig)
+        {
+            PigFlameVFX pigFlameVFX = GetComponent<PigFlameVFX>();
+
+            Vector3 targetPosition = GetTargetCenter(currentTarget);
+
+            pigFlameVFX.Shoot(targetPosition);
+            // return;
+        }
         else
         {
 

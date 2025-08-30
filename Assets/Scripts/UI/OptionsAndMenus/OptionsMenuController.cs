@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic; // Required for List<T>
+using System.Collections.Generic;
+using TMPro;
 
 public class OptionsMenuController : MonoBehaviour
 {
@@ -11,11 +12,32 @@ public class OptionsMenuController : MonoBehaviour
 
     [Header("Display")]
     public Toggle fullscreenToggle;
-    public Dropdown resolutionDropdown;
-    public Dropdown qualityDropdown;
+    public TMP_Dropdown resolutionDropdown;
+    public TMP_Dropdown qualityDropdown;
     public Toggle vsyncToggle;
 
+    [SerializeField] private Button applyButton;
+    [SerializeField] private Button cancelButton;
+    [SerializeField] private Button backToMenuButton;
+
     private Resolution[] resolutions;
+
+    private float initialVolume;
+    private bool initialFullscreen;
+    private int initialResolution;
+    private int initialQuality;
+    private bool initialVSync;
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (gameObject.activeSelf)
+                HideMenu();
+            else
+                ShowMenu();
+        }
+    }
 
     private void Awake()
     {
@@ -25,8 +47,8 @@ public class OptionsMenuController : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject); // Persist across scenes
-        gameObject.SetActive(false);   // Hide by default
+        DontDestroyOnLoad(gameObject);
+        gameObject.SetActive(false);  
     }
 
     private void Start()
@@ -45,12 +67,12 @@ public class OptionsMenuController : MonoBehaviour
         {
             resolutions = Screen.resolutions;
             resolutionDropdown.ClearOptions();
-            List<string> options = new List<string>();
+            List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
             int currentResIndex = 0;
             for (int i = 0; i < resolutions.Length; i++)
             {
                 string option = resolutions[i].width + " x " + resolutions[i].height;
-                options.Add(option);
+                options.Add(new TMP_Dropdown.OptionData(option));
                 if (resolutions[i].width == Screen.currentResolution.width &&
                     resolutions[i].height == Screen.currentResolution.height)
                 {
@@ -76,6 +98,52 @@ public class OptionsMenuController : MonoBehaviour
             vsyncToggle.isOn = QualitySettings.vSyncCount > 0;
             vsyncToggle.onValueChanged.AddListener(SetVSync);
         }
+
+        initialVolume = AudioListener.volume;
+        initialFullscreen = Screen.fullScreen;
+        initialResolution = GetCurrentResolutionIndex();
+        initialQuality = QualitySettings.GetQualityLevel();
+        initialVSync = QualitySettings.vSyncCount > 0;
+
+
+        volumeSlider.onValueChanged.AddListener(_ => OnOptionChanged());
+        fullscreenToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        resolutionDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
+        qualityDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
+        vsyncToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+
+
+        if (applyButton != null) applyButton.onClick.AddListener(ApplyChanges);
+        if (cancelButton != null) cancelButton.onClick.AddListener(CancelChanges);
+
+
+        if (backToMenuButton != null)
+        {
+            bool inMainMenu = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenuScene";
+            backToMenuButton.interactable = !inMainMenu;
+        }
+
+        UpdateButtonStates();
+    }
+
+    private void OnEnable()
+    {
+        if (backToMenuButton != null)
+        {
+            bool inMainMenu = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenuScene";
+            backToMenuButton.interactable = !inMainMenu;
+        }
+    }
+
+    private int GetCurrentResolutionIndex()
+    {
+        for (int i = 0; i < resolutions.Length; i++)
+        {
+            if (resolutions[i].width == Screen.currentResolution.width &&
+                resolutions[i].height == Screen.currentResolution.height)
+                return i;
+        }
+        return 0;
     }
 
     public void SetVolume(float value)
@@ -114,5 +182,76 @@ public class OptionsMenuController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    // Add your options logic here (volume, graphics, etc.)
+    private void OnOptionChanged()
+    {
+        bool changed =
+            !Mathf.Approximately(volumeSlider.value, initialVolume) ||
+            fullscreenToggle.isOn != initialFullscreen ||
+            resolutionDropdown.value != initialResolution ||
+            qualityDropdown.value != initialQuality ||
+            vsyncToggle.isOn != initialVSync;
+
+        applyButton.interactable = changed;
+        cancelButton.interactable = changed;
+    }
+
+    private void ApplyChanges()
+    {
+        initialVolume = volumeSlider.value;
+        initialFullscreen = fullscreenToggle.isOn;
+        initialResolution = resolutionDropdown.value;
+        initialQuality = qualityDropdown.value;
+        initialVSync = vsyncToggle.isOn;
+
+        SetVolume(initialVolume);
+        SetFullscreen(initialFullscreen);
+        SetResolution(initialResolution);
+        SetQuality(initialQuality);
+        SetVSync(initialVSync);
+
+        UpdateButtonStates();
+    }
+
+    private void CancelChanges()
+    {
+        volumeSlider.value = initialVolume;
+        fullscreenToggle.isOn = initialFullscreen;
+        resolutionDropdown.value = initialResolution;
+        qualityDropdown.value = initialQuality;
+        vsyncToggle.isOn = initialVSync;
+
+        UpdateButtonStates();
+    }
+
+    private void UpdateButtonStates()
+    {
+        applyButton.interactable = false;
+        cancelButton.interactable = false;
+    }
+    public void OnBackToMenuButtonClicked()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenuScene")
+        {
+            if (SceneTransitionManager.Instance != null)
+            {
+                SceneTransitionManager.Instance.LoadSceneWithLoading("MainMenuScene");
+            }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
+            }
+        }
+        HideMenu();
+        PauseManager pauseManager = FindFirstObjectByType<PauseManager>();
+        if (pauseManager != null)
+            pauseManager.playGame();
+    }
+
+        public void OnCloseButtonClicked()
+    {
+        HideMenu();
+        PauseManager pauseManager = FindFirstObjectByType<PauseManager>();
+        if (pauseManager != null)
+            pauseManager.playGame();
+    }
 }

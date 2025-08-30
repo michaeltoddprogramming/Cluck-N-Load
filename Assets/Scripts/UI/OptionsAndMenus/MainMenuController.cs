@@ -7,10 +7,10 @@ public class MainMenuController : MonoBehaviour
 {
     public Material skyboxMaterial;
     public float rotationSpeed = 10f;
-    public GameObject saveSelectionMenu; // Drag your SaveSelectionMenu here in the Inspector
-    public GameObject optionsMenu; // Drag your OptionsMenu here in the Inspector
-    public AudioSource backgroundMusic; // Assign in Inspector
-    public AudioSource uiAudioSource; // Assign in Inspector
+    public GameObject saveSelectionMenu; 
+    public GameObject optionsMenu; 
+    public AudioSource backgroundMusic; 
+    public AudioSource uiAudioSource;
     public AudioClip hoverSound;
     public AudioClip clickSound;
 
@@ -18,6 +18,7 @@ public class MainMenuController : MonoBehaviour
 
     void Start()
     {
+        CleanupPersistentObjects();
         if (skyboxMaterial == null)
             skyboxMaterial = RenderSettings.skybox;
         StartCoroutine(AnimateSkyboxRotation());
@@ -87,6 +88,30 @@ public class MainMenuController : MonoBehaviour
         if (uiAudioSource != null && clickSound != null)
         {
             uiAudioSource.PlayOneShot(clickSound);
+        }
+    }
+
+    private void CleanupPersistentObjects()
+    {
+        string[] persistentNames = {
+            "OptionsCanvas 1(Clone)",
+            "UIManager",
+            "AudioManager",
+            "GameLoopManager",
+            "GameManager",
+            "MoneyManager",
+            "ShopUIManager",
+            "LeanTween",
+            "Debug Updater"
+        };
+
+        foreach (string objName in persistentNames)
+        {
+            var obj = GameObject.Find(objName);
+            if (obj != null)
+            {
+                Destroy(obj);
+            }
         }
     }
 }

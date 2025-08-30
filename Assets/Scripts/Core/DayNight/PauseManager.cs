@@ -26,11 +26,15 @@ public class PauseManager : MonoBehaviour
             {
                 playGame();
                 // shopManager.enableShop();
+                if (OptionsMenuController.Instance != null)
+                    OptionsMenuController.Instance.HideMenu();
             }
             else
             {
                 pauseGame();
                 // shopManager.disableShop();
+                if (OptionsMenuController.Instance != null)
+                    OptionsMenuController.Instance.ShowMenu();
             }
         }
     }

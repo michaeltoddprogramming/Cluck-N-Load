@@ -187,7 +187,12 @@ public class AnimalStructure : Structure
         }
     }
 
-    public bool CanRecruit(int amount) => animalCount >= amount;
+    public bool CanRecruit(int amount)
+    {
+        Debug.Log("Here is the amoun of animals: " + animalCount + " and max animals: " + maxAnimalCount + " and amount to recruit: " + amount);
+
+        return animalCount >= amount;
+    }
 
     public void RecruitAnimals(int amount)
     {

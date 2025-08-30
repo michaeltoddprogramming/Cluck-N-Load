@@ -216,6 +216,8 @@ public class BarracksStructure : Structure
     {
         if (!CanRecruitWithLogging(amount) || !MoneyManager.Instance.SpendMoney(amount * recruitmentCostPerAnimal)) return;
 
+        UpdateRecruitmentCostByDistance();
+
         targetAnimalStructure.RecruitAnimals(amount);
         for (int i = 0; i < amount; i++)
         {
@@ -285,7 +287,7 @@ public class BarracksStructure : Structure
             }
         }
         OnArmyChanged?.Invoke();
-        UpdateRecruitmentCostByDistance();
+        // UpdateRecruitmentCostByDistance();
         playRecruitSound();
         if (armyAnimals.Count >= 1) TutorialManager.Instance?.Trigger(TutorialTrigger.RecruitedFirstSoldiers);
     }

@@ -124,17 +124,17 @@ public class AnimalStructureUI : BaseStructureUI
             else if (isProducing)
             {
                 statusText.text = "Producing...";
-                statusText.color = Color.yellow;
+                statusText.color = Color.white;
             }
             else if (animalCount <= 0)
             {
                 statusText.text = "No animals!";
-                statusText.color = Color.red;
+                statusText.color = Color.yellow;
             }
             else if (!nightManager.IsDay)
             {
                 statusText.text = "Cannot feed at night";
-                statusText.color = Color.red;
+                statusText.color = Color.yellow;
             }
             else
             {
@@ -155,7 +155,7 @@ public class AnimalStructureUI : BaseStructureUI
         if (statusText != null)
         {
             statusText.text = "Not an animal structure";
-            statusText.color = Color.red;
+            statusText.color = Color.yellow;
         }
     }
 

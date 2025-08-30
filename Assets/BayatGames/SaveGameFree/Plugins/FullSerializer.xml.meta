@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 78f024bdc553e72449bd95735fc74712
+timeCreated: 1500212153
+licenseType: Store
+TextScriptImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 81519
+  packageName: Save Game Free - Gold Update
+  packageVersion: 2.4.0
+  assetPath: Assets/BayatGames/SaveGameFree/Plugins/FullSerializer.xml
+  uploadId: 490783

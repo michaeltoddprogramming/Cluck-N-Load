@@ -58,8 +58,7 @@ public class GridController : MonoBehaviour
         SetUpGridOverlay();
         ApplySettings();
 
-        // Hide grid by default
-        // HideGrid();
+        HideGrid();
     }
 
     void Update()

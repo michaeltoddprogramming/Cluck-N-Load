@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: ebb4d211c8c06694b928706930e51a6f
+timeCreated: 1501081393
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 81519
+  packageName: Save Game Free - Gold Update
+  packageVersion: 2.4.0
+  assetPath: Assets/BayatGames/SaveGameFree/Documentation/Save Game Free Documentation
+    - Rich Text Format Version.rtf
+  uploadId: 490783

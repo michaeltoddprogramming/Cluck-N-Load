@@ -5,12 +5,13 @@ using UnityEngine;
 [Serializable]
 public class GameSaveData
 {
-    public List<StructureSaveData> structures = new List<StructureSaveData>();
-    public Dictionary<string, int> inventory = new Dictionary<string, int>();
     public int money;
+    public int sunflowerAmount;
+    public int wheatAmount;
+    public int carrotsAmount;
     public int day;
     public int season;
-    // Add more fields as needed
+    public List<StructureSaveData> structures = new List<StructureSaveData>();
 }
 
 [Serializable]
@@ -19,5 +20,15 @@ public class StructureSaveData
     public string type;
     public Vector3 position;
     public int health;
-    // Add more fields as needed
+    public Quaternion rotation;
+    public int animalCount;
+    public int maxAnimalCount;
+    public string animalType;
+    public string cropType;
+    public bool isGrowing;
+    public bool cropReady;
+    public int armyAnimalCount;
+    public bool isProducing;
+    public bool productReady;
+    public float productionProgress;
 }

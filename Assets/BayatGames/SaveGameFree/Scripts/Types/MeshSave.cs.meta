@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 1c9682573139a3c448dedcabd384ce21
+timeCreated: 1499701421
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 81519
+  packageName: Save Game Free - Gold Update
+  packageVersion: 2.4.0
+  assetPath: Assets/BayatGames/SaveGameFree/Scripts/Types/MeshSave.cs
+  uploadId: 490783

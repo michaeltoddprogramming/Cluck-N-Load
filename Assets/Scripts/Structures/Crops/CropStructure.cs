@@ -186,4 +186,16 @@ public class CropStructure : Structure
         cropReady = true;
         if (currentCropType != CropType.None) UpdateCropVisual(currentCropType, 2);
     }
+
+    public void SetCropState(string cropType, bool isGrowing, bool cropReady)
+    {
+        if (System.Enum.TryParse(cropType, out CropType parsedType))
+            currentCropType = parsedType;
+        else
+            currentCropType = CropType.None;
+
+        this.isGrowing = isGrowing;
+        this.cropReady = cropReady;
+        UpdateCropVisual(currentCropType, cropReady ? 2 : isGrowing ? 1 : 0);
+    }
 }

@@ -10,15 +10,10 @@ using System.Collections.Generic;
 
 public class GameLoopManager : MonoBehaviour
 {
-
-    // Helper to check if a structure is already registered
     public bool IsStructureRegistered(Structure structure)
     {
         return allStructures.Contains(structure);
     }
-
-    // Call this from your Game Over panel's Quit button
-
     public void OnQuitButton()
     {
     #if UNITY_EDITOR
@@ -44,11 +39,10 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private bool checkFarmHouseDestruction = false;
     [SerializeField] private bool checkAllStructuresDestroyed = true;
 
+    [SerializeField] private StructureDatabase structureDatabase;
 
-    // Events
     public System.Action OnGameOver;
 
-    // Properties
     public bool IsGameOver => isGameOver;
     public bool IsPaused => isPaused;
     public int TotalStructuresBuilt => totalStructuresBuilt;
@@ -70,32 +64,129 @@ public class GameLoopManager : MonoBehaviour
 
     private void Start()
     {
-        // Initialize game state
         isGameOver = false;
         isPaused = false;
 
         TutorialManager.Instance?.StartTutorial();
         TutorialManager.Instance?.Trigger(TutorialTrigger.GameStarted);
-        
-        // Subscribe to GameEventManager events if it exists
+
         if (GameEventManager.Instance != null)
         {
             GameEventManager.Instance.OnStructurePlaced.AddListener(RegisterStructure);
             GameEventManager.Instance.OnStructureDestroyed.AddListener(UnregisterStructure);
         }
+
+        if (PlayerPrefs.HasKey("SelectedSaveSlot"))
+        {
+            int slot = PlayerPrefs.GetInt("SelectedSaveSlot", 0);
+            GameSaveData saveData = GameSaveHelper.LoadFromSlot(slot);
+
+            if (MoneyManager.Instance != null)
+            {
+                MoneyManager.Instance.ResetMoney();
+                if (saveData != null)
+                {
+                    MoneyManager.Instance.AddMoney(saveData.money - MoneyManager.Instance.GetCurrentMoney());
+                    Debug.Log($"Loaded money from save slot {slot}: {saveData.money}");
+
+                    if (TutorialManager.Instance != null)
+                    {
+                        TutorialManager.Instance.EndTutorial();
+                    }
+                }
+                else
+                {
+                    Debug.Log("No save found, starting new game.");
+                }
+            }
+
+            if (InventoryManager.Instance != null && saveData != null)
+            {
+                InventoryManager.Instance.AddItem("Sunflower", saveData.sunflowerAmount - InventoryManager.Instance.GetItemCount("Sunflower"));
+                InventoryManager.Instance.AddItem("Wheat", saveData.wheatAmount - InventoryManager.Instance.GetItemCount("Wheat"));
+                InventoryManager.Instance.AddItem("Carrots", saveData.carrotsAmount - InventoryManager.Instance.GetItemCount("Carrots"));
+            }
+
+            if (NightManager.Instance != null && saveData != null)
+            {
+                NightManager.Instance.Days = saveData.day;
+                NightManager.Instance.SetSeason(saveData.season);
+            }
+            else
+            {
+                if (NightManager.Instance == null)
+                    Debug.LogWarning("NightManager.Instance is null in GameLoopManager.Start()");
+                if (saveData == null)
+                    Debug.LogWarning("saveData is null in GameLoopManager.Start()");
+            }
+
+            if (saveData != null)
+            {
+                LoadStructures(saveData.structures);
+            }
+            else
+            {
+                Debug.LogWarning("saveData is null in GameLoopManager.Start(), skipping structure load.");
+            }
+
+            PlayerPrefs.DeleteKey("SelectedSaveSlot");
+        }
+        else
+        {
+            MoneyManager.Instance?.ResetMoney();
+            Debug.Log("Started new game, money reset.");
+        }
     }
 
-    /// <summary>
-    /// Register a structure when it's built
-    /// </summary>
+    private void LoadStructures(List<StructureSaveData> structureSaves)
+    {
+        foreach (var save in structureSaves)
+        {
+            StructureData structureData = structureDatabase.GetStructureByName(save.type);
+            if (structureData == null)
+            {
+                Debug.LogWarning($"Structure type {save.type} not found in database.");
+                continue;
+            }
+            GameObject prefab = structureData.prefab;
+            if (prefab == null)
+            {
+                Debug.LogWarning($"Prefab for {save.type} not found.");
+                continue;
+            }
+            GameObject obj = Instantiate(prefab, save.position, save.rotation);
+            Structure structure = obj.GetComponent<Structure>();
+            if (structure != null)
+            {
+                structure.structureData = structureData;
+                structure.ApplyDamage(structure.GetMaxHealth() - save.health);
+
+                if (structure is AnimalStructure animal)
+                {
+                    animal.SetAnimalCount(save.animalCount);
+                    animal.SetProductionState(save.isProducing, save.productReady, save.productionProgress);
+                }
+                else if (structure is CropStructure crop)
+                {
+                    crop.SetCropState(save.cropType, save.isGrowing, save.cropReady);
+                }
+                else if (structure is BarracksStructure barracks)
+                {
+                    barracks.ClearBarracksArmy();
+                    barracks.SpawnArmyAnimals(save.armyAnimalCount); 
+                }
+
+            }
+        }
+    }
+
     public void RegisterStructure(Structure structure)
     {
         if (structure == null || !structure) return;
 
-        // Clean up null/destroyed entries before adding
+
         allStructures.RemoveAll(s => s == null || !s);
 
-        // Debug: log if double registration is attempted
         if (allStructures.Contains(structure))
         {
             Debug.LogWarning($"[GameLoopManager] Attempted to register structure twice: {structure.name}", structure);
@@ -106,18 +197,13 @@ public class GameLoopManager : MonoBehaviour
         totalStructuresBuilt++;
         string structureName = structure != null ? structure.name : "(destroyed object)";
         Debug.Log($"Structure registered: {structureName}. Total: {allStructures.Count}");
-        // Fire event through GameEventManager if available
         GameEventManager.Instance?.OnStructurePlaced?.Invoke(structure);
     }
-
-    /// <summary>
-    /// Unregister a structure when it's destroyed
-    /// </summary>
     public void UnregisterStructure(Structure structure)
     {
         if (structure == null || !structure) return;
 
-        // Clean up null/destroyed entries before removing
+
         allStructures.RemoveAll(s => s == null || !s);
 
         if (allStructures.Contains(structure))
@@ -125,9 +211,7 @@ public class GameLoopManager : MonoBehaviour
             string structureName = structure != null ? structure.name : "(destroyed object)";
             allStructures.Remove(structure);
             Debug.Log($"Structure unregistered: {structureName}. Remaining: {allStructures.Count}");
-            // Fire event through GameEventManager if available
             GameEventManager.Instance?.OnStructureDestroyed?.Invoke(structure);
-            // Check game over conditions
             CheckGameOverConditions();
         }
     }
@@ -138,10 +222,8 @@ public class GameLoopManager : MonoBehaviour
 
     bool shouldGameOver = false;
 
-    // Clean up null/destroyed entries before checking
     allStructures.RemoveAll(s => s == null || !s);
 
-    // Only trigger game over if ALL structures are destroyed
     if (checkAllStructuresDestroyed && allStructures.Count == 0 && totalStructuresBuilt > 0)
     {
         shouldGameOver = true;
@@ -163,10 +245,8 @@ public class GameLoopManager : MonoBehaviour
         
         OnGameOver?.Invoke();
         
-        // Use your existing GameEventManager
         GameEventManager.Instance?.OnGamePaused?.Invoke();
 
-        // Show Game Over UI if assigned
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
@@ -198,7 +278,6 @@ public class GameLoopManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Unsubscribe from events
         if (GameEventManager.Instance != null)
         {
             GameEventManager.Instance.OnStructurePlaced.RemoveListener(RegisterStructure);
@@ -206,7 +285,6 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
-    // Debug methods for testing
     [ContextMenu("Trigger Game Over")]
     public void Debug_TriggerGameOver() => TriggerGameOver();
 

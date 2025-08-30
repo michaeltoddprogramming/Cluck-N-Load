@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: d2ccc2100fda8234cb74b188f02f5179
+timeCreated: 1499702480
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 81519
+  packageName: Save Game Free - Gold Update
+  packageVersion: 2.4.0
+  assetPath: Assets/BayatGames/SaveGameFree/Scripts/Types/ColorSave.cs
+  uploadId: 490783

@@ -472,6 +472,27 @@ public class BarracksStructure : Structure
         }
     }
 
+        private void CreateArmyAnimal()
+    {
+        GameObject prefab = GetArmyAnimalPrefab();
+        if (prefab == null) return;
+        float angle = 360f * (armyAnimals.Count % 8) / 8f;
+        Vector3 spawnOffset = new Vector3(Mathf.Sin(angle * Mathf.Deg2Rad) * 2f, 0, Mathf.Cos(angle * Mathf.Deg2Rad) * 2f);
+        Vector3 spawnPosition = transform.position + spawnOffset;
+        spawnPosition.y = transform.position.y;
+        GameObject armyAnimal = Instantiate(prefab, spawnPosition, Quaternion.identity);
+        armyAnimals.Add(armyAnimal);
+    
+        ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
+        if (unit != null)
+        {
+            unit.SetBarracks(this);
+            unit.SetGuardPosition(guardPosition, protectionRadius);
+            unit.SetTimeOfDay(isNightTime);
+            armyAnimal.SetActive(isNightTime);
+        }
+    }
+
     private void UpdateRecruitmentCostByDistance()
     {
         int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
@@ -497,4 +518,14 @@ public class BarracksStructure : Structure
     public int GetAnimalCount() => ArmyAnimalCount;
     public int GetAnimalRecruitPrice() => recruitmentCostPerAnimal;
     public string GetAnimalType() => targetAnimalType;
+
+    public void SpawnArmyAnimals(int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            CreateArmyAnimal();
+        }
+    }
+    
+    
 }

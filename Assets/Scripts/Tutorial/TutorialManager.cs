@@ -230,7 +230,7 @@ public partial class TutorialManager : MonoBehaviour
         }
     }
 
-    void EndTutorial()
+    public void EndTutorial()
     {
         tutorialPanel.SetActive(false);
     }
@@ -296,8 +296,25 @@ public partial class TutorialManager : MonoBehaviour
         return tutorialPanel != null && tutorialPanel.activeSelf && currentStepIndex >= 0 && currentStepIndex < steps.Count;
     }
 
-    public bool IsTutorialCompleted()
+    public List<string> GetCompletedStepIds() => new List<string>(completedStepIds);
+    public int GetCurrentStepIndex() => currentStepIndex;
+    public bool IsTutorialCompleted() => currentStepIndex >= steps.Count;
+
+    public void SetTutorialProgress(List<string> completedSteps, int stepIndex, bool completed)
     {
-        return currentStepIndex >= steps.Count;
+        completedStepIds = completedSteps ?? new List<string>();
+        currentStepIndex = stepIndex;
+        if (completed)
+            EndTutorial();
+        else
+            StartTutorialFromStep(stepIndex);
+    }
+
+    public void StartTutorialFromStep(int stepIndex)
+    {
+        tutorialPanel.SetActive(true);
+        currentStepIndex = stepIndex - 1;
+        waitingForStepToComplete = false;
+        NextStep();
     }
 }

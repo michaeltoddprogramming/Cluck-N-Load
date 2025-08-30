@@ -194,12 +194,15 @@ public class NightManager : MonoBehaviour
             source2.Stop();
         }
 
-        Hours = 5;
-        Years = 1;
+        if (Hours == 0) Hours = 5;
+        if (Years == 0) Years = 1;
         seasonNotification.gameObject.SetActive(false);
         productionNotification.gameObject.SetActive(false);
-        setSeason(1);
-        combatManager.SetSeason(1);
+
+        if (currentSeason == 0) setSeason(1);
+        else setSeason(currentSeason);
+
+        combatManager.SetSeason(currentSeason);
         // chooseAnimalProductForSeason();
     }
 
@@ -1147,5 +1150,21 @@ public class NightManager : MonoBehaviour
         }
 
         timeOfDayIcon.rectTransform.localRotation = Quaternion.Euler(0, 0, -rotation);
+    }
+
+    public int GetCurrentSeason()
+    {
+        return currentSeason;
+    }
+
+    public void SetSeason(int season)
+    {
+        setSeason(season);
+    }
+
+    public void LoadDayAndSeason(int day, int season)
+    {
+        Days = day;
+        SetSeason(season);
     }
 }

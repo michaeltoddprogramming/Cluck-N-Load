@@ -23,7 +23,7 @@ public class MainMenuController : MonoBehaviour
             skyboxMaterial = RenderSettings.skybox;
         StartCoroutine(AnimateSkyboxRotation());
         if (saveSelectionMenu != null)
-            saveSelectionMenu.SetActive(false); // Ensure hidden at start
+            saveSelectionMenu.SetActive(false);
 
         if (backgroundMusic != null && !backgroundMusic.isPlaying)
         {
@@ -38,7 +38,7 @@ public class MainMenuController : MonoBehaviour
         {
             currentRotation += rotationSpeed * Time.deltaTime;
             currentRotation %= 360f;
-            skyboxMaterial.SetFloat("_Rotation", currentRotation); // correct property
+            skyboxMaterial.SetFloat("_Rotation", currentRotation);
             RenderSettings.skybox = skyboxMaterial;
             yield return null;
         }
@@ -46,7 +46,10 @@ public class MainMenuController : MonoBehaviour
 
     public void OnPlayButtonClicked()
     {
-        SceneTransitionManager.Instance.LoadSceneWithLoading("MainScene");
+        if (SceneTransitionManager.Instance != null)
+            SceneTransitionManager.Instance.LoadSceneWithLoading("MainScene");
+        else
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainScene");
     }
 
     public void OnQuitButtonClicked()
@@ -60,7 +63,7 @@ public class MainMenuController : MonoBehaviour
     public void OnContinueButtonClicked()
     {
         if (saveSelectionMenu != null)
-            saveSelectionMenu.SetActive(true); // Show the menu
+            saveSelectionMenu.SetActive(true);
     }
 
     public void OnBackFromSaveSelection()

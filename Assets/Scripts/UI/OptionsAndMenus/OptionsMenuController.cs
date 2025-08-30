@@ -1,7 +1,7 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using TMPro;
 
 public class OptionsMenuController : MonoBehaviour
 {
@@ -15,10 +15,14 @@ public class OptionsMenuController : MonoBehaviour
     public TMP_Dropdown resolutionDropdown;
     public TMP_Dropdown qualityDropdown;
     public Toggle vsyncToggle;
+    public TMP_Dropdown slotDropdown;
+    public Button saveButton;
 
     [SerializeField] private Button applyButton;
     [SerializeField] private Button cancelButton;
     [SerializeField] private Button backToMenuButton;
+    [SerializeField] private TextMeshProUGUI saveFeedbackText;
+
 
     private Resolution[] resolutions;
 
@@ -27,6 +31,8 @@ public class OptionsMenuController : MonoBehaviour
     private int initialResolution;
     private int initialQuality;
     private bool initialVSync;
+
+    private int selectedSlot = 0;
 
     void Update()
     {
@@ -124,6 +130,25 @@ public class OptionsMenuController : MonoBehaviour
         }
 
         UpdateButtonStates();
+
+        if (slotDropdown != null)
+        {
+            slotDropdown.ClearOptions();
+            List<string> slotOptions = new List<string>();
+            for (int i = 0; i < 4; i++)
+            {
+                var saveData = GameSaveHelper.LoadFromSlot(i);
+                if (saveData != null)
+                    slotOptions.Add($"Slot {i + 1}: Day {saveData.day}, Money {saveData.money}");
+                else
+                    slotOptions.Add($"Empty Slot {i + 1}");
+            }
+            slotDropdown.AddOptions(slotOptions);
+            slotDropdown.onValueChanged.AddListener(OnSlotChanged);
+        }
+
+        if (saveButton != null)
+            saveButton.onClick.AddListener(OnSaveButtonClicked);
     }
 
     private void OnEnable()
@@ -253,5 +278,105 @@ public class OptionsMenuController : MonoBehaviour
         PauseManager pauseManager = FindFirstObjectByType<PauseManager>();
         if (pauseManager != null)
             pauseManager.playGame();
+    }
+
+    private void OnSlotChanged(int index)
+    {
+        selectedSlot = index;
+    }
+
+    private GameSaveData GatherCurrentGameState()
+    {
+        GameSaveData data = new GameSaveData();
+        data.money = MoneyManager.Instance != null ? MoneyManager.Instance.GetCurrentMoney() : 0;
+
+        if (InventoryManager.Instance != null)
+        {
+            data.sunflowerAmount = InventoryManager.Instance.GetItemCount("Sunflower");
+            data.wheatAmount = InventoryManager.Instance.GetItemCount("Wheat");
+            data.carrotsAmount = InventoryManager.Instance.GetItemCount("Carrots");
+        }
+        else
+        {
+            data.sunflowerAmount = 0;
+            data.wheatAmount = 0;
+            data.carrotsAmount = 0;
+        }
+
+        if (NightManager.Instance != null)
+        {
+            data.day = NightManager.Instance.Days;
+            data.season = NightManager.Instance.GetCurrentSeason();
+        }
+
+        data.structures = new List<StructureSaveData>();
+        foreach (var structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
+        {
+            if (structure.gameObject.name == "BuildGhost") continue;
+
+            var save = new StructureSaveData
+            {
+                type = structure.GetStructureName(),
+                position = structure.transform.position,
+                health = structure.GetCurrentHealth(),
+                rotation = structure.transform.rotation
+            };
+
+            if (structure is AnimalStructure animal)
+            {
+                save.animalCount = animal.AnimalCount;
+                save.maxAnimalCount = animal.MaxAnimalCount;
+                save.animalType = animal.GetAnimalType.ToString();
+                save.isProducing = animal.IsProducing;
+                save.productReady = animal.ProductReady;
+                save.productionProgress = animal.ProductionProgress;
+            }
+            else if (structure is CropStructure crop)
+            {
+                save.cropType = crop.CurrentCropType.ToString();
+                save.isGrowing = crop.IsGrowing;
+                save.cropReady = crop.CropReady;
+            }
+            else if (structure is BarracksStructure barracks)
+            {
+                save.armyAnimalCount = barracks.ArmyAnimalCount;
+            }
+
+            data.structures.Add(save);
+        }
+        return data;
+    }
+
+    public void OnSaveButtonClicked()
+    {
+        GameSaveData saveData = GatherCurrentGameState();
+        GameSaveHelper.SaveToSlot(selectedSlot, saveData);
+        Debug.Log($"Game saved to slot {selectedSlot} with money: {saveData.money}");
+
+        if (saveFeedbackText != null)
+        {
+            saveFeedbackText.text = $"Saved to Slot {selectedSlot + 1}: Day {saveData.day}, Money {saveData.money}";
+            saveFeedbackText.color = Color.green;
+        }
+
+        UpdateSlotDropdown();
+    }
+
+    private void UpdateSlotDropdown()
+    {
+        if (slotDropdown == null) return;
+        slotDropdown.ClearOptions();
+        List<string> slotOptions = new List<string>();
+        for (int i = 0; i < 4; i++)
+        {
+            var saveData = GameSaveHelper.LoadFromSlot(i);
+            if (saveData != null)
+                slotOptions.Add($"Slot {i + 1}: Day {saveData.day}, Money {saveData.money}");
+            else
+                slotOptions.Add($"Empty Slot {i + 1}");
+        }
+        slotDropdown.AddOptions(slotOptions);
+        slotDropdown.value = selectedSlot;
+        slotDropdown.RefreshShownValue();
     }
 }

@@ -228,6 +228,12 @@ public class AnimalStructure : Structure
         OnAnimalCountChanged?.Invoke();
     }
 
+    public void SetAnimalCount(int count)
+    {
+        animalCount = Mathf.Clamp(count, 0, maxAnimalCount);
+        OnAnimalCountChanged?.Invoke();
+    }
+
     protected override void OnDestroy()
     {
         base.OnDestroy();
@@ -328,6 +334,16 @@ public class AnimalStructure : Structure
         isProducing = false;
         productReady = true;
         productionProgress = 1f;
+        OnAnimalCountChanged?.Invoke();
+    }
+
+    public void SetProductionState(bool isProducing, bool productReady, float productionProgress/*, float lastCheckedHour*/)
+    {
+        this.isProducing = isProducing;
+        this.productReady = productReady;
+        this.productionProgress = productionProgress;
+        // Optionally:
+        // this.lastCheckedHour = lastCheckedHour;
         OnAnimalCountChanged?.Invoke();
     }
 }

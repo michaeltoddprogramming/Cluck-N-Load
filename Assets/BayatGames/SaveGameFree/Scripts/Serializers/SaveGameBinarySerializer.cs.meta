@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: aca44e3bb6bef6445b1faf25fcd8ca07
+timeCreated: 1499177619
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 81519
+  packageName: Save Game Free - Gold Update
+  packageVersion: 2.4.0
+  assetPath: Assets/BayatGames/SaveGameFree/Scripts/Serializers/SaveGameBinarySerializer.cs
+  uploadId: 490783

@@ -15,6 +15,7 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Button addAnimal;
     [SerializeField] private Button minusAnimal;
     [SerializeField] private TextMeshProUGUI animalCountText;
+    [SerializeField] private TextMeshProUGUI costText;
 
     private BarracksStructure barracksStructure;
     private bool isBarracksStructure = false;
@@ -151,9 +152,11 @@ public class BarracksStructureUI : BaseStructureUI
         isPlacingFlag = true;
         if (recruitButton != null) recruitButton.interactable = false;
         if (setFlagColorButton != null) setFlagColorButton.interactable = false;
-        if (placeFlagButton != null && placeFlagButton.GetComponentInChildren<TextMeshProUGUI>() != null)
+        if (placeFlagButton != null)
         {
-            placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Click to Place Flag";
+            updateStatusText("Click anywhere to place flag");
+            // statusText.text = "Click anywhere to place flag";
+            // placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Click to Place Flag";
         }
         if (flagPlacementIndicator != null)
         {
@@ -203,7 +206,9 @@ public class BarracksStructureUI : BaseStructureUI
         UpdateUI();
         if (placeFlagButton != null && placeFlagButton.GetComponentInChildren<TextMeshProUGUI>() != null)
         {
-            placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Place Flag";
+            updateStatusText("Click anywhere to place flag");
+            // statusText.text = "Click anywhere to place flag";
+            // placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Place Flag";
         }
         if (flagPlacementIndicator != null)
         {
@@ -220,28 +225,33 @@ public class BarracksStructureUI : BaseStructureUI
             return;
         }
 
+
+
         animalCountText.text = $"{newAnimalCount}";
 
         animalCount = barracksStructure.GetAnimalCount();
         maxAnimalCount = barracksStructure.GetMaxAnimalCount();
 
-        bool canRecruit = barracksStructure.CanRecruit(recruitAmount);
+        bool canRecruit = barracksStructure.CanRecruit(newAnimalCount);
         bool hasArmy = barracksStructure.ArmyAnimalCount > 0;
 
         if (statusText != null)
         {
-            if (barracksStructure.GetTargetStructure != null)
+            if (isPlacingFlag)
+            {
+                statusText.text = "Click anywhere to place flag";
+            }
+            else if (barracksStructure.GetTargetStructure != null)
             {
                 AnimalStructure target = barracksStructure.GetTargetStructure;
-                statusText.text = $"Target: {target.GetStructureName()}\n" +
-                                  $"Animals: {target.AnimalCount}/{target.MaxAnimalCount}\n" +
+                statusText.text = $"Animals: {target.AnimalCount}/{target.MaxAnimalCount}\n" +
                                   $"Army: {barracksStructure.ArmyAnimalCount}/{barracksStructure.MaxArmyAnimals}";
                 statusText.color = Color.white;
             }
             else
             {
-                statusText.text = "No structure found!";
-                statusText.color = Color.red;
+                statusText.text = $"No {barracksStructure.GetAnimalType()}s nearby!";
+                statusText.color = Color.yellow;
             }
         }
 
@@ -254,11 +264,11 @@ public class BarracksStructureUI : BaseStructureUI
         if (recruitButton != null && !isPlacingFlag)
         {
             recruitButton.interactable = canRecruit;
-            TextMeshProUGUI buttonText = recruitButton.GetComponentInChildren<TextMeshProUGUI>();
-            if (buttonText != null)
+            // TextMeshProUGUI buttonText = recruitButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (costText != null)
             {
-                int cost = barracksStructure.GetRecruitmentCost() * recruitAmount;
-                buttonText.text = $"Recruit ({cost} gold)";
+                int cost = barracksStructure.GetRecruitmentCost() * newAnimalCount;
+                costText.text = cost.ToString();
             }
         }
 
@@ -282,7 +292,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (addAnimal != null)
         {
-            if ((newAnimalCount + animalCount) < maxAnimalCount)
+            if ((newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1))
             {
                 addAnimal.interactable = true;
             }
@@ -341,29 +351,29 @@ public class BarracksStructureUI : BaseStructureUI
             }
         }
 
-        if (animalIcon2 != null)
-        {
-            if (barracksStructure.GetAnimalType() == "Cow")
-            {
-                animalIcon2.sprite = cowIcon;
-            }
-            else if (barracksStructure.GetAnimalType() == "Chicken")
-            {
-                animalIcon2.sprite = chickenIcon;
-            }
-            else if (barracksStructure.GetAnimalType() == "Goat")
-            {
-                animalIcon2.sprite = goatIcon;
-            }
-            else if (barracksStructure.GetAnimalType() == "Pig")
-            {
-                animalIcon2.sprite = pigIcon;
-            }
-            else if (barracksStructure.GetAnimalType() == "Sheep")
-            {
-                animalIcon2.sprite = sheepIcon;
-            }
-        }
+        // if (animalIcon2 != null)
+        // {
+        //     if (barracksStructure.GetAnimalType() == "Cow")
+        //     {
+        //         animalIcon2.sprite = cowIcon;
+        //     }
+        //     else if (barracksStructure.GetAnimalType() == "Chicken")
+        //     {
+        //         animalIcon2.sprite = chickenIcon;
+        //     }
+        //     else if (barracksStructure.GetAnimalType() == "Goat")
+        //     {
+        //         animalIcon2.sprite = goatIcon;
+        //     }
+        //     else if (barracksStructure.GetAnimalType() == "Pig")
+        //     {
+        //         animalIcon2.sprite = pigIcon;
+        //     }
+        //     else if (barracksStructure.GetAnimalType() == "Sheep")
+        //     {
+        //         animalIcon2.sprite = sheepIcon;
+        //     }
+        // }
     }
 
     private void updateStatusText(string message)
@@ -374,7 +384,7 @@ public class BarracksStructureUI : BaseStructureUI
             string animalStatus = "";
 
             statusText.text = message;
-            statusText.color = Color.red;
+            statusText.color = Color.yellow;
         }
     }
 
@@ -384,7 +394,7 @@ public class BarracksStructureUI : BaseStructureUI
         if (statusText != null)
         {
             statusText.text = "Not a barracks structure";
-            statusText.color = Color.red;
+            statusText.color = Color.yellow;
         }
         if (armyCountText != null) armyCountText.gameObject.SetActive(false);
         if (recruitButton != null) recruitButton.gameObject.SetActive(false);

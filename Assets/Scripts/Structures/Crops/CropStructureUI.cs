@@ -13,8 +13,8 @@ public class CropStructureUI : BaseStructureUI
     [SerializeField] private Button plantButton;
     [SerializeField] private GameObject selectCropPanel;
     [SerializeField] private GameObject plantingClose;
-    [SerializeField] private TextMeshProUGUI cropStatusText;
-    [SerializeField] private TextMeshProUGUI notificationText;
+    [SerializeField] private TextMeshProUGUI statusText;
+    // [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private Image CropImage;
     [SerializeField] private Sprite SunflowerIcon;
     [SerializeField] private Sprite WheatIcon;
@@ -38,7 +38,7 @@ public class CropStructureUI : BaseStructureUI
 
     public override void Initialize(Structure structure)
     {
-        notificationText.gameObject.SetActive(false);
+        // statusText.gameObject.SetActive(false);
         plantButton.interactable = true;
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
@@ -123,30 +123,31 @@ public class CropStructureUI : BaseStructureUI
         }
         cropStructure.Plant(cropType);
         PlaySound(plantSound);
+        plantButton.interactable = false;
         closeSelectCropPanel();
         if (TutorialManager.Instance?.IsTutorialActive() == true) StartCoroutine(DelayedInstantGrowForTutorial(0.5f));
-        else StartCoroutine(CloseUIAfterDelay(0.2f));
+        // else StartCoroutine(CloseUIAfterDelay(0.2f));
     }
 
     // In CropStructureUI.cs, modify the DelayedInstantGrowForTutorial method
     private IEnumerator DelayedInstantGrowForTutorial(float delay)
     {
         yield return new WaitForSeconds(delay);
-        
+
         if (cropStructure != null)
         {
             // First, force grow the crop
             cropStructure.ForceHarvestReadyForTutorial();
             UpdateUI();
-            
+
             // Show notification
-            if (notificationText != null)
+            if (statusText != null)
             {
-                notificationText.gameObject.SetActive(true);
-                notificationText.color = Color.green;
-                notificationText.text = "Tutorial: Crop ready for harvest!";
+                // statusText.gameObject.SetActive(true);
+                statusText.color = Color.green;
+                statusText.text = "Tutorial: Crop ready for harvest!";
             }
-            
+
             // After crop is grown and visible, trigger the tutorial event
             yield return new WaitForSeconds(0.5f);
             if (TutorialManager.Instance != null)
@@ -164,30 +165,31 @@ public class CropStructureUI : BaseStructureUI
     {
         if (!isCropStructure || cropStructure == null) return;
         string result = cropStructure.Harvest();
-        notificationText.gameObject.SetActive(true);
+        // statusText.gameObject.SetActive(true);
         switch (result)
         {
             case "space":
-                notificationText.color = Color.red;
-                notificationText.text = "Harvest unsuccessful: No space in silo";
+                statusText.color = Color.yellow;
+                statusText.text = "Harvest unsuccessful: No space in silo";
                 PlayErrorSound();
                 break;
             case "yes":
-                notificationText.color = Color.green;
-                notificationText.text = "Harvest successful";
+                statusText.color = Color.green;
+                statusText.text = "Harvest successful";
                 PlaySound(harvestSound);
                 break;
             case "ready":
-                notificationText.color = Color.red;
-                notificationText.text = "Harvest unsuccessful: Crop not ready";
+                statusText.color = Color.yellow;
+                statusText.text = "Harvest unsuccessful: Crop not ready";
                 PlayErrorSound();
                 break;
             default:
-                notificationText.color = Color.red;
-                notificationText.text = "Harvest unsuccessful: Unknown issue";
+                statusText.color = Color.yellow;
+                statusText.text = "Harvest unsuccessful: Unknown issue";
                 PlayErrorSound();
                 break;
         }
+        plantButton.interactable = true;
         UpdateUI();
     }
 
@@ -195,6 +197,7 @@ public class CropStructureUI : BaseStructureUI
 
     private void UpdateUI()
     {
+        statusText.text = "slieduhrfehgfsiuedhfiusehfiuhref";
         setCropImage();
         if (!isCropStructure || cropStructure == null || nightManager == null)
         {
@@ -204,10 +207,21 @@ public class CropStructureUI : BaseStructureUI
         bool isGrowing = cropStructure.IsGrowing;
         bool cropReady = cropStructure.CropReady;
         bool canPlant = nightManager.IsDay && !isGrowing && !cropReady;
-        if (cropStatusText != null)
+
+        if (!canPlant)
         {
-            cropStatusText.text = cropReady ? $"{cropStructure.CurrentCropType}: Ready to harvest!" : isGrowing ? "Growing..." : nightManager.IsDay ? "No crop planted" : "Cannot plant at night";
-            cropStatusText.color = cropReady ? Color.green : isGrowing ? Color.yellow : nightManager.IsDay ? Color.white : Color.red;
+            plantButton.interactable = false;
+        }
+        else
+        {
+            plantButton.interactable = true;
+        }
+
+
+        if (statusText != null)
+        {
+            statusText.text = cropReady ? $"{cropStructure.CurrentCropType}: Ready to harvest!" : isGrowing ? "Growing..." : nightManager.IsDay ? "No crop planted" : "Cannot plant at night";
+            statusText.color = cropReady ? Color.green : isGrowing ? Color.yellow : nightManager.IsDay ? Color.white : Color.yellow;
         }
         plantSunflowerButton.interactable = canPlant;
         plantWheatButton.interactable = canPlant;
@@ -235,8 +249,8 @@ public class CropStructureUI : BaseStructureUI
         plantCarrotsButton.interactable = false;
         harvestButton.interactable = false;
         selectCropPanel?.SetActive(false);
-        cropStatusText.text = "No crop structure";
-        cropStatusText.color = Color.red;
+        statusText.text = "No crop structure";
+        statusText.color = Color.yellow;
     }
 
     private void PlayErrorSound()

@@ -97,6 +97,22 @@ public class AnimalStructure : Structure
         }
     }
 
+    public bool canFeed()
+    {
+        if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) return false;
+        int foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
+        if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void hasEnoughToFeed()
+    {
+
+    }
+
     private IEnumerator DelayedInstantCompleteForTutorial()
     {
         yield return new WaitForSeconds(2f);
@@ -107,7 +123,7 @@ public class AnimalStructure : Structure
         }
     }
 
-    private string GetRequiredFood()
+    public string GetRequiredFood()
     {
         return animalType switch
         {
@@ -187,7 +203,12 @@ public class AnimalStructure : Structure
         }
     }
 
-    public bool CanRecruit(int amount) => animalCount >= amount;
+    public bool CanRecruit(int amount)
+    {
+        Debug.Log("Here is the amoun of animals: " + animalCount + " and max animals: " + maxAnimalCount + " and amount to recruit: " + amount);
+
+        return animalCount >= amount;
+    }
 
     public void RecruitAnimals(int amount)
     {

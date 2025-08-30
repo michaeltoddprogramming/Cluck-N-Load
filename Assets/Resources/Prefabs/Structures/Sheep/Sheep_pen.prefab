@@ -132,7 +132,7 @@ MonoBehaviour:
   isProducing: 0
   productReady: 0
   productionProgress: 0
-  animalCount: 5
+  animalCount: 0
   maxAnimalCount: 10
   audioSource: {fileID: 2807904247166541674}
   backgroundClip: {fileID: 8300000, guid: ee85b2716834d16498eccefaf133d74c, type: 3}

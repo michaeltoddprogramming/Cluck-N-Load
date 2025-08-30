@@ -336,23 +336,46 @@ public class Structure : MonoBehaviour
         }
     }
 
+    // public virtual void Die()
+    // {
+    //     OnDestroyed?.Invoke(this);
+    //     OnStructureDestroyed?.Invoke(this);
+
+    //     // foreach (Wolf wolf in registeredWolves.ToList())
+    //     // {
+    //     //     if (wolf != null && wolf)
+    //     //         wolf.OnTargetDestroyed(gameObject);
+    //     // }
+
+    //     if (destructionEffectPrefab != null)
+    //     {
+    //         Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
+    //     }
+
+    //     // Unregister from GameLoopManager immediately
+    //     if (isRegisteredWithGameLoop && GameLoopManager.Instance != null)
+    //     {
+    //         GameLoopManager.Instance.UnregisterStructure(this);
+    //         isRegisteredWithGameLoop = false;
+    //     }
+    //     UnregisterFromGrid();
+
+    //     if (destroyOnZeroHealth)
+    //     {
+    //         Destroy(gameObject, destroyDelay);
+    //     }
+    // }
+
     public virtual void Die()
     {
         OnDestroyed?.Invoke(this);
         OnStructureDestroyed?.Invoke(this);
-
-        // foreach (Wolf wolf in registeredWolves.ToList())
-        // {
-        //     if (wolf != null && wolf)
-        //         wolf.OnTargetDestroyed(gameObject);
-        // }
 
         if (destructionEffectPrefab != null)
         {
             Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
         }
 
-        // Unregister from GameLoopManager immediately
         if (isRegisteredWithGameLoop && GameLoopManager.Instance != null)
         {
             GameLoopManager.Instance.UnregisterStructure(this);

@@ -164,7 +164,7 @@ public class BuildController : MonoBehaviour
         if (isMoveModeActive && currentGhost != null) UpdateGhostPositionForMove();
     }
 
-        public void EnableBuildMode()
+    public void EnableBuildMode()
     {
         Debug.Log("EnableBuildMode called");
         isBuildModeActive = true;
@@ -172,7 +172,7 @@ public class BuildController : MonoBehaviour
         gridController.ShowGrid();
         if (currentBuildTargetPrefab != null && currentGhost == null)
             CreateGhost(currentBuildTargetPrefab);
-    
+
         if (buildControlsPanelGroup != null)
         {
             buildControlsPanelGroup.alpha = 1f;
@@ -901,7 +901,7 @@ public class BuildController : MonoBehaviour
     {
         Vector2 mousePosition = Input.mousePosition;
         itemDeleteIcon.position = new Vector2(mousePosition.x + cursorOffset.x, mousePosition.y + cursorOffset.y);
-        foreach (Graphic graphic in itemDeleteIcon.GetComponentsInChildren<Graphic>()) 
+        foreach (Graphic graphic in itemDeleteIcon.GetComponentsInChildren<Graphic>())
             graphic.raycastTarget = false;
     }
 
@@ -944,4 +944,9 @@ public class BuildController : MonoBehaviour
     public void HideDeleteIcon() => itemDeleteIcon.gameObject.SetActive(false);
     public Vector2 DeleteIconOffset { get => cursorOffset; set => cursorOffset = value; }
     public bool IsHousePlaced() => isHousePlaced;
+
+    public bool IsDeleteModeActive()
+    {
+        return isDeleteModeActive;
+    }
 }

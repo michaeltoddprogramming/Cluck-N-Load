@@ -413,6 +413,32 @@ public class BarracksStructure : Structure
         OnArmyChanged?.Invoke();
     }
 
+    public void OnAnimalDied(ArmyUnit unit)
+    {
+        if (unit == null) return;
+
+        if (armyAnimals.Contains(unit.gameObject))
+        {
+            armyAnimals.Remove(unit.gameObject);
+
+            if (targetAnimalType == "Sheep" && sheepUnits.Contains(unit.gameObject))
+            {
+                int index = sheepUnits.IndexOf(unit.gameObject);
+                sheepUnits.RemoveAt(index);
+
+                // Also remove the sheep flag if it exists for this unit
+                if (index < sheepFlags.Count)
+                {
+                    GameObject flagToRemove = sheepFlags[index];
+                    sheepFlags.RemoveAt(index);
+                    if (flagToRemove != null) Destroy(flagToRemove);
+                }
+            }
+
+            OnArmyChanged?.Invoke();
+        }
+    }
+
     // public void ReturnAnimal(ArmyAnimal animal) // CHANGED: Renamed from ReturnChicken
     // {
     //     if (animal == null || !armyAnimals.Contains(animal.gameObject))
@@ -472,7 +498,7 @@ public class BarracksStructure : Structure
         }
     }
 
-        private void CreateArmyAnimal()
+    private void CreateArmyAnimal()
     {
         GameObject prefab = GetArmyAnimalPrefab();
         if (prefab == null) return;
@@ -482,7 +508,7 @@ public class BarracksStructure : Structure
         spawnPosition.y = transform.position.y;
         GameObject armyAnimal = Instantiate(prefab, spawnPosition, Quaternion.identity);
         armyAnimals.Add(armyAnimal);
-    
+
         ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
         if (unit != null)
         {
@@ -526,6 +552,6 @@ public class BarracksStructure : Structure
             CreateArmyAnimal();
         }
     }
-    
-    
+
+
 }

@@ -108,11 +108,6 @@ public class AnimalStructure : Structure
         return false;
     }
 
-    public void hasEnoughToFeed()
-    {
-
-    }
-
     private IEnumerator DelayedInstantCompleteForTutorial()
     {
         yield return new WaitForSeconds(2f);
@@ -205,7 +200,7 @@ public class AnimalStructure : Structure
 
     public bool CanRecruit(int amount)
     {
-        Debug.Log("Here is the amoun of animals: " + animalCount + " and max animals: " + maxAnimalCount + " and amount to recruit: " + amount);
+        // Debug.Log("Here is the amoun of animals: " + animalCount + " and max animals: " + maxAnimalCount + " and amount to recruit: " + amount);
 
         return animalCount >= amount;
     }

@@ -267,6 +267,7 @@ public class ArmyUnit : BaseUnit
             PlaySound(data.DeathSound, 'd');
             currHealth = 0;
             UpdateHealthBar();
+            barracks?.OnAnimalDied(this);
             Die();
         }
         else

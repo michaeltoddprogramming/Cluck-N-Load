@@ -116,7 +116,7 @@ MonoBehaviour:
   productionProgress: 0
   animalCount: 0
   maxAnimalCount: 10
-  audioSource: {fileID: 0}
+  audioSource: {fileID: 8675408084513278302}
   backgroundClip: {fileID: 8300000, guid: 0ed8e3d8e473ed447a308e5eecf66c71, type: 3}
   siloSynergyRange: 15
   synergyFoodRequired: 0.8

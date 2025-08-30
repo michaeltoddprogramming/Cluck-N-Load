@@ -152,9 +152,11 @@ public class BarracksStructureUI : BaseStructureUI
         isPlacingFlag = true;
         if (recruitButton != null) recruitButton.interactable = false;
         if (setFlagColorButton != null) setFlagColorButton.interactable = false;
-        if (placeFlagButton != null && placeFlagButton.GetComponentInChildren<TextMeshProUGUI>() != null)
+        if (placeFlagButton != null)
         {
-            placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Click to Place Flag";
+            updateStatusText("Click anywhere to place flag");
+            // statusText.text = "Click anywhere to place flag";
+            // placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Click to Place Flag";
         }
         if (flagPlacementIndicator != null)
         {
@@ -204,7 +206,9 @@ public class BarracksStructureUI : BaseStructureUI
         UpdateUI();
         if (placeFlagButton != null && placeFlagButton.GetComponentInChildren<TextMeshProUGUI>() != null)
         {
-            placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Place Flag";
+            updateStatusText("Click anywhere to place flag");
+            // statusText.text = "Click anywhere to place flag";
+            // placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Place Flag";
         }
         if (flagPlacementIndicator != null)
         {
@@ -221,6 +225,8 @@ public class BarracksStructureUI : BaseStructureUI
             return;
         }
 
+
+
         animalCountText.text = $"{newAnimalCount}";
 
         animalCount = barracksStructure.GetAnimalCount();
@@ -231,7 +237,11 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (statusText != null)
         {
-            if (barracksStructure.GetTargetStructure != null)
+            if (isPlacingFlag)
+            {
+                statusText.text = "Click anywhere to place flag";
+            }
+            else if (barracksStructure.GetTargetStructure != null)
             {
                 AnimalStructure target = barracksStructure.GetTargetStructure;
                 statusText.text = $"Animals: {target.AnimalCount}/{target.MaxAnimalCount}\n" +

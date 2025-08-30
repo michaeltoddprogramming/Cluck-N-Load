@@ -21,6 +21,7 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] public Sprite pigIcon;
     [SerializeField] public Sprite sheepIcon;
     [SerializeField] public AudioClip clickSound;
+    [SerializeField] public TextMeshProUGUI costText;
 
     private int newAnimalCount;
     private AnimalStructure animalStructure;
@@ -69,7 +70,7 @@ public class AnimalStructureUI : BaseStructureUI
         bool productReady = animalStructure.ProductReady;
         int animalCount = animalStructure.AnimalCount;
         int maxAnimalCount = animalStructure.MaxAnimalCount;
-        bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0;
+        bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed();
         bool canCollect = productReady && nightManager.IsDay;
         bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount;
 
@@ -83,8 +84,10 @@ public class AnimalStructureUI : BaseStructureUI
         if (buyAnimal != null)
             buyAnimal.interactable = newAnimalCount > 0 && (newAnimalCount + animalCount) <= maxAnimalCount && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(newAnimalCount * animalStructure.ProductionSettings.costPerAnimal);
 
-        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount;
+        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * animalStructure.ProductionSettings.costPerAnimal);
         removeAnimal.interactable = newAnimalCount > 0;
+
+        costText.text = (newAnimalCount * animalStructure.ProductionSettings.costPerAnimal).ToString();
 
         if (progressBar != null && isProducing)
         {
@@ -109,7 +112,7 @@ public class AnimalStructureUI : BaseStructureUI
             _ => null
         };
         if (animalIcon1 != null) animalIcon1.sprite = icon;
-        if (animalIcon2 != null) animalIcon2.sprite = icon;
+        // if (animalIcon2 != null) animalIcon2.sprite = icon;
     }
 
     private void UpdateStatusText(bool isProducing, bool productReady, int animalCount)
@@ -134,6 +137,11 @@ public class AnimalStructureUI : BaseStructureUI
             else if (!nightManager.IsDay)
             {
                 statusText.text = "Cannot feed at night";
+                statusText.color = Color.yellow;
+            }
+            else if (!animalStructure.canFeed())
+            {
+                statusText.text = $"Not enough {animalStructure.GetRequiredFood()} to feed!";
                 statusText.color = Color.yellow;
             }
             else

@@ -127,6 +127,40 @@ public class GridController : MonoBehaviour
         return enemiesInRange;
     }
 
+    public List<EnemyUnit> GetEnemiesInRangeSheep(Vector3 worldPosition, int blockRadius)
+    {
+        Vector2Int centerGridPos = WorldToGridCoords(worldPosition);
+        List<EnemyUnit> enemiesInRange = new List<EnemyUnit>();
+
+        for (int x = -blockRadius; x <= blockRadius; x++)
+        {
+            for (int y = -blockRadius; y <= blockRadius; y++)
+            {
+                Vector2Int offset = new Vector2Int(x, y);
+                Vector2Int checkPos = centerGridPos + offset;
+
+                if (!IsValidCell(checkPos.x, checkPos.y)) continue;
+
+                Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
+
+                Collider[] hits = Physics.OverlapSphere(cellCenter, cellSize * 0.5f);
+                foreach (var hit in hits)
+                {
+                    EnemyUnit enemy = hit.GetComponent<EnemyUnit>();
+                    if (enemy != null && !enemiesInRange.Contains(enemy))
+                    {
+                        // FILTER by actual radial distance
+                        float distance = Vector3.Distance(worldPosition, enemy.transform.position);
+                        if (distance <= blockRadius) // make sure the distance is within radius
+                            enemiesInRange.Add(enemy);
+                    }
+                }
+            }
+        }
+
+        return enemiesInRange;
+    }
+
     public List<GridCell> GetCellsInRange(Vector3 worldPos, int radius)
     {
         List<GridCell> cellsInRange = new List<GridCell>();

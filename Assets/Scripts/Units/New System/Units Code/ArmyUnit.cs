@@ -261,6 +261,7 @@ public class ArmyUnit : BaseUnit
 
     public void TakeDamage(int damage)
     {
+        // Debug.Log("Army unit took damage: " + damage + "siedruhfgiowuehfiuwehfiuwehiufhweiurfhiuehrfg");
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
             PlaySound(data.DeathSound, 'd');
@@ -303,6 +304,11 @@ public class ArmyUnit : BaseUnit
     public void SetTimeOfDay(bool isNight)
     {
         isNightTime = isNight;
+    }
+
+    public bool GetTimeOfDay()
+    {
+        return isNightTime;
     }
 
     public void MoveToFlag()

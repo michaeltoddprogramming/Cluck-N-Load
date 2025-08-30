@@ -30,16 +30,33 @@ public class SheepUnit : ArmyUnit
         // Gizmos.DrawWireSphere(transform.position, explosionRadius);
     }
 
-    // protected override void OnDrawGizmos()
-    // {
-    //     base.OnDrawGizmos(); // draw base ranges
-    //     Gizmos.color = Color.yellow;
-    //     Gizmos.DrawWireSphere(transform.position, explosionRadius);
-    // }
+    protected override void OnDrawGizmos()
+    {
+        base.OnDrawGizmos(); // Draw the base unit gizmos (attack range, roam radius, etc.)
+
+#if UNITY_EDITOR
+    // Draw explosion range for the sheep
+    Gizmos.color = Color.yellow; // Choose a color that stands out
+    Gizmos.DrawWireSphere(transform.position, explosionRadius);
+      // Draw lines to all enemies in range
+    if (GridController.Instance != null)
+    {
+        List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
+        Gizmos.color = Color.red;
+        foreach (var enemy in enemies)
+        {
+            if (enemy != null && enemy.gameObject.activeInHierarchy)
+                Gizmos.DrawLine(transform.position, enemy.transform.position);
+        }
+    }
+    
+#endif
+    }
 
     public void Update()
     {
         base.Update();
+
 
         if (doIt)
         {
@@ -47,21 +64,27 @@ public class SheepUnit : ArmyUnit
             doIt = false;
         }
 
-        List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRange(transform.position, explosionRadius);
+        List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
 
         int count = enemies.Count;
+        if (GetTimeOfDay() == false)
+        {
+            hasExploded = false;
+            count = 0;
+            lastBeepStage = 0;
+        }
 
-        if (count >= 1 && lastBeepStage < 1)
+        if (count >= 1 && lastBeepStage < 1 && !hasExploded)
         {
             PlaySound(beep1, 's');
             lastBeepStage = 1;
         }
-        else if (count >= 2 && lastBeepStage < 2)
+        else if (count >= 2 && lastBeepStage < 2 && !hasExploded)
         {
             PlaySound(beep2, 's');
             lastBeepStage = 2;
         }
-        else if (count >= 3 && lastBeepStage < 3)
+        else if (count >= 3 && lastBeepStage < 3 && !hasExploded)
         {
             PlaySound(beep3, 's');
             lastBeepStage = 3;
@@ -70,14 +93,14 @@ public class SheepUnit : ArmyUnit
 
     public override void Attack()
     {
+        // if (fromBase) return;
         // Debug.Log("private sheep sodiruhoiuwertiuwehiughwreiughiuerthugheruhgiuerhtgiouerhiougheriouthgiuerhgiuerhtuig");
-        List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRange(transform.position, explosionRadius);
+        List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
 
         if (enemies.Count >= minEnemiesToExplode && !hasExploded)
         {
             explode(enemies);
         }
-
     }
 
     private void explode(List<EnemyUnit> enemies)
@@ -99,6 +122,4 @@ public class SheepUnit : ArmyUnit
         // gameObject.SetActive(false);
         hasExploded = true;
     }
-
-
 }

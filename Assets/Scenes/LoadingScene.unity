@@ -1374,7 +1374,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: CowCivillian 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1324667127904982414, guid: eb814e6660ed3144da260b25852971b8, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

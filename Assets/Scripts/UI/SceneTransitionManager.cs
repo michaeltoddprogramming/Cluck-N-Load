@@ -33,7 +33,15 @@ public class SceneTransitionManager : MonoBehaviour
 
     public void LoadSceneWithLoading(string targetScene)
     {
-        StartCoroutine(FadeOutAndLoad(targetScene));
+        if (targetScene == "MainMenuScene")
+        {
+            // Fade out, then load main menu directly
+            StartCoroutine(FadeOutAndLoadMainMenu(targetScene));
+        }
+        else
+        {
+            StartCoroutine(FadeOutAndLoad(targetScene));
+        }
     }
 
     private IEnumerator FadeOutAndLoad(string targetScene)
@@ -46,6 +54,15 @@ public class SceneTransitionManager : MonoBehaviour
 
         // Switch to loading scene
         SceneManager.LoadScene("LoadingScene");
+    }
+
+    private IEnumerator FadeOutAndLoadMainMenu(string targetScene)
+    {
+        // Fade to black
+        yield return StartCoroutine(FadeOut());
+
+        // Load the main menu scene directly
+        SceneManager.LoadScene(targetScene);
     }
 
     private IEnumerator FadeOut()

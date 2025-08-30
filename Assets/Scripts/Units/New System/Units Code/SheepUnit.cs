@@ -82,6 +82,9 @@ public class SheepUnit : ArmyUnit
 
     private void explode(List<EnemyUnit> enemies)
     {
+        SheepExplodingVFX vfx = GetComponent<SheepExplodingVFX>();
+        if (vfx != null)
+            vfx.Explode(transform.position);
         PlaySound(data1.AttackSound, 'a');
         // CameraShake.Instance.TriggerShakeAtPosition(transform.position, 15f, 0.5f, 0.3f);
         // CameraShake.Instance.TriggerShake(0.3f, 0.5f);

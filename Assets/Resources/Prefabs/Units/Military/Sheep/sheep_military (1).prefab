@@ -85,6 +85,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b0e6e4425131e84c948ccded3241493, type: 3}
       insertIndex: -1
       addedObject: {fileID: -1010764831250894461}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b0e6e4425131e84c948ccded3241493, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1207336074674793197}
   m_SourcePrefab: {fileID: 100100000, guid: 7b0e6e4425131e84c948ccded3241493, type: 3}
 --- !u!95 &459794416696134436 stripped
 Animator:
@@ -183,6 +186,7 @@ MonoBehaviour:
   recoilForce: 20
   Recoil: 0
   healthBarPrefab: {fileID: 4122911237217708408, guid: 5901a419293af0a41829f449f21dc8a0, type: 3}
+  shoot: 0
   data1: {fileID: 11400000, guid: cc3a249b25994474487ec83611dc01d5, type: 2}
   explosionRadius: 30
   explosionDamage: 50
@@ -457,3 +461,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   source: {fileID: 929053349437667903}
   globalManager: {fileID: 11400000, guid: c67bd3daf8f16274fb384cff3c88bbee, type: 2}
+--- !u!114 &1207336074674793197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6614231965860891620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 384fe24a4b46c2b4e9e42babefdacfdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  explosionPrefab: {fileID: 9111320563476075686, guid: c6fb71e58ec36784687d958bc39de3f2, type: 3}

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: d9274bb3e13e3724b9dedbbc8c7937be
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 257086
+  packageName: Cinematic Explosions FREE
+  packageVersion: 1.0
+  assetPath: Assets/Mirza Beig/Cinematic Explosions FREE/Scripts/FPSTest.cs
+  uploadId: 638780

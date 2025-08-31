@@ -743,6 +743,13 @@ public class BuildController : MonoBehaviour
         GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
         placedItem.name = $"Item_{x}_{y}";
         Structure structure = placedItem.GetComponent<Structure>();
+
+        // Disable farmhouse in shop after placement
+        if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
+        {
+            ShopUIManager.Instance?.OnFarmHousePlaced();
+        }
+
         if (dustPoof != null)
         {
             Vector3 effectPosition = placedItem.transform.position + (structure != null && structure.GetStructureName() == "Cow Barn" ? new Vector3(0, 4f, 0) : new Vector3(0, 1f, 0));

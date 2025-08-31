@@ -189,11 +189,12 @@ public partial class TutorialManager : MonoBehaviour
             else
                 ClearKeyIndicators();
 
-            // Only show nextStepButton if the step does NOT require user actions
+            // Disable nextStepButton if the step requires user action
             bool requiresUserAction = step.triggerToWaitFor != TutorialTrigger.None || (step.requiredInputs != null && step.requiredInputs.Count > 0);
             if (nextStepButton != null)
             {
-                nextStepButton.gameObject.SetActive(!requiresUserAction);
+                nextStepButton.gameObject.SetActive(true); // Always visible
+                nextStepButton.interactable = !requiresUserAction; // Disable if action required
                 nextStepButton.onClick.RemoveAllListeners();
                 if (!requiresUserAction)
                     nextStepButton.onClick.AddListener(NextStep);

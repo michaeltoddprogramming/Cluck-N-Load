@@ -72,7 +72,7 @@ public class SceneTransitionManager : MonoBehaviour
 
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime; // Use unscaled time
             float alpha = Mathf.Clamp01(elapsed / fadeDuration);
             fadeImage.color = new Color(c.r, c.g, c.b, alpha);
             yield return null;
@@ -86,7 +86,7 @@ public class SceneTransitionManager : MonoBehaviour
 
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime; // Use unscaled time
             float alpha = 1f - Mathf.Clamp01(elapsed / fadeDuration);
             fadeImage.color = new Color(c.r, c.g, c.b, alpha);
             yield return null;

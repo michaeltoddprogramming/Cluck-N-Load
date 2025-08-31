@@ -131,11 +131,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         foreach (StructureData data in database.allStructures)
         {
-            if (data == null)
-            {
-                Debug.LogError("StructureData entry is NULL in the database! Skipping...");
+            if (data == null) continue;
+
+            // Skip farmhouse if already placed
+            if (data.structureName.ToLower().Contains("farm house") && ShopUIManager.Instance != null && ShopUIManager.Instance.IsFarmHousePlaced)
                 continue;
-            }
 
             bool showItem = false;
             switch (display)

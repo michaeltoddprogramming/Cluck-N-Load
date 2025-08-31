@@ -40,6 +40,10 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private bool checkFarmHouseDestruction = false;
     [SerializeField] private bool checkAllStructuresDestroyed = true;
 
+    [Header("Game Over")]
+    [SerializeField] private AudioClip gameOverSound;
+    [SerializeField] private AudioSource gameOverAudioSource;
+
     [SerializeField] private StructureDatabase structureDatabase;
 
     public System.Action OnGameOver;
@@ -234,6 +238,18 @@ public class GameLoopManager : MonoBehaviour
 
     allStructures.RemoveAll(s => s == null || !s);
 
+    // End game if farmhouse is destroyed
+    if (checkFarmHouseDestruction)
+    {
+        bool farmhouseExists = allStructures.Exists(s => s != null && s.GetStructureName().ToLower().Contains("farmhouse"));
+        if (!farmhouseExists && totalStructuresBuilt > 0)
+        {
+            shouldGameOver = true;
+            Debug.Log("Game Over: Farmhouse destroyed!");
+        }
+    }
+
+    // End game if all structures destroyed
     if (checkAllStructuresDestroyed && allStructures.Count == 0 && totalStructuresBuilt > 0)
     {
         shouldGameOver = true;
@@ -252,14 +268,42 @@ public class GameLoopManager : MonoBehaviour
 
         isGameOver = true;
         Debug.Log("GAME OVER!");
-        
+
+        // Play game over sound effect
+        if (gameOverSound != null)
+        {
+            if (gameOverAudioSource != null)
+                gameOverAudioSource.PlayOneShot(gameOverSound);
+            else
+                AudioSource.PlayClipAtPoint(gameOverSound, Camera.main.transform.position);
+        }
+
         OnGameOver?.Invoke();
-        
-        GameEventManager.Instance?.OnGamePaused?.Invoke();
 
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
+
+            // Dramatic tween: fade in and scale up
+            CanvasGroup cg = gameOverPanel.GetComponent<CanvasGroup>();
+            if (cg == null)
+                cg = gameOverPanel.AddComponent<CanvasGroup>();
+            cg.alpha = 0f;
+            gameOverPanel.transform.localScale = Vector3.one * 0.7f;
+
+            // When enabling the game over panel, set the CanvasGroup to ignore time scale
+            cg.blocksRaycasts = true;
+            cg.interactable = true;
+
+            LeanTween.scale(gameOverPanel, Vector3.one, 0.7f).setEase(LeanTweenType.easeOutBack);
+            LeanTween.alphaCanvas(cg, 1f, 0.7f).setEase(LeanTweenType.easeOutQuad)
+                .setOnComplete(() =>
+                {
+                    // Pause the game AFTER the panel is fully visible
+                    isPaused = true;
+                    Time.timeScale = 0f;
+                    GameEventManager.Instance?.OnGamePaused?.Invoke();
+                });
         }
     }
 
@@ -314,5 +358,67 @@ public void OnDayChanged(int newDay)
     public void Debug_PrintStructureCount()
     {
         Debug.Log($"Active Structures: {allStructures.Count}, Total Built: {totalStructuresBuilt}");
+    }
+
+    public void OnGameOverRestart()
+    {
+        // Unpause before restarting
+        Time.timeScale = 1f;
+        isPaused = false;
+        isGameOver = false;
+
+        // Clean up persistent objects (UIManager, AudioManager, etc.)
+        CleanupPersistentObjects();
+
+        // Use your transition manager if available
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.LoadSceneWithLoading(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+    }
+
+    // Add this helper method:
+    private void CleanupPersistentObjects()
+    {
+        string[] persistentNames = {
+            "OptionsCanvas 1(Clone)",
+            "UIManager",
+            "AudioManager",
+            "GameLoopManager",
+            "GameManager",
+            "MoneyManager",
+            "ShopUIManager",
+            "LeanTween",
+            "Debug Updater"
+        };
+
+        foreach (string objName in persistentNames)
+        {
+            var obj = GameObject.Find(objName);
+            if (obj != null)
+            {
+                Destroy(obj);
+            }
+        }
+    }
+
+    public void OnGameOverBackToMenu()
+    {
+        // Unpause before returning to menu
+        Time.timeScale = 1f;
+        isPaused = false;
+
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.LoadSceneWithLoading("MainMenuScene");
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
+        }
     }
 }

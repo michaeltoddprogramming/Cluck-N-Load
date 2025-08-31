@@ -147,4 +147,20 @@ public class ShopUIManager : MonoBehaviour
         }
         shopPanel.SetActive(false);
     }
+
+    public bool IsFarmHousePlaced { get; private set; } = false;
+
+    public void OnFarmHousePlaced()
+    {
+        IsFarmHousePlaced = true;
+        if (shopPanelUI != null)
+            shopPanelUI.PopulateShop();
+    }
+
+    public void OnFarmHouseRemoved()
+    {
+        IsFarmHousePlaced = false;
+        if (shopPanelUI != null)
+            shopPanelUI.PopulateShop();
+    }
 }

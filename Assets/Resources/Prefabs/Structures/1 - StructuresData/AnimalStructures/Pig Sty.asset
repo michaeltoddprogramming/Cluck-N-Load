@@ -13,18 +13,19 @@ MonoBehaviour:
   m_Name: Pig Sty
   m_EditorClassIdentifier: 
   structureName: Pig Sty
-  description: A muddy pen where pigs wallow and stay protected.
+  description: 'Pigs produce bacon. Feed with Carrots.  '
   prefab: {fileID: 1494612050108861018, guid: f51b39235da009447aaf83678d2a01a2, type: 3}
   icon: {fileID: 21300000, guid: 0cbd4b51c610a634f88af29a7f3b9006, type: 3}
   type: 8
-  cost: 50
-  health: 100
+  cost: 200
+  health: 550
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
+  unlockDay: 6
   targetAnimalType: Pig
   armyAnimalPrefabs:
   - {fileID: 4059874661627574406, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}
   flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
-  recruitmentCostPerAnimal: 50
+  recruitmentCostPerAnimal: 200
   protectionRadius: 5

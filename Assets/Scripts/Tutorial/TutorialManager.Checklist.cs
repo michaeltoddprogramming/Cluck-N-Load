@@ -37,6 +37,12 @@ public partial class TutorialManager
         CheckCategoryProgress();
         UpdateChecklistUI();
         PlayCompletionFeedback();
+
+        // Enable skip button only after farmhouse is placed
+        if (stepId == "build_farmhouse" && skipTutorialButton != null)
+        {
+            skipTutorialButton.gameObject.SetActive(true);
+        }
     }
 
     private void CheckCategoryProgress()

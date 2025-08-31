@@ -387,7 +387,7 @@ public class SpawnUnits : MonoBehaviour
     public void increaseAfterNight()
     {
         maxSpawnAmount += nightlySpawnMultiplier;
-        minSpawnAmount += nightlySpawnMultiplier;
+        // minSpawnAmount += nightlySpawnMultiplier;
         // Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}************************************************");
 
     }

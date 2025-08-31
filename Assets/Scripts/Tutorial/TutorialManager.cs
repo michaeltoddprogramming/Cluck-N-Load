@@ -24,6 +24,7 @@ public partial class TutorialManager : MonoBehaviour
     public GameObject siloButton;
     public GameObject chickenCoopButton;
     public GameObject barracksButton;
+    public Button nextStepButton;
 
     [Header("Audio")]
     public AudioSource mumbleAudioSource;
@@ -67,7 +68,7 @@ public partial class TutorialManager : MonoBehaviour
             effectsAudioSource = gameObject.AddComponent<AudioSource>();
             effectsAudioSource.playOnAwake = false;
             InitializeTutorialSteps();
-            skipTutorialButton?.onClick.AddListener(SkipTutorial);
+            skipTutorialButton?.gameObject.SetActive(false); // Hide skip button at start
             SetupChecklist();
         }
         else
@@ -124,6 +125,20 @@ public partial class TutorialManager : MonoBehaviour
             isProcessingStep = false;
         }
 
+        // Mark current step as complete if it hasn't been already
+        if (currentStepIndex >= 0 && currentStepIndex < steps.Count)
+        {
+            var step = steps[currentStepIndex];
+            if (!string.IsNullOrEmpty(step.stepId) && !GetCompletedStepIds().Contains(step.stepId))
+            {
+                if (step.uiToHighlight != null)
+                    HighlightUI(step.uiToHighlight, false);
+
+                step.onStepComplete?.Invoke();
+                MarkStepComplete(step.stepId);
+            }
+        }
+
         isProcessingStep = true;
         StartCoroutine(ProcessNextStepSafely());
     }
@@ -170,12 +185,19 @@ public partial class TutorialManager : MonoBehaviour
 
             ShowKeyIndicators(step.requiredInputs);
 
-            if (step.triggerToWaitFor == TutorialTrigger.None)
-                StartCoroutine(AutoAdvanceStep());
+            // Show nextStepButton only if step.triggerToWaitFor == None and no requiredInputs
+            if (nextStepButton != null)
+            {
+                bool showButton = step.triggerToWaitFor == TutorialTrigger.None && (step.requiredInputs == null || step.requiredInputs.Count == 0);
+                nextStepButton.gameObject.SetActive(showButton);
+                nextStepButton.onClick.RemoveAllListeners();
+                if (showButton)
+                    nextStepButton.onClick.AddListener(NextStep);
+            }
 
             step.onStepStart?.Invoke();
 
-            waitingForStepToComplete = true;
+            waitingForStepToComplete = step.triggerToWaitFor != TutorialTrigger.None || (step.requiredInputs != null && step.requiredInputs.Count > 0);
         }
         finally
         {
@@ -233,11 +255,15 @@ public partial class TutorialManager : MonoBehaviour
     public void EndTutorial()
     {
         tutorialPanel.SetActive(false);
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(false);
     }
 
-    void SkipTutorial()
+    public void SkipTutorial()
     {
         tutorialPanel.SetActive(false);
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(false); 
     }
 
     IEnumerator AutoAdvanceStep()
@@ -266,6 +292,9 @@ public partial class TutorialManager : MonoBehaviour
         if (checklistPanel != null)
             checklistPanel.SetActive(false);
 
+        if (skipTutorialButton != null)
+            skipTutorialButton.gameObject.SetActive(false); // Hide skip button
+
         if (typingCoroutine != null)
             StopCoroutine(typingCoroutine);
 
@@ -286,6 +315,9 @@ public partial class TutorialManager : MonoBehaviour
 
         if (checklistPanel != null)
             checklistPanel.SetActive(restoreChecklistState);
+
+        if (skipTutorialButton != null)
+            skipTutorialButton.gameObject.SetActive(true); // Show skip button again
 
         isShowingDiscovery = false;
         currentDiscoveryStep = null;

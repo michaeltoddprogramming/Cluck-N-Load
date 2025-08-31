@@ -111,7 +111,8 @@ public class AnimalStructure : Structure
     private IEnumerator DelayedInstantCompleteForTutorial()
     {
         yield return new WaitForSeconds(2f);
-        if (TutorialManager.Instance != null)
+        // Only allow instant complete if tutorial step is not completed
+        if (TutorialManager.Instance != null && !TutorialManager.Instance.GetCompletedStepIds().Contains("feed_chickens"))
         {
             InstantCompleteProductionForTutorial();
             TutorialManager.Instance.Trigger(TutorialTrigger.FedFirstAnimals);

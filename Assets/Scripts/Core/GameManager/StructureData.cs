@@ -13,9 +13,9 @@ public class StructureData : ScriptableObject
     public int health;
     public GameObject uiPrefab;
 
-    // [Header("SFX")]
-    // [Tooltip("Radius for army animals to patrol around the flag.")]
-    // [SerializeField] public AudioClip backgroundNoise;
+    [Header("Progressive Unlocks")]
+    [Tooltip("Day number when this structure becomes available in the shop/game.")]
+    public int unlockDay = 0; // Default: available from day 0
 
     [Header("Barracks Settings")]
     [Tooltip("Animal type this barracks recruits from (e.g., Chicken, Cow). Leave empty for non-barracks structures.")]
@@ -32,13 +32,6 @@ public class StructureData : ScriptableObject
     public int recruitmentCostPerAnimal = 50;
     [Tooltip("Radius for army animals to patrol around the flag.")]
     public float protectionRadius = 5f;
-
-
-    // [Header("SFX")]
-    // [Tooltip("Background sound for the animal structure.")]
-    // [SerializeField] public AudioClip backgroundNoise;
-    // [SerializeField] public AudioSource backgroundNoise;
-    // [SerializeField] public AudioSource audioSource;
 }
 
 public enum StructureType

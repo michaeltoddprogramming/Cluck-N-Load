@@ -10,6 +10,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public TextMeshProUGUI costText;
     public TextMeshProUGUI descriptionText; 
     public Button selectButton;
+    public GameObject lockedOverlay; // <-- Add this to your prefab and assign in inspector
 
     private StructureData data;
 
@@ -34,6 +35,29 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (descriptionText != null)
             descriptionText.text = structure.description;
+
+        int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
+        bool isLocked = structure.unlockDay > currentDay;
+
+        if (lockedOverlay != null)
+            lockedOverlay.SetActive(isLocked);
+
+        if (isLocked)
+        {
+            if (selectButton != null)
+                selectButton.interactable = false;
+            if (icon != null)
+                icon.color = new Color(0.7f, 0.7f, 0.7f, 0.5f);
+
+            // Only update UnlockText in overlay, not the price
+            if (lockedOverlay != null)
+            {
+                var unlockText = lockedOverlay.GetComponentInChildren<TextMeshProUGUI>();
+                if (unlockText != null)
+                    unlockText.text = $"Unlocks on Day {structure.unlockDay}";
+            }
+            return;
+        }
 
         if (selectButton != null)
         {
@@ -91,14 +115,12 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Enter");
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Show(data);
     }
     
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log("Exit");
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
     }

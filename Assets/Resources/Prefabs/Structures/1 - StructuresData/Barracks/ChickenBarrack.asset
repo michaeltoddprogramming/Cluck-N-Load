@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: ChickenBarrack
   m_EditorClassIdentifier: 
   structureName: Chicken Barrack
-  description: Housing quarters for farm defenders to rest and prepare.
+  description: Trains chicken shooters. Low defense, fast attack.
   prefab: {fileID: 4222961760227805080, guid: 29ff30d11ea4a764cbed58bcddc57038, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50
-  health: 150
+  health: 250
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  unlockDay: 0
   targetAnimalType: Chicken
   armyAnimalPrefabs:
   - {fileID: 5973305448664574062, guid: 2ae7546f9858ccc4a9d96f2137695a01, type: 3}

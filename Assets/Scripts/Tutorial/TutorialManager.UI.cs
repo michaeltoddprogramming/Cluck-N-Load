@@ -80,10 +80,18 @@ public partial class TutorialManager
             mumbleAudioSource.Play();
         }
 
-        foreach (char c in text)
+        float nextCharTime = 0f;
+        int charIndex = 0;
+        while (charIndex < text.Length)
         {
-            dialogueText.text += c;
-            yield return new WaitForSecondsRealtime(typeSpeed);
+            nextCharTime += Time.unscaledDeltaTime;
+            while (nextCharTime >= typeSpeed && charIndex < text.Length)
+            {
+                dialogueText.text += text[charIndex];
+                charIndex++;
+                nextCharTime -= typeSpeed;
+            }
+            yield return null;
         }
 
         if (mumbleAudioSource != null && mumbleAudioSource.isPlaying)

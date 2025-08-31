@@ -28,7 +28,7 @@ MonoBehaviour:
   DeathSound: {fileID: 8300000, guid: 2ca6600384effcb4aba77a3d1ca90ef9, type: 3}
   HurtSound: {fileID: 8300000, guid: 7fb940354a2291649ac17071400f2026, type: 3}
   backgroundSound: {fileID: 8300000, guid: ece4e43a0a14c174ab85962076b2dfc9, type: 3}
-  maxSpawnAmount: 2
-  minSpawnAmount: 1
-  nightlySpawnMultiplier: 2
-  seasonSpawnMultiplier: 1.2
+  maxSpawnAmount: 1
+  minSpawnAmount: 0
+  nightlySpawnMultiplier: 1
+  seasonSpawnMultiplier: 1

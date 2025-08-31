@@ -200,7 +200,9 @@ public class NightManager : MonoBehaviour
             source2.Stop();
         }
 
-        if (Hours == 0) Hours = 5;
+        Hours = 5;
+        Minutes = 0;
+
         if (Years == 0) Years = 1;
         seasonNotification.gameObject.SetActive(false);
         productionNotification.gameObject.SetActive(false);
@@ -493,7 +495,7 @@ public class NightManager : MonoBehaviour
         }
         else if (value == 15)
         {
-            if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
                 Coroutine tutorialSkyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
                 skyboxCoroutines.Add(tutorialSkyboxCor);
@@ -853,8 +855,8 @@ public class NightManager : MonoBehaviour
             }
 
             productionBoosts.SetBoosted(boostedProducts);
-
-            if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+            
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
                 return;
             }
@@ -1028,9 +1030,8 @@ public class NightManager : MonoBehaviour
 
 
                 // Block production notifications during tutorial
-                if (TutorialManager.Instance != null && TutorialManager.Instance.tutorialPanel.activeSelf)
+                if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
                 {
-                    Debug.Log("TUTORIAL: Blocking production notification - tutorial is active");
                     return;
                 }
 

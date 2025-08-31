@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 6fc714c47f9023548b0b7c20a9fc0744, type: 3}
       propertyPath: m_Name
-      value: sheep_animated
+      value: Army Sheep
       objectReference: {fileID: 0}
     - target: {fileID: 1442912515430923027, guid: 6fc714c47f9023548b0b7c20a9fc0744, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -115,8 +115,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 2.154188, z: 2.1016436}
+  m_Center: {x: 0, y: 0.9867078, z: 0.020307302}
 --- !u!114 &8313111219017938294
 MonoBehaviour:
   m_ObjectHideFlags: 0

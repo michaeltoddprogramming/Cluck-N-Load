@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: fe852f2fa8033b04eb27e5e7847a0f49, type: 3}
       propertyPath: m_Name
-      value: bear_animated
+      value: Bear
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: fe852f2fa8033b04eb27e5e7847a0f49, type: 3}
       propertyPath: m_Controller
@@ -374,8 +374,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.6948454, y: 1.9076912, z: 3.6977577}
+  m_Center: {x: -0.017240763, y: 1.0406541, z: 0.2412107}
 --- !u!195 &4412644832013729277
 NavMeshAgent:
   m_ObjectHideFlags: 0

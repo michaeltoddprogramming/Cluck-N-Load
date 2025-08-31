@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 445635ca35d5adb4d999dd52b1842776, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.2505655
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 445635ca35d5adb4d999dd52b1842776, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.00000023841858
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 445635ca35d5adb4d999dd52b1842776, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.660809
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 445635ca35d5adb4d999dd52b1842776, type: 3}
       propertyPath: m_LocalRotation.w
@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 2bf666bb097a55e4681715cd3ed7e113, type: 2}
     - target: {fileID: 919132149155446097, guid: 445635ca35d5adb4d999dd52b1842776, type: 3}
       propertyPath: m_Name
-      value: b_r_w_animated (2)
+      value: Wolf
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 445635ca35d5adb4d999dd52b1842776, type: 3}
       propertyPath: m_Controller
@@ -149,8 +149,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.6325544, y: 1, z: 1.8226801}
+  m_Center: {x: 0.023976967, y: 0.54999995, z: 0.20579869}
 --- !u!195 &7760269160307277755
 NavMeshAgent:
   m_ObjectHideFlags: 0

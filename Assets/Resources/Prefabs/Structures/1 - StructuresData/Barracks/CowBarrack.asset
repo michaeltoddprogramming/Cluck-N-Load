@@ -21,7 +21,7 @@ MonoBehaviour:
   cost: 50
   health: 350
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
-  unlockDay: 0
+  unlockDay: 5
   targetAnimalType: Cow
   armyAnimalPrefabs:
   - {fileID: 1618091314338763466, guid: 8d75fa41e2013634c9d3f1cdbcc0bfa6, type: 3}

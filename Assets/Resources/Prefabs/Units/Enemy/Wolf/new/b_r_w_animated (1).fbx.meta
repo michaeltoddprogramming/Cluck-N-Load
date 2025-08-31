@@ -35,7 +35,7 @@ ModelImporter:
       takeName: Wolf_armature|ArmatureAction
       internalID: -7676481897882036626
       firstFrame: 0
-      lastFrame: 45
+      lastFrame: 59
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -64,7 +64,7 @@ ModelImporter:
       takeName: Wolf_armature|ArmatureAction
       internalID: -8809958176650203373
       firstFrame: 70
-      lastFrame: 120
+      lastFrame: 129
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

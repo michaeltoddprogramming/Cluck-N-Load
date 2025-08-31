@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wolf
   m_EditorClassIdentifier: 
   UnitName: Wolf
-  Prefab: {fileID: 5519683619534226762, guid: 6dab034660eb4b1409583d9256e80d73, type: 3}
+  Prefab: {fileID: 5825747814434693355, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
   MovementSpeed: 5.5
   Type: 0
   AttType: 0
@@ -23,7 +23,7 @@ MonoBehaviour:
   AttackCooldown: 1
   Acceleration: 10
   AngularSpeed: 360
-  StoppingDistance: 5
+  StoppingDistance: 3
   AttackSound: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
   DeathSound: {fileID: 8300000, guid: 7b0841ab96974e249804d83be3e4fbc4, type: 3}
   HurtSound: {fileID: 8300000, guid: e0a21b84f72d2ce439a2bf687703c388, type: 3}

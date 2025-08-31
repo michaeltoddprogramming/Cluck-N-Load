@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Racoon
   m_EditorClassIdentifier: 
   UnitName: Racoon
-  Prefab: {fileID: 2890384898077951003, guid: 1aebcc9f1924040429da769d3a73633d, type: 3}
+  Prefab: {fileID: 22301780803456137, guid: e9b418fadd33c5048b928405c8c1b3fa, type: 3}
   MovementSpeed: 6.5
   Type: 1
   AttType: 1

@@ -263,7 +263,7 @@ public partial class TutorialManager : MonoBehaviour
     {
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
-            nextStepButton.game 
+            nextStepButton.gameObject.SetActive(false); 
     }
 
     IEnumerator AutoAdvanceStep()

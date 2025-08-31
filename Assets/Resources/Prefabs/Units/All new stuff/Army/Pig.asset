@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Pig
   m_EditorClassIdentifier: 
   UnitName: pig
-  Prefab: {fileID: 4728301659264756065, guid: 752ccf696f37bd94981a38fced240a81, type: 3}
+  Prefab: {fileID: 4898585818345014531, guid: 179d2a93b04af634ba533e40b1492b2a, type: 3}
   MovementSpeed: 3
   Type: 1
   Health: 120

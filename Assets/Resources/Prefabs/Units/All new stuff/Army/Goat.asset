@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Goat
   m_EditorClassIdentifier: 
   UnitName: Goat
-  Prefab: {fileID: 7230617354371779946, guid: 2f3d5b724d4b94549a12aaa727cc990d, type: 3}
+  Prefab: {fileID: 1446600813572911103, guid: 6b188252abf5bac48923148b2dd07058, type: 3}
   MovementSpeed: 2
   Type: 2
   Health: 100

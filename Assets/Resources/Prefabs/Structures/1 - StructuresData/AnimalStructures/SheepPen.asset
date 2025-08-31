@@ -20,7 +20,7 @@ MonoBehaviour:
   cost: 250
   health: 650
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
-  unlockDay: 8
+  unlockDay: 15
   targetAnimalType: Sheep
   armyAnimalPrefabs:
   - {fileID: 4059874661627574406, guid: 02e5a93cd696a9e4d8a1da9232bf1377, type: 3}

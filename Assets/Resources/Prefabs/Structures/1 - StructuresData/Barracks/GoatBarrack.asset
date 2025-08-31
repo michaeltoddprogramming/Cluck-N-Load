@@ -20,7 +20,7 @@ MonoBehaviour:
   cost: 50
   health: 450
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
-  unlockDay: 4
+  unlockDay: 10
   targetAnimalType: Goat
   armyAnimalPrefabs:
   - {fileID: 1446600813572911103, guid: 6b188252abf5bac48923148b2dd07058, type: 3}

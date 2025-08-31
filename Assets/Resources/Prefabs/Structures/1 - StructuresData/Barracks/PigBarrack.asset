@@ -20,7 +20,7 @@ MonoBehaviour:
   cost: 50
   health: 550
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
-  unlockDay: 6
+  unlockDay: 15
   targetAnimalType: Pig
   armyAnimalPrefabs:
   - {fileID: 4898585818345014531, guid: 179d2a93b04af634ba533e40b1492b2a, type: 3}

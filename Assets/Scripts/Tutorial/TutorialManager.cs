@@ -266,24 +266,27 @@ public partial class TutorialManager : MonoBehaviour
 
     public void EndTutorial()
     {
+        Debug.Log("EndTutorial called");
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
     
         currentStepIndex = steps.Count;
         waitingForStepToComplete = false;
+        Debug.Log($"Tutorial ended: currentStepIndex={currentStepIndex}, waitingForStepToComplete={waitingForStepToComplete}");
     }
-
+    
     public void SkipTutorial()
     {
+        Debug.Log("SkipTutorial called");
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
     
         CleanupAllWorldHighlights();
-        CleanupShopHighlights();  
-
-        EndTutorial();   
+        CleanupShopHighlights();
+    
+        EndTutorial();
     }
 
     IEnumerator AutoAdvanceStep()
@@ -355,7 +358,9 @@ public partial class TutorialManager : MonoBehaviour
 
     public bool IsTutorialActive()
     {
-        return tutorialPanel != null && tutorialPanel.activeSelf && currentStepIndex >= 0 && currentStepIndex < steps.Count;
+        bool active = tutorialPanel != null && tutorialPanel.activeSelf && currentStepIndex >= 0 && currentStepIndex < steps.Count;
+        Debug.Log($"IsTutorialActive: panelActive={tutorialPanel?.activeSelf}, currentStepIndex={currentStepIndex}, stepsCount={steps.Count}, result={active}");
+        return active;
     }
 
     public List<string> GetCompletedStepIds() => new List<string>(completedStepIds);

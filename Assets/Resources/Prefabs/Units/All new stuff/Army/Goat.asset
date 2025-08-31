@@ -18,7 +18,7 @@ MonoBehaviour:
   Type: 2
   Health: 100
   AttackDamage: 40
-  AttackRange: 5
+  AttackRange: 15
   AttackCooldown: 3
   Acceleration: 3
   AngularSpeed: 90

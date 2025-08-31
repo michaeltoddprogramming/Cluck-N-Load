@@ -191,14 +191,44 @@ public class ArmyUnit : BaseUnit
 
         SetTrigger("Attack");
 
-        PlaySound(data.AttackSound, 'a');
+        if (data.Type == ArmyType.Goat)
+        {
+            Debug.Log("sdikrujghwiuherh giuwerhgoiueshrlkjhg hsdkjfhglkusedrhgpuoisdhgoiuhsdfkjg hsdfkulhg ;osudryhg ouisdnrg ousehdf gouseh rtgiouhsaertolkuj gh seodutg");
+            // Delay impact for goats so it syncs with animation
+            StartCoroutine(DelayedImpact(0.8f)); // tweak 0.6f until it looks right
+        }
+        else
+        {
+            PerformAttackImpact();
+        }
 
-        playVFX();
+        // PlaySound(data.AttackSound, 'a');
+
+        // playVFX();
 
         // ApplyRecoil();
         // isReturningAfterAttack = true;
 
-        currentTarget.TakeDamage(data.AttackDamage);
+        // currentTarget.TakeDamage(data.AttackDamage);
+    }
+
+    private void PerformAttackImpact()
+    {
+        // sound
+        PlaySound(data.AttackSound, 'a');
+
+        // VFX
+        playVFX();
+
+        // damage
+        if (currentTarget != null)
+            currentTarget.TakeDamage(data.AttackDamage);
+    }
+
+    private IEnumerator DelayedImpact(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        PerformAttackImpact();
     }
 
     // private void ApplyRecoil()

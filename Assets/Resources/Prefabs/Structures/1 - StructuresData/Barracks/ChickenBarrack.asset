@@ -23,7 +23,7 @@ MonoBehaviour:
   targetAnimalType: Chicken
   armyAnimalPrefabs:
   - {fileID: 5973305448664574062, guid: 2ae7546f9858ccc4a9d96f2137695a01, type: 3}
-  flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
+  flagPrefab: {fileID: 644296213450521698, guid: 3a6f0a44bc1ead84c8d83185c3a205d0, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50

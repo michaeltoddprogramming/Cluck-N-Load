@@ -23,7 +23,7 @@ MonoBehaviour:
   targetAnimalType: Cow
   armyAnimalPrefabs:
   - {fileID: 1618091314338763466, guid: 8d75fa41e2013634c9d3f1cdbcc0bfa6, type: 3}
-  flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
+  flagPrefab: {fileID: 3317388376642703393, guid: 56d95a1ec21391649acbb212afe91d22, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50

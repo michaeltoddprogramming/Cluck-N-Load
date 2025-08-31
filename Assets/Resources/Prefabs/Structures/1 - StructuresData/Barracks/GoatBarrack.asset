@@ -23,7 +23,7 @@ MonoBehaviour:
   targetAnimalType: Goat
   armyAnimalPrefabs:
   - {fileID: 1446600813572911103, guid: 6b188252abf5bac48923148b2dd07058, type: 3}
-  flagPrefab: {fileID: 6628838466954649907, guid: be3a52622692ab945add163e1efa1e73, type: 3}
+  flagPrefab: {fileID: 6300896281557779949, guid: e671fa093825b22498363732bdbbdd94, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50

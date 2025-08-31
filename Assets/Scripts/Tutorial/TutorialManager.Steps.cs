@@ -28,7 +28,7 @@ public partial class TutorialManager
         {
             stepId = "camera_controls",
             title = "Look Around",
-            instructionText = "Lost chicken alert! Use WASD, Q/E, and Mouse Wheel to hunt for Melony.",
+            instructionText = "Lost chicken alert! Use WASD, Q/E, and Mouse Wheel to hunt for Melony. Oh and you can zoom in and out with scroll wheel or 1/2 and rotate with mouse wheel down! How catering am I!?",
             triggerToWaitFor = TutorialTrigger.InputDetected,
             requiredInputs = new List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.Q, KeyCode.E, KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Mouse3, KeyCode.Mouse4, KeyCode.Mouse2 }
         });
@@ -98,7 +98,7 @@ public partial class TutorialManager
         {
             stepId = "build_farmhouse",
             title = "Build Farmhouse",
-            instructionText = "Every legend needs a house. Plop down a Farmhouse!",
+            instructionText = "Every legend needs a house. Plop down a Farmhouse! BE WARNED, IF THIS STRUCTURE IS DESTROYED YOUR FARM WILL FAIL IMMEDIATLY - PROTECT IT!",
             triggerToWaitFor = TutorialTrigger.BuiltFarmHouse,
             uiToHighlight = farmhouseButton
         };
@@ -145,7 +145,7 @@ public partial class TutorialManager
         {
             stepId = "harvest_first_crops",
             title = "Harvest!",
-            instructionText = "Sunflowers are ready! Click Harvest. Seeds = chicken snacks.",
+            instructionText = "Sunflowers are ready! (I sped up the growth) Click Harvest. Seeds = chicken snacks.",
             triggerToWaitFor = TutorialTrigger.HarvestedCrop
         };
         harvestCropStep.onStepStart = new UnityEvent();
@@ -202,7 +202,7 @@ public partial class TutorialManager
         {
             stepId = "collect_eggs",
             title = "Collect Eggs",
-            instructionText = "Eggs are ready! Click Collect. Cha-ching!",
+            instructionText = "Eggs are ready! (I also sped that up - I don't have much patience) Click Collect. Cha-ching!",
             triggerToWaitFor = TutorialTrigger.CollectedFirstProducts
         });
 
@@ -232,7 +232,7 @@ public partial class TutorialManager
         {
             stepId = "prepare_defense",
             title = "Farm Defended!",
-            instructionText = "You did it! Eggs, soldiers, and no wolves (hopefully).",
+            instructionText = "You did it! Eggs, soldiers, and no wolves (hopefully). Night time starts soon make sure that flag is placed or not you'll find out!",
             triggerToWaitFor = TutorialTrigger.None
         });
 

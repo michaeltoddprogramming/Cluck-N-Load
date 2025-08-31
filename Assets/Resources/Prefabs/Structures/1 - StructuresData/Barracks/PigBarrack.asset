@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PigBarrack
   m_EditorClassIdentifier: 
   structureName: Pig Barrack
-  description: 'Trains pig flamers. High defense, short-range area damage.  '
+  description: Pigs are sturdy units equipped with flamethrowers for area damage.
   prefab: {fileID: 127442347093937361, guid: bd7a7a41cb5fc2049b5b4624aa7246ba, type: 3}
-  icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
+  icon: {fileID: 21300000, guid: ba92087104e3e24448c32900f2ca15fd, type: 3}
   type: 9
   cost: 50
   health: 550

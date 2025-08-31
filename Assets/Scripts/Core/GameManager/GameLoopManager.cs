@@ -238,10 +238,13 @@ public class GameLoopManager : MonoBehaviour
 
     allStructures.RemoveAll(s => s == null || !s);
 
-    // End game if farmhouse is destroyed
+    // End game ONLY if farmhouse is destroyed
     if (checkFarmHouseDestruction)
     {
-        bool farmhouseExists = allStructures.Exists(s => s != null && s.GetStructureName().ToLower().Contains("farmhouse"));
+        bool farmhouseExists = allStructures.Exists(s =>
+            s != null &&
+            s.GetStructureName().Trim().Equals("Farm House", System.StringComparison.OrdinalIgnoreCase)
+        );
         if (!farmhouseExists && totalStructuresBuilt > 0)
         {
             shouldGameOver = true;

@@ -15,6 +15,7 @@ public class NightManager : MonoBehaviour
     [Header("Start NIght button")]
     [SerializeField] private Button startNightButton;
     [SerializeField] private TextMeshProUGUI buttonText;
+        [SerializeField] private TextMeshProUGUI dayCountText;
 
     // Light
     [Header("Lighting stuff")]
@@ -598,6 +599,14 @@ public class NightManager : MonoBehaviour
             StartDay(0); // force reset to day state
             setSeason(1); // reset season if needed
         }
+
+        UpdateDayCountUI();
+    }
+
+    private void UpdateDayCountUI()
+    {
+        if (dayCountText != null)
+            dayCountText.text = $"Day {Days}";
     }
 
     private IEnumerator Skybox(Texture2D a, Texture2D b, float time)

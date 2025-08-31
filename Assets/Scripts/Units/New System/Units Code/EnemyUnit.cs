@@ -912,9 +912,14 @@ public class EnemyUnit : BaseUnit
             Structure[] allStructures = FindObjectsOfType<Structure>();
             foreach (var s in allStructures)
             {
-                // Debug.Log("Fuck me till i am purple -------");
                 // The farmhouse is the ONLY Structure that is not a child type
                 // if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
+
+                if (s.GetType() != typeof(Structure))
+                {
+                    continue;
+                }
+
                 if (!IsTargetDead(s))
                 {
                     nearest = s;
@@ -1243,6 +1248,27 @@ public class EnemyUnit : BaseUnit
         }
 
         agent.SetDestination(destination);
+
+        //force despawn if not already
+        StartCoroutine(DelayedDespawn(10f)); // Despawn after 5 seconds
+    }
+
+    private IEnumerator DelayedDespawn(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Check if the enemy is still active and hasn't been despawned
+        if (retreating)
+        {
+            // Debug.Log("Enemy despawned automatically after delay.");
+            Destroy(gameObject); // Despawn the enemy
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // Stop all coroutines to prevent delayed despawn from running after destruction
+        StopAllCoroutines();
     }
 
     // private IEnumerator TryActionCoroutine()

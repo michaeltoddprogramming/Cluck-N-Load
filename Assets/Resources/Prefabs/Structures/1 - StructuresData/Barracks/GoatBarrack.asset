@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: GoatBarrack
   m_EditorClassIdentifier: 
   structureName: Goat Barrack
-  description: 'Trains goat snipers. Moderate defense, long-range attack.  '
+  description: Goats are agile units equipped with snipers for long range and precise
+    attacks.
   prefab: {fileID: 5808619500396567147, guid: b18305c600899ca419fa2b21d0fa41f5, type: 3}
-  icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
+  icon: {fileID: 21300000, guid: 0b0ca4f613417214f948d5758beccc6b, type: 3}
   type: 9
   cost: 50
   health: 450

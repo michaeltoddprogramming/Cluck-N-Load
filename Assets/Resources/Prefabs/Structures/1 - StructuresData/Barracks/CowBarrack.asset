@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: CowBarrack
   m_EditorClassIdentifier: 
   structureName: Cow Barrack
-  description: Trains cow tanks. High defense, slow but strong.
+  description: Cows are tanky, high-health units equipped with miniguns for powerful
+    close-range high damage attacks.
   prefab: {fileID: 7501336543757764166, guid: db5ee0fcb6d9d3e448435df9d568c448, type: 3}
-  icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
+  icon: {fileID: 21300000, guid: cecbd1f9f4a245840a9ae6eb29a6ac2d, type: 3}
   type: 9
   cost: 50
   health: 350

@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ChickenBarrack
   m_EditorClassIdentifier: 
   structureName: Chicken Barrack
-  description: Trains chicken shooters. Low defense, fast attack.
+  description: Chickens are fast, low-health units equipped with pump shotguns for
+    rapid attacks.
   prefab: {fileID: 4222961760227805080, guid: 29ff30d11ea4a764cbed58bcddc57038, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9

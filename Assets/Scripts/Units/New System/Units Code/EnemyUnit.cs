@@ -912,9 +912,14 @@ public class EnemyUnit : BaseUnit
             Structure[] allStructures = FindObjectsOfType<Structure>();
             foreach (var s in allStructures)
             {
-                // Debug.Log("Fuck me till i am purple -------");
                 // The farmhouse is the ONLY Structure that is not a child type
                 // if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
+
+                if (s.GetType() != typeof(Structure))
+                {
+                    continue;
+                }
+
                 if (!IsTargetDead(s))
                 {
                     nearest = s;

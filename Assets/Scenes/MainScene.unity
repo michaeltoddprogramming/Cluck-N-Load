@@ -4395,10 +4395,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec3ba4c88ab58ef45b045b4429053885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wolfIcon: {fileID: 719557780}
-  racoonIcon: {fileID: 990711264}
-  boarIcon: {fileID: 353967787}
-  bearIcon: {fileID: 1448314930}
 --- !u!1001 &604365422
 PrefabInstance:
   m_ObjectHideFlags: 0

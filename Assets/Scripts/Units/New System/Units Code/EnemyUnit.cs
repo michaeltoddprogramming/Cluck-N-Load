@@ -1111,9 +1111,12 @@ public class EnemyUnit : BaseUnit
         int width = _gridDataGenerator.GetGridWidth();
         int height = _gridDataGenerator.GetGridHeight();
         // Debug.Log($"Grid Size: {width}x{height}+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------------------------------");
-
+        int maxRetries = 100;
+        int retries = 0;
         while (true) // Keep trying until valid
         {
+            retries++;
+
             int side = Random.Range(0, 4);
             int x = 0;
             int y = 0;
@@ -1144,6 +1147,11 @@ public class EnemyUnit : BaseUnit
             {
                 // Spawn exactly at the grid cell position
                 return cell.worldPosition;
+            }
+            else
+            {
+                GridCell cell2 = _gridDataGenerator.GetCell(width, height - 1);
+                return cell2.worldPosition;
             }
             // else retry with another random edge cell
         }

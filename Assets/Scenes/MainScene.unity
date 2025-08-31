@@ -3230,6 +3230,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 975040403783743150, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 2d43c24dc0f08804996ee9fd1a43a3d2, type: 3}
     - target: {fileID: 1323876942442514190, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_Name
       value: TutorialCanvas

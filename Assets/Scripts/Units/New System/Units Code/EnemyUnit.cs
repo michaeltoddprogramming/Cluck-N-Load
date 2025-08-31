@@ -193,12 +193,12 @@ public class EnemyUnit : BaseUnit
 
         if (mainTarget == null || IsTargetDead(mainTarget))
         {
-            Debug.Log("ieruehfweiurhgiouwrehjtgoiujhwrtoiugjorwijtgiorjtgoirjtgoijertgoijretgoreitjgersotighj");
+            // Debug.Log("ieruehfweiurhgiouwrehjtgoiujhwrtoiugjorwijtgiorjtgoirjtgoijertgoijretgoreitjgersotighj");
             mainTarget = GetNearestAggroTargetOptimized();
-            Debug.Log("mainTarget: " + mainTarget + "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
+            // Debug.Log("mainTarget: " + mainTarget + "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
             if (mainTarget == null)
             {
-                Debug.Log("`````````````````````````````````````````````````````````````````````````````````` NULL");
+                // Debug.Log("`````````````````````````````````````````````````````````````````````````````````` NULL");
                 agent.ResetPath();
                 // Debug.LogError("sdofligvbrhuygbhvifjusrdhjbikflderas;hijuo;fhouj;gfsdhoujn;garefdoihujb;tgedfoihuj;bngfedohujn;agdsfouhj;asfdrgg");
                 return;
@@ -237,19 +237,19 @@ public class EnemyUnit : BaseUnit
         //     // agent.SetDestination(mainTarget.transform.position);
         // }
 
-        if (!agent.enabled) Debug.LogError("Agent disabled");
-        Debug.Log($"isOnNavMesh={agent.isOnNavMesh} areaMask={agent.areaMask}");
+        // if (!agent.enabled) Debug.LogError("Agent disabled");
+        // Debug.Log($"isOnNavMesh={agent.isOnNavMesh} areaMask={agent.areaMask}");
 
         UnityEngine.AI.NavMeshHit startHit, endHit;
         bool startOk = UnityEngine.AI.NavMesh.SamplePosition(agent.transform.position, out startHit, 2f, agent.areaMask);
         bool endOk = UnityEngine.AI.NavMesh.SamplePosition(mainTarget.transform.position, out endHit, 2f, agent.areaMask);
-        Debug.Log($"startOk={startOk} endOk={endOk} start={startHit.position} end={endHit.position}");
+        // Debug.Log($"startOk={startOk} endOk={endOk} start={startHit.position} end={endHit.position}");
 
 
         // Debug.Log($"calc ok={ok} status={path.status} corners={(path.corners != null ? path.corners.Length : 0)}");
         if (endOk)
         {
-            Debug.Log("please))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
+            // Debug.Log("please))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
             UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
             bool ok2 = agent.CalculatePath(endHit.position, path);
             bool ok = agent.CalculatePath(mainTarget.transform.position, path);
@@ -258,22 +258,22 @@ public class EnemyUnit : BaseUnit
             if (ok)
             {
                 currentTarget = mainTarget;
-                Debug.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yayayayayayya");
+                // Debug.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yayayayayayya");
 
             }
             else if (ok2)
             {
                 currentTarget = mainTarget;
-                Debug.Log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,yayayayayayya");
+                // Debug.Log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,yayayayayayya");
             }
             else
             {
-                Debug.Log("..............................................................................................");
+                // Debug.Log("..............................................................................................");
             }
         }
         else
         {
-            Debug.Log("??????????????????????????????????????????????????????????????????????nah");
+            // Debug.Log("??????????????????????????????????????????????????????????????????????nah");
             if (obstacleTarget == null)
             {
                 obstacleTarget = GetBlockingObjectDirect();
@@ -283,17 +283,17 @@ public class EnemyUnit : BaseUnit
                 }
                 else
                 {
-                    Debug.Log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+                    // Debug.Log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
                     return;
                 }
-                Debug.Log("WOWOWOWOWOOWOWOWOWOWOWOWOWOWOWOOWOWOWOWOWOWOWOOWOWOWOWOWWOWOOWOWOWOWOWOWOWOOWOWOWWOWOWOWOWOWOOWOWOWOWOWOWOWOWOWOOWOOWOWOWOW ");
+                // Debug.Log("WOWOWOWOWOOWOWOWOWOWOWOWOWOWOWOOWOWOWOWOWOWOWOOWOWOWOWOWWOWOOWOWOWOWOWOWOWOOWOWOWWOWOWOWOWOWOOWOWOWOWOWOWOWOWOWOOWOOWOWOWOW ");
 
             }
             else
             {
 
                 currentTarget = obstacleTarget;
-                Debug.Log("neeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+                // Debug.Log("neeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
                 // currentTarget = mainTarget;
 
             }
@@ -821,33 +821,33 @@ public class EnemyUnit : BaseUnit
 
                 case AttType.Buildings:
                     {
-                        FarmHouseStructure farmHouse = col.GetComponent<FarmHouseStructure>();
-                        if (farmHouse != null)
-                            candidate = farmHouse;
+                        // FarmHouseStructure farmHouse = col.GetComponent<FarmHouseStructure>();
+                        // if (farmHouse != null)
+                        //     candidate = farmHouse;
+                        // else
+                        // {
+                        CropStructure crop2 = col.GetComponent<CropStructure>();
+                        if (crop2 != null)
+                            candidate = crop2;
                         else
                         {
-                            CropStructure crop2 = col.GetComponent<CropStructure>();
-                            if (crop2 != null)
-                                candidate = crop2;
+                            SiloStructure silo2 = col.GetComponent<SiloStructure>();
+                            if (silo2 != null)
+                                candidate = silo2;
                             else
                             {
-                                SiloStructure silo2 = col.GetComponent<SiloStructure>();
-                                if (silo2 != null)
-                                    candidate = silo2;
+                                BarracksStructure barracks = col.GetComponent<BarracksStructure>();
+                                if (barracks != null)
+                                    candidate = barracks;
                                 else
                                 {
-                                    BarracksStructure barracks = col.GetComponent<BarracksStructure>();
-                                    if (barracks != null)
-                                        candidate = barracks;
-                                    else
-                                    {
-                                        AnimalStructure animal = col.GetComponent<AnimalStructure>();
-                                        if (animal != null)
-                                            candidate = animal;
-                                    }
+                                    AnimalStructure animal = col.GetComponent<AnimalStructure>();
+                                    if (animal != null)
+                                        candidate = animal;
                                 }
                             }
                         }
+                        // }
                     }
                     // Debug.Log("building attack: " + candidate);
                     break;
@@ -867,7 +867,7 @@ public class EnemyUnit : BaseUnit
         // If nothing found, attack the nearest target of any type
         if (nearest == null)
         {
-            Debug.Log("There was nothing so we go for anything!");
+            // Debug.Log("There was nothing so we go for anything!");
             // Fallback: find the nearest *any* target if no preferred AttType target was found
             Collider[] fallbackHits = Physics.OverlapSphere(transform.position, data.AttackRange);
 
@@ -878,13 +878,13 @@ public class EnemyUnit : BaseUnit
                 if (col.TryGetComponent<ArmyUnit>(out var army)) candidate = army;
                 else if (col.TryGetComponent<CropStructure>(out var crop)) candidate = crop;
                 else if (col.TryGetComponent<SiloStructure>(out var silo)) candidate = silo;
-                else if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
+                // else if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
                 else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
                 else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
                 else if (col.TryGetComponent<DefenseStructure>(out var defense))
                 {
                     candidate = defense;
-                    Debug.Log("WE found a defense");
+                    // Debug.Log("WE found a defense");
                 }
 
                 if (candidate != null && !IsTargetDead(candidate))
@@ -898,13 +898,77 @@ public class EnemyUnit : BaseUnit
                 }
             }
         }
+        Debug.Log("nothing-----------------------");
 
 
-        //still nothing found, go to map center
+        //still nothing found, go for the farm house
         if (nearest == null)
         {
-            hasNoTarget = true;
-            agent.SetDestination(Vector3.zero); // You can change this to any other fallback location
+            Debug.Log("nothing++++++++++++++++++++");
+            // if (nearest == null)
+            // {
+            Debug.Log("No other targets, checking for farm house...");
+
+            Structure[] allStructures = FindObjectsOfType<Structure>();
+            foreach (var s in allStructures)
+            {
+                Debug.Log("Fuck me till i am purple -------");
+                // The farmhouse is the ONLY Structure that is not a child type
+                // if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
+                if (!IsTargetDead(s))
+                {
+                    nearest = s;
+                    Debug.Log("Farm house targeted: " + s.name);
+                    break; // stop after the first (should be the only one)
+                }
+            }
+            // }
+            // Collider[] fallbackHits = Physics.OverlapSphere(transform.position, data.AttackRange);
+
+            // foreach (var col in fallbackHits)
+            // {
+            //     MonoBehaviour candidate = null;
+
+            //     // if (col.TryGetComponent<ArmyUnit>(out var army)) candidate = army;
+            //     // else if (col.TryGetComponent<CropStructure>(out var crop)) candidate = crop;
+            //     // else if (col.TryGetComponent<SiloStructure>(out var silo)) candidate = silo;
+            //     if (col.TryGetComponent<Structure>(out var farm)) candidate = farm;
+            //     // else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
+            //     // else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
+            //     // else if (col.TryGetComponent<DefenseStructure>(out var defense))
+            //     // {
+            //     // candidate = defense;
+            //     // Debug.Log("WE found a defense");
+            //     // }
+
+            //     if (candidate != null && !IsTargetDead(candidate))
+            //     {
+            //         float dist = Vector3.Distance(transform.position, candidate.transform.position);
+            //         if (dist < closestDist)
+            //         {
+            //             closestDist = dist;
+            //             nearest = candidate;
+            //             Debug.Log("Farm house targeted: " + candidate);
+            //         }
+            //     }
+            // }
+            // Structure[] allStructures = FindObjectsOfType<Structure>();
+            // foreach (var s in allStructures)
+            // {
+            //     // Skip structures already handled by other types
+            //     if (s is BarracksStructure || s is CropStructure || s is SiloStructure || s is DefenseStructure || s is AnimalStructure)
+            //         continue;
+
+            //     if (!IsTargetDead(s))
+            //     {
+            //         nearest = s;
+            //         Debug.Log("Farm house targeted: " + nearest);
+            //         break; // just pick the first one (you can later pick the closest)
+            //     }
+            // }
+            // if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
+            // hasNoTarget = true;
+            // agent.SetDestination(Vector3.zero); // You can change this to any other fallback location
         }
 
         return nearest;
@@ -1017,9 +1081,10 @@ public class EnemyUnit : BaseUnit
             CropStructure u => u.IsDead(),
             SiloStructure u => u.IsDead(),
             DefenseStructure u => u.IsDead(),
-            FarmHouseStructure u => u.IsDead(),
+            // Structure u => u.IsDead(),
             BarracksStructure u => u.IsDead(),
             AnimalStructure u => u.IsDead(),
+            Structure u when u.GetType() == typeof(Structure) => u.IsDead(),
             _ => true // Assume dead if type unknown
         };
     }
@@ -1059,14 +1124,15 @@ public class EnemyUnit : BaseUnit
                 if (anim != null)
                     anim.PlayDamageHitEffect();
                 break;
-            case FarmHouseStructure u:
-                PlaySound(data.AttackSound, 'a');
-                u.TakeDamage(data.AttackDamage);
-                anim = u.GetComponent<DamageAnimation>();
-                if (anim != null)
-                    anim.PlayDamageHitEffect();
-                // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
-                break;
+            // case FarmHouseStructure u:
+            // case FarmHouseStructure u:
+            //     PlaySound(data.AttackSound, 'a');
+            //     u.TakeDamage(data.AttackDamage);
+            //     anim = u.GetComponent<DamageAnimation>();
+            //     if (anim != null)
+            //         anim.PlayDamageHitEffect();
+            //     // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
+            //     break;
             case BarracksStructure u:
                 PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
@@ -1082,6 +1148,13 @@ public class EnemyUnit : BaseUnit
                 if (anim != null)
                     anim.PlayDamageHitEffect();
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
+                break;
+            case Structure u: // This will catch your farmhouse
+                u.TakeDamage(data.AttackDamage);
+                PlaySound(data.AttackSound, 'a');
+                anim = u.GetComponent<DamageAnimation>();
+                if (anim != null)
+                    anim.PlayDamageHitEffect();
                 break;
         }
     }

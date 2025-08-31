@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Chicken Barrack
   description: Trains chicken shooters. Low defense, fast attack.
-  prefab: {fileID: 8260158783871360891, guid: 49397d8e85c39094bb4b26ff21956f7b, type: 3}
+  prefab: {fileID: 4222961760227805080, guid: 29ff30d11ea4a764cbed58bcddc57038, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50

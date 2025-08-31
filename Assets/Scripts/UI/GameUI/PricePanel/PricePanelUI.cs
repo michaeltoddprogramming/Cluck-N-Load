@@ -471,12 +471,16 @@ public class PricePanelUI : MonoBehaviour
             if (activePricePanelInstance == null)
             {
                 Canvas canvas = FindFirstObjectByType<Canvas>();
-                activePricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform);
+                if (canvas == null)
+                {
+                    Debug.LogError("No Canvas found in scene for PricePanelUI!");
+                    return;
+                }
+                activePricePanelInstance = Instantiate(pricePanelPrefab, canvas.transform); // Parent to Canvas!
                 var panelUI = activePricePanelInstance.GetComponent<PricePanelUI>();
                 panelUI.inventoryManager = FindFirstObjectByType<InventoryManager>();
                 panelUI.animalStructure = FindFirstObjectByType<AnimalStructure>();
                 panelUI.populatePricePanel();
-                // audioSourceOpen.Play();
             }
 
             activePricePanelInstance.SetActive(true);
@@ -501,6 +505,7 @@ public class PricePanelUI : MonoBehaviour
                 Debug.LogWarning("ClosePanel called but no active panel instance.");
             }
         }
+}
 
 // public void OpenPanel()
 // {
@@ -533,4 +538,3 @@ public class PricePanelUI : MonoBehaviour
 //     {
 //     }
 // }
-}

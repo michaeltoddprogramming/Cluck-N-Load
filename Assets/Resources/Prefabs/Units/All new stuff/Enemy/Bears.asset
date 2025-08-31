@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Bears
   m_EditorClassIdentifier: 
   UnitName: Bear
-  Prefab: {fileID: 2583552409096266833, guid: c90575bef472efe4686b1be6ab4c3dfe, type: 3}
+  Prefab: {fileID: 1330120598086573249, guid: 30316c040bbd7ef43a5798061aa74905, type: 3}
   MovementSpeed: 3
   Type: 2
   AttType: 2

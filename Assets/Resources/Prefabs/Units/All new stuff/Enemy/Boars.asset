@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Boars
   m_EditorClassIdentifier: 
   UnitName: Boar
-  Prefab: {fileID: 5545345481935957960, guid: d5f9e8b2b8f8d9345a9b0eba864ba4f9, type: 3}
+  Prefab: {fileID: 4049575017246058793, guid: 65bfd5244fac2114fa9cf660ef507179, type: 3}
   MovementSpeed: 4.5
   Type: 3
   AttType: 3

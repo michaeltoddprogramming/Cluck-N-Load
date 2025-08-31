@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 2bf666bb097a55e4681715cd3ed7e113, type: 2}
     - target: {fileID: 919132149155446097, guid: f896de26587995b49be3906d212d0b01, type: 3}
       propertyPath: m_Name
-      value: b_r_w_animated (1)
+      value: Raccoon
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: f896de26587995b49be3906d212d0b01, type: 3}
       propertyPath: m_Controller
@@ -123,8 +123,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3376759cddfe1a742b59a243d6e7acdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  source: {fileID: 0}
-  globalManager: {fileID: 0}
+  source: {fileID: 6364054742251530762}
+  globalManager: {fileID: 11400000, guid: c67bd3daf8f16274fb384cff3c88bbee, type: 2}
 --- !u!195 &5545372227110267690
 NavMeshAgent:
   m_ObjectHideFlags: 0

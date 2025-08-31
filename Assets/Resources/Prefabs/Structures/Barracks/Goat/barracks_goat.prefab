@@ -115,7 +115,7 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  healthBarPrefab: {fileID: 0}
+  healthBarPrefab: {fileID: 4122911237217708408, guid: 23bbe51596d340c4387e655f58390f62, type: 3}
   targetAnimalType: Goat
   armyAnimalPrefabs:
   - {fileID: 1446600813572911103, guid: 6b188252abf5bac48923148b2dd07058, type: 3}

@@ -185,7 +185,7 @@ public class ArmyUnit : BaseUnit
         lastAttackTime = Time.time;
         if (data.AttackSound != null)
         {
-            Debug.Log("here is the attacj sounf: " + data.AttackSound);
+            // Debug.Log("here is the attacj sounf: " + data.AttackSound);
 
         }
 
@@ -193,7 +193,7 @@ public class ArmyUnit : BaseUnit
 
         if (data.Type == ArmyType.Goat)
         {
-            Debug.Log("sdikrujghwiuherh giuwerhgoiueshrlkjhg hsdkjfhglkusedrhgpuoisdhgoiuhsdfkjg hsdfkulhg ;osudryhg ouisdnrg ousehdf gouseh rtgiouhsaertolkuj gh seodutg");
+            // Debug.Log("sdikrujghwiuherh giuwerhgoiueshrlkjhg hsdkjfhglkusedrhgpuoisdhgoiuhsdfkjg hsdfkulhg ;osudryhg ouisdnrg ousehdf gouseh rtgiouhsaertolkuj gh seodutg");
             // Delay impact for goats so it syncs with animation
             StartCoroutine(DelayedImpact(0.8f)); // tweak 0.6f until it looks right
         }
@@ -382,7 +382,7 @@ public class ArmyUnit : BaseUnit
 
         float distance = Vector3.Distance(transform.position, targetPosition);
 
-        if (distance < agent.stoppingDistance + 0.1f)
+        if (distance < agent.stoppingDistance + 1f)
         {
             // Debug.Log("16531278634568124598761263458762347895628371465 87231 59723459721349750 2309745 609273456 50972365 0978236 5097235490 762390745 5629307465 09723465 907");
             // if (isReturningAfterAttack)

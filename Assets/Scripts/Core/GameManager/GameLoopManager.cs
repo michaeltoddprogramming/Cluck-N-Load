@@ -112,6 +112,10 @@ public class GameLoopManager : MonoBehaviour
             {
                 NightManager.Instance.Days = saveData.day;
                 NightManager.Instance.SetSeason(saveData.season);
+
+                // Always start in the morning when loading a save
+                NightManager.Instance.Hours = 7;
+                NightManager.Instance.Minutes = 0;
             }
 
             if (saveData != null)

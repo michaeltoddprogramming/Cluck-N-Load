@@ -25,6 +25,7 @@ public partial class TutorialManager : MonoBehaviour
     public GameObject chickenCoopButton;
     public GameObject barracksButton;
     public Button nextStepButton;
+    public Button discoveryCloseButton;
 
     [Header("Audio")]
     public AudioSource mumbleAudioSource;
@@ -178,31 +179,42 @@ public partial class TutorialManager : MonoBehaviour
             titleText.text = step.title;
             UpdateCharacterPortrait(step);
 
-            yield return new WaitForSeconds(0.05f);
-
+            // Highlight UI for this step if needed
             if (step.uiToHighlight != null)
                 HighlightUI(step.uiToHighlight, true);
 
-            ShowKeyIndicators(step.requiredInputs);
+            // Show key indicators if required
+            if (step.requiredInputs != null && step.requiredInputs.Count > 0)
+                ShowKeyIndicators(step.requiredInputs);
+            else
+                ClearKeyIndicators();
 
-            // Show nextStepButton only if step.triggerToWaitFor == None and no requiredInputs
+            // Only show nextStepButton if the step does NOT require user actions
+            bool requiresUserAction = step.triggerToWaitFor != TutorialTrigger.None || (step.requiredInputs != null && step.requiredInputs.Count > 0);
             if (nextStepButton != null)
             {
-                bool showButton = step.triggerToWaitFor == TutorialTrigger.None && (step.requiredInputs == null || step.requiredInputs.Count == 0);
-                nextStepButton.gameObject.SetActive(showButton);
+                nextStepButton.gameObject.SetActive(!requiresUserAction);
                 nextStepButton.onClick.RemoveAllListeners();
-                if (showButton)
+                if (!requiresUserAction)
                     nextStepButton.onClick.AddListener(NextStep);
             }
 
             step.onStepStart?.Invoke();
 
-            waitingForStepToComplete = step.triggerToWaitFor != TutorialTrigger.None || (step.requiredInputs != null && step.requiredInputs.Count > 0);
+            waitingForStepToComplete = requiresUserAction;
+
+            // Hide the close button for normal tutorial steps
+            if (discoveryCloseButton != null)
+                discoveryCloseButton.gameObject.SetActive(false);
         }
         finally
         {
             isProcessingStep = false;
         }
+
+        // Show the next button for normal steps
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(true);
     }
 
     public void RegisterDiscoveryStep(TutorialStep step)
@@ -257,13 +269,21 @@ public partial class TutorialManager : MonoBehaviour
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
+    
+        currentStepIndex = steps.Count;
+        waitingForStepToComplete = false;
     }
 
     public void SkipTutorial()
     {
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
-            nextStepButton.gameObject.SetActive(false); 
+            nextStepButton.gameObject.SetActive(false);
+    
+        CleanupAllWorldHighlights();
+        CleanupShopHighlights();  
+
+        EndTutorial();   
     }
 
     IEnumerator AutoAdvanceStep()
@@ -292,8 +312,20 @@ public partial class TutorialManager : MonoBehaviour
         if (checklistPanel != null)
             checklistPanel.SetActive(false);
 
+        // Show close button only for discovery steps
+        if (discoveryCloseButton != null)
+        {
+            discoveryCloseButton.gameObject.SetActive(true);
+            discoveryCloseButton.onClick.RemoveAllListeners();
+            discoveryCloseButton.onClick.AddListener(() => CloseDiscoveryPopup());
+        }
+
+        // Hide next button for discovery steps
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(false);
+
         if (skipTutorialButton != null)
-            skipTutorialButton.gameObject.SetActive(false); // Hide skip button
+            skipTutorialButton.gameObject.SetActive(false);
 
         if (typingCoroutine != null)
             StopCoroutine(typingCoroutine);
@@ -302,8 +334,6 @@ public partial class TutorialManager : MonoBehaviour
         titleText.text = discoveryStep.title;
         UpdateCharacterPortrait(discoveryStep);
         HighlightUI(discoveryStep.uiToHighlight, true);
-
-        StartCoroutine(AutoCloseDiscovery(wasTutorialActive, wasChecklistActive));
     }
 
     private IEnumerator AutoCloseDiscovery(bool restoreTutorialState, bool restoreChecklistState)
@@ -348,5 +378,28 @@ public partial class TutorialManager : MonoBehaviour
         currentStepIndex = stepIndex - 1;
         waitingForStepToComplete = false;
         NextStep();
+    }
+
+    private void CloseDiscoveryPopup()
+    {
+        HighlightUI(currentDiscoveryStep.uiToHighlight, false);
+        tutorialPanel.SetActive(false);
+
+        if (checklistPanel != null)
+            checklistPanel.SetActive(true);
+
+        if (skipTutorialButton != null)
+            skipTutorialButton.gameObject.SetActive(true);
+
+        // Hide close button after closing discovery
+        if (discoveryCloseButton != null)
+            discoveryCloseButton.gameObject.SetActive(false);
+
+        // Restore next button if appropriate
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(true);
+
+        isShowingDiscovery = false;
+        currentDiscoveryStep = null;
     }
 }

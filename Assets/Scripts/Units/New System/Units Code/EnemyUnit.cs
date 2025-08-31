@@ -592,32 +592,32 @@ public class EnemyUnit : BaseUnit
                 // }
                 if (hit.collider.GetComponent<DefenseStructure>() != null)
                 {
-                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    // Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<DefenseStructure>();
                 }
                 else if (hit.collider.GetComponent<AnimalStructure>() != null)
                 {
-                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    // Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<AnimalStructure>();
                 }
                 else if (hit.collider.GetComponent<BarracksStructure>() != null)
                 {
-                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    // Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<BarracksStructure>();
                 }
                 else if (hit.collider.GetComponent<Structure>() != null)
                 {
-                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    // Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<Structure>();
                 }
                 else if (hit.collider.GetComponent<CropStructure>() != null)
                 {
-                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    // Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<CropStructure>();
                 }
                 else if (hit.collider.GetComponent<FarmHouseStructure>() != null)
                 {
-                    Debug.Log("Blocking object detected: " + hit.collider.name);
+                    // Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<FarmHouseStructure>();
                 }
                 // else if (hit.collider.GetComponent<CropStructure>() != null)
@@ -898,27 +898,27 @@ public class EnemyUnit : BaseUnit
                 }
             }
         }
-        Debug.Log("nothing-----------------------");
+        // Debug.Log("nothing-----------------------");
 
 
         //still nothing found, go for the farm house
         if (nearest == null)
         {
-            Debug.Log("nothing++++++++++++++++++++");
+            // Debug.Log("nothing++++++++++++++++++++");
             // if (nearest == null)
             // {
-            Debug.Log("No other targets, checking for farm house...");
+            // Debug.Log("No other targets, checking for farm house...");
 
             Structure[] allStructures = FindObjectsOfType<Structure>();
             foreach (var s in allStructures)
             {
-                Debug.Log("Fuck me till i am purple -------");
+                // Debug.Log("Fuck me till i am purple -------");
                 // The farmhouse is the ONLY Structure that is not a child type
                 // if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
                 if (!IsTargetDead(s))
                 {
                     nearest = s;
-                    Debug.Log("Farm house targeted: " + s.name);
+                    // Debug.Log("Farm house targeted: " + s.name);
                     break; // stop after the first (should be the only one)
                 }
             }
@@ -1053,7 +1053,7 @@ public class EnemyUnit : BaseUnit
     {
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
-            Debug.Log("I have sadly died |~|~|~||~|~|~||~||~|||~|~||~|~|~|~|||~|~|~|~||~|~|~|~|~|siuhohuifowrihufrehiuoerihuhewriuiweisufrghsireufhgiuershtgiuhrestuig");
+            // Debug.Log("I have sadly died |~|~|~||~|~|~||~||~|||~|~||~|~|~|~|||~|~|~|~||~|~|~|~|~|siuhohuifowrihufrehiuoerihuhewriuiweisufrghsireufhgiuershtgiuhrestuig");
             PlaySound(data.DeathSound, 'd');
             currHealth = 0;
             UpdateHealthBar();
@@ -1061,7 +1061,7 @@ public class EnemyUnit : BaseUnit
         }
         else
         {
-            Debug.Log("Taking damage: " + damage + "----------------------------------------------------------------------------------");
+            // Debug.Log("Taking damage: " + damage + "----------------------------------------------------------------------------------");
             PlaySound(data.HurtSound, 'h');
             currHealth -= damage;
             UpdateHealthBar();

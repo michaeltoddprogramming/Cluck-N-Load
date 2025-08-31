@@ -7,9 +7,9 @@ using System.Linq;
 
 public class NightManager : MonoBehaviour
 {
-    private int currentSeason = 1;
-    // Singleton instance
     public static NightManager Instance { get; private set; }
+    private int currentSeason = 1;
+    public event System.Action<int> OnDayChanged;
 
     // Start night button
     [Header("Start NIght button")]
@@ -49,6 +49,7 @@ public class NightManager : MonoBehaviour
     // Is day bool
     private bool isDay = true;
     public bool IsDay => isDay; // For CropStructureUI
+
 
     // Shop stuff
     [Header("Shop Stuff")]
@@ -100,7 +101,12 @@ public class NightManager : MonoBehaviour
     public int Days
     {
         get => days;
-        set { days = value; OnDayChange(value); }
+        set
+        {
+            days = value;
+            OnDayChange(value);
+            OnDayChanged?.Invoke(days);
+        }
     }
 
     [SerializeField] private int years;

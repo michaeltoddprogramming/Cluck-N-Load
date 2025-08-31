@@ -20,15 +20,15 @@ public partial class TutorialManager
         {
             stepId = "welcome",
             title = "Old Pete's Welcome",
-            instructionText = "Where's my chicken? - Oh sorry I didn't see you there, I'm Old Pete. You can call me Pete though, I'm not that old! I am going to help you get started on this very special farm of yours. So listen up!",
+            instructionText = "Whoa! You scared me! I'm Pete. Let's make this farm legendary.",
             triggerToWaitFor = TutorialTrigger.None
         });
 
         steps.Add(new TutorialStep
         {
             stepId = "camera_controls",
-            title = "Look Around the Land",
-            instructionText = "Honey you left the Chicken Coop open! - Oh darn! you again, how about you look for my lost chicken?\n\nUse <color=#00FF00>WASD</color> to move the camera.\nPress <color=#00FF00>Q</color> and <color=#00FF00>E</color> to rotate.\nUse your <color=#00FF00>Mouse Wheel</color> or press <color=#00FF00>1/2</color> to zoom.",
+            title = "Look Around",
+            instructionText = "Lost chicken alert! Use WASD, Q/E, and Mouse Wheel to hunt for Melony.",
             triggerToWaitFor = TutorialTrigger.InputDetected,
             requiredInputs = new List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.Q, KeyCode.E, KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Mouse3, KeyCode.Mouse4, KeyCode.Mouse2 }
         });
@@ -36,8 +36,8 @@ public partial class TutorialManager
         steps.Add(new TutorialStep
         {
             stepId = "day_night_panel",
-            title = "The Day Night Clock",
-            instructionText = "You didn't find her I guess. Oh Melony. That's a shame, she was really nice. At the top middle on your screen. This shows whether it's day or night. Wolves come at night, poor Melony!",
+            title = "Day/Night",
+            instructionText = "See the top middle? That’s the clock. Wolves love the night. Melony didn’t.",
             triggerToWaitFor = TutorialTrigger.None,
             uiToHighlight = GameObject.Find("DayNightPanel")
         });
@@ -45,8 +45,8 @@ public partial class TutorialManager
         steps.Add(new TutorialStep
         {
             stepId = "money_explanation",
-            title = "Check your finances",
-            instructionText = "Top right is your... wait, no - top left - this is your <color=yellow>money counter</color>. You'll need cash for buildings and animals. Speaking of cash - HONEYYY! did we pay the rent this month?!...",
+            title = "Money!",
+            instructionText = "Top left: your cash stash. Spend wisely. Rent’s due, honey!",
             triggerToWaitFor = TutorialTrigger.None,
             uiToHighlight = GameObject.Find("GoldPanel")
         });
@@ -54,8 +54,8 @@ public partial class TutorialManager
         steps.Add(new TutorialStep
         {
             stepId = "time_controls",
-            title = "Control Game Speed",
-            instructionText = "You can control time on your farm! Click the <b>Pause</b> button to freeze time when you need to think. Press <b>Play</b> to resume normal speed. Use <b>Fast Forward</b> when you want to speed things up!",
+            title = "Speed Up or Chill",
+            instructionText = "Pause, play, fast-forward. Time is money, and so are eggs.",
             triggerToWaitFor = TutorialTrigger.TimeControlsUsed,
             uiToHighlight = GameObject.Find("PAUSE BG")
         });
@@ -63,8 +63,8 @@ public partial class TutorialManager
         var seasonBonusStep = new TutorialStep
         {
             stepId = "season_bonuses",
-            title = "Seasons and Animal Production",
-            instructionText = "Each season brings special bonuses to your animals! Different animals produce more in different seasons. Check the seasonal icons in the top panel to track the current season.",
+            title = "Seasonal Bonuses",
+            instructionText = "Seasons change, animals get moody. Watch the icons up top!",
             triggerToWaitFor = TutorialTrigger.None
         };
         seasonBonusStep.onStepStart = new UnityEvent();
@@ -88,8 +88,8 @@ public partial class TutorialManager
         steps.Add(new TutorialStep
         {
             stepId = "open_build_shop",
-            title = "Open the Shop",
-            instructionText = "All these numbers and clocks its too much for me! Skrew that, click the shop icon in the bottom-left. Lets build something!",
+            title = "Shop Time",
+            instructionText = "Numbers, clocks... yawn. Click the shop bottom-left. Let’s build!",
             triggerToWaitFor = TutorialTrigger.ShopOpened,
             uiToHighlight = shopButton ?? GameObject.Find("ShopButton") ?? GameObject.FindGameObjectWithTag("ShopButton")
         });
@@ -97,8 +97,8 @@ public partial class TutorialManager
         var farmhouseStep = new TutorialStep
         {
             stepId = "build_farmhouse",
-            title = "Build Your Farmhouse",
-            instructionText = "Every farm needs a house! Select the Farmhouse and place it on your land.",
+            title = "Build Farmhouse",
+            instructionText = "Every legend needs a house. Plop down a Farmhouse!",
             triggerToWaitFor = TutorialTrigger.BuiltFarmHouse,
             uiToHighlight = farmhouseButton
         };
@@ -109,8 +109,8 @@ public partial class TutorialManager
         var cropPlotStep = new TutorialStep
         {
             stepId = "build_crop_plot",
-            title = "Build a Crop Plot",
-            instructionText = "Now let's grow some food. Open the shop and build a Crop Plot.",
+            title = "Crop Plot",
+            instructionText = "Let’s grow grub. Build a Crop Plot. Sunflowers, here we come!",
             triggerToWaitFor = TutorialTrigger.BuiltCropPlot,
             uiToHighlight = cropPlotButton
         };
@@ -121,8 +121,8 @@ public partial class TutorialManager
         var siloStep = new TutorialStep
         {
             stepId = "build_silo",
-            title = "Build a Storage Silo",
-            instructionText = "You'll need somewhere to store your crops. Build a Storage Silo.",
+            title = "Build Silo",
+            instructionText = "Store your loot! Build a Silo for all those crops.",
             triggerToWaitFor = TutorialTrigger.BuiltSilo,
             uiToHighlight = siloButton
         };
@@ -133,8 +133,8 @@ public partial class TutorialManager
         var plantCropStep = new TutorialStep
         {
             stepId = "plant_first_crop",
-            title = "Plant Your First Crop",
-            instructionText = "Time to start farming! Click on your Crop Plot and plant some sunflowers. They'll grow quickly and provide seeds for feeding animals later!",
+            title = "Plant Crops",
+            instructionText = "Click your Crop Plot. Plant sunflowers. Easy peasy.",
             triggerToWaitFor = TutorialTrigger.PlantedCrop
         };
         plantCropStep.onStepStart = new UnityEvent();
@@ -144,8 +144,8 @@ public partial class TutorialManager
         var harvestCropStep = new TutorialStep
         {
             stepId = "harvest_first_crops",
-            title = "Harvest Your Crops",
-            instructionText = "Perfect! Your crops have grown instantly for the tutorial! Now click the Harvest button to collect your sunflowers. You'll need these seeds to feed your chickens later!",
+            title = "Harvest!",
+            instructionText = "Sunflowers are ready! Click Harvest. Seeds = chicken snacks.",
             triggerToWaitFor = TutorialTrigger.HarvestedCrop
         };
         harvestCropStep.onStepStart = new UnityEvent();
@@ -155,8 +155,8 @@ public partial class TutorialManager
         var chickenCoopStep = new TutorialStep
         {
             stepId = "build_chicken_coop",
-            title = "Build a Chicken Coop",
-            instructionText = "Time to start your poultry empire! First click the shop button in the bottom-left corner, then build a Chicken Coop to house chickens. They'll lay eggs and can be trained as scout soldiers!",
+            title = "Chicken Coop",
+            instructionText = "Let’s get clucking! Build a Chicken Coop. Eggs and soldiers await.",
             triggerToWaitFor = TutorialTrigger.BuiltChickenCoop,
             uiToHighlight = shopButton
         };
@@ -169,8 +169,8 @@ public partial class TutorialManager
         var chickenBarracksStep = new TutorialStep
         {
             stepId = "build_chicken_barracks",
-            title = "Build Chicken Barracks",
-            instructionText = "Create an elite poultry force! Build Chicken Barracks to train your chickens into nimble scout warriors!",
+            title = "Chicken Barracks",
+            instructionText = "Train your chickens! Build Barracks for your feathered fighters.",
             triggerToWaitFor = TutorialTrigger.BuiltChickenBarracks
         };
         chickenBarracksStep.onStepStart = new UnityEvent();
@@ -182,8 +182,8 @@ public partial class TutorialManager
         var buyChickensStep = new TutorialStep
         {
             stepId = "buy_chickens",
-            title = "Buy Your First Chickens",
-            instructionText = "Now let's get some chickens! Click on your Chicken Coop and buy at least 3 chickens. You'll need them to start producing eggs!",
+            title = "Buy Chickens",
+            instructionText = "Get 3 chickens. Click your Coop, buy, and let the egg party begin!",
             triggerToWaitFor = TutorialTrigger.BoughtFirstAnimals
         };
         buyChickensStep.onStepStart = new UnityEvent();
@@ -193,24 +193,24 @@ public partial class TutorialManager
         steps.Add(new TutorialStep
         {
             stepId = "feed_chickens",
-            title = "Feed Your Chickens",
-            instructionText = "Hungry chickens don't lay eggs! You'll need sunflower seeds to feed them. Click the Feed button when your chickens are ready to eat.",
+            title = "Feed Chickens",
+            instructionText = "Hungry chickens? Click Feed. Sunflower seeds = happy clucks.",
             triggerToWaitFor = TutorialTrigger.FedFirstAnimals
         });
 
         steps.Add(new TutorialStep
         {
             stepId = "collect_eggs",
-            title = "Collect Your First Eggs",
-            instructionText = "Your chickens have laid eggs! Click the Collect button to gather them and earn money. This is how your farm makes profit!",
+            title = "Collect Eggs",
+            instructionText = "Eggs are ready! Click Collect. Cha-ching!",
             triggerToWaitFor = TutorialTrigger.CollectedFirstProducts
         });
 
         var recruitSoldiersStep = new TutorialStep
         {
             stepId = "recruit_soldiers",
-            title = "Recruit Chicken Soldiers",
-            instructionText = "Time to build your army! Click on your Chicken Barracks and recruit some of your chickens as soldiers to defend against the wolves!",
+            title = "Chicken Soldiers",
+            instructionText = "Time for battle! Recruit chickens in the Barracks.",
             triggerToWaitFor = TutorialTrigger.RecruitedFirstSoldiers
         };
         recruitSoldiersStep.onStepStart = new UnityEvent();
@@ -220,8 +220,8 @@ public partial class TutorialManager
         var placeFlagStep = new TutorialStep
         {
             stepId = "place_flag",
-            title = "Place Your Battle Flag",
-            instructionText = "Your soldiers need a rally point! Click 'Place Flag' in the barracks menu, then click somewhere on your land to set where your army will guard. Choose a strategic position to protect your farm!",
+            title = "Place Flag",
+            instructionText = "Set a rally point! Click Place Flag, then pick a spot.",
             triggerToWaitFor = TutorialTrigger.PlacedFirstFlag
         };
         placeFlagStep.onStepStart = new UnityEvent();
@@ -231,8 +231,8 @@ public partial class TutorialManager
         steps.Add(new TutorialStep
         {
             stepId = "prepare_defense",
-            title = "Farm Defense Complete!",
-            instructionText = "Excellent work! You've built the basics of a defended farm. Your chickens will lay eggs for profit, and your chicken soldiers will protect you from wolves at night. Remember: wolves attack at night, so keep your defenses strong!",
+            title = "Farm Defended!",
+            instructionText = "You did it! Eggs, soldiers, and no wolves (hopefully).",
             triggerToWaitFor = TutorialTrigger.None
         });
 
@@ -245,32 +245,32 @@ public partial class TutorialManager
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "season_spring",
-            title = "Spring Season",
-            instructionText = "Spring has arrived! This is a great time for planting crops. The soil is moist and your animals are happy after winter's end.",
+            title = "Spring!",
+            instructionText = "Spring! Plant stuff. Animals are happy.",
             triggerToWaitFor = TutorialTrigger.SpringSeason
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "season_summer",
-            title = "Summer Season",
-            instructionText = "Summer is here! Crops grow faster in the heat, but your animals might need more water. Watch out for more active wolves at night.",
+            title = "Summer!",
+            instructionText = "Summer! Crops grow fast. Wolves get cranky.",
             triggerToWaitFor = TutorialTrigger.SummerSeason
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "season_fall",
-            title = "Fall Season",
-            instructionText = "Fall has begun! It's harvest time - your crops will yield more now. Animals are preparing for winter by eating more.",
+            title = "Fall!",
+            instructionText = "Fall! Harvest time. Animals eat more.",
             triggerToWaitFor = TutorialTrigger.FallSeason
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "season_winter",
-            title = "Winter Season",
-            instructionText = "Winter has arrived! Crops grow slowly now. Your animals need more food to stay warm. Wolves are hungrier and more aggressive.",
+            title = "Winter!",
+            instructionText = "Winter! Crops slow down. Feed animals extra.",
             triggerToWaitFor = TutorialTrigger.WinterSeason
         });
 
@@ -278,71 +278,71 @@ public partial class TutorialManager
         {
             stepId = "animal_production_boost",
             title = "Production Boost!",
-            instructionText = "Your animals have received a seasonal production boost! Check the Price Panel to see which animals are producing more this season.",
+            instructionText = "Bonus time! Some animals produce more. Check the icons.",
             triggerToWaitFor = TutorialTrigger.AnimalProductionBoosted
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_cow_pen",
-            title = "Cow Pen Discovery!",
-            instructionText = "Moo-ve up to bigger livestock! Cows produce milk and make excellent heavy cavalry. They eat more but provide greater rewards!",
+            title = "Cow Pen!",
+            instructionText = "Moo! Cows = milk and muscle.",
             triggerToWaitFor = TutorialTrigger.BuiltCowPen
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_sheep_pen",
-            title = "Sheep Pen Discovery!",
-            instructionText = "Wool you look at that! Sheep produce wool and make great support units with their fluffy armor!",
+            title = "Sheep Pen!",
+            instructionText = "Sheep! Wool and fluffy armor.",
             triggerToWaitFor = TutorialTrigger.BuiltSheepPen
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_goat_pen",
-            title = "Goat Pen Discovery!",
-            instructionText = "These hardy climbers are great at reaching difficult areas and provide milk and cheese!",
+            title = "Goat Pen!",
+            instructionText = "Goats climb and give milk. Cheese, anyone?",
             triggerToWaitFor = TutorialTrigger.BuiltGoatPen
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_pig_pen",
-            title = "Pig Pen Discovery!",
-            instructionText = "Oink oink! Pigs are excellent foragers and make surprisingly effective heavy troops!",
+            title = "Pig Pen!",
+            instructionText = "Oink! Pigs forage and smash.",
             triggerToWaitFor = TutorialTrigger.BuiltPigPen
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_cow_barracks",
-            title = "Cow Barracks Discovery!",
-            instructionText = "Unleash the power of bovine might! Cow soldiers are your heavy tanks - slow but nearly unstoppable!",
+            title = "Cow Barracks!",
+            instructionText = "Cow soldiers: slow, strong, unstoppable.",
             triggerToWaitFor = TutorialTrigger.BuiltCowBarracks
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_sheep_barracks",
-            title = "Sheep Barracks Discovery!",
-            instructionText = "Ewe won't believe how effective these are! Sheep soldiers have natural wool armor that provides excellent protection against enemy attacks!",
+            title = "Sheep Barracks!",
+            instructionText = "Sheep soldiers: wool armor, tough cookies.",
             triggerToWaitFor = TutorialTrigger.BuiltSheepBarracks
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_goat_barracks",
-            title = "Goat Barracks Discovery!",
-            instructionText = "These aren't your average kids! Goat soldiers are nimble mountain warriors who can navigate any terrain and strike from unexpected angles!",
+            title = "Goat Barracks!",
+            instructionText = "Goat soldiers: mountain ninjas.",
             triggerToWaitFor = TutorialTrigger.BuiltGoatBarracks
         });
 
         RegisterDiscoveryStep(new TutorialStep
         {
             stepId = "discover_pig_barracks",
-            title = "Pig Barracks Discovery!",
-            instructionText = "When pigs fly... into battle! Pig soldiers are fierce berserkers whose charging attacks can break through any enemy line!",
+            title = "Pig Barracks!",
+            instructionText = "Pig soldiers: charge and break stuff.",
             triggerToWaitFor = TutorialTrigger.BuiltPigBarracks
         });
     }

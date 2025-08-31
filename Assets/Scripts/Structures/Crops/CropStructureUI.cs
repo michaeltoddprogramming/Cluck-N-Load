@@ -134,24 +134,23 @@ public class CropStructureUI : BaseStructureUI
     {
         yield return new WaitForSeconds(delay);
 
-        if (cropStructure != null)
+        // Only allow instant grow if tutorial step is not completed
+        if (TutorialManager.Instance != null && !TutorialManager.Instance.GetCompletedStepIds().Contains("plant_first_crop"))
         {
-            // First, force grow the crop
-            cropStructure.ForceHarvestReadyForTutorial();
-            UpdateUI();
-
-            // Show notification
-            if (statusText != null)
+            if (cropStructure != null)
             {
-                // statusText.gameObject.SetActive(true);
-                statusText.color = Color.green;
-                statusText.text = "Tutorial: Crop ready for harvest!";
-            }
+                cropStructure.ForceHarvestReadyForTutorial();
+                UpdateUI();
 
-            // After crop is grown and visible, trigger the tutorial event
-            yield return new WaitForSeconds(0.5f);
-            if (TutorialManager.Instance != null)
+                if (statusText != null)
+                {
+                    statusText.color = Color.green;
+                    statusText.text = "Tutorial: Crop ready for harvest!";
+                }
+
+                yield return new WaitForSeconds(0.5f);
                 TutorialManager.Instance.Trigger(TutorialTrigger.PlantedCrop);
+            }
         }
     }
 

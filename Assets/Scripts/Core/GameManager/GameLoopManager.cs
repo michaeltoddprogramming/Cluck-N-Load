@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
@@ -112,13 +113,6 @@ public class GameLoopManager : MonoBehaviour
                 NightManager.Instance.Days = saveData.day;
                 NightManager.Instance.SetSeason(saveData.season);
             }
-            else
-            {
-                if (NightManager.Instance == null)
-                    Debug.LogWarning("NightManager.Instance is null in GameLoopManager.Start()");
-                if (saveData == null)
-                    Debug.LogWarning("saveData is null in GameLoopManager.Start()");
-            }
 
             if (saveData != null)
             {
@@ -136,6 +130,18 @@ public class GameLoopManager : MonoBehaviour
             MoneyManager.Instance?.ResetMoney();
             Debug.Log("Started new game, money reset.");
         }
+
+        if (NightManager.Instance != null)
+            NightManager.Instance.OnDayChanged += OnDayChanged;
+        else
+            StartCoroutine(WaitForNightManager());
+    }
+
+    private IEnumerator WaitForNightManager()
+    {
+        while (NightManager.Instance == null)
+            yield return null;
+        NightManager.Instance.OnDayChanged += OnDayChanged;
     }
 
     private void LoadStructures(List<StructureSaveData> structureSaves)
@@ -284,6 +290,18 @@ public class GameLoopManager : MonoBehaviour
             GameEventManager.Instance.OnStructureDestroyed.RemoveListener(UnregisterStructure);
         }
     }
+
+private void OnDisable()
+{
+    if (NightManager.Instance != null)
+        NightManager.Instance.OnDayChanged -= OnDayChanged;
+}
+
+public void OnDayChanged(int newDay)
+{
+    if (ShopPanelUI.Instance != null)
+        ShopPanelUI.Instance.PopulateShop();
+}
 
     [ContextMenu("Trigger Game Over")]
     public void Debug_TriggerGameOver() => TriggerGameOver();

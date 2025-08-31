@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: SheepBarrack
   m_EditorClassIdentifier: 
   structureName: Sheep Barrack
-  description: Housing quarters for farm defenders to rest and prepare.
+  description: 'Trains sheep bombers. Moderate defense, explodes in groups.  '
   prefab: {fileID: 3399988313665195093, guid: aef5802cc54b24f498314b25d54fbd15, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 50
-  health: 150
+  health: 650
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  unlockDay: 8
   targetAnimalType: Sheep
   armyAnimalPrefabs:
   - {fileID: 6614231965860891620, guid: 7d83479355a9ff04f9c99d3ecca84fc7, type: 3}

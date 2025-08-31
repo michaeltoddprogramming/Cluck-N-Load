@@ -6,7 +6,7 @@ public class MoneyManager : MonoBehaviour
 {
     public static MoneyManager Instance { get; private set; }
     
-    [SerializeField] private int startingMoney = 800;
+    [SerializeField] private int startingMoney = 1200;
     [SerializeField] private string currencyName = "Gold";
     [SerializeField] private bool resetMoneyOnStart = true;
     

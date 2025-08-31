@@ -107,8 +107,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
-    void PopulateShop(char display = 'C')
+    public void PopulateShop(char display = 'C')
     {
+        int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
+
         if (database == null)
         {
             Debug.LogError("StructureDatabase is not assigned in the inspector!");
@@ -138,58 +140,15 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             bool showItem = false;
             switch (display)
             {
-                case 'C': // animals
-                    displayComingSoonPanel(1);
-                    showItem = data.type == StructureType.Animal;
-                    break;
-                case 'A': // army
-                    displayComingSoonPanel(1);
-                    showItem = data.type == StructureType.Barracks;
-                    break;
-                case 'S': // defense
-                    displayComingSoonPanel(1);
-                    showItem = data.type == StructureType.Defense;
-                    break;
-                case 'P': // plant (silo or crop plot)
-                    displayComingSoonPanel(1);
-                    showItem = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
-                    break;
-                case 'D': // decorations (optional category?)
-
-                    // bool hasDecorations = database.allStructures.Exists(data => data != null && data.type == StructureType.Decoration);
-
-                    // if (!hasDecorations)
-                    // {
-                    //     Debug.Log("No decoration structures found.");
-                    //     displayComingSoonPanel(0); // Optional: show "Coming Soon" panel
-                    //     return; // Stop here if nothing to show
-                    // }
-                    // else
-                    // {
-                    //     displayComingSoonPanel(1);
-                    // }
-
-                    // Debug.Log($"This is if the house is placed: {buildController.IsHousePlaced()}----------------------------------------------------------------------------");
-
-                    if (buildController.IsHousePlaced())
-                    {
-                        displayComingSoonPanel(1);
-                        showItem = data.type == StructureType.Placed; // or whatever type you use
-                    }
-                    else
-                    {
-                        displayComingSoonPanel(1);
-                        showItem = data.type == StructureType.Decoration; // or whatever type you use
-                    }
-
-                    break;
-                default:
-                    Debug.LogWarning("Invalid display category: " + display);
-                    break;
+                case 'C': showItem = data.type == StructureType.Animal; break;
+                case 'A': showItem = data.type == StructureType.Barracks; break;
+                case 'S': showItem = data.type == StructureType.Defense; break;
+                case 'P': showItem = data.type == StructureType.CropPlot || data.type == StructureType.Silo; break;
+                case 'D': showItem = data.type == StructureType.Decoration; break;
+                default: break;
             }
 
             if (!showItem) continue;
-            Debug.Log($"Adding structure: {data.structureName} to shop UI\n${data}");
 
             GameObject item = Instantiate(itemPrefab, contentParent);
             StructureItemUI itemUI = item.GetComponent<StructureItemUI>();

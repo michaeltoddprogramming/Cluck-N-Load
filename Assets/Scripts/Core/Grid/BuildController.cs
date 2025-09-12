@@ -742,8 +742,9 @@ public class BuildController : MonoBehaviour
         if (!IsValidPlacement(x, y) || (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))) return;
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
         GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
-        placedItem.name = $"Item_{x}_{y}";
         Structure structure = placedItem.GetComponent<Structure>();
+        // placedItem.name = $"Item_{x}_{y}";
+        placedItem.name = $"Item_{x}_{y} {structure.GetStructureName()}";
 
         // Disable farmhouse in shop after placement
         if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
@@ -772,7 +773,10 @@ public class BuildController : MonoBehaviour
             HandleTutorialTriggers(structure);
         }
         List<Vector2Int> footprint = GetStructureFootprint(placedItem);
-        foreach (Vector2Int cell in footprint) gridController.SetCellOccupied(cell.x, cell.y, true);
+        foreach (Vector2Int cell in footprint)
+        {
+            gridController.SetCellOccupied(cell.x, cell.y, true);
+        }
         AudioManager.Instance?.PlayPlaceSound();
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);

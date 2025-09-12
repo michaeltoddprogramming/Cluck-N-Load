@@ -382,7 +382,7 @@ public class ArmyUnit : BaseUnit
 
         float distance = Vector3.Distance(transform.position, targetPosition);
 
-        if (distance < agent.stoppingDistance + 1f)
+        if (distance < agent.stoppingDistance + 1.5f)
         {
             // Debug.Log("16531278634568124598761263458762347895628371465 87231 59723459721349750 2309745 609273456 50972365 0978236 5097235490 762390745 5629307465 09723465 907");
             // if (isReturningAfterAttack)
@@ -457,6 +457,9 @@ public class ArmyUnit : BaseUnit
 
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(guardPosition, roamRadius);
+
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(agent.transform.position, agent.stoppingDistance + 1f);
 #endif
     }
 

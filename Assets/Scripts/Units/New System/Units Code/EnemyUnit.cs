@@ -520,54 +520,8 @@ public class EnemyUnit : BaseUnit
             Quaternion targetRotation = Quaternion.LookRotation(agent.velocity.normalized);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
         }
-
-        // Small idle sway when stopped ------------------------ had this
-        // if (!agent.hasPath)
-        // {
-        //     float swayAmount = 0.05f;
-        //     float swaySpeed = 2f;
-        //     Vector3 swayOffset = new Vector3(Mathf.Sin(Time.time * swaySpeed), 0, Mathf.Cos(Time.time * swaySpeed)) * swayAmount;
-        //     transform.position += swayOffset * Time.deltaTime;
-        // }
     }
 
-    // private MonoBehaviour GetBlockingObject(UnityEngine.AI.NavMeshPath path)
-    // {
-    //     for (int i = 0; i < path.corners.Length - 1; i++)
-    //     {
-    //         Vector3 start = path.corners[i];
-    //         Vector3 end = path.corners[i + 1];
-    //         Vector3 dir = (end - start).normalized;
-    //         float dist = Vector3.Distance(start, end);
-
-    //         if (Physics.Raycast(start, dir, out RaycastHit hit, dist))
-    //         {
-    //             // Only treat walls/structures as blocking objects
-    //             Debug.DrawRay(start, dir * dist, Color.red, 1f);
-    //             if (hit.collider.CompareTag("Jumpable"))
-    //             {
-    //                 return hit.collider.GetComponent<DefenseStructure>();
-    //             }
-    //         }
-    //     }
-    //     return null;
-    // }
-
-    // private MonoBehaviour GetBlockingObjectDirect()
-    // {
-    //     if (mainTarget == null) return null;
-
-    //     Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
-    //     float distanceToTarget = Vector3.Distance(transform.position, mainTarget.transform.position);
-
-    //     if (Physics.Raycast(transform.position + Vector3.up * 0.5f, directionToTarget, out RaycastHit hit, distanceToTarget))
-    //     {
-    //         if (hit.collider.CompareTag("Jumpable"))
-    //             return hit.collider.GetComponent<DefenseStructure>();
-    //     }
-
-    //     return null;
-    // }
     private MonoBehaviour GetBlockingObjectDirect()
     {
         if (mainTarget == null) return null;
@@ -1270,27 +1224,4 @@ public class EnemyUnit : BaseUnit
         // Stop all coroutines to prevent delayed despawn from running after destruction
         StopAllCoroutines();
     }
-
-    // private IEnumerator TryActionCoroutine()
-    // {
-    //     while (!actionSucceeded)
-    //     {
-    //         // Try your action
-    //         actionSucceeded = TryAction();
-
-    //         if (!actionSucceeded)
-    //         {
-    //             // Wait 2 seconds before trying again
-    //             yield return new WaitForSeconds(2f);
-    //         }
-    //     }
-
-    //     // Action succeeded, continue
-    //     Debug.Log("Action succeeded!");
-    // }
-
-    // private bool moveAnimal(Vector3 end)
-    // {
-    //     agent.SetDestination(end);
-    // }
 }

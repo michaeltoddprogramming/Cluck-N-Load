@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using System.Linq;
+
 public class EnemyUnit : BaseUnit
 {
     [SerializeField] private EnemyData data;
@@ -46,6 +48,8 @@ public class EnemyUnit : BaseUnit
     private float destinationUpdateThreshold = 0.3f; // minimum distance to update destination
     private Vector3 lastDestination;
 
+    private List<MonoBehaviour> allTargets = new List<MonoBehaviour>();
+
     // protected override void Awake()
     // {
     //     base.Awake();
@@ -55,6 +59,35 @@ public class EnemyUnit : BaseUnit
     //     // navAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
     //     // HandleTargetingAndMovement();
     //     // AttackIfInRange();
+    // }
+
+    // protected override void Awake()
+    // {
+    //     base.Awake();
+    //     agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+    //     currHealth = data.Health;
+    //     _gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+
+    //     // Apply movement values from data
+    //     agent.speed = data.MovementSpeed;
+    //     agent.acceleration = data.Acceleration;
+    //     agent.angularSpeed = data.AngularSpeed;
+    //     agent.stoppingDistance = data.StoppingDistance;
+
+    //     PlayBackgroundSound(data.backgroundSound);
+
+    //     // Instantiate health bar but keep hidden
+    //     if (healthBarPrefab != null && healthBarInstance == null)
+    //     {
+    //         healthBarInstance = Instantiate(healthBarPrefab, transform);
+    //         var rect = healthBarInstance.GetComponent<RectTransform>();
+    //         if (rect != null)
+    //             rect.localPosition = new Vector3(0, 2.5f, 0); // Adjust Y as needed
+    //         healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
+    //         healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
+    //         healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
+    //         healthBarInstance.SetActive(false); // Start hidden
+    //     }
     // }
 
     protected override void Awake()
@@ -72,18 +105,25 @@ public class EnemyUnit : BaseUnit
 
         PlayBackgroundSound(data.backgroundSound);
 
-        // Instantiate health bar but keep hidden
+        CacheAllTargets();
+
+        // Health bar setup (unchanged)
         if (healthBarPrefab != null && healthBarInstance == null)
         {
             healthBarInstance = Instantiate(healthBarPrefab, transform);
             var rect = healthBarInstance.GetComponent<RectTransform>();
             if (rect != null)
-                rect.localPosition = new Vector3(0, 2.5f, 0); // Adjust Y as needed
+                rect.localPosition = new Vector3(0, 2.5f, 0);
             healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
             healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
             healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
-            healthBarInstance.SetActive(false); // Start hidden
+            healthBarInstance.SetActive(false);
         }
+    }
+
+    private void Start()
+    {
+        currentTarget = GetNearestAggroTargetOptimized();
     }
 
 
@@ -95,14 +135,16 @@ public class EnemyUnit : BaseUnit
 
     private void Update()
     {
-        // if (dead == true)
-        // {
-        //     Debug.Log("I have sadly died |~|~|~||~|~|~||~||~|||~|~||~|~|~|~|||~|~|~|~||~|~|~|~|~|siuhohuifowrihufrehiuoerihuhewriuiweisufrghsireufhgiuershtgiuhrestuig");
-        //     PlaySound(data.DeathSound, 'd');
-        //     currHealth = 0;
-        //     UpdateHealthBar();
-        //     Die();
-        // }
+        if (retreating)
+        {
+            if (retreating && Vector3.Distance(transform.position, destination) < 5f)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            return;
+        }
+
         if (agent.velocity.sqrMagnitude > 0.1f)
         {
             // Moving → set Speed to 1
@@ -114,47 +156,27 @@ public class EnemyUnit : BaseUnit
             SetFloat("speed", 0f);
         }
 
-        // currentMaxSpawn = data.maxSpawnAmount;
-        // currentMinSpawn = data.minSpawnAmount;
-        if (retreating)
-        {
-            if (retreating && Vector3.Distance(transform.position, destination) < 5f)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            return;
-        }
-
-
-
-        HandleTargetingAndMovement();
-        if (hasNoTarget && !retreating)
-        {
-            if (Time.time - lastTargetSearchTime >= 10f)
-            {
-                currentTarget = GetNearestAggroTargetOptimized();
-                lastTargetSearchTime = Time.time;
-
-                if (currentTarget == null)
-                {
-                    // Go to map center if still nothing
-                    if (agent.destination != Vector3.zero)
-                        agent.SetDestination(Vector3.zero);
-                    return;
-                }
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        if (Time.time - lastTargetSearchTime > targetSearchCooldown || currentTarget == null || IsTargetDead(currentTarget))
+        if (currentTarget == null || IsTargetDead(currentTarget))
         {
             currentTarget = GetNearestAggroTargetOptimized();
-            lastTargetSearchTime = Time.time;
         }
+
+        HandleTargetingAndMovement();
+        AttackIfInRange();
+
+        // currentMaxSpawn = data.maxSpawnAmount;
+        // currentMinSpawn = data.minSpawnAmount;
+
+
+
+        // HandleTargetingAndMovement();
+
+
+        // if (Time.time - lastTargetSearchTime > targetSearchCooldown || currentTarget == null || IsTargetDead(currentTarget))
+        // {
+        //     currentTarget = GetNearestAggroTargetOptimized();
+        //     lastTargetSearchTime = Time.time;
+        // }
 
         if (currentTarget == null)
         {
@@ -163,9 +185,21 @@ public class EnemyUnit : BaseUnit
         }
 
         // HandleTargetingAndMovement();
-        AttackIfInRange();
+        // AttackIfInRange();
 
 
+    }
+
+    private void CacheAllTargets()
+    {
+        allTargets.Clear();
+        allTargets.AddRange(FindObjectsOfType<ArmyUnit>());
+        allTargets.AddRange(FindObjectsOfType<CropStructure>());
+        allTargets.AddRange(FindObjectsOfType<SiloStructure>());
+        allTargets.AddRange(FindObjectsOfType<DefenseStructure>());
+        allTargets.AddRange(FindObjectsOfType<BarracksStructure>());
+        allTargets.AddRange(FindObjectsOfType<AnimalStructure>());
+        allTargets.AddRange(FindObjectsOfType<Structure>()); // farm house etc
     }
 
 
@@ -249,6 +283,46 @@ public class EnemyUnit : BaseUnit
 
     //much better best so far
 
+    // private void HandleTargetingAndMovement()
+    // {
+    //     if (!agent.isOnNavMesh) return;
+
+    //     // Ensure we have a main target
+    //     if (mainTarget == null || IsTargetDead(mainTarget))
+    //     {
+    //         mainTarget = GetNearestAggroTargetOptimized();
+    //         obstacleTarget = null;
+    //         if (mainTarget == null)
+    //         {
+    //             agent.ResetPath();
+    //             return;
+    //         }
+    //     }
+
+    //     // Decide what target to move toward
+    //     bool targetReachable = IsTargetEffectivelyReachable(mainTarget);
+    //     currentTarget = targetReachable ? mainTarget : (obstacleTarget != null ? obstacleTarget : mainTarget);
+
+    //     if (currentTarget == null) return;
+
+    //     Vector3 targetPos = currentTarget.transform.position;
+
+    //     // Only update destination if it moved far enough
+    //     if ((targetPos - lastDestination).sqrMagnitude > destinationUpdateThreshold * destinationUpdateThreshold)
+    //     {
+    //         agent.SetDestination(targetPos);
+    //         lastDestination = targetPos;
+    //     }
+
+    //     // Smooth rotation toward movement
+    //     // if (agent.velocity.sqrMagnitude > 0.1f)
+    //     // {
+    //     //     Quaternion targetRotation = Quaternion.LookRotation(agent.velocity.normalized);
+    //     //     transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+    //     // }
+    // }
+
+
     private void HandleTargetingAndMovement()
     {
         if (!agent.isOnNavMesh) return;
@@ -265,9 +339,21 @@ public class EnemyUnit : BaseUnit
             }
         }
 
-        // Decide what target to move toward
+        // Check if the main target is reachable
         bool targetReachable = IsTargetEffectivelyReachable(mainTarget);
-        currentTarget = targetReachable ? mainTarget : (obstacleTarget != null ? obstacleTarget : mainTarget);
+
+        // If not reachable, find the blocking object
+        if (!targetReachable)
+        {
+            obstacleTarget = GetBlockingObjectDirect();
+        }
+        else
+        {
+            obstacleTarget = null;
+        }
+
+        // Decide what to move toward
+        currentTarget = obstacleTarget != null ? obstacleTarget : mainTarget;
 
         if (currentTarget == null) return;
 
@@ -278,13 +364,6 @@ public class EnemyUnit : BaseUnit
         {
             agent.SetDestination(targetPos);
             lastDestination = targetPos;
-        }
-
-        // Smooth rotation toward movement
-        if (agent.velocity.sqrMagnitude > 0.1f)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(agent.velocity.normalized);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
         }
     }
 
@@ -391,7 +470,7 @@ public class EnemyUnit : BaseUnit
         float distanceBetween = Vector3.Distance(closestPointEnemy, closestPointTarget);
 
         // Attack range buffer (tweak this)
-        float attackRange = 2f;
+        float attackRange = data.StoppingDistance;
 
         if (distanceBetween <= attackRange)
         {
@@ -418,154 +497,198 @@ public class EnemyUnit : BaseUnit
     }
 
 
+    // private MonoBehaviour GetNearestAggroTargetOptimized()
+    // {
+    //     Collider[] hits = Physics.OverlapSphere(transform.position, data.AttackRange);
+    //     MonoBehaviour nearest = null;
+    //     float closestDist = float.MaxValue;
+
+    //     foreach (var col in hits)
+    //     {
+    //         MonoBehaviour candidate = null;
+
+    //         switch (data.AttType)
+    //         {
+    //             case AttType.Animals:
+    //                 candidate = col.GetComponent<ArmyUnit>();
+    //                 // Debug.Log("animal attack: " + candidate);
+    //                 break;
+
+    //             case AttType.Resources:
+    //                 CropStructure crop = col.GetComponent<CropStructure>();
+    //                 if (crop != null)
+    //                     candidate = crop;
+    //                 else
+    //                 {
+    //                     SiloStructure silo = col.GetComponent<SiloStructure>();
+    //                     if (silo != null)
+    //                         candidate = silo;
+    //                 }
+    //                 break;
+
+    //             case AttType.Defense:
+    //                 candidate = col.GetComponent<DefenseStructure>();
+    //                 // Debug.Log("Defence attack: " + candidate);
+    //                 break;
+
+    //             case AttType.Buildings:
+    //                 {
+    //                     // FarmHouseStructure farmHouse = col.GetComponent<FarmHouseStructure>();
+    //                     // if (farmHouse != null)
+    //                     //     candidate = farmHouse;
+    //                     // else
+    //                     // {
+    //                     CropStructure crop2 = col.GetComponent<CropStructure>();
+    //                     if (crop2 != null)
+    //                         candidate = crop2;
+    //                     else
+    //                     {
+    //                         SiloStructure silo2 = col.GetComponent<SiloStructure>();
+    //                         if (silo2 != null)
+    //                             candidate = silo2;
+    //                         else
+    //                         {
+    //                             BarracksStructure barracks = col.GetComponent<BarracksStructure>();
+    //                             if (barracks != null)
+    //                                 candidate = barracks;
+    //                             else
+    //                             {
+    //                                 AnimalStructure animal = col.GetComponent<AnimalStructure>();
+    //                                 if (animal != null)
+    //                                     candidate = animal;
+    //                             }
+    //                         }
+    //                     }
+    //                     // }
+    //                 }
+    //                 // Debug.Log("building attack: " + candidate);
+    //                 break;
+    //         }
+
+    //         if (candidate != null && !IsTargetDead(candidate))
+    //         {
+    //             float dist = Vector3.Distance(transform.position, candidate.transform.position);
+    //             if (dist < closestDist)
+    //             {
+    //                 closestDist = dist;
+    //                 nearest = candidate;
+    //             }
+    //         }
+    //     }
+
+    //     // If nothing found, attack the nearest target of any type
+    //     if (nearest == null)
+    //     {
+    //         // Debug.Log("There was nothing so we go for anything!");
+    //         // Fallback: find the nearest *any* target if no preferred AttType target was found
+    //         Collider[] fallbackHits = Physics.OverlapSphere(transform.position, data.AttackRange);
+
+    //         foreach (var col in fallbackHits)
+    //         {
+    //             MonoBehaviour candidate = null;
+
+    //             if (col.TryGetComponent<ArmyUnit>(out var army)) candidate = army;
+    //             else if (col.TryGetComponent<CropStructure>(out var crop)) candidate = crop;
+    //             else if (col.TryGetComponent<SiloStructure>(out var silo)) candidate = silo;
+    //             // else if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
+    //             else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
+    //             else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
+    //             // else if (col.TryGetComponent<DefenseStructure>(out var defense))
+    //             // {
+    //             //     candidate = defense;
+    //             //     // Debug.Log("WE found a defense");
+    //             // }
+
+    //             if (candidate != null && !IsTargetDead(candidate))
+    //             {
+    //                 float dist = Vector3.Distance(transform.position, candidate.transform.position);
+    //                 if (dist < closestDist)
+    //                 {
+    //                     closestDist = dist;
+    //                     nearest = candidate;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     // Debug.Log("nothing-----------------------");
+
+
+    //     //still nothing found, go for the farm house
+    //     if (nearest == null)
+    //     {
+    //         // Debug.Log("nothing++++++++++++++++++++");
+    //         // if (nearest == null)
+    //         // {
+    //         // Debug.Log("No other targets, checking for farm house...");
+
+    //         Structure[] allStructures = FindObjectsOfType<Structure>();
+    //         foreach (var s in allStructures)
+    //         {
+    //             // The farmhouse is the ONLY Structure that is not a child type
+    //             // if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
+
+    //             if (s.GetType() != typeof(Structure))
+    //             {
+    //                 continue;
+    //             }
+
+    //             if (!IsTargetDead(s))
+    //             {
+    //                 nearest = s;
+    //                 // Debug.Log("Farm house targeted: " + s.name);
+    //                 break; // stop after the first (should be the only one)
+    //             }
+    //         }
+
+    //     }
+
+    //     return nearest;
+    // }
+
+
     private MonoBehaviour GetNearestAggroTargetOptimized()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, data.AttackRange);
         MonoBehaviour nearest = null;
         float closestDist = float.MaxValue;
 
-        foreach (var col in hits)
+        foreach (var target in allTargets)
         {
-            MonoBehaviour candidate = null;
+            if (IsTargetDead(target)) continue;
 
-            switch (data.AttType)
+            bool validType = data.AttType switch
             {
-                case AttType.Animals:
-                    candidate = col.GetComponent<ArmyUnit>();
-                    // Debug.Log("animal attack: " + candidate);
-                    break;
+                AttType.Animals => target is ArmyUnit,
+                AttType.Resources => target is CropStructure || target is SiloStructure,
+                AttType.Defense => target is DefenseStructure,
+                AttType.Buildings => target is Structure || target is BarracksStructure || target is AnimalStructure || target is CropStructure || target is SiloStructure,
+                _ => false
+            };
 
-                case AttType.Resources:
-                    CropStructure crop = col.GetComponent<CropStructure>();
-                    if (crop != null)
-                        candidate = crop;
-                    else
-                    {
-                        SiloStructure silo = col.GetComponent<SiloStructure>();
-                        if (silo != null)
-                            candidate = silo;
-                    }
-                    break;
+            if (!validType) continue;
 
-                case AttType.Defense:
-                    candidate = col.GetComponent<DefenseStructure>();
-                    // Debug.Log("Defence attack: " + candidate);
-                    break;
-
-                case AttType.Buildings:
-                    {
-                        // FarmHouseStructure farmHouse = col.GetComponent<FarmHouseStructure>();
-                        // if (farmHouse != null)
-                        //     candidate = farmHouse;
-                        // else
-                        // {
-                        CropStructure crop2 = col.GetComponent<CropStructure>();
-                        if (crop2 != null)
-                            candidate = crop2;
-                        else
-                        {
-                            SiloStructure silo2 = col.GetComponent<SiloStructure>();
-                            if (silo2 != null)
-                                candidate = silo2;
-                            else
-                            {
-                                BarracksStructure barracks = col.GetComponent<BarracksStructure>();
-                                if (barracks != null)
-                                    candidate = barracks;
-                                else
-                                {
-                                    AnimalStructure animal = col.GetComponent<AnimalStructure>();
-                                    if (animal != null)
-                                        candidate = animal;
-                                }
-                            }
-                        }
-                        // }
-                    }
-                    // Debug.Log("building attack: " + candidate);
-                    break;
-            }
-
-            if (candidate != null && !IsTargetDead(candidate))
+            float dist = Vector3.Distance(transform.position, target.transform.position);
+            if (dist < closestDist)
             {
-                float dist = Vector3.Distance(transform.position, candidate.transform.position);
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                    nearest = candidate;
-                }
+                closestDist = dist;
+                nearest = target;
             }
         }
 
-        // If nothing found, attack the nearest target of any type
+        // fallback to farm house if nothing found
         if (nearest == null)
         {
-            // Debug.Log("There was nothing so we go for anything!");
-            // Fallback: find the nearest *any* target if no preferred AttType target was found
-            Collider[] fallbackHits = Physics.OverlapSphere(transform.position, data.AttackRange);
-
-            foreach (var col in fallbackHits)
+            foreach (var s in allTargets.OfType<Structure>())
             {
-                MonoBehaviour candidate = null;
-
-                if (col.TryGetComponent<ArmyUnit>(out var army)) candidate = army;
-                else if (col.TryGetComponent<CropStructure>(out var crop)) candidate = crop;
-                else if (col.TryGetComponent<SiloStructure>(out var silo)) candidate = silo;
-                // else if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
-                else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
-                else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
-                // else if (col.TryGetComponent<DefenseStructure>(out var defense))
-                // {
-                //     candidate = defense;
-                //     // Debug.Log("WE found a defense");
-                // }
-
-                if (candidate != null && !IsTargetDead(candidate))
-                {
-                    float dist = Vector3.Distance(transform.position, candidate.transform.position);
-                    if (dist < closestDist)
-                    {
-                        closestDist = dist;
-                        nearest = candidate;
-                    }
-                }
-            }
-        }
-        // Debug.Log("nothing-----------------------");
-
-
-        //still nothing found, go for the farm house
-        if (nearest == null)
-        {
-            // Debug.Log("nothing++++++++++++++++++++");
-            // if (nearest == null)
-            // {
-            // Debug.Log("No other targets, checking for farm house...");
-
-            Structure[] allStructures = FindObjectsOfType<Structure>();
-            foreach (var s in allStructures)
-            {
-                // The farmhouse is the ONLY Structure that is not a child type
-                // if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
-
-                if (s.GetType() != typeof(Structure))
-                {
-                    continue;
-                }
-
-                if (!IsTargetDead(s))
+                if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
                 {
                     nearest = s;
-                    // Debug.Log("Farm house targeted: " + s.name);
-                    break; // stop after the first (should be the only one)
+                    break;
                 }
             }
-
         }
 
         return nearest;
     }
-
 
 
 

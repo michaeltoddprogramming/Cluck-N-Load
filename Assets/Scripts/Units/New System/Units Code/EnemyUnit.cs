@@ -43,6 +43,9 @@ public class EnemyUnit : BaseUnit
     // private MonoBehaviour obstacleTarget; // wall temporarily
     private MonoBehaviour obstacleTarget; // wall temporarily
 
+    private float destinationUpdateThreshold = 0.3f; // minimum distance to update destination
+    private Vector3 lastDestination;
+
     // protected override void Awake()
     // {
     //     base.Awake();
@@ -248,17 +251,13 @@ public class EnemyUnit : BaseUnit
 
     private void HandleTargetingAndMovement()
     {
-        if (!agent.isOnNavMesh)
-        {
-            Debug.LogWarning("Agent not on NavMesh, skipping movement");
-            return;
-        }
+        if (!agent.isOnNavMesh) return;
 
         // Ensure we have a main target
         if (mainTarget == null || IsTargetDead(mainTarget))
         {
             mainTarget = GetNearestAggroTargetOptimized();
-            obstacleTarget = null; // reset old obstacle
+            obstacleTarget = null;
             if (mainTarget == null)
             {
                 agent.ResetPath();
@@ -266,29 +265,20 @@ public class EnemyUnit : BaseUnit
             }
         }
 
-        // Check if main target is reachable
+        // Decide what target to move toward
         bool targetReachable = IsTargetEffectivelyReachable(mainTarget);
+        currentTarget = targetReachable ? mainTarget : (obstacleTarget != null ? obstacleTarget : mainTarget);
 
-        if (targetReachable)
+        if (currentTarget == null) return;
+
+        Vector3 targetPos = currentTarget.transform.position;
+
+        // Only update destination if it moved far enough
+        if ((targetPos - lastDestination).sqrMagnitude > destinationUpdateThreshold * destinationUpdateThreshold)
         {
-            // Main target reachable → attack it
-            currentTarget = mainTarget;
-            obstacleTarget = null;
+            agent.SetDestination(targetPos);
+            lastDestination = targetPos;
         }
-        else
-        {
-            // Main target not reachable → check for obstacle
-            if (obstacleTarget == null || IsTargetDead(obstacleTarget))
-            {
-                obstacleTarget = GetBlockingObjectDirect();
-            }
-
-            // Always prioritize main target if it becomes reachable
-            currentTarget = (obstacleTarget != null) ? obstacleTarget : mainTarget;
-        }
-
-        // Move toward the current target
-        agent.SetDestination(currentTarget.transform.position);
 
         // Smooth rotation toward movement
         if (agent.velocity.sqrMagnitude > 0.1f)
@@ -297,6 +287,7 @@ public class EnemyUnit : BaseUnit
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
         }
     }
+
 
 
 

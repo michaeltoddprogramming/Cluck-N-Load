@@ -20,6 +20,7 @@ MonoBehaviour:
   cost: 50
   health: 100
   uiPrefab: {fileID: 8813689342424605839, guid: 2f6a576ba65e955459033130d6ed45ec, type: 3}
+  unlockDay: 0
   targetAnimalType: 
   armyAnimalPrefabs: []
   flagPrefab: {fileID: 0}

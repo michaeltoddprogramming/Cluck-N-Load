@@ -16,14 +16,14 @@ MonoBehaviour:
   Prefab: {fileID: 5825747814434693355, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
   MovementSpeed: 5.5
   Type: 0
-  AttType: 1
+  AttType: 0
   Health: 75
   AttackDamage: 15
   AttackRange: 1000
   AttackCooldown: 1
   Acceleration: 10
   AngularSpeed: 360
-  StoppingDistance: 1
+  StoppingDistance: 2
   AttackSound: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
   DeathSound: {fileID: 8300000, guid: 7b0841ab96974e249804d83be3e4fbc4, type: 3}
   HurtSound: {fileID: 8300000, guid: e0a21b84f72d2ce439a2bf687703c388, type: 3}

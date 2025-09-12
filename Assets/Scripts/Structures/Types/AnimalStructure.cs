@@ -19,6 +19,15 @@ public class AnimalStructure : Structure
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip backgroundClip;
 
+    [SerializeField] private float minDelay = 1f;
+    [SerializeField] private float maxDelay = 3f;
+    [SerializeField] private float minVolume = 0.8f;
+    [SerializeField] private float maxVolume = 1f;
+    [SerializeField] private float minPitch = 0.95f;
+    [SerializeField] private float maxPitch = 1.05f;
+
+    private Coroutine backgroundCoroutine;
+
     public class AnimalProductionSettings
     {
         public float productionTime = 24f;
@@ -292,18 +301,63 @@ public class AnimalStructure : Structure
 
     public void PlayBackgroundNoise()
     {
-        if (audioSource != null && backgroundClip != null)
+        if (backgroundClip != null && audioSource != null)
         {
-            audioSource.clip = backgroundClip;
-            audioSource.loop = true;
+            StopBackgroundNoise(); // stop any existing loop
+            backgroundCoroutine = StartCoroutine(PlayBackgroundClipRandomly(backgroundClip));
+        }
+    }
+
+    private IEnumerator PlayBackgroundClipRandomly(AudioClip clip)
+    {
+        while (true)
+        {
+            float targetVolume = Random.Range(minVolume, maxVolume);
+            audioSource.pitch = Random.Range(minPitch, maxPitch);
+            audioSource.clip = clip;
+            audioSource.volume = 0f;
             audioSource.Play();
+
+            // Fade in
+            float fadeInTime = 0.5f;
+            for (float t = 0; t < fadeInTime; t += Time.deltaTime)
+            {
+                audioSource.volume = Mathf.Lerp(0f, targetVolume, t / fadeInTime);
+                yield return null;
+            }
+            audioSource.volume = targetVolume;
+
+            // Wait for clip duration minus fade in/out
+            yield return new WaitForSeconds(clip.length - fadeInTime);
+
+            // Fade out
+            float fadeOutTime = 0.5f;
+            for (float t = 0; t < fadeOutTime; t += Time.deltaTime)
+            {
+                audioSource.volume = Mathf.Lerp(targetVolume, 0f, t / fadeOutTime);
+                yield return null;
+            }
+            audioSource.Stop();
+
+            // Random delay before next loop
+            yield return new WaitForSeconds(Random.Range(minDelay, maxDelay));
         }
     }
 
     public void StopBackgroundNoise()
     {
-        if (audioSource != null && backgroundClip != null && audioSource.isPlaying) audioSource.Stop();
+        if (backgroundCoroutine != null)
+        {
+            StopCoroutine(backgroundCoroutine);
+            backgroundCoroutine = null;
+        }
+
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
     }
+
 
     public static int[] whichProductsAreBoosted(string[] animals)
     {

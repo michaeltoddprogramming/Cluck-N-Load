@@ -199,11 +199,19 @@ MonoBehaviour:
   soundEffectSource: {fileID: 5023681374740876396}
   backgroundAudioSource: {fileID: 2708206670828561468}
   animator: {fileID: 5467195134582133258}
+  minDelay: 1
+  maxDelay: 5
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   data: {fileID: 11400000, guid: 7b987beb78350ca45877f1a351022028, type: 2}
   recoilForce: 20
   Recoil: 0
   healthBarPrefab: {fileID: 4122911237217708408, guid: 5901a419293af0a41829f449f21dc8a0, type: 3}
   shoot: 0
+  recoilDistance: 2
+  recoilTime: 0.2
 --- !u!114 &9124281764059500251
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -365,10 +373,10 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: aad19c11dc11e7c429626fa92d58f08f, type: 3}
   m_Resource: {fileID: 8300000, guid: aad19c11dc11e7c429626fa92d58f08f, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0

@@ -1,10 +1,20 @@
 using UnityEngine;
+using System.Collections;
 
 public abstract class BaseUnit : MonoBehaviour
 {
     [SerializeField] public AudioSource soundEffectSource;
     [SerializeField] public AudioSource backgroundAudioSource;
     [SerializeField] private Animator animator;
+
+    [SerializeField] private float minDelay = 1f;
+    [SerializeField] private float maxDelay = 3f;
+    [SerializeField] private float minVolume = 0.8f;
+    [SerializeField] private float maxVolume = 1f;
+    [SerializeField] private float minPitch = 0.95f;
+    [SerializeField] private float maxPitch = 1.05f;
+
+
 
     private SoundLimiter limiter;
 
@@ -34,9 +44,47 @@ public abstract class BaseUnit : MonoBehaviour
     protected void PlayBackgroundSound(AudioClip clip)
     {
         if (clip != null && backgroundAudioSource != null)
+            StartCoroutine(PlayBackgroundClipRandomly(clip));
+    }
+
+    private IEnumerator PlayBackgroundClipRandomly(AudioClip clip)
+    {
+        while (true)
+        {
+            // Randomize pitch and volume
+            float targetVolume = Random.Range(minVolume, maxVolume);
+            backgroundAudioSource.pitch = Random.Range(minPitch, maxPitch);
+
             backgroundAudioSource.clip = clip;
-        backgroundAudioSource.loop = true;
-        backgroundAudioSource.Play();
+            backgroundAudioSource.volume = 0f;
+            backgroundAudioSource.Play();
+
+            // Fade in
+            float fadeInTime = 0.5f;
+            for (float t = 0; t < fadeInTime; t += Time.deltaTime)
+            {
+                backgroundAudioSource.volume = Mathf.Lerp(0f, targetVolume, t / fadeInTime);
+                yield return null;
+            }
+            backgroundAudioSource.volume = targetVolume;
+
+            // Wait for clip duration minus fade times
+            float delay = clip.length - fadeInTime;
+            yield return new WaitForSeconds(delay);
+
+            // Fade out
+            float fadeOutTime = 0.5f;
+            for (float t = 0; t < fadeOutTime; t += Time.deltaTime)
+            {
+                backgroundAudioSource.volume = Mathf.Lerp(targetVolume, 0f, t / fadeOutTime);
+                yield return null;
+            }
+            backgroundAudioSource.Stop();
+
+            // Wait random delay before next loop
+            float randomDelay = Random.Range(minDelay, maxDelay);
+            yield return new WaitForSeconds(randomDelay);
+        }
     }
 
     protected virtual void Die()

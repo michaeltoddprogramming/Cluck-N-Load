@@ -42,6 +42,10 @@ public class ArmyUnit : BaseUnit
     private CanvasGroup healthBarCanvasGroup;
 
     public bool shoot = false;
+    [SerializeField] private float recoilDistance = 2f;  // how far back it moves
+    [SerializeField] private float recoilTime = 0.2f;    // how fast it moves back
+    private bool isRecoiling = false;
+    private bool canShoot = true; // Only true when at the flag
 
 
     protected override void Awake()
@@ -60,7 +64,6 @@ public class ArmyUnit : BaseUnit
         agent.angularSpeed = data.AngularSpeed;
         agent.stoppingDistance = data.StoppingDistance;
 
-        PlayBackgroundSound(data.backgroundSound);
 
         // Instantiate health bar but keep hidden
         if (healthBarPrefab != null && healthBarInstance == null)
@@ -74,6 +77,12 @@ public class ArmyUnit : BaseUnit
             healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
             healthBarInstance.SetActive(false); // Start hidden
         }
+    }
+
+    private void Start()
+    {
+        PlayBackgroundSound(data.backgroundSound);
+
     }
 
     private void UpdateHealthBar()
@@ -118,14 +127,18 @@ public class ArmyUnit : BaseUnit
         //     Recoil = false;
         // }
         // Debug.Log($"{agent.velocity.sqrMagnitude} -------------------------------------------------------------------------------------------------------------------------");
-        if (agent.velocity.sqrMagnitude > 0.1f)
+        if (!isRecoiling)
         {
-            SetFloat("speed", 1f);
-        }
-        else
-        {
-            SetFloat("speed", 0f);
-            // SetBool("isWalking", false);
+            if (agent.velocity.sqrMagnitude > 0.1f)
+            {
+                SetFloat("speed", 1f);
+            }
+            else
+            {
+                SetFloat("speed", 0f);
+                // SetBool("isWalking", false);
+            }
+
         }
 
 
@@ -151,11 +164,13 @@ public class ArmyUnit : BaseUnit
 
     public virtual void Attack()
     {
-        // Debug.Log("it attacked 98475923459234985723498475982347598723498057293875982347598237459807234985723908475");
-        if (isReturningAfterAttack)
-        {
+        if (!canShoot || isRecoiling)
             return;
-        }
+        // Debug.Log("it attacked 98475923459234985723498475982347598723498057293875982347598237459807234985723908475");
+        // if (isReturningAfterAttack)
+        // {
+        //     return;
+        // }
 
         //apply cooldown
         if (Time.time < lastAttackTime + data.AttackCooldown)
@@ -168,7 +183,7 @@ public class ArmyUnit : BaseUnit
             var enemies = GetNearbyEnemies();
             if (enemies.Count > 0)
             {
-                currentTarget = enemies[0]; // TODO: Add smarter target selection later------------------------------------------------------------------
+                currentTarget = enemies[0];
 
                 if (roamingRoutine != null)
                 {
@@ -190,7 +205,19 @@ public class ArmyUnit : BaseUnit
 
         }
 
+        canShoot = false;
+        agent.enabled = false;
+
         SetTrigger("Attack");
+
+        if (data.Type == ArmyType.Chicken)
+        {
+            if (!isRecoiling)
+            {
+                StartCoroutine(RecoilAndReturnToFlag());
+            }
+        }
+
 
         if (data.Type == ArmyType.Goat)
         {
@@ -249,24 +276,72 @@ public class ArmyUnit : BaseUnit
     // }
 
 
-    // private void ApplyRecoil()
-    // {
-    //     Rigidbody rb = GetComponent<Rigidbody>();
+    private IEnumerator RecoilAndReturnToFlag()
+    {
+        isRecoiling = true;
+        canShoot = false;
 
-    //     if (rb != null)
-    //     {
-    //         Vector3 recoilDirection = -transform.forward;
+        // Temporarily ignore collisions
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
 
-    //         agent.enabled = false;
-    //         rb.isKinematic = false;  // enable physics
-    //         transform.position += new Vector3(0, 1f, 0);
-    //         rb.AddForce(recoilDirection * recoilForce, ForceMode.Impulse);
+        // Recoil backwards manually (ignore NavMesh for recoil)
+        Vector3 startPos = transform.position;
+        Vector3 endPos = transform.position - transform.forward * recoilDistance;
+        float elapsed = 0f;
 
-    //         StartCoroutine(ReenableAgentWhenStopped(rb));
-    //         if (!isReturningToFlag)
-    //             StartCoroutine(ReturnToFlagAfterRecoil(0.1f));
-    //     }
-    // }
+        while (elapsed < recoilTime)
+        {
+            transform.position = Vector3.Lerp(startPos, endPos, elapsed / recoilTime);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = endPos;
+        isRecoiling = false;
+
+        // Start moving back to flag using NavMesh
+        isReturningAfterAttack = true;
+        targetPosition = guardPosition;
+        isMoving = true;
+
+        // Ensure agent is enabled and on NavMesh
+        if (!agent.isOnNavMesh)
+        {
+            agent.enabled = true;
+            yield return new WaitUntil(() => agent.isOnNavMesh); // wait until placed on NavMesh
+        }
+
+        agent.ResetPath();
+
+        while (Vector3.Distance(transform.position, guardPosition) > agent.stoppingDistance + 0.1f)
+        {
+            if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
+                agent.SetDestination(targetPosition);
+
+            // Smooth rotation toward movement direction
+            if (agent.velocity.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(agent.velocity.normalized);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+            }
+
+            yield return null;
+        }
+
+        // Reached flag
+        agent.ResetPath();
+        isMoving = false;
+        isReturningAfterAttack = false;
+        canShoot = true;
+
+        // Re-enable collider
+        agent.enabled = true;
+        if (col != null) col.enabled = true;
+    }
+
+
+
+
 
     private IEnumerator ReenableAgentWhenStopped(Rigidbody rb)
     {

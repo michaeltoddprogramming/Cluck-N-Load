@@ -163,6 +163,8 @@ public class Structure : MonoBehaviour
             healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
             healthBarInstance.SetActive(false); // Start hidden
         }
+
+
     }
 
     private void UpdateHealthBar()

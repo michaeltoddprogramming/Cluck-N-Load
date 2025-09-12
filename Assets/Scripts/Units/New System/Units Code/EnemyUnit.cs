@@ -168,6 +168,82 @@ public class EnemyUnit : BaseUnit
 
     protected override UnitData GetData() => data;
 
+
+
+    private bool IsTargetEffectivelyReachable(MonoBehaviour target)
+    {
+        if (target == null) return false;
+
+        Collider targetCollider = target.GetComponent<Collider>();
+        Vector3 desiredPoint = target != null ? target.transform.position : transform.position;
+
+        // Prefer closest point on collider (so we try to path to the actual closest surface)
+        if (targetCollider != null)
+        {
+            desiredPoint = targetCollider.ClosestPoint(transform.position);
+            // If ClosestPoint is the same as transform (no collider), fallback to transform.position
+            if (desiredPoint == Vector3.zero)
+                desiredPoint = target.transform.position;
+        }
+
+        // Try to sample the navmesh at/around the desired point
+        UnityEngine.AI.NavMeshHit hit;
+        float sampleRadius = 1.5f; // try small radius first, increase if needed
+        bool foundSample = UnityEngine.AI.NavMesh.SamplePosition(desiredPoint, out hit, 0.5f, agent.areaMask);
+
+        if (!foundSample)
+        {
+            // Try a few offsets around the point in case the target sits slightly off the mesh
+            Vector3[] offsets = {
+            Vector3.zero,
+            Vector3.forward * 0.5f,
+            Vector3.back * 0.5f,
+            Vector3.left * 0.5f,
+            Vector3.right * 0.5f,
+            Vector3.up * 0.2f
+        };
+
+            foreach (var off in offsets)
+            {
+                if (UnityEngine.AI.NavMesh.SamplePosition(desiredPoint + off, out hit, sampleRadius, agent.areaMask))
+                {
+                    foundSample = true;
+                    break;
+                }
+            }
+        }
+
+        if (!foundSample)
+        {
+            // No valid navmesh near the target at all
+            return false;
+        }
+
+        // Calculate path to the sampled navmesh point
+        UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+        agent.CalculatePath(hit.position, path);
+
+        // Consider the path valid if Complete
+        if (path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+            return true;
+
+        // If partial, check last corner distance to the sampled target point:
+        if (path.status == UnityEngine.AI.NavMeshPathStatus.PathPartial && path.corners != null && path.corners.Length > 0)
+        {
+            Vector3 lastCorner = path.corners[path.corners.Length - 1];
+            float distToTargetPoint = Vector3.Distance(lastCorner, hit.position);
+
+            // If the last corner is close enough to the target (within stopping distance + buffer),
+            // we can treat it as reachable (agent can get near enough to attack).
+            float buffer = 0.5f;
+            if (distToTargetPoint <= agent.stoppingDistance + buffer)
+                return true;
+        }
+
+        // Otherwise treat as not reachable
+        return false;
+    }
+
     //much better best so far
 
     private void HandleTargetingAndMovement()
@@ -178,341 +254,41 @@ public class EnemyUnit : BaseUnit
             return;
         }
 
-        // if (currentTarget == null || IsTargetDead(currentTarget))
-        // {
-        //     // currentTarget = GetNearestAggroTarget();
-        //     currentTarget = GetNearestAggroTargetOptimized();
-        //     if (currentTarget == null)
-        //     {
-        //         agent.ResetPath();
-        //         return;
-        //     }
-        //     // Reset stored position when target changes
-        //     // currentAttackPosition = Vector3.zero;
-        // }
-
+        // Ensure we have a main target
         if (mainTarget == null || IsTargetDead(mainTarget))
         {
-            // Debug.Log("ieruehfweiurhgiouwrehjtgoiujhwrtoiugjorwijtgiorjtgoirjtgoijertgoijretgoreitjgersotighj");
             mainTarget = GetNearestAggroTargetOptimized();
-            // Debug.Log("mainTarget: " + mainTarget + "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
+            obstacleTarget = null; // reset old obstacle
             if (mainTarget == null)
             {
-                // Debug.Log("`````````````````````````````````````````````````````````````````````````````````` NULL");
                 agent.ResetPath();
-                // Debug.LogError("sdofligvbrhuygbhvifjusrdhjbikflderas;hijuo;fhouj;gfsdhoujn;garefdoihujb;tgedfoihuj;bngfedohujn;agdsfouhj;asfdrgg");
                 return;
             }
-
-            // Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
-            // directionToTarget.y = 0; // keep rotation only on horizontal plane
-            // if (directionToTarget != Vector3.zero)
-            //     transform.rotation = Quaternion.LookRotation(directionToTarget);
-
         }
 
-        // currentTarget = mainTarget;
+        // Check if main target is reachable
+        bool targetReachable = IsTargetEffectivelyReachable(mainTarget);
 
-        // Debug.Log("main target is set " + mainTarget);
-
-        // UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
-        // bool pathFound = agent.CalculatePath(currentTarget.transform.position, path);
-
-        // UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
-        // bool pathFound = agent.CalculatePath(mainTarget.transform.position, path);
-
-        // if (pathFound || path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
-        // {
-        //     Debug.Log("sidrfugh guiherguih         1 1 1  1 1 1 1 1  1 1 1  1 1  1 1  1 1 11  1  1  1 1 1 1 1  1 1 1 1 1 1 1 1 1 1 1  1");
-        //     return;
-        // }
-        // if (pathFound == true)
-        // {
-        //     Debug.Log("path found.////////////////////////////////////////////////////////////////////////////");
-        // }
-        // else
-        // {
-        //     Debug.Log("No path exists! Attack wall.6546546546564554456645645645654654645465564564645654456");
-        //     // Path exists, move normally
-        //     // agent.SetDestination(mainTarget.transform.position);
-        // }
-
-        // if (!agent.enabled) Debug.LogError("Agent disabled");
-        // Debug.Log($"isOnNavMesh={agent.isOnNavMesh} areaMask={agent.areaMask}");
-
-        UnityEngine.AI.NavMeshHit startHit, endHit;
-        bool startOk = UnityEngine.AI.NavMesh.SamplePosition(agent.transform.position, out startHit, 2f, agent.areaMask);
-        bool endOk = UnityEngine.AI.NavMesh.SamplePosition(mainTarget.transform.position, out endHit, 2f, agent.areaMask);
-        // Debug.Log($"startOk={startOk} endOk={endOk} start={startHit.position} end={endHit.position}");
-
-
-        // Debug.Log($"calc ok={ok} status={path.status} corners={(path.corners != null ? path.corners.Length : 0)}");
-        if (endOk)
+        if (targetReachable)
         {
-            // Debug.Log("please))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
-            UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
-            bool ok2 = agent.CalculatePath(endHit.position, path);
-            bool ok = agent.CalculatePath(mainTarget.transform.position, path);
-            // bool pathExists = agent.CalculatePath(mainTarget.transform.position, path)
-            //       && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
-            if (ok)
-            {
-                currentTarget = mainTarget;
-                // Debug.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yayayayayayya");
-
-            }
-            else if (ok2)
-            {
-                currentTarget = mainTarget;
-                // Debug.Log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,yayayayayayya");
-            }
-            else
-            {
-                // Debug.Log("..............................................................................................");
-            }
+            // Main target reachable → attack it
+            currentTarget = mainTarget;
+            obstacleTarget = null;
         }
         else
         {
-            // Debug.Log("??????????????????????????????????????????????????????????????????????nah");
-            if (obstacleTarget == null)
+            // Main target not reachable → check for obstacle
+            if (obstacleTarget == null || IsTargetDead(obstacleTarget))
             {
                 obstacleTarget = GetBlockingObjectDirect();
-                if (obstacleTarget != null)
-                {
-                    currentTarget = obstacleTarget;
-                }
-                else
-                {
-                    // Debug.Log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
-                    return;
-                }
-                // Debug.Log("WOWOWOWOWOOWOWOWOWOWOWOWOWOWOWOOWOWOWOWOWOWOWOOWOWOWOWOWWOWOOWOWOWOWOWOWOWOOWOWOWWOWOWOWOWOWOOWOWOWOWOWOWOWOWOWOOWOOWOWOWOW ");
-
             }
-            else
-            {
 
-                currentTarget = obstacleTarget;
-                // Debug.Log("neeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-                // currentTarget = mainTarget;
-
-            }
+            // Always prioritize main target if it becomes reachable
+            currentTarget = (obstacleTarget != null) ? obstacleTarget : mainTarget;
         }
 
-        // bool pathComplete = agent.CalculatePath(mainTarget.transform.position, path);
-        // bool pathComplete = agent.CalculatePath(mainTarget.transform.position, path) ||
-        //                     path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
-
-        // if (!pathFound || path.status != UnityEngine.AI.NavMeshPathStatus.PathComplete)
-        // if (agent.CalculatePath(mainTarget.transform.position, path) && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
-        // {
-        //     Debug.Log("it has done this>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        //     // A valid path exists, so stop targeting the obstacle
-        //     obstacleTarget = null;
-        //     currentTarget = mainTarget;
-        // }
-
-        //--------------------------------------------------------------
-        // if (path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
-        // {
-        //     Debug.Log("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        //     // There is a valid path on the NavMesh
-        //     obstacleTarget = null;
-        //     currentTarget = mainTarget;
-        //     // agent.SetDestination(mainTarget.transform.position); // follow the path normally
-        // }
-        // if (!pathComplete)
-        // {
-        //     // Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
-        //     // directionToTarget.y = 0; // keep rotation only on horizontal plane
-        //     // if (directionToTarget != Vector3.zero)
-        //     //     transform.rotation = Quaternion.LookRotation(directionToTarget);
-        //     // MonoBehaviour block = GetBlockingObject(path);
-        //     // obstacleTarget = GetBlockingObject(path);
-        //     obstacleTarget = GetBlockingObjectDirect();
-        //     // Debug.Log("obsticle Target assigned: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        //     if (obstacleTarget != null)
-        //     {
-        //         Debug.Log("obsticle Target not null: " + obstacleTarget);
-        //         // obstacleTarget = block;
-        //         currentTarget = obstacleTarget;
-        //         // obstacleTarget = block;
-        //         // mainTarget = block;
-        //         // obstacleTarget = GetBlockingObject();
-        //     }
-        //     else
-        //     {
-        //         currentTarget = mainTarget; // fallback
-        //         // Debug.Log("Fallabck-------------------------------------");
-        //     }
-
-        //     // Debug.Log("currentarget is new: " + obstacleTarget + "++++++++++++++++++++++++++++++++++++");
-        //     // if (obstacleTarget != null)
-        //     // {
-        //     //     currentTarget = obstacleTarget;
-        //     //     Debug.Log("currentarget is new: " + currentTarget + "--------------------------------------------------------------");
-        //     // }
-        //     // No valid path, attack obstacles in the way
-        //     // MonoBehaviour blockingObject = GetBlockingObject();
-        //     // if (blockingObject != null)
-        //     // {
-        //     //     currentTarget = blockingObject; // temporarily target the wall
-        //     //     AttackIfInRange(); // start attacking immediately if in range
-        //     //     return; // skip normal movement this frame
-        //     // }
-        // }
-        // else
-        // {
-        //     Debug.Log("WEeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-        //     obstacleTarget = null;
-        //     currentTarget = mainTarget;
-        // }
-        // //--------------------------------------------------------
-        // float distance = Vector3.Distance(transform.position, currentTarget.transform.position);
-        // if (distance <= data.StoppingDistance)
-        // {
-        //     agent.ResetPath();
-        // }
-        // else
-        // {
-        //     Debug.Log("current target is: " + currentTarget + "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
-        //     agent.SetDestination(currentTarget.transform.position);
-
-        // }
+        // Move toward the current target
         agent.SetDestination(currentTarget.transform.position);
-
-        // agent.SetDestination(currentTarget.transform.position);
-
-        // Collider targetCollider = currentTarget.GetComponent<Collider>();
-        // // Vector3 newAttackPosition = targetCollider != null ? targetCollider.ClosestPoint(transform.position) : currentTarget.transform.position;
-        // Vector3 newAttackPosition = targetCollider.ClosestPoint(transform.position);
-        // newAttackPosition = Vector3.MoveTowards(newAttackPosition, transform.position, 1.5f); // 0.5 units closer
-
-        // if (currentAttackPosition == Vector3.zero ||
-        // Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
-        // {
-        //     currentAttackPosition = newAttackPosition;
-        // }
-
-        // float distance = Vector3.Distance(transform.position, currentAttackPosition);
-
-        // if (distance > agent.stoppingDistance)
-        //     agent.SetDestination(currentAttackPosition);
-        // else
-        //     agent.ResetPath();
-
-
-        // if (currentTarget != null &&
-        // Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
-        // {
-        //     agent.SetDestination(currentTarget.transform.position);
-        // }
-
-        // Debug.Log("this si the currtarget: " + currentTarget + "---------------------------------------");
-        // if (currentTarget != null && Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
-        // {
-        //     agent.SetDestination(currentTarget.transform.position);
-        // }
-
-        // Set destination once
-        // if (currentTarget != null)
-        // {
-        //     if (Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
-        //     {
-        //         agent.SetDestination(currentTarget.transform.position);
-        //     }
-        // }
-
-        // if (obstacleTarget != null)
-        // {
-        //     UnityEngine.AI.NavMeshPath path1 = new UnityEngine.AI.NavMeshPath();
-        //     bool pathFound1 = agent.CalculatePath(mainTarget.transform.position, path1);
-        //     if (pathFound1 && path1.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
-        //     {
-        //         currentTarget = mainTarget;
-        //         obstacleTarget = null;
-        //     }
-        // }
-
-        // if (currentTarget != null)
-        // {
-        //     // Only update the destination if it's far from the previous destination
-        //     if (Vector3.Distance(agent.destination, currentTarget.transform.position) > 0.1f)
-        //     {
-        //         agent.SetDestination(currentTarget.transform.position);
-        //     }
-        //     //  agent.SetDestination(currentTarget.transform.position);
-        // }
-
-        // SetAttackPosition();
-
-        // Check for walls in front
-        // if (Physics.Raycast(transform.position + Vector3.up * 0.5f, transform.forward, out RaycastHit hit, jumpCheckDistance))
-        // {
-        //     if (hit.collider.CompareTag("Jumpable"))
-        //     {
-        //         StartCoroutine(JumpOver(hit.collider));
-        //         return; // Skip normal movement this frame
-        //     }
-        // }
-
-        // Collider targetCollider = currentTarget.GetComponent<Collider>();
-
-        // Vector3 newAttackPosition;
-
-        // if (Vector3.Distance(transform.position, currentAttackPosition) > agent.stoppingDistance)
-        // {
-        //     agent.SetDestination(currentAttackPosition);
-        // }
-        // else
-        // {
-        //     agent.ResetPath();
-        // }
-
-        //had this------------------------
-        // if (targetCollider != null)
-        // {
-        //     newAttackPosition = targetCollider.ClosestPoint(transform.position);
-
-        //     // Add a fixed random offset only once when we pick the target (to avoid jitter)
-        //     if (currentAttackPosition == Vector3.zero ||
-        //         Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
-        //     {
-        //         currentAttackPosition = newAttackPosition + new Vector3(Random.Range(-0.3f, 0.3f), 0, Random.Range(-0.3f, 0.3f));
-        //     }
-        // }
-        // else
-        // {
-        //     newAttackPosition = currentTarget.transform.position;
-
-        //     if (currentAttackPosition == Vector3.zero ||
-        //         Vector3.Distance(newAttackPosition, currentAttackPosition) > attackPositionUpdateThreshold)
-        //     {
-        //         currentAttackPosition = newAttackPosition;
-        //     }
-        // }
-
-        // float distance = Vector3.Distance(transform.position, currentAttackPosition);
-
-        // MonoBehaviour targetToCheck = obstacleTarget != null ? obstacleTarget : currentTarget;
-
-
-        //had this--------------------
-        // if (distance > agent.stoppingDistance)
-        // {
-        //     if (obstacleTarget == null)
-        //     {
-        //         agent.SetDestination(currentAttackPosition);
-        //     }
-        //     else
-        //     {
-        //         agent.SetDestination(obstacleTarget.transform.position);
-        //     }
-        // }
-        // else
-        // {
-        //     agent.ResetPath();
-        // }
 
         // Smooth rotation toward movement
         if (agent.velocity.sqrMagnitude > 0.1f)
@@ -521,6 +297,9 @@ public class EnemyUnit : BaseUnit
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
         }
     }
+
+
+
 
     private MonoBehaviour GetBlockingObjectDirect()
     {
@@ -574,16 +353,7 @@ public class EnemyUnit : BaseUnit
                     // Debug.Log("Blocking object detected: " + hit.collider.name);
                     return hit.collider.GetComponent<FarmHouseStructure>();
                 }
-                // else if (hit.collider.GetComponent<CropStructure>() != null)
-                // {
-                //     Debug.Log("Blocking object detected: " + hit.collider.name);
-                //     return hit.collider.GetComponent<CropStructure>();
-                // }
-                // else if (hit.collider.GetComponent<CropStructure>() != null)
-                // {
-                //     Debug.Log("Blocking object detected: " + hit.collider.name);
-                //     return hit.collider.GetComponent<CropStructure>();
-                // }
+
             }
         }
 
@@ -591,48 +361,6 @@ public class EnemyUnit : BaseUnit
     }
 
 
-    // private MonoBehaviour GetBlockingObject(UnityEngine.AI.NavMeshPath path)
-    // {
-    //     // UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
-    //     // if (!agent.CalculatePath(mainTarget.transform.position, path))
-    //     // return null;
-
-    //     // Debug.Log("2342342334244444444444444444444444444444z44444444444444444444444444444444444444");
-    //     Debug.Log("Path corners count: " + path.corners.Length);
-    //     for (int i = 0; i < path.corners.Length - 1; i++)
-    //     {
-    //         Debug.Log("7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777");
-    //         Debug.DrawLine(path.corners[i], path.corners[i + 1], Color.red, 2f);
-    //         Vector3 start = path.corners[i];
-    //         Vector3 end = path.corners[i + 1];
-    //         Vector3 dir = (end - start).normalized;
-    //         float dist = Vector3.Distance(start, end) + 60f;
-
-    //         if (Physics.Raycast(start, dir, out RaycastHit hit, dist))
-    //         {
-    //             Debug.Log("Hit: " + hit.collider.name + " | Tag: " + hit.collider.tag + "**************************************************************************************************************");
-    //             if (hit.collider.CompareTag("Jumpable"))
-    //                 return hit.collider.GetComponent<DefenseStructure>();
-    //         }
-    //         else
-    //         {
-    //             Debug.Log("Raycast missed from " + start + " to " + end);
-    //         }
-    //     }
-    //     return null;
-    // }
-    // private MonoBehaviour GetBlockingObject()
-    // {
-    //     Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * 1f, 1f);
-    //     foreach (var hit in hits)
-    //     {
-    //         if (hit.CompareTag("Jumpable")) // or Layer check
-    //         {
-    //             return hit.GetComponent<DefenseStructure>();
-    //         }
-    //     }
-    //     return null;
-    // }
 
     private IEnumerator JumpOver(Collider wall)
     {
@@ -654,24 +382,6 @@ public class EnemyUnit : BaseUnit
         agent.enabled = true;
     }
 
-
-    // private void SetAttackPosition()
-    // {
-    //     if (currentTarget == null) return;
-
-    //     Collider targetCollider = currentTarget.GetComponent<Collider>();
-    //     if (targetCollider != null)
-    //     {
-    //         // Get closest point on the target collider to this enemy's current position
-    //         currentAttackPosition = targetCollider.ClosestPoint(transform.position);
-    //     }
-    //     else
-    //     {
-    //         currentAttackPosition = currentTarget.transform.position;
-    //     }
-
-    //     hasAttackPosition = true;
-    // }
 
     private void AttackIfInRange()
     {
@@ -715,29 +425,7 @@ public class EnemyUnit : BaseUnit
 
         return (dx + dy == 1); // True if exactly one cell apart (up, down, left, or right)
     }
-    // private MonoBehaviour GetNearestAggroTarget()
-    // {
-    //     var aggroThings = GetAggroThingsInRange();
-    //     // Debug.Log($"Aggro Things Count: {aggroThings.Count}+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-    //     MonoBehaviour nearest = null;
-    //     float closestDist = float.MaxValue;
 
-    //     foreach (var obj in aggroThings)
-    //     {
-    //         if (obj is MonoBehaviour mb)
-    //         {
-    //             float dist = Vector3.Distance(transform.position, mb.transform.position);
-    //             // Debug.Log($"Found target: {mb.name} ({mb.GetType().Name}) at distance {dist}****************************************************************************");
-    //             if (dist < closestDist)
-    //             {
-    //                 closestDist = dist;
-    //                 nearest = mb;
-    //             }
-    //         }
-    //     }
-
-    //     return nearest;
-    // }
 
     private MonoBehaviour GetNearestAggroTargetOptimized()
     {
@@ -835,11 +523,11 @@ public class EnemyUnit : BaseUnit
                 // else if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
                 else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
                 else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
-                else if (col.TryGetComponent<DefenseStructure>(out var defense))
-                {
-                    candidate = defense;
-                    // Debug.Log("WE found a defense");
-                }
+                // else if (col.TryGetComponent<DefenseStructure>(out var defense))
+                // {
+                //     candidate = defense;
+                //     // Debug.Log("WE found a defense");
+                // }
 
                 if (candidate != null && !IsTargetDead(candidate))
                 {
@@ -881,53 +569,7 @@ public class EnemyUnit : BaseUnit
                     break; // stop after the first (should be the only one)
                 }
             }
-            // }
-            // Collider[] fallbackHits = Physics.OverlapSphere(transform.position, data.AttackRange);
 
-            // foreach (var col in fallbackHits)
-            // {
-            //     MonoBehaviour candidate = null;
-
-            //     // if (col.TryGetComponent<ArmyUnit>(out var army)) candidate = army;
-            //     // else if (col.TryGetComponent<CropStructure>(out var crop)) candidate = crop;
-            //     // else if (col.TryGetComponent<SiloStructure>(out var silo)) candidate = silo;
-            //     if (col.TryGetComponent<Structure>(out var farm)) candidate = farm;
-            //     // else if (col.TryGetComponent<BarracksStructure>(out var barracks)) candidate = barracks;
-            //     // else if (col.TryGetComponent<AnimalStructure>(out var animal)) candidate = animal;
-            //     // else if (col.TryGetComponent<DefenseStructure>(out var defense))
-            //     // {
-            //     // candidate = defense;
-            //     // Debug.Log("WE found a defense");
-            //     // }
-
-            //     if (candidate != null && !IsTargetDead(candidate))
-            //     {
-            //         float dist = Vector3.Distance(transform.position, candidate.transform.position);
-            //         if (dist < closestDist)
-            //         {
-            //             closestDist = dist;
-            //             nearest = candidate;
-            //             Debug.Log("Farm house targeted: " + candidate);
-            //         }
-            //     }
-            // }
-            // Structure[] allStructures = FindObjectsOfType<Structure>();
-            // foreach (var s in allStructures)
-            // {
-            //     // Skip structures already handled by other types
-            //     if (s is BarracksStructure || s is CropStructure || s is SiloStructure || s is DefenseStructure || s is AnimalStructure)
-            //         continue;
-
-            //     if (!IsTargetDead(s))
-            //     {
-            //         nearest = s;
-            //         Debug.Log("Farm house targeted: " + nearest);
-            //         break; // just pick the first one (you can later pick the closest)
-            //     }
-            // }
-            // if (col.TryGetComponent<FarmHouseStructure>(out var farm)) candidate = farm;
-            // hasNoTarget = true;
-            // agent.SetDestination(Vector3.zero); // You can change this to any other fallback location
         }
 
         return nearest;
@@ -935,56 +577,6 @@ public class EnemyUnit : BaseUnit
 
 
 
-    // public List<object> GetAggroThingsInRange()
-    // {
-    //     List<object> targets = new();
-    //     GridController grid = GridController.Instance;
-
-    //     // Get all cells within attack range (radius in grid cells)
-    //     List<GridCell> cellsInRange = grid.GetCellsInRange(transform.position, data.AttackRange);
-
-    //     foreach (GridCell cell in cellsInRange)
-    //     {
-    //         Vector3 cellWorldPos = cell.worldPosition;
-    //         Collider[] hits = Physics.OverlapSphere(cellWorldPos, grid.GetCellSize() * 0.4f);
-
-    //         foreach (Collider col in hits)
-    //         {
-    //             switch (data.AttType)
-    //             {
-    //                 case AttType.Animals:
-    //                     ArmyUnit army = col.GetComponent<ArmyUnit>();
-    //                     if (army != null && !army.IsDead() && !targets.Contains(army)) targets.Add(army);
-    //                     break;
-
-    //                 case AttType.Resources:
-    //                     if (col.GetComponent<CropStructure>() is var crop && crop != null) targets.Add(crop);
-    //                     if (col.GetComponent<SiloStructure>() is var silo && silo != null) targets.Add(silo);
-    //                     break;
-
-    //                 case AttType.Defense:
-    //                     if (col.GetComponent<DefenseStructure>() is var def && def != null) targets.Add(def);
-    //                     break;
-
-    //                 case AttType.Buildings:
-    //                     AddIfFound<FarmHouseStructure>(col, targets);
-    //                     AddIfFound<CropStructure>(col, targets);
-    //                     AddIfFound<SiloStructure>(col, targets);
-    //                     AddIfFound<BarracksStructure>(col, targets);
-    //                     AddIfFound<AnimalStructure>(col, targets);
-    //                     break;
-    //             }
-    //         }
-    //     }
-
-    //     return targets;
-
-    //     void AddIfFound<T>(Collider col, List<object> list) where T : MonoBehaviour
-    //     {
-    //         T comp = col.GetComponent<T>();
-    //         if (comp != null && !list.Contains(comp)) list.Add(comp);
-    //     }
-    // }
 
     private void UpdateHealthBar()
     {
@@ -1117,24 +709,6 @@ public class EnemyUnit : BaseUnit
                 break;
         }
     }
-
-
-    // public void increaseAfterNight()
-    // {
-    //     // data.maxSpawnAmount += data.nightlySpawnMultiplier;
-    //     // data.minSpawnAmount += data.nightlySpawnMultiplier;
-    //     // Debug.Log($"max: {data.maxSpawnAmount} min: {data.minSpawnAmount}************************************************");
-
-    // }
-    // public void increaseAfterSeason()
-    // {
-    //     // data.maxSpawnAmount = (int)(data.maxSpawnAmount * data.seasonSpawnMultiplier);
-    //     // data.minSpawnAmount = (int)(data.minSpawnAmount * data.seasonSpawnMultiplier);
-    //     // Debug.Log($"max: {data.maxSpawnAmount} min: {data.minSpawnAmount}===============================================");
-
-    //     // data.nightlySpawnMultiplier = (int)(data.nightlySpawnMultiplier * data.seasonSpawnMultiplier);
-    //     // Debug.Log($"nightly things: {data.nightlySpawnMultiplier}=====================================================");
-    // }
 
     private Vector3 GetRandomOutsidePosition()
     {

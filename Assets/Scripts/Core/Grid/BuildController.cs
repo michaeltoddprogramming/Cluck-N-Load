@@ -32,6 +32,7 @@ public class BuildController : MonoBehaviour
 
     [Header("Delete Mode Settings")]
     [SerializeField] private Vector2 cursorOffset = new Vector2(15f, 15f);
+    [SerializeField] private float moneyBackAfterDeletePercentage = 0.5f;
 
     [Header("Land Ownership")]
     [SerializeField] private bool enableLandBuying = true;
@@ -841,6 +842,8 @@ public class BuildController : MonoBehaviour
             if (structure is SiloStructure silo) InventoryManager.Instance.UnregisterSilo(silo);
             if (structure != null && structure.GetStructureName().ToLower().Contains("farm house")) isHousePlaced = false;
             List<Vector2Int> footprint = GetStructureFootprint(placedItem);
+            MoneyManager.Instance.AddMoney((int)(currentStructureData.cost * moneyBackAfterDeletePercentage));
+            Debug.Log($"Added money back after deleting. cost {currentStructureData.cost} percentage: {moneyBackAfterDeletePercentage} money gained: {currentStructureData.cost * moneyBackAfterDeletePercentage}");
             Destroy(placedItem);
             AudioManager.Instance?.PlayRemoveSound();
             foreach (Vector2Int pos in footprint) gridController.SetCellOccupied(pos.x, pos.y, false);
@@ -871,6 +874,8 @@ public class BuildController : MonoBehaviour
                         if (structure != null && structure.GetStructureName().ToLower().Contains("farm house")) isHousePlaced = false;
                         foreach (Vector2Int pos in footprint)
                             if (gridController.IsValidCell(pos.x, pos.y)) gridController.SetCellOccupied(pos.x, pos.y, false);
+                        MoneyManager.Instance.AddMoney((int)(currentStructureData.cost * moneyBackAfterDeletePercentage));
+                        Debug.Log($"Added money back after deleting. cost {currentStructureData.cost} percentage: {moneyBackAfterDeletePercentage} money gained: {currentStructureData.cost * moneyBackAfterDeletePercentage}");
                         Destroy(placedItem);
                         AudioManager.Instance?.PlayRemoveSound();
                         gridController.UpdateGridTexture();

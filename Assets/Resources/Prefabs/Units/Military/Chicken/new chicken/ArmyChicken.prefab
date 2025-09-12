@@ -88,6 +88,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 19728a4b8c6d1e3459ca9004e439b50c, type: 2}
     - target: {fileID: 5866666021909216657, guid: 572148a9e67202548aa70b5eae3c14d6, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 572148a9e67202548aa70b5eae3c14d6, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 5378ed0d160be014eb71761656dbdcb5, type: 2}
@@ -119,9 +123,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 572148a9e67202548aa70b5eae3c14d6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3623933252183714774}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 572148a9e67202548aa70b5eae3c14d6, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 131766474141049599}
   m_SourcePrefab: {fileID: 100100000, guid: 572148a9e67202548aa70b5eae3c14d6, type: 3}
 --- !u!95 &1102974884407093422 stripped
 Animator:
@@ -458,37 +459,10 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 0.75
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!54 &131766474141049599
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5973305448664574062}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 1
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 1
-  m_Constraints: 112
-  m_CollisionDetection: 1
 --- !u!4 &6462279557100532436 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 572148a9e67202548aa70b5eae3c14d6, type: 3}

@@ -65,6 +65,8 @@ public class SoundLimiter : MonoBehaviour
         // Play the clip
         tempSource.PlayOneShot(clip);
 
+        Destroy(tempGO, clip.length);
+
         // Destroy the temp object after the clip finishes
         StartCoroutine(TrackSound("Death", clip.length, tempSource));
     }

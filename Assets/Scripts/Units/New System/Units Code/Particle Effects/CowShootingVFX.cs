@@ -18,8 +18,10 @@ public class CowShootingVFX : MonoBehaviour
         // Muzzle flashes
         if (muzzleFlashPrefab)
         {
-            Instantiate(muzzleFlashPrefab, gunLeft.position, gunLeft.rotation);
-            Instantiate(muzzleFlashPrefab, gunRight.position, gunRight.rotation);
+            GameObject flashLeft = Instantiate(muzzleFlashPrefab, gunLeft.position, gunLeft.rotation);
+            GameObject flashRight = Instantiate(muzzleFlashPrefab, gunRight.position, gunRight.rotation);
+            Destroy(flashLeft, 0.2f);  // adjust time to match animation
+            Destroy(flashRight, 0.2f);
         }
 
         // Fire from both guns
@@ -30,7 +32,8 @@ public class CowShootingVFX : MonoBehaviour
         if (impactPrefab)
         {
             Vector3 center = targetPosition; // can use enemy center calculation if you want
-            Instantiate(impactPrefab, center, Quaternion.identity);
+            GameObject impact = Instantiate(impactPrefab, center, Quaternion.identity);
+            Destroy(impact, 0.5f); // adjust time to match effect
         }
     }
 
@@ -70,7 +73,9 @@ public class CowShootingVFX : MonoBehaviour
         }
 
         trail.transform.position = target;
-        Destroy(trail, 0.05f);
+        Destroy(trail);
+        // Destroy(trail);
+        // Destroy(trail);
     }
 }
 

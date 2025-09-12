@@ -15,7 +15,7 @@ public class NightManager : MonoBehaviour
     [Header("Start NIght button")]
     [SerializeField] private Button startNightButton;
     [SerializeField] private TextMeshProUGUI buttonText;
-        [SerializeField] private TextMeshProUGUI dayCountText;
+    [SerializeField] private TextMeshProUGUI dayCountText;
 
     // Light
     [Header("Lighting stuff")]
@@ -467,6 +467,10 @@ public class NightManager : MonoBehaviour
 
         if (value == 5)
         {
+            if (days == 5 || days == 10 || days == 15 || days == 20)
+            {
+                OnDayChange(days);
+            }
             StartDay(2);
             if (roosterMorningSource != null)
             {
@@ -557,19 +561,19 @@ public class NightManager : MonoBehaviour
         {
             setSeason(1);
         }
-        else if (value == 5)
+        else if (value == 5 && hours == 5)
         {
             setSeason(2);
         }
-        else if (value == 10)
+        else if (value == 10 && hours == 5)
         {
             setSeason(3);
         }
-        else if (value == 15)
+        else if (value == 15 && hours == 5)
         {
             setSeason(4);
         }
-        else if (value == 20)
+        else if (value == 20 && hours == 5)
         {
             // StartNotification("Night starting soon!!", 5f);
 
@@ -864,7 +868,7 @@ public class NightManager : MonoBehaviour
             }
 
             productionBoosts.SetBoosted(boostedProducts);
-            
+
             if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
                 return;

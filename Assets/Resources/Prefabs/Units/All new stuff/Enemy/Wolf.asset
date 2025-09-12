@@ -23,7 +23,7 @@ MonoBehaviour:
   AttackCooldown: 1
   Acceleration: 10
   AngularSpeed: 360
-  StoppingDistance: 3
+  StoppingDistance: 1
   AttackSound: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
   DeathSound: {fileID: 8300000, guid: 7b0841ab96974e249804d83be3e4fbc4, type: 3}
   HurtSound: {fileID: 8300000, guid: e0a21b84f72d2ce439a2bf687703c388, type: 3}

@@ -648,46 +648,47 @@ public class EnemyUnit : BaseUnit
 
     private MonoBehaviour GetNearestAggroTargetOptimized()
     {
-        MonoBehaviour nearest = null;
-        float closestDist = float.MaxValue;
+        return TargetManager.Instance.GetNearestAggroTargetOptimized(data, transform.position);
+        //     MonoBehaviour nearest = null;
+        //     float closestDist = float.MaxValue;
 
-        foreach (var target in allTargets)
-        {
-            if (IsTargetDead(target)) continue;
+        //     foreach (var target in allTargets)
+        //     {
+        //         if (IsTargetDead(target)) continue;
 
-            bool validType = data.AttType switch
-            {
-                AttType.Animals => target is ArmyUnit,
-                AttType.Resources => target is CropStructure || target is SiloStructure,
-                AttType.Defense => target is DefenseStructure,
-                AttType.Buildings => target is Structure || target is BarracksStructure || target is AnimalStructure || target is CropStructure || target is SiloStructure,
-                _ => false
-            };
+        //         bool validType = data.AttType switch
+        //         {
+        //             AttType.Animals => target is ArmyUnit,
+        //             AttType.Resources => target is CropStructure || target is SiloStructure,
+        //             AttType.Defense => target is DefenseStructure,
+        //             AttType.Buildings => target is Structure || target is BarracksStructure || target is AnimalStructure || target is CropStructure || target is SiloStructure,
+        //             _ => false
+        //         };
 
-            if (!validType) continue;
+        //         if (!validType) continue;
 
-            float dist = Vector3.Distance(transform.position, target.transform.position);
-            if (dist < closestDist)
-            {
-                closestDist = dist;
-                nearest = target;
-            }
-        }
+        //         float dist = Vector3.Distance(transform.position, target.transform.position);
+        //         if (dist < closestDist)
+        //         {
+        //             closestDist = dist;
+        //             nearest = target;
+        //         }
+        //     }
 
-        // fallback to farm house if nothing found
-        if (nearest == null)
-        {
-            foreach (var s in allTargets.OfType<Structure>())
-            {
-                if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
-                {
-                    nearest = s;
-                    break;
-                }
-            }
-        }
+        //     // fallback to farm house if nothing found
+        //     if (nearest == null)
+        //     {
+        //         foreach (var s in allTargets.OfType<Structure>())
+        //         {
+        //             if (s.GetType() == typeof(Structure) && !IsTargetDead(s))
+        //             {
+        //                 nearest = s;
+        //                 break;
+        //             }
+        //         }
+        //     }
 
-        return nearest;
+        //     return nearest;
     }
 
 

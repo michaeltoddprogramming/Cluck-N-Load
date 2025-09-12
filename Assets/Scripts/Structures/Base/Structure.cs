@@ -91,6 +91,7 @@ public class Structure : MonoBehaviour
 
     private void Awake()
     {
+        TargetManager.Instance.RegisterTarget(this);
         if (structureData != null)
         {
             currentHealth = structureData.health;
@@ -227,6 +228,7 @@ public class Structure : MonoBehaviour
     {
         if (hasRegisteredWithGrid && gridController != null)
         {
+            TargetManager.Instance?.UnregisterTarget(this);
             UnregisterFromGrid();
         }
         // Moved UnregisterStructure to Die to avoid delay
@@ -332,6 +334,7 @@ public class Structure : MonoBehaviour
 
         if (currentHealth <= 0)
         {
+            TargetManager.Instance?.UnregisterTarget(this);
             Die();
         }
     }
@@ -368,6 +371,7 @@ public class Structure : MonoBehaviour
 
     public virtual void Die()
     {
+        TargetManager.Instance.UnregisterTarget(this);
         OnDestroyed?.Invoke(this);
         OnStructureDestroyed?.Invoke(this);
 
@@ -385,6 +389,7 @@ public class Structure : MonoBehaviour
 
         if (destroyOnZeroHealth)
         {
+            TargetManager.Instance?.UnregisterTarget(this);
             Destroy(gameObject, destroyDelay);
         }
     }

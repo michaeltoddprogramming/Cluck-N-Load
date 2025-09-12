@@ -47,6 +47,7 @@ public class ArmyUnit : BaseUnit
     protected override void Awake()
     {
         base.Awake();
+        TargetManager.Instance.RegisterTarget(this);
         currHealth = data.Health;
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
 
@@ -298,7 +299,7 @@ public class ArmyUnit : BaseUnit
             currHealth = 0;
             UpdateHealthBar();
             barracks?.OnAnimalDied(this);
-            Die();
+            handleDie();
         }
         else
         {
@@ -306,6 +307,13 @@ public class ArmyUnit : BaseUnit
             currHealth -= damage;
             UpdateHealthBar();
         }
+    }
+
+    private void handleDie()
+    {
+        TargetManager.Instance.UnregisterTarget(this);
+
+        Die();
     }
 
     public bool IsDead()

@@ -15,108 +15,7 @@ public class ShootingVFX : MonoBehaviour
 
     [Header("Shooting Settings")]
     public float range = 20f;                 // Max distance for the bullet
-
-    // Call this function to shoot at a target
-    // public void Shoot(Vector3 targetPosition)
-    // {
-    //     // 1. Muzzle Flash
-    //     if (muzzleFlashPrefab)
-    //     {
-    //         GameObject flash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
-    //         Destroy(flash, 0.2f);
-    //     }
-
-    //     // 2. Raycast to detect hit
-    //     if (Physics.Raycast(firePoint.position, (targetPosition - firePoint.position).normalized, out RaycastHit hit, range))
-    //     {
-    //         // Impact Effect
-    //         if (impactPrefab && hit.collider != null)
-    //         {
-    //             // Get the enemy transform
-    //             Transform enemy = hit.collider.transform;
-
-    //             // Calculate center position
-    //             // Assuming your enemy height is roughly equal to its collider height
-    //             float enemyHeight = 1.5f; // replace with actual height of your prefab
-    //             Vector3 centerPos = enemy.position + Vector3.up * (enemyHeight / 2f);
-
-    //             // Spawn the hit effect
-    //             GameObject impact = Instantiate(impactPrefab, centerPos, Quaternion.identity);
-
-
-    //             // Transform enemyCenter = hit.collider.transform; // the enemy's main transform
-    //             // GameObject impact = Instantiate(impactPrefab, enemyCenter.position, Quaternion.identity);
-    //             // GameObject impact = Instantiate(impactPrefab, hit.point, Quaternion.LookRotation(hit.normal));
-    //             // Destroy(impact, 0.5f);
-    //         }
-
-    //         // Bullet Trail
-    //         if (bulletTrailPrefab)
-    //         {
-    //             GameObject trail = Instantiate(bulletTrailPrefab, firePoint.position, Quaternion.identity);
-    //             StartCoroutine(MoveTrail(trail, targetPosition));
-    //         }
-    //     }
-    // }
-
-
-    // public void Shoot(Vector3 targetPosition)
-    // {
-    //     // 1. Muzzle Flash
-    //     if (muzzleFlashPrefab)
-    //     {
-    //         GameObject flash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
-    //         Destroy(flash, 0.2f);
-    //     }
-
-    //     Vector3 direction = (targetPosition - firePoint.position).normalized;
-
-    //     // Fire multiple visual bullets
-    //     for (int i = 0; i < bulletCount; i++)
-    //     {
-    //         // Random spread for each trail
-    //         Vector3 spreadDir = Quaternion.Euler(
-    //             Random.Range(-spreadAngle, spreadAngle),
-    //             Random.Range(-spreadAngle, spreadAngle),
-    //             0
-    //         ) * direction;
-
-    //         // Calculate the visual target position
-    //         Vector3 visualTarget = firePoint.position + spreadDir * visualRange;
-
-    //         // Spawn the trail
-    //         if (bulletTrailPrefab)
-    //         {
-    //             GameObject trail = Instantiate(bulletTrailPrefab, firePoint.position, Quaternion.identity);
-    //             StartCoroutine(MoveTrail(trail, visualTarget));
-    //         }
-    //     }
-
-    //     // 2. Hit effect at target position (always plays once)
-    //     if (impactPrefab)
-    //     {
-    //         GameObject impact = Instantiate(impactPrefab, targetPosition, Quaternion.identity);
-    //         Destroy(impact, 0.5f); // adjust lifetime
-    //     }
-    // }
-
-    // // Moves the bullet trail from firePoint to target
-    // private IEnumerator MoveTrail(GameObject trail, Vector3 target)
-    // {
-    //     float duration = 0.2f;
-    //     Vector3 startPos = trail.transform.position;
-    //     float elapsed = 0f;
-
-    //     while (elapsed < duration)
-    //     {
-    //         trail.transform.position = Vector3.Lerp(startPos, target, elapsed / duration);
-    //         elapsed += Time.deltaTime;
-    //         yield return null;
-    //     }
-
-    //     trail.transform.position = target;
-    //     Destroy(trail, 0.1f);
-    // }
+    private List<GameObject> activeTrails = new List<GameObject>();
 
     public void Shoot(Vector3 targetPosition)
     {
@@ -145,6 +44,7 @@ public class ShootingVFX : MonoBehaviour
             if (bulletTrailPrefab)
             {
                 GameObject trail = Instantiate(bulletTrailPrefab, firePoint.position, Quaternion.identity);
+                activeTrails.Add(trail);
                 StartCoroutine(MoveTrail(trail, visualTarget));
             }
         }
@@ -172,7 +72,15 @@ public class ShootingVFX : MonoBehaviour
         }
 
         trail.transform.position = target;
+        activeTrails.Remove(trail);
         Destroy(trail, 0.1f);
+    }
+
+    private void OnDestroy()
+    {
+        // Destroy any trails still active
+        foreach (var trail in activeTrails)
+            if (trail != null) Destroy(trail);
     }
 
 

@@ -73,8 +73,8 @@ public class PricePanelUI : MonoBehaviour
         productionBoosts = FindFirstObjectByType<ProductionBoosts>();
 
 
-        audioSourceOpen.clip = audioClipOpen;
-        audioSourceOpen.Play();
+        // audioSourceOpen.clip = audioClipOpen;
+        // audioSourceOpen.Play();
 
         gameObject.SetActive(false);
 

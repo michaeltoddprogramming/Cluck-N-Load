@@ -288,8 +288,14 @@ public class ArmyUnit : BaseUnit
         // Recoil backwards manually (ignore NavMesh for recoil)
         Vector3 startPos = transform.position;
         Vector3 endPos = transform.position - transform.forward * recoilDistance;
-        float elapsed = 0f;
 
+        UnityEngine.AI.NavMeshHit hit;
+        if (UnityEngine.AI.NavMesh.SamplePosition(endPos, out hit, 1f, UnityEngine.AI.NavMesh.AllAreas))
+            endPos = hit.position;
+
+
+
+        float elapsed = 0f;
         while (elapsed < recoilTime)
         {
             transform.position = Vector3.Lerp(startPos, endPos, elapsed / recoilTime);

@@ -4117,9 +4117,9 @@ MonoBehaviour:
   plantingClose: {fileID: 9166629216329270383}
   statusText: {fileID: 1038555267046322426}
   CropImage: {fileID: 3677820240210201762}
-  SunflowerIcon: {fileID: 21300000, guid: f87e42b3ba5779e4a9f121f14af9e9fd, type: 3}
+  SunflowerIcon: {fileID: 21300000, guid: 762846cffcf47ad478a19c0fe21c4d18, type: 3}
   WheatIcon: {fileID: 21300000, guid: e08cd903e3c3038419203cb865b805d8, type: 3}
-  carrotIcon: {fileID: 21300000, guid: 78305be0a8acbfd4eacec4652a677ea3, type: 3}
+  carrotIcon: {fileID: 21300000, guid: 17e4bb076d925594d9430b1c9217c64c, type: 3}
   defaultIcon: {fileID: 21300000, guid: 872106fd027812e458f7a8c4d231eb8f, type: 3}
   nightManager: {fileID: 0}
   errorSound: {fileID: 8300000, guid: efec1d0cfaca32c4eb555bc598644eab, type: 3}

@@ -873,6 +873,7 @@ public class NightManager : MonoBehaviour
             {
                 return;
             }
+            // Debug.Log("these are the things that are boosted: " + fullAnimalName + (sameProductIncreasePercent * 100) / 2);
 
             string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
 
@@ -955,6 +956,8 @@ public class NightManager : MonoBehaviour
                 }
 
                 productionBoosts.SetBoosted(boostedProducts);
+
+                // Debug.Log("these are the things that are boosted: " + fullAnimalName1 + (increasePercent * 100) / 3);
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
@@ -1047,6 +1050,8 @@ public class NightManager : MonoBehaviour
                 {
                     return;
                 }
+
+                // Debug.Log("these are the things that are boosted: " + fullAnimalName1 + (increasePercent * 100) / 3);
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 

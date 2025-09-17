@@ -37,6 +37,9 @@ public class TargetManager : MonoBehaviour
         {
             if (col == null) continue; // <-- skip destroyed objects
 
+            if (col is ArmyUnit unit && unit.GetArmyType() == ArmyType.Sheep)
+                continue;
+
             MonoBehaviour candidate = null;
 
             switch (data.AttType)
@@ -114,7 +117,7 @@ public class TargetManager : MonoBehaviour
     public List<MonoBehaviour> GetTargetsOfType(AttType attType)
     {
         return allTargets.Where(t =>
-            (attType == AttType.Animals && t is ArmyUnit) ||
+            (attType == AttType.Animals && t is ArmyUnit unit && unit.GetArmyType() != ArmyType.Sheep) ||
             (attType == AttType.Resources && (t is CropStructure || t is SiloStructure)) ||
             (attType == AttType.Defense && t is DefenseStructure) ||
             (attType == AttType.Buildings && (t is CropStructure || t is SiloStructure || t is BarracksStructure || t is AnimalStructure))

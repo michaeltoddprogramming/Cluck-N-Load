@@ -28,6 +28,7 @@ public class GridController : MonoBehaviour
     private Material targetMaterial;
     private MeshRenderer targetRenderer;
     private TextureGenerator textureGenerator;
+    private bool textureNeedsUpdate = false;
 
     public static GridController Instance { get; private set; }
 
@@ -63,10 +64,19 @@ public class GridController : MonoBehaviour
 
     void Update()
     {
-        // Only update hover cell if grid is visible
-        if (gridOverlayInstance.activeSelf)
+        // Only update hover cell when grid is visible and mouse is moving
+        if (gridOverlayInstance.activeSelf && (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0))
         {
             UpdateHoveredCell();
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (textureNeedsUpdate)
+        {
+            textureGenerator.UpdateTexture();
+            textureNeedsUpdate = false;
         }
     }
 
@@ -336,8 +346,8 @@ public class GridController : MonoBehaviour
         cell.flags.isOccupied = occupied;
         gridDataGenerator.grid[x, y] = cell;
 
-        // Update texture to reflect changes
-        textureGenerator.UpdateTexture();
+        // Flag for texture update instead of updating immediately
+        textureNeedsUpdate = true;
     }
 
     public Vector2Int GetCurrentHoveredCell()

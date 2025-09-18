@@ -61,25 +61,40 @@ public partial class TutorialManager : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("TutorialManager: Awake called");
         if (instance == null)
         {
             instance = this;
-            tutorialPanel.SetActive(false);
+            Debug.Log("TutorialManager: Instance set");
+            if (tutorialPanel != null)
+            {
+                tutorialPanel.SetActive(false);
+                Debug.Log("TutorialManager: Tutorial panel deactivated");
+            }
+            else
+            {
+                Debug.LogError("TutorialManager: tutorialPanel is not assigned in the Inspector!");
+            }
             mumbleAudioSource = mumbleAudioSource ?? gameObject.AddComponent<AudioSource>();
             effectsAudioSource = gameObject.AddComponent<AudioSource>();
             effectsAudioSource.playOnAwake = false;
+            Debug.Log("TutorialManager: Audio sources configured");
             InitializeTutorialSteps();
+            Debug.Log("TutorialManager: Tutorial steps initialized");
             skipTutorialButton?.gameObject.SetActive(false); // Hide skip button at start
             SetupChecklist();
+            Debug.Log("TutorialManager: Awake completed successfully");
         }
         else
         {
+            Debug.Log("TutorialManager: Destroying duplicate instance");
             Destroy(gameObject);
         }
     }
 
     private void Start()
     {
+        Debug.Log("TutorialManager: Starting tutorial...");
         StartTutorial();
     }
 
@@ -113,14 +128,34 @@ public partial class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
-        tutorialPanel.SetActive(true);
+        Debug.Log($"TutorialManager: StartTutorial called - Panel exists: {tutorialPanel != null}, Steps count: {steps.Count}");
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(true);
+            Debug.Log("TutorialManager: Tutorial panel activated");
+        }
+        else
+        {
+            Debug.LogError("TutorialManager: Tutorial panel is null! Cannot start tutorial.");
+            return;
+        }
+        
+        if (steps.Count == 0)
+        {
+            Debug.LogError("TutorialManager: No tutorial steps found! Cannot start tutorial.");
+            return;
+        }
+        
         currentStepIndex = -1;
         waitingForStepToComplete = false;
+        Debug.Log($"TutorialManager: Starting with {steps.Count} steps, calling NextStep()");
         NextStep();
     }
 
     void NextStep()
     {
+        Debug.Log($"TutorialManager: NextStep called - currentStepIndex: {currentStepIndex}, steps.Count: {steps.Count}, isProcessingStep: {isProcessingStep}");
+        
         if (isProcessingStep)
         {
             isProcessingStep = false;
@@ -407,5 +442,15 @@ public partial class TutorialManager : MonoBehaviour
 
         isShowingDiscovery = false;
         currentDiscoveryStep = null;
+    }
+
+    private void OnDestroy()
+    {
+        // Clean up typing coroutine to prevent memory leaks
+        if (typingCoroutine != null)
+        {
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+        }
     }
 }

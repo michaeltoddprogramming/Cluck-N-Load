@@ -47,6 +47,8 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private StructureDatabase structureDatabase;
 
     public System.Action OnGameOver;
+    
+    private Coroutine waitForNightManagerCoroutine;
 
     public bool IsGameOver => isGameOver;
     public bool IsPaused => isPaused;
@@ -67,10 +69,32 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
+    private void CleanNullStructures()
+    {
+        // Efficiently remove null structures without LINQ
+        for (int i = allStructures.Count - 1; i >= 0; i--)
+        {
+            if (allStructures[i] == null || !allStructures[i])
+            {
+                allStructures.RemoveAt(i);
+            }
+        }
+    }
+
     private void Start()
     {
         isGameOver = false;
         isPaused = false;
+
+        // Debug: Check if there's a leftover SelectedSaveSlot key
+        if (PlayerPrefs.HasKey("SelectedSaveSlot"))
+        {
+            Debug.Log($"GameLoopManager: Found existing SelectedSaveSlot key with value: {PlayerPrefs.GetInt("SelectedSaveSlot", -1)}");
+        }
+        else
+        {
+            Debug.Log("GameLoopManager: No SelectedSaveSlot key found - this should be a fresh start");
+        }
 
         TutorialManager.Instance?.StartTutorial();
         TutorialManager.Instance?.Trigger(TutorialTrigger.GameStarted);
@@ -84,6 +108,7 @@ public class GameLoopManager : MonoBehaviour
         if (PlayerPrefs.HasKey("SelectedSaveSlot"))
         {
             int slot = PlayerPrefs.GetInt("SelectedSaveSlot", 0);
+            Debug.Log($"GameLoopManager: Found SelectedSaveSlot key, attempting to load slot {slot}");
             GameSaveData saveData = GameSaveHelper.LoadFromSlot(slot);
 
             if (MoneyManager.Instance != null)
@@ -96,12 +121,14 @@ public class GameLoopManager : MonoBehaviour
 
                     if (TutorialManager.Instance != null)
                     {
+                        Debug.Log("GameLoopManager: Ending tutorial because save data was loaded");
                         TutorialManager.Instance.EndTutorial();
                     }
                 }
                 else
                 {
-                    Debug.Log("No save found, starting new game.");
+                    Debug.Log("GameLoopManager: No save data found, this is a new game - tutorial should continue");
+                    // If no save data found, this is effectively a new game, so keep tutorial running
                 }
             }
 
@@ -136,13 +163,15 @@ public class GameLoopManager : MonoBehaviour
         else
         {
             MoneyManager.Instance?.ResetMoney();
-            Debug.Log("Started new game, money reset.");
+            Debug.Log("GameLoopManager: Started completely new game, money reset, tutorial should start");
         }
+
+
 
         if (NightManager.Instance != null)
             NightManager.Instance.OnDayChanged += OnDayChanged;
         else
-            StartCoroutine(WaitForNightManager());
+            waitForNightManagerCoroutine = StartCoroutine(WaitForNightManager());
     }
 
     private IEnumerator WaitForNightManager()
@@ -198,8 +227,8 @@ public class GameLoopManager : MonoBehaviour
     {
         if (structure == null || !structure) return;
 
-
-        allStructures.RemoveAll(s => s == null || !s);
+        // Clean null references efficiently without LINQ
+        CleanNullStructures();
 
         if (allStructures.Contains(structure))
         {
@@ -217,8 +246,8 @@ public class GameLoopManager : MonoBehaviour
     {
         if (structure == null || !structure) return;
 
-
-        allStructures.RemoveAll(s => s == null || !s);
+        // Clean null references efficiently without LINQ
+        CleanNullStructures();
 
         if (allStructures.Contains(structure))
         {
@@ -335,6 +364,13 @@ public class GameLoopManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        // Clean up WaitForNightManager coroutine to prevent memory leaks
+        if (waitForNightManagerCoroutine != null)
+        {
+            StopCoroutine(waitForNightManagerCoroutine);
+            waitForNightManagerCoroutine = null;
+        }
+        
         if (GameEventManager.Instance != null)
         {
             GameEventManager.Instance.OnStructurePlaced.RemoveListener(RegisterStructure);

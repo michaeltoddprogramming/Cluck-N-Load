@@ -652,4 +652,14 @@ public class ArmyUnit : BaseUnit
 
         }
     }
+
+    private void OnDestroy()
+    {
+        // Clean up roaming coroutine to prevent memory leaks
+        if (roamingRoutine != null)
+        {
+            StopCoroutine(roamingRoutine);
+            roamingRoutine = null;
+        }
+    }
 }

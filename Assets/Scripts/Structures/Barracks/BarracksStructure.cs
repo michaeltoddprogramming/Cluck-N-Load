@@ -553,5 +553,14 @@ public class BarracksStructure : Structure
         }
     }
 
+    // Add this method to BarracksStructure class
+    public void CheatAddAnimals(int amount)
+    {
+        for (int i = 0; i < amount; i++)
+        {
+            RecruitAnimals(1);
+        }
+    }
+
 
 }

@@ -10,6 +10,10 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private float seasonScale = 0.5f;
     [SerializeField] private List<EnemyData> allEnemyData;
     private List<EnemyUnit> combatUnits = new List<EnemyUnit>();
+    private List<ArmyUnit> cachedArmyUnits = new List<ArmyUnit>();
+    private List<EnemyUnit> cachedEnemyUnits = new List<EnemyUnit>();
+    private float lastCacheUpdate;
+    private Coroutine spawnCoroutine;
     private bool isNight = false;
     private bool increaseAfterSeason1 = false;
     private bool increaseAfterNight1 = false;
@@ -36,7 +40,18 @@ public class CombatManager : MonoBehaviour
     private void Start()
     {
         enemyUnit = FindObjectOfType<EnemyUnit>();
-        // spawnUnits = FindObjectOfType<SpawnUnits>();
+        UpdateArmyUnitCache();
+    }
+
+    private void UpdateArmyUnitCache()
+    {
+        cachedArmyUnits.Clear();
+        cachedArmyUnits.AddRange(FindObjectsOfType<ArmyUnit>());
+        
+        cachedEnemyUnits.Clear();
+        cachedEnemyUnits.AddRange(FindObjectsOfType<EnemyUnit>());
+        
+        lastCacheUpdate = Time.time;
     }
 
     public void RegisterUnit(EnemyUnit unit)
@@ -57,94 +72,19 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
+        // Update cache every second to avoid expensive FindObjectsOfType calls
+        if (Time.time - lastCacheUpdate > 1f)
+            UpdateArmyUnitCache();
 
-        // if (isNight && increaseAfterNight1)
-        // {
-        //     increaseAfterNight1 = false;
-        //     enemyUnit.increaseAfterNight();
-        // }
-
-        // if (isNight && increaseAfterSeason1)
-        // {
-        //     increaseAfterSeason1 = false;
-        //     enemyUnit.increaseAfterSeason();
-        // }
-
-
-        foreach (ArmyUnit armyUnit in FindObjectsOfType<ArmyUnit>())
+        // Use cached list instead of FindObjectsOfType every frame
+        foreach (ArmyUnit armyUnit in cachedArmyUnits)
         {
             List<EnemyUnit> nearbyEnemies = armyUnit.GetNearbyEnemies();
 
             if (nearbyEnemies.Count > 0 && isNight)
             {
-
                 armyUnit.Attack();
-
-                // }
-                // if(armyUnit.ArmyType == Sheep)
-                // This assumes you're just triggering a generic attack.
-
-                // Or if you want to target a specific enemy:
-                // armyUnit.Attack(nearbyEnemies[0]);
-
             }
-
-            // if (nearbyEnemies.Count > 0 && isNight) // Only attack at night
-            // {
-            //     if (armyUnit is SheepUnit sheep)
-            //     {
-            //         // If it's a SheepUnit, let it handle its own attack logic
-            //         sheep.Attack();
-            //     }
-            //     else
-            //     {
-            //         // All other ArmyUnits use the normal attack
-            //         armyUnit.Attack();
-            //     }
-            // }
-
-
-            // foreach (EnemyUnit enemyUnit in FindObjectsOfType<EnemyUnit>())
-            // {
-            //     var nearbyAgro = enemyUnit.GetAggroThingsInRange();
-
-            //     if (nearbyAgro.Count > 0 && isNight)
-            //     {
-            //         // This assumes you're just triggering a generic attack.
-            //         enemyUnit.Attack();
-
-            //         // Or if you want to target a specific enemy:
-            //         // armyUnit.Attack(nearbyEnemies[0]);
-            //     }
-            // }
-
-
-
-            // foreach (EnemyUnit unit in combatUnits)
-            // {
-            //     if (unit is EnemyUnit)
-            //     {
-            //         List<EnemyUnit> nearbyUnits = armyUnit.GetNearbyUnits(armyUnit.GetData().MovementSpeed); // Example range
-
-            //         foreach (EnemyUnit nearbyUnit in nearbyUnits)
-            //         {
-            //             if (nearbyUnit is EnemyUnit) // Example filtering
-            //             {
-            //                 // Handle combat logic here
-            //                 Debug.Log($"{armyUnit.name} found nearby unit: {nearbyUnit.name}");
-            //             }
-            //         }
-
-
-            //         // Unit target = FindNearestEnemy(armyUnit);
-            //         // if (target != null)
-            //         // {
-            //         //     armyUnit.Attack(target);
-            //         // }
-            //     }
-            // }
-
-
         }
     }
 
@@ -164,13 +104,15 @@ public class CombatManager : MonoBehaviour
 
         isNight = true;
         // spawnUnits.SpawnEnemies();
-        StartCoroutine(SpawnEnemies());
+        if (spawnCoroutine != null)
+            StopCoroutine(spawnCoroutine);
+        spawnCoroutine = StartCoroutine(SpawnEnemies());
     }
     public void StopCombat()
     {
         isNight = false;
-        EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
-        foreach (EnemyUnit enemy in enemies)
+        // Use cached list instead of FindObjectsOfType
+        foreach (EnemyUnit enemy in cachedEnemyUnits)
         {
             enemy.stopCombat();
         }
@@ -262,6 +204,12 @@ public class CombatManager : MonoBehaviour
     {
         Debug.Log($"Setting season to {newSeason}-------------------------------------------------------------------------------------------------------------------------------");
         season = newSeason;
+    }
+
+    private void OnDestroy()
+    {
+        if (spawnCoroutine != null)
+            StopCoroutine(spawnCoroutine);
     }
 
 

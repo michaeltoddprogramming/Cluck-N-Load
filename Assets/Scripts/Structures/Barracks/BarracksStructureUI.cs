@@ -97,9 +97,16 @@ public class BarracksStructureUI : BaseStructureUI
         maxAnimalCount = barracksStructure.GetMaxAnimalCount();
     }
 
+    private float lastUIUpdate;
+    private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
+
     private void Update()
     {
-        UpdateUI();
+        if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
+        {
+            UpdateUI();
+            lastUIUpdate = Time.time;
+        }
     }
 
     // Removed Update() method for better performance - using event-driven updates instead
@@ -149,14 +156,24 @@ public class BarracksStructureUI : BaseStructureUI
     private void StartFlagPlacement()
     {
         if (!isBarracksStructure || barracksStructure.ArmyAnimalCount <= 0) return;
+        
+        // Check if it's sheep and if it's nighttime - prevent flag placement
+        if (barracksStructure.GetAnimalType() == "Sheep")
+        {
+            NightManager nightManager = NightManager.Instance;
+            if (nightManager != null && !nightManager.IsDay)
+            {
+                updateStatusText("Sheep flags can only be placed during the day");
+                return; // Exit early, don't start flag placement
+            }
+        }
+        
         isPlacingFlag = true;
         if (recruitButton != null) recruitButton.interactable = false;
         if (setFlagColorButton != null) setFlagColorButton.interactable = false;
         if (placeFlagButton != null)
         {
             updateStatusText("Click anywhere to place flag");
-            // statusText.text = "Click anywhere to place flag";
-            // placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Click to Place Flag";
         }
         if (flagPlacementIndicator != null)
         {
@@ -169,6 +186,18 @@ public class BarracksStructureUI : BaseStructureUI
     {
         while (isPlacingFlag && !Input.GetMouseButtonDown(0))
         {
+            // Additional check during placement - if night starts, cancel placement
+            if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                NightManager nightManager = NightManager.Instance;
+                if (nightManager != null && !nightManager.IsDay)
+                {
+                    updateStatusText("Night started - sheep flag placement cancelled");
+                    EndFlagPlacement();
+                    yield break;
+                }
+            }
+            
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
@@ -189,14 +218,26 @@ public class BarracksStructureUI : BaseStructureUI
             Ray finalRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit finalHit;
             LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
+            
             if (Physics.Raycast(finalRay, out finalHit, 1000f, groundLayer))
             {
-                Vector3 position = finalHit.point;
-                position.y = barracksStructure.transform.position.y;
-                barracksStructure.PlaceFlag(position);
+                // Final check before placing the flag
+                if (barracksStructure.GetAnimalType() == "Sheep")
+                {
+                    NightManager nightManager = NightManager.Instance;
+                    if (nightManager != null && !nightManager.IsDay)
+                    {
+                        updateStatusText("Cannot place sheep flags at night");
+                        EndFlagPlacement();
+                        yield break;
+                    }
+                }
+                
+                barracksStructure.PlaceFlag(finalHit.point);
+                updateStatusText("Flag placed successfully!");
             }
         }
-        // flagPlacementSounds();
+        
         EndFlagPlacement();
     }
 
@@ -219,13 +260,7 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void UpdateUI()
     {
-        if (!isBarracksStructure || barracksStructure == null)
-        {
-            HideBarracksUI();
-            return;
-        }
-
-
+        if (!isBarracksStructure || barracksStructure == null) return;
 
         animalCountText.text = $"{newAnimalCount}";
 
@@ -325,6 +360,31 @@ public class BarracksStructureUI : BaseStructureUI
         if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()))
         {
             updateStatusText($"Cannot afford {maxAnimalCount} many animals!");
+        }
+
+        // Add day/night check for sheep flag placement
+        if (barracksStructure.GetAnimalType() == "Sheep")
+        {
+            NightManager nightManager = NightManager.Instance;
+            bool isDay = nightManager != null ? nightManager.IsDay : true;
+            
+            if (placeFlagButton != null)
+            {
+                placeFlagButton.interactable = isDay && barracksStructure.ArmyAnimalCount > 0;
+                
+                if (!isDay && statusText != null)
+                {
+                    updateStatusText("Sheep flags can only be placed during the day");
+                }
+            }
+        }
+        else
+        {
+            // For non-sheep animals, flags can be placed anytime (existing behavior)
+            if (placeFlagButton != null)
+            {
+                placeFlagButton.interactable = barracksStructure.ArmyAnimalCount > 0;
+            }
         }
 
         if (animalIcon1 != null)

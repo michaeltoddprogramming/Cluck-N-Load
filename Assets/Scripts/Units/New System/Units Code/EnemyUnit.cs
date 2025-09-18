@@ -8,6 +8,10 @@ using System.Linq;
 public class EnemyUnit : BaseUnit
 {
     [SerializeField] private EnemyData data;
+    
+    // Throttle expensive raycasting operations
+    private static float lastRaycastTime = 0f;
+    private static readonly float raycastThrottleInterval = 0.2f; // 5 raycasts per second max
 
     private int currHealth;
     private float lastAttackTime = 0f;
@@ -15,6 +19,8 @@ public class EnemyUnit : BaseUnit
     private GridDataGenerator _gridDataGenerator;
     private float stoppingDistance = 1.5f; // Change based on attack range
     private UnityEngine.AI.NavMeshAgent agent;
+    private UnityEngine.AI.NavMeshAgent cachedNavMeshAgent;
+    private Collider cachedCollider;
     private Vector3 currentAttackPosition;
     private bool hasAttackPosition = false;
     private float attackPositionUpdateThreshold = 0.3f; // minimum movement distance to update
@@ -94,6 +100,8 @@ public class EnemyUnit : BaseUnit
     {
         base.Awake();
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        cachedNavMeshAgent = agent; // Cache for performance
+        cachedCollider = GetComponent<Collider>(); // Cache collider to avoid repeated GetComponent calls
         currHealth = data.Health;
         _gridDataGenerator = FindObjectOfType<GridDataGenerator>();
 
@@ -133,8 +141,29 @@ public class EnemyUnit : BaseUnit
     //     AttackIfInRange();
     // }
 
+    // Throttle expensive operations to improve performance
+    private float lastUpdateTime = 0f;
+    private const float updateInterval = 0.1f; // Update 10 times per second instead of 60
+    
+    // Static caching system to avoid multiple FindObjectsOfType calls across all enemies
+    private static List<MonoBehaviour> cachedAllTargets = new List<MonoBehaviour>();
+    private static float lastTargetCacheTime = 0f;
+    private static readonly float targetCacheInterval = 1f; // Cache targets every 1 second
+
     private void Update()
     {
+        // If god mode is active, destroy this enemy
+        if (CheatManager.Instance != null && CheatManager.Instance.IsGodModeActive())
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        // Throttle expensive operations to reduce CPU load
+        if (Time.time - lastUpdateTime < updateInterval)
+            return;
+        lastUpdateTime = Time.time;
+
         if (retreating)
         {
             if (retreating && Vector3.Distance(transform.position, destination) < 5f)
@@ -145,7 +174,7 @@ public class EnemyUnit : BaseUnit
             return;
         }
 
-        if (agent.velocity.sqrMagnitude > 0.1f)
+        if (cachedNavMeshAgent.velocity.sqrMagnitude > 0.1f)
         {
             // Moving → set Speed to 1
             SetFloat("speed", 1f);
@@ -190,16 +219,30 @@ public class EnemyUnit : BaseUnit
 
     }
 
+    // Static method to update cached targets (called by first enemy only)
+    private static void UpdateCachedTargets()
+    {
+        if (Time.time - lastTargetCacheTime < targetCacheInterval)
+            return;
+            
+        cachedAllTargets.Clear();
+        cachedAllTargets.AddRange(FindObjectsOfType<ArmyUnit>());
+        cachedAllTargets.AddRange(FindObjectsOfType<CropStructure>());
+        cachedAllTargets.AddRange(FindObjectsOfType<SiloStructure>());
+        cachedAllTargets.AddRange(FindObjectsOfType<DefenseStructure>());
+        cachedAllTargets.AddRange(FindObjectsOfType<BarracksStructure>());
+        cachedAllTargets.AddRange(FindObjectsOfType<AnimalStructure>());
+        cachedAllTargets.AddRange(FindObjectsOfType<Structure>()); // farm house etc
+        
+        lastTargetCacheTime = Time.time;
+    }
+
     private void CacheAllTargets()
     {
+        // Use static cache instead of individual FindObjectsOfType calls
+        UpdateCachedTargets();
         allTargets.Clear();
-        allTargets.AddRange(FindObjectsOfType<ArmyUnit>());
-        allTargets.AddRange(FindObjectsOfType<CropStructure>());
-        allTargets.AddRange(FindObjectsOfType<SiloStructure>());
-        allTargets.AddRange(FindObjectsOfType<DefenseStructure>());
-        allTargets.AddRange(FindObjectsOfType<BarracksStructure>());
-        allTargets.AddRange(FindObjectsOfType<AnimalStructure>());
-        allTargets.AddRange(FindObjectsOfType<Structure>()); // farm house etc
+        allTargets.AddRange(cachedAllTargets);
     }
 
 
@@ -373,6 +416,13 @@ public class EnemyUnit : BaseUnit
 
     private MonoBehaviour GetBlockingObjectDirect()
     {
+        // Throttle expensive raycasting to prevent performance issues
+        if (Time.time - lastRaycastTime < raycastThrottleInterval)
+        {
+            return null; // Return null if we raycasted too recently
+        }
+        lastRaycastTime = Time.time;
+
         if (mainTarget == null) return null;
 
         Vector3 directionToTarget = (mainTarget.transform.position - transform.position).normalized;
@@ -458,7 +508,8 @@ public class EnemyUnit : BaseUnit
         if (currentTarget == null || IsTargetDead(currentTarget))
             return;
 
-        Collider enemyCollider = GetComponent<Collider>();
+        // Use cached colliders instead of expensive GetComponent calls
+        Collider enemyCollider = cachedCollider;
         Collider targetCollider = currentTarget.GetComponent<Collider>();
 
         if (enemyCollider == null || targetCollider == null)
@@ -757,6 +808,12 @@ public class EnemyUnit : BaseUnit
 
     private void Attack(MonoBehaviour target)
     {
+        // God mode prevents enemy attacks
+        if (CheatManager.Instance != null && CheatManager.Instance.IsGodModeActive())
+        {
+            return;
+        }
+        
         switch (target)
         {
             case ArmyUnit u:

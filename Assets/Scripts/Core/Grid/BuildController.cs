@@ -72,29 +72,35 @@ public class BuildController : MonoBehaviour
     private ShopPanelUI shopPanelUI;
     private StructureData currentStructureData;
 
+    [SerializeField] private GridDataGenerator gridDataGenerator;
+
     void Start()
     {
         gridController = gridController ?? FindFirstObjectByType<GridController>();
         if (gridController == null)
         {
-            gridController = FindFirstObjectByType<GridController>();
-            if (gridController == null)
+            Debug.LogError("GridController not found. BuildController cannot function.");
+            enabled = false;
+            return;
+        }
+
+        // ADD THIS - Initialize gridDataGenerator
+        if (gridDataGenerator == null)
+        {
+            gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
+            if (gridDataGenerator == null)
             {
-                Debug.LogError("GridController not found. BuildController cannot function.");
+                Debug.LogError("GridDataGenerator not found. BuildController cannot function.");
                 enabled = false;
                 return;
             }
         }
-
 
         if (ownershipController == null)
             ownershipController = FindFirstObjectByType<OwnershipController>();
 
         if (gridMonitor == null)
             gridMonitor = FindFirstObjectByType<GridMonitor>();
-
-        if (gridMonitor == null)
-            Debug.LogWarning("GridMonitor not found. Grid changes won't be centrally tracked.");
 
         shopPanelUI = FindFirstObjectByType<ShopPanelUI>(FindObjectsInactive.Include);
         if (shopPanelUI != null)
@@ -117,12 +123,17 @@ public class BuildController : MonoBehaviour
 
     public void HandleShopOpened()
     {
+        // Prevent infinite loops
+        if (isBuildModeActive) return;
+        
+        Debug.Log("HandleShopOpened called - showing grid and enabling build mode");
         gridController.ShowGrid();
         EnableBuildMode();
     }
 
     public void HandleShopClosed()
     {
+        Debug.Log("HandleShopClosed called - disabling build mode and hiding grid");
         DisableBuildMode();
         gridController.HideGrid();
     }
@@ -721,19 +732,35 @@ public class BuildController : MonoBehaviour
 
     bool IsValidPlacement(int x, int y)
     {
-        if (!gridController.IsValidCell(x, y) || currentBuildTargetPrefab == null) return false;
-        bool shopOpen = (shopPanelUI != null && shopPanelUI.gameObject.activeSelf && !isMoveModeActive);
-        if (!shopOpen && !isMoveModeActive) return false;
-        GameObject tempObj = Instantiate(currentBuildTargetPrefab, gridController.GetCellCenterFromTexture(x, y), currentRotation);
-        List<Vector2Int> footprint, newFootprint = GetStructureFootprint(tempObj);
-        Destroy(tempObj);
-        foreach (Vector2Int cell in newFootprint)
+        // Add null checks FIRST
+        if (gridController == null || gridDataGenerator == null) 
         {
-            if (!gridController.IsValidCell(cell.x, cell.y)) return false;
-            GridCell gridCell = gridController.GetCell(cell.x, cell.y);
-            if (gridCell == null || !gridCell.flags.isOwned || gridCell.flags.isObstacle) return false;
-            if (gridCell.flags.isOccupied && isMoveModeActive && originalFootprint != null && !originalFootprint.Contains(cell)) return false;
+            Debug.LogError("GridController or GridDataGenerator is null in IsValidPlacement");
+            return false;
         }
+        
+        // Unlimited building mode bypasses most restrictions
+        if (CheatManager.Instance != null && CheatManager.Instance.IsUnlimitedBuildingActive())
+        {
+            return gridController.IsValidCell(x, y);
+        }
+        
+        // Your existing validation logic...
+        if (!gridController.IsValidCell(x, y)) return false;
+        
+        GridCell cell = gridDataGenerator.GetCell(x, y);
+        if (cell == null) return false;
+        
+        // Check if cell is occupied
+        if (cell.flags.isOccupied) return false;
+        
+        // Check ownership
+        if (!cell.flags.isOwned && enableLandBuying) return false;
+        
+        // Check money
+        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost)) 
+            return false;
+        
         return true;
     }
 

@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class AnimalStructure : Structure
 {
+    private static List<AnimalStructure> allAnimalStructures = new List<AnimalStructure>();
     private bool isRegisteredWithNightManager;
     public enum AnimalType { Chicken, Cow, Sheep, Goat, Pig }
 
@@ -64,6 +66,10 @@ public class AnimalStructure : Structure
     protected override void Start()
     {
         base.Start();
+        
+        // Register with static list for efficient lookups
+        allAnimalStructures.Add(this);
+        
         updateSiloSynergy();
         BarracksStructure.UpdateAllNearbyChickenCoops();
         isProducing = false;
@@ -79,6 +85,12 @@ public class AnimalStructure : Structure
             isRegisteredWithNightManager = true;
         }
         audioSource = audioSource ?? GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+    }
+
+    private void OnDisable()
+    {
+        // Unregister from static list when destroyed/disabled
+        allAnimalStructures.Remove(this);
     }
 
     private void Update()
@@ -242,6 +254,14 @@ public class AnimalStructure : Structure
     protected override void OnDestroy()
     {
         base.OnDestroy();
+        
+        // Clean up background coroutine to prevent memory leaks
+        if (backgroundCoroutine != null)
+        {
+            StopCoroutine(backgroundCoroutine);
+            backgroundCoroutine = null;
+        }
+        
         if (nightManager != null && isRegisteredWithNightManager)
         {
             nightManager.UnregisterAnimalStructure(this);
@@ -271,7 +291,9 @@ public class AnimalStructure : Structure
 
     public static void UpdateAllAnimalSynergies()
     {
-        foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None)) animal.updateSiloSynergy();
+        // Use static list instead of expensive FindObjectsByType
+        foreach (var animal in allAnimalStructures)
+            animal.updateSiloSynergy();
     }
 
     public void updateAnimalProductionAmount(string animalType, float increasePercent)

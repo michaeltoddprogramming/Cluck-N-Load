@@ -30,9 +30,15 @@ public class CropStructure : Structure
 
     [Header("Mechanic variations")]
     [SerializeField] private float cropHarvestMultiplier = 1.5f;
-    [SerializeField] private float cropHarvestMultiplierIncrease = 1.5f;
-    [SerializeField] private float multiplierRange = 10f;
     [SerializeField] private float baseCropHarvestAmount = 10f;
+
+    // Add these missing fields
+    [SerializeField] private float multiplierRange = 10f;
+    [SerializeField] private float cropHarvestMultiplierIncrease = 1.5f;
+
+    // Add these public properties to fix the accessibility issue
+    public float BaseCropHarvestAmount => baseCropHarvestAmount;
+    public float CropHarvestMultiplier => cropHarvestMultiplier;
 
     public delegate void CropHarvestedHandler(CropType cropType, int amount);
     public event CropHarvestedHandler OnCropHarvested;
@@ -62,22 +68,62 @@ public class CropStructure : Structure
         if (!cropReady) return "ready";
         int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
         string cropName = currentCropType.ToString();
+
+        // Add direct money reward for harvesting
+        int moneyReward = GetCropMoneyValue(currentCropType, totalCrops);
+        MoneyManager.Instance?.AddMoney(moneyReward);
+
         InventoryManager.Instance.AddItem(cropName, totalCrops);
+
         switch (currentCropType)
         {
             case CropType.Sunflower: sunflowerTotal += totalCrops; break;
             case CropType.Wheat: wheatTotal += totalCrops; break;
             case CropType.Carrots: carrotTotal += totalCrops; break;
         }
+
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.HarvestedCrop);
-        
+
         OnCropHarvested?.Invoke(currentCropType, totalCrops);
         currentCropType = CropType.None;
         cropReady = false;
         isGrowing = false;
         DestroyCrop();
         return "yes";
+    }
+
+    // Add this new method to CropStructure
+    private int GetCropMoneyValue(CropType cropType, int amount)
+    {
+        int baseValue = cropType switch
+        {
+            CropType.Sunflower => 15,  // $15 per sunflower
+            CropType.Wheat => 12,      // $12 per wheat
+            CropType.Carrots => 18,    // $18 per carrot
+            _ => 10
+        };
+
+        // Apply farm efficiency bonus if nearby farm house
+        float efficiencyMultiplier = GetNearbyFarmEfficiency();
+        return Mathf.RoundToInt(amount * baseValue * efficiencyMultiplier);
+    }
+
+    private float GetNearbyFarmEfficiency()
+    {
+        FarmHouseStructure[] farmHouses = FindObjectsByType<FarmHouseStructure>(FindObjectsSortMode.None);
+        float maxEfficiency = 1f;
+
+        foreach (var farmHouse in farmHouses)
+        {
+            float distance = Vector3.Distance(transform.position, farmHouse.transform.position);
+            if (distance <= 15f) // Within range of farm house
+            {
+                maxEfficiency = Mathf.Max(maxEfficiency, farmHouse.GetFarmEfficiency());
+            }
+        }
+
+        return maxEfficiency;
     }
 
     public void DestroyCrop()
@@ -197,5 +243,15 @@ public class CropStructure : Structure
         this.isGrowing = isGrowing;
         this.cropReady = cropReady;
         UpdateCropVisual(currentCropType, cropReady ? 2 : isGrowing ? 1 : 0);
+    }
+
+    // Add this method to CropStructure class
+    public void CheatInstantGrowth()
+    {
+        if (currentCropType != CropType.None && !cropReady)
+        {
+            cropReady = true;
+            UpdateVisuals(3); // Final growth stage
+        }
     }
 }

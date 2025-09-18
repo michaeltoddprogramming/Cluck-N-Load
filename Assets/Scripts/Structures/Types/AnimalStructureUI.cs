@@ -28,7 +28,17 @@ public class AnimalStructureUI : BaseStructureUI
     private bool isAnimalStructure;
     private NightManager nightManager;
 
-    private void Update() => UpdateUI();
+    private float lastUIUpdate;
+    private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
+
+    private void Update()
+    {
+        if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
+        {
+            UpdateUI();
+            lastUIUpdate = Time.time;
+        }
+    }
 
     public override void Initialize(Structure structure)
     {

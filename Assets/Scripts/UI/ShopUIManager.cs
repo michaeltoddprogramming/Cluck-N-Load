@@ -16,6 +16,10 @@ public class ShopUIManager : MonoBehaviour
 
     private ShopPanelUI shopPanelUI;
     private bool isVisible = false;
+    
+    // Add debounce variables
+    private float lastClickTime = 0f;
+    private float clickCooldown = 0.1f; // 100ms cooldown
 
     private void Awake()
     {
@@ -32,6 +36,13 @@ public class ShopUIManager : MonoBehaviour
 
     private void Start()
     {
+        // Check if shopPanel is assigned
+        if (shopPanel == null)
+        {
+            Debug.LogError("ShopUIManager: shopPanel is not assigned in the Inspector!");
+            return;
+        }
+        
         // Find ShopPanelUI component
         shopPanelUI = shopPanel.GetComponent<ShopPanelUI>();
         if (shopPanelUI == null)
@@ -43,45 +54,119 @@ public class ShopUIManager : MonoBehaviour
         {
             closeButton.onClick.AddListener(CloseShop);
         }
-
+        
+        // Set up shop button onClick listener - CLEAR EXISTING LISTENERS FIRST
+        if (shopButton != null)
+        {
+            shopButton.onClick.RemoveAllListeners(); // Clear any existing listeners
+            shopButton.onClick.AddListener(ToggleShop);
+        }
+        else
+        {
+            Debug.LogError("ShopUIManager: Shop button is null!");
+        }
+        
         // Initially hide shop
         shopPanel.SetActive(false);
     }
 
     public void ToggleShop()
     {
-        if (isVisible)
-            CloseShop();
-        else
+        // Prevent rapid clicking/double clicks
+        if (Time.time - lastClickTime < clickCooldown)
+        {
+            Debug.Log("ToggleShop called too soon after last click - ignoring");
+            return;
+        }
+        lastClickTime = Time.time;
+        
+        Debug.Log($"ToggleShop called. Current isVisible: {isVisible}, panel active: {shopPanel != null && shopPanel.activeSelf}");
+        
+        // Use the actual panel state instead of isVisible flag
+        bool shouldOpen = shopPanel != null && !shopPanel.activeSelf;
+        
+        if (shouldOpen)
+        {
             OpenShop();
+        }
+        else
+        {
+            CloseShop();
+        }
     }
 
     public void OpenShop()
     {
-        shopPanel.transform.SetAsLastSibling();
-
+        Debug.Log($"OpenShop called. Button interactable: {shopButton.interactable}");
+        
+        // Don't allow opening shop if it's disabled (nighttime)
+        if (!shopButton.interactable)
+        {
+            Debug.Log("Shop is disabled (nighttime)");
+            return;
+        }
+        
+        // Check if already open
+        if (shopPanel != null && shopPanel.activeSelf)
+        {
+            Debug.Log("Shop is already open");
+            return;
+        }
+        
+        Debug.Log("Opening shop panel");
         isVisible = true;
-        shopPanel.SetActive(true);
+        
+        // Activate the panel FIRST
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(true);
+            shopPanel.transform.SetAsLastSibling();
+            Debug.Log($"Shop panel activated: {shopPanel.activeSelf}");
+        }
+        else
+        {
+            Debug.LogError("Shop panel is null!");
+            return;
+        }
 
+        // THEN call ShopPanelUI methods
         if (shopPanelUI != null)
         {
             shopPanelUI.OpenShop();
         }
+        else
+        {
+            Debug.LogError("ShopPanelUI is null!");
+        }
         
-        TutorialManager.Instance?.Trigger(TutorialTrigger.ShopOpened);
+        if (TutorialManager.Instance != null)
+            TutorialManager.Instance.Trigger(TutorialTrigger.ShopOpened);
     }
 
     public void CloseShop()
     {
+        Debug.Log("CloseShop called");
+        
+        // Check if already closed
+        if (shopPanel != null && !shopPanel.activeSelf)
+        {
+            Debug.Log("Shop is already closed");
+            return;
+        }
+        
         isVisible = false;
         
+        // First notify ShopPanelUI to clean up its state
         if (shopPanelUI != null)
         {
             shopPanelUI.CloseShop();
         }
-        else
+        
+        // Then deactivate the panel
+        if (shopPanel != null)
         {
             shopPanel.SetActive(false);
+            Debug.Log($"Shop panel deactivated: {shopPanel.activeSelf}");
         }
     }
 
@@ -125,10 +210,10 @@ public class ShopUIManager : MonoBehaviour
 
     //disable the shop button
         public void disableShop()
-    {
-        shopButton.interactable = false;
-        shopIcon.color = nightShop;
-    }
+        {
+            shopButton.interactable = false;
+            shopIcon.color = nightShop;
+        }
 
     //enable the shop button
     public void enableShop()

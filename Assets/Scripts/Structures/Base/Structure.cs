@@ -535,7 +535,25 @@ public class Structure : MonoBehaviour
 
     public void ApplyDamage(int damage)
     {
-        TakeDamage(damage);
+        // Check god mode
+        if (CheatManager.Instance != null && CheatManager.Instance.IsGodModeActive())
+        {
+            return;
+        }
+        
+        currentHealth = Mathf.Max(0, currentHealth - damage);
+        
+        if (currentHealth <= 0)
+        {
+            OnStructureDestroyed?.Invoke(this); // Pass 'this' as the argument
+        }
+    }
+
+    // Add cheat method
+    public void CheatSetMaxHealth()
+    {
+        currentHealth = GetMaxHealth();
+        UpdateHealthBar();
     }
 
     public void SetStructureType(StructureType type)

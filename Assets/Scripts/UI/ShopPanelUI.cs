@@ -57,15 +57,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         // Link the close button to the ShopUIManager's CloseShop method
         if (closeButton != null)
         {
+            closeButton.onClick.RemoveAllListeners(); // Clear any existing listeners
             closeButton.onClick.AddListener(() =>
             {
                 if (ShopUIManager.Instance != null)
                 {
                     ShopUIManager.Instance.CloseShop();
-                }
-                else
-                {
-                    CloseShop(); // Fallback if ShopUIManager isn't available
                 }
             });
         }
@@ -177,37 +174,27 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OpenShop()
     {
+        Debug.Log("ShopPanelUI.OpenShop called");
         isShopOpen = true;
-
-        // Move THIS UI panel (gameObject) to the top of the hierarchy
-        transform.SetAsLastSibling();
-
-        // Show this UI panel
-        gameObject.SetActive(true);
-
+        
+        // Just trigger events and setup - DON'T call HandleShopOpened here
         OnShopOpened.Invoke();
 
-        // Let the BuildController know the shop opened
+        // Cache controller references if needed
         if (buildController == null)
         {
-            // Try to find it again in case it wasn't available earlier
             buildController = FindFirstObjectByType<BuildController>();
         }
 
-        if (buildController != null)
-        {
-            buildController.HandleShopOpened();
-        }
-        // Remove the warning as it's not critical - shop can work without BuildController
+        // DON'T call HandleShopOpened here - it's already connected via UnityEvent
     }
 
     public void CloseShop()
     {
-
+        Debug.Log("ShopPanelUI.CloseShop called");
         isShopOpen = false;
 
-        // Make sure to re-enable controls before deactivating the panel
-        // This ensures controls are restored even if OnPointerExit doesn't trigger
+        // Make sure to re-enable controls before closing
         if (cameraController != null)
         {
             cameraController.TemporarilyDisableMouseControls(false);
@@ -220,13 +207,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             wasGhostActiveBeforeHover = false;
         }
 
-        gameObject.SetActive(false);
         OnShopClosed.Invoke();
+        
+        // DON'T deactivate the gameObject here - ShopUIManager handles it
     }
 
     public bool IsShopOpen()
     {
-        return gameObject.activeSelf;
+        return isShopOpen && gameObject.activeSelf;
     }
 
     // Called when pointer enters the UI element

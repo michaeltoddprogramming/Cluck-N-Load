@@ -163,8 +163,13 @@ public class CropStructureUI : BaseStructureUI
     public void harvestCrops()
     {
         if (!isCropStructure || cropStructure == null) return;
+        
+        // Use the public properties instead of private fields
+        int cropAmount = Mathf.RoundToInt(cropStructure.BaseCropHarvestAmount * cropStructure.CropHarvestMultiplier);
+        int moneyGained = CalculateMoneyGain(cropStructure.CurrentCropType, cropAmount);
+        
         string result = cropStructure.Harvest();
-        // statusText.gameObject.SetActive(true);
+        
         switch (result)
         {
             case "space":
@@ -174,7 +179,7 @@ public class CropStructureUI : BaseStructureUI
                 break;
             case "yes":
                 statusText.color = Color.green;
-                statusText.text = "Harvest successful";
+                statusText.text = $"Harvest successful! +${moneyGained}";
                 PlaySound(harvestSound);
                 break;
             case "ready":
@@ -190,6 +195,19 @@ public class CropStructureUI : BaseStructureUI
         }
         plantButton.interactable = true;
         UpdateUI();
+    }
+
+    private int CalculateMoneyGain(CropStructure.CropType cropType, int amount)
+    {
+        int baseValue = cropType switch
+        {
+            CropStructure.CropType.Sunflower => 15,
+            CropStructure.CropType.Wheat => 12,
+            CropStructure.CropType.Carrots => 18,
+            _ => 10
+        };
+        
+        return amount * baseValue;
     }
 
     private void Update() => UpdateUI();

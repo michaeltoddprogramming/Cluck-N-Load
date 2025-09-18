@@ -51,11 +51,13 @@ public class MoneyManager : MonoBehaviour
         if (PlayerPrefs.HasKey("PlayerMoney"))
         {
             _currentMoney = PlayerPrefs.GetInt("PlayerMoney");
-            }
+            Debug.Log($"MoneyManager: Loaded saved money: {_currentMoney}");
+        }
         else
         {
             _currentMoney = startingMoney;
-            }
+            Debug.Log($"MoneyManager: Using starting money: {_currentMoney}");
+        }
             
         // Notify listeners of initial amount
         OnMoneyChanged?.Invoke(_currentMoney);
@@ -79,15 +81,19 @@ public class MoneyManager : MonoBehaviour
         return currencyName;
     }
     
-    public bool CanAfford(int cost)
-    {
-        return _currentMoney >= cost;
-    }
-    
     public bool SpendMoney(int amount)
     {
-        if (!CanAfford(amount)) {
-            // Play insufficient funds sound
+        // Check cheat modes ONLY for unlimited building/god mode
+        if (CheatManager.Instance != null && 
+            (CheatManager.Instance.IsGodModeActive() || CheatManager.Instance.IsUnlimitedBuildingActive()))
+        {
+            OnMoneyChanged?.Invoke(_currentMoney);
+            return true;
+        }
+        
+        // Original logic
+        if (!CanAfford(amount)) 
+        {
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.PlayInsufficientFundsSound();
@@ -96,7 +102,6 @@ public class MoneyManager : MonoBehaviour
         }
             
         _currentMoney -= amount;
-        // Play money spend sound
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayMoneySpendSound();
@@ -107,9 +112,31 @@ public class MoneyManager : MonoBehaviour
         return true;
     }
     
+    public bool CanAfford(int amount)
+    {
+        // Check cheat modes
+        if (CheatManager.Instance != null && 
+            (CheatManager.Instance.IsGodModeActive() || CheatManager.Instance.IsUnlimitedBuildingActive()))
+        {
+            return true;
+        }
+        
+        return _currentMoney >= amount;
+    }
+    
+    // ADD THIS MISSING METHOD
     public void AddMoney(int amount)
     {
         _currentMoney += amount;
+        UpdateMoneyUI();
+        SaveMoney();
+        OnMoneyChanged?.Invoke(_currentMoney);
+    }
+    
+    // Keep cheat method separate
+    public void CheatSetMoney(int amount)
+    {
+        _currentMoney = amount;
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);
@@ -127,5 +154,6 @@ public class MoneyManager : MonoBehaviour
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);
-        }
+        Debug.Log($"MoneyManager: Reset money to starting amount: {_currentMoney}");
+    }
 }

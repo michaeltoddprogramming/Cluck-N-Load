@@ -34,6 +34,8 @@ public class GameEventManager : MonoBehaviour
     // public UnityEvent<Wolf> OnWolfDestroyed;
     public UnityEvent OnDefenseSuccessful;
 
+    public event System.Action<int> OnSeasonChanged;
+
     private void Awake()
     {
         if (Instance == null)
@@ -122,6 +124,11 @@ public class GameEventManager : MonoBehaviour
     public void TriggerDefenseSuccessful()
     {
         OnDefenseSuccessful?.Invoke();
+    }
+
+    public void TriggerSeasonChanged(int season)
+    {
+        OnSeasonChanged?.Invoke(season);
     }
 
     #endregion

@@ -239,21 +239,26 @@ public class NightManager : MonoBehaviour
     public void pauseTime()
     {
         isPaused = true;
-        Time.timeScale = 0f; // Pauses everything that uses Time.deltaTime           // Add to pause, play, and fast forward button click handlers
-        shopManager.CloseShop();
+        Time.timeScale = 0f;
+        shopManager.disableShop();
         shopButton.interactable = false;
         shopIcon.color = nightShop;
     }
 
     public void playTime()
     {
-        // shopManager.CloseShop();
-        shopButton.interactable = false;
-        // shopIcon.color = nightShop;
         isPaused = false;
         isFast = false;
         speedUp = 1f;
-        Time.timeScale = 1f; // Resume normal speed
+        Time.timeScale = 1f;
+        
+        // Only enable shop if it's daytime
+        if (isDay)
+        {
+            shopButton.interactable = true;
+            shopIcon.color = dayShop;
+        }
+        
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.TimeControlsUsed);
     }
@@ -297,7 +302,8 @@ public class NightManager : MonoBehaviour
 
         combatManager.StartCombat();
 
-        shopManager.CloseShop();
+        // Disable shop for night
+        shopManager.disableShop();
         buildController.HideDeleteIcon();
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
@@ -364,6 +370,19 @@ public class NightManager : MonoBehaviour
 
     private void StartDay(int flag)
     {
+        isDay = true;
+        buttonText.text = "End Day";
+        
+        // Enable shop for day
+        shopButton.interactable = true;
+        shopIcon.color = dayShop;
+        
+        // Only enable shop manager if not paused
+        if (!isPaused)
+        {
+            shopManager.enableShop();
+        }
+        
         if (isFirstDay)
         {
             combatManager.StopCombat();
@@ -1172,19 +1191,68 @@ public class NightManager : MonoBehaviour
         timeOfDayIcon.rectTransform.localRotation = Quaternion.Euler(0, 0, -rotation);
     }
 
+    public void SetSeason(int season)
+    {
+        if (season < 1 || season > 4) return;
+        
+        currentSeason = season;
+        
+        // Trigger season change events
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.TriggerSeasonChanged(season);
+        }
+        
+        Debug.Log($"Season changed to {season}");
+    }
+
+    // Add property for cheats
+    public int GetDays() => days;
+    public bool GetIsDay() => isDay;
     public int GetCurrentSeason()
     {
         return currentSeason;
     }
 
-    public void SetSeason(int season)
+    // Add these cheat methods to NightManager class
+    public void CheatSetDays(int newDays)
     {
-        setSeason(season);
+        days = newDays;
+        OnDayChange(newDays);
+        OnDayChanged?.Invoke(days);
+        UpdateDayCountUI();
     }
 
-    public void LoadDayAndSeason(int day, int season)
+    public void CheatForceNight()
     {
-        Days = day;
-        SetSeason(season);
+        Hours = 18;
+        StartNight(2);
+    }
+
+    public void CheatForceDay()
+    {
+        Hours = 7;
+        StartDay(2);
+    }
+
+    private void OnDestroy()
+    {
+        // Clean up any remaining coroutines on destroy
+        if (seasonNotificationCoroutine != null)
+        {
+            StopCoroutine(seasonNotificationCoroutine);
+        }
+        if (productionNotificationCoroutine != null)
+        {
+            StopCoroutine(productionNotificationCoroutine);
+        }
+        foreach (Coroutine cor in skyboxCoroutines)
+        {
+            StopCoroutine(cor);
+        }
+        foreach (Coroutine cor in lightingCoroutines)
+        {
+            StopCoroutine(cor);
+        }
     }
 }

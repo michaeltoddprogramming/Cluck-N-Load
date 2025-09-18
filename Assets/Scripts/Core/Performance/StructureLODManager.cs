@@ -69,7 +69,9 @@ public class StructureLODManager : MonoBehaviour
                 continue;
             }
 
-            float distance = Vector3.Distance(cameraPos, structureLOD.transform.position);
+            // Use sqrMagnitude for better performance (no square root calculation)
+            float sqrDistance = (cameraPos - structureLOD.transform.position).sqrMagnitude;
+            float distance = Mathf.Sqrt(sqrDistance); // Only calculate sqrt when needed for LOD calculation
             LODLevel newLOD = CalculateLODLevel(distance);
 
             if (structureLOD.CurrentLOD != newLOD)

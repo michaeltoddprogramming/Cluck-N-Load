@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: f401414b19f29f84697a563ac2962280, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 1d84aee3c79f5de4cb359f669c9b7f02, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -2318736590108714261, guid: dd1ff911be84797448a02f96b8847bf6, type: 3}
     - target: {fileID: 919132149155446097, guid: 1d84aee3c79f5de4cb359f669c9b7f02, type: 3}
       propertyPath: m_Name
       value: carrots_stage3

@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 9eb486b5b1de2074ab7d2c77374f698c, type: 2}
+    - target: {fileID: -5754084199372789682, guid: abac48c2f8715774cada6c78a41f7314, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 6953454083616382544, guid: ec719e8fbdf4d7643a0d13f30d03a964, type: 3}
     - target: {fileID: 919132149155446097, guid: abac48c2f8715774cada6c78a41f7314, type: 3}
       propertyPath: m_Name
       value: GoatPenn
@@ -115,6 +119,12 @@ MonoBehaviour:
   maxAnimalCount: 10
   audioSource: {fileID: -6788380498777808320}
   backgroundClip: {fileID: 8300000, guid: b91f931e2b36d494fa1bbdf046ba1c39, type: 3}
+  minDelay: 1
+  maxDelay: 3
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   siloSynergyRange: 15
   synergyFoodRequired: 0.8
   normalFoodRequired: 1

@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: f401414b19f29f84697a563ac2962280, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 0929a84de060c824098b0597f8d354b6, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 5345916028560328880, guid: 2d49037258348d04a86c7b4b7b0709aa, type: 3}
     - target: {fileID: 919132149155446097, guid: 0929a84de060c824098b0597f8d354b6, type: 3}
       propertyPath: m_Name
       value: wheat_stage2

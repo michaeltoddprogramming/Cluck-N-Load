@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 345e76a0dfa92d045b4679256899f281, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 76dbbddbe25abdd458cfebb0cb62f102, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -2228417370725966487, guid: 5eb0b8fbab801844d87e7856df46b7bc, type: 3}
     - target: {fileID: 919132149155446097, guid: 76dbbddbe25abdd458cfebb0cb62f102, type: 3}
       propertyPath: m_Name
       value: pig_pen
@@ -115,6 +119,12 @@ MonoBehaviour:
   maxAnimalCount: 10
   audioSource: {fileID: 4639814160072381120}
   backgroundClip: {fileID: 8300000, guid: ca19259be979afe4894d49f58fcc160c, type: 3}
+  minDelay: 1
+  maxDelay: 3
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   siloSynergyRange: 15
   synergyFoodRequired: 0.8
   normalFoodRequired: 1

@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 2bc6871977b1e1941b1aef32d0497acc, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 91b4ea7eeaa461f40bb73b8b27247bbf, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -5741174448488666723, guid: 8e242be005b4f66469fb154cb35c92ba, type: 3}
     - target: {fileID: 919132149155446097, guid: 91b4ea7eeaa461f40bb73b8b27247bbf, type: 3}
       propertyPath: m_Name
       value: barracks_goat

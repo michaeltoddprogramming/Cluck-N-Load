@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: f401414b19f29f84697a563ac2962280, type: 2}
+    - target: {fileID: -5754084199372789682, guid: cbfa0d7040f99614e9a61f8d1812cab9, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -6485182144884287121, guid: 24990924f032c8246a9d3cc7ce84dc9a, type: 3}
     - target: {fileID: 919132149155446097, guid: cbfa0d7040f99614e9a61f8d1812cab9, type: 3}
       propertyPath: m_Name
       value: sunflowers_stage2

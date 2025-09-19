@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: ffee765c908eb694ba3247a25d0217f5, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -3367697035095273142, guid: 6c5e0b0ed2d3d6a43a5de421b6135d93, type: 3}
     - target: {fileID: 919132149155446097, guid: 3788095bd997b3c429e195dbaf126f13, type: 3}
       propertyPath: m_Name
       value: ChickenBarrack

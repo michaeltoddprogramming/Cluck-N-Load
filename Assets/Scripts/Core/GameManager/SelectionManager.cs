@@ -59,7 +59,7 @@ private void SelectStructure(Structure structure)
     StructureUIManager.Instance.ShowStructureUI(structure);
 }
 
-    private void DeselectCurrent()
+    public void DeselectCurrent()
     {
         if (currentSelectedStructure != null)
         {

@@ -82,7 +82,8 @@ public class AnimalStructureUI : BaseStructureUI
         int maxAnimalCount = animalStructure.MaxAnimalCount;
         bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed();
         bool canCollect = productReady && nightManager.IsDay;
-        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount;
+        // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")
+        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isProducing;  // Added !isProducing check
 
         animalAmountText.text = $"{animalCount}/{maxAnimalCount}";
         newAnimalAmount.text = $"{newAnimalCount}";
@@ -92,20 +93,32 @@ public class AnimalStructureUI : BaseStructureUI
         collectButton.interactable = canCollect;
 
         if (buyAnimal != null)
-            buyAnimal.interactable = newAnimalCount > 0 && (newAnimalCount + animalCount) <= maxAnimalCount && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(newAnimalCount * animalStructure.ProductionSettings.costPerAnimal);
+            buyAnimal.interactable = newAnimalCount > 0 && canBuy;  // Use updated canBuy
 
-        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * animalStructure.ProductionSettings.costPerAnimal);
+        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && canBuy && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal);
         removeAnimal.interactable = newAnimalCount > 0;
 
         costText.text = (newAnimalCount * animalStructure.ProductionSettings.costPerAnimal).ToString();
 
-        if (progressBar != null && isProducing)
+        // Enhanced feedback for insufficient feed (add visual indicator)
+        if (!canFeed && animalCount > 0 && !isProducing && !productReady)
         {
-            progressBar.gameObject.SetActive(true);
-            progressBar.maxValue = animalStructure.ProductionSettings.productionTime;
-            progressBar.value = animalStructure.ProductionProgress;
+            // Add a red tint to the feed button or an icon
+            if (feedButton != null)
+            {
+                var buttonImage = feedButton.GetComponent<Image>();
+                if (buttonImage != null) buttonImage.color = Color.red;  // Visual indicator for insufficient feed
+            }
         }
-        else if (progressBar != null) progressBar.gameObject.SetActive(false);
+        else
+        {
+            // Reset color if conditions are met
+            if (feedButton != null)
+            {
+                var buttonImage = feedButton.GetComponent<Image>();
+                if (buttonImage != null) buttonImage.color = Color.white;
+            }
+        }
 
         UpdateStatusText(isProducing, productReady, animalCount);
     }
@@ -151,8 +164,11 @@ public class AnimalStructureUI : BaseStructureUI
             }
             else if (!animalStructure.canFeed())
             {
-                statusText.text = $"Not enough {animalStructure.GetRequiredFood()} to feed!";
-                statusText.color = Color.yellow;
+                // Enhanced message: Show required food details
+                int requiredFood = (int)((animalStructure.ProductionSettings.baseFoodRequired * animalCount) * animalStructure.foodMultiplier);
+                int availableFood = InventoryManager.Instance != null ? InventoryManager.Instance.GetItemCount(animalStructure.RequiredFood) : 0;
+                statusText.text = $"Not enough {animalStructure.RequiredFood} to feed! Need {requiredFood}, have {availableFood}.";
+                statusText.color = Color.red;  // More prominent color for insufficient feed
             }
             else
             {

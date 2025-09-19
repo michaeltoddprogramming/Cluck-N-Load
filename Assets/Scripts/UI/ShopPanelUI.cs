@@ -128,10 +128,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         foreach (StructureData data in database.allStructures)
         {
-            if (data == null) continue;
+            if (data == null || data.prefab == null) continue;
 
-            // Skip farmhouse if already placed
+            // Check if farmhouse is already placed
             if (data.structureName.ToLower().Contains("farm house") && ShopUIManager.Instance != null && ShopUIManager.Instance.IsFarmHousePlaced)
+                continue;
+
+            // New: Restrict items based on current tutorial step
+            if (!IsStructureAllowedInCurrentTutorialStep(data))
                 continue;
 
             bool showItem = false;
@@ -254,6 +258,32 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (cameraController != null)
         {
             cameraController.TemporarilyDisableMouseControls(false);
+        }
+    }
+
+    private bool IsStructureAllowedInCurrentTutorialStep(StructureData data)
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) return true; // Allow all if tutorial not active
+
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+        string structureName = data.structureName.ToLower();
+
+        // Define allowed structures per step (expand as needed)
+        switch (currentStepId)
+        {
+            case "build_farmhouse":
+                return structureName.Contains("farm house");
+            case "build_crop_plot":
+                return structureName.Contains("crop plot");
+            case "build_silo":
+                return structureName.Contains("silo");
+            case "build_chicken_coop":
+                return structureName.Contains("chicken coop");
+            case "build_chicken_barracks":
+                return structureName.Contains("chicken barrack");
+            // Add more cases for other steps
+            default:
+                return false; // Block all other structures during tutorial
         }
     }
 }

@@ -13,6 +13,13 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public GameObject lockedOverlay; // <-- Add this to your prefab and assign in inspector
 
     private StructureData data;
+    private BuildController buildController;  // Add this field to cache the reference
+
+    private void Start()
+    {
+        // Cache the BuildController reference
+        buildController = FindFirstObjectByType<BuildController>();
+    }
 
     public void Setup(StructureData structure)
     {
@@ -111,6 +118,12 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (icon != null)
             icon.color = canAfford ? Color.white : new Color(0.7f, 0.7f, 0.7f, 0.8f);
+
+        // Notify BuildController to update ghost if affordability changed
+        if (buildController != null)  // Use the cached reference
+        {
+            buildController.UpdateGhostAffordability(canAfford);
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)

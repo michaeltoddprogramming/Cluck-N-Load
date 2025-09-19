@@ -57,21 +57,16 @@ public class SheepUnit : ArmyUnit
     {
         base.Update();
 
-
-        // if (doIt)
-        // {
-        //     CameraShake.Instance.ShakeAtPosition(transform.position);
-        //     doIt = false;
-        // }
-
         List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
 
         int count = enemies.Count;
-        if (GetTimeOfDay() == false)
+        if (GetTimeOfDay() == false)  // If it's night
         {
             hasExploded = false;
             count = 0;
             lastBeepStage = 0;
+            // Optional: Disable sheep activity at night
+            // e.g., Stop any ongoing actions or animations
         }
 
         if (count >= 1 && lastBeepStage < 1)

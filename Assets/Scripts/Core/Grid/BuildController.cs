@@ -373,6 +373,16 @@ public class BuildController : MonoBehaviour
                 CreateGhost(currentBuildTargetPrefab);
             }
         }
+
+        // New: Right-click to deselect
+        if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            SelectionManager selectionManager = FindFirstObjectByType<SelectionManager>();
+            if (selectionManager != null)
+            {
+                selectionManager.DeselectCurrent();
+            }
+        }
     }
 
     void SelectStructureToMove()
@@ -468,9 +478,35 @@ public class BuildController : MonoBehaviour
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(hoveredCell.x, hoveredCell.y);
         currentGhost.transform.position = cellCenter;
         bool isValidPlacement = IsValidPlacement(hoveredCell.x, hoveredCell.y);
+        bool canAfford = currentStructureData != null && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(currentStructureData.cost);
+
+        // Update ghost color based on affordability and placement
         foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
-            renderer.material.color = isValidPlacement ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
+        {
+            if (!canAfford)
+            {
+                // Dim and color red for unaffordable
+                renderer.material.color = new Color(1f, 0.2f, 0.2f, 0.3f);  // Red and semi-transparent
+            }
+            else if (!isValidPlacement)
+            {
+                renderer.material.color = new Color(1f, 0f, 0f, 0.5f);  // Red for invalid placement
+            }
+            else
+            {
+                renderer.material.color = new Color(0f, 1f, 0f, 0.5f);  // Green for valid and affordable
+            }
+        }
         UpdateSynergyVisualization();
+    }
+
+    public void UpdateGhostAffordability(bool canAfford)
+    {
+        if (currentGhost != null)
+        {
+            // Force update the ghost color without moving it
+            UpdateGhostPosition();
+        }
     }
 
     private void UpdateSynergyVisualization()
@@ -492,7 +528,7 @@ public class BuildController : MonoBehaviour
         CreateRangeIndicator(currentGhost.transform.position, 10f, potentialSynergyMaterial, "Crop Synergy Range");
         foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
             if ((currentGhost.transform.position - animal.transform.position).sqrMagnitude <= 225f)
-                CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");
+                CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");;
         foreach (var crop in FindObjectsByType<CropStructure>(FindObjectsSortMode.None))
             if (crop != null && (currentGhost.transform.position - crop.transform.position).sqrMagnitude <= 100f)
                 CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
@@ -695,11 +731,12 @@ public class BuildController : MonoBehaviour
 
     public void SetBuildTarget(StructureData data)
     {
-        if (data == null || data.prefab == null || (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(data.cost))) return;
+        if (data == null || data.prefab == null) return;
         currentBuildTargetPrefab = data.prefab;
         currentStructureData = data;
         EnableBuildMode();
         CreateGhost(currentBuildTargetPrefab);
+        // Note: Ghost will be updated in UpdateGhostPosition() to reflect affordability
     }
 
     public void SetBuildTarget(GameObject prefab)
@@ -767,11 +804,28 @@ public class BuildController : MonoBehaviour
     void PlaceItem(int x, int y)
     {
         if (!IsValidPlacement(x, y) || (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))) return;
+
+        // Prevent placing more than one farmhouse
+        if (currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
+        {
+            if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsFarmHousePlaced)
+            {
+                Debug.Log("Cannot place more than one Farmhouse!");
+                return;  // Block placement
+            }
+        }
+
+        // New: Check tutorial restrictions
+        if (currentStructureData != null && !IsStructureAllowedInCurrentTutorialStep(currentStructureData))
+        {
+            Debug.Log("Cannot place this structure yet - follow the tutorial!");
+            return;
+        }
+
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
         GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
         Structure structure = placedItem.GetComponent<Structure>();
         placedItem.name = $"Item_{x}_{y}";
-        // placedItem.name = $"Item_{x}_{y} {structure.GetStructureName()}";
 
         // Disable farmhouse in shop after placement
         if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
@@ -807,6 +861,34 @@ public class BuildController : MonoBehaviour
         AudioManager.Instance?.PlayPlaceSound();
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+
+        // Hide the info card immediately after placement to prevent UI conflicts
+        ItemHoverPanel.Instance?.HideImmediate();
+    }
+
+    private bool IsStructureAllowedInCurrentTutorialStep(StructureData data)
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) return true;
+
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+        string structureName = data.structureName.ToLower();
+
+        // Same logic as in ShopPanelUI
+        switch (currentStepId)
+        {
+            case "build_farmhouse":
+                return structureName.Contains("farm house");
+            case "build_crop_plot":
+                return structureName.Contains("crop plot");
+            case "build_silo":
+                return structureName.Contains("silo");
+            case "build_chicken_coop":
+                return structureName.Contains("chicken coop");
+            case "build_chicken_barracks":
+                return structureName.Contains("chicken barrack");
+            default:
+                return false;
+        }
     }
 
     private void HandleTutorialTriggers(Structure structure)
@@ -825,12 +907,19 @@ public class BuildController : MonoBehaviour
                 "pig" => TutorialTrigger.BuiltPigBarracks,
                 _ => TutorialTrigger.None
             };
-            if (barracksType != TutorialTrigger.None) TutorialManager.Instance.Trigger(barracksType);
+            // Only trigger if the step isn't already completed (prevents reset on movement)
+            if (barracksType != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{targetAnimalType}_barracks"))
+            {
+                TutorialManager.Instance.Trigger(barracksType);
+            }
+            // Trigger re-search for all barracks when a new barracks is built
+            BarracksStructure.UpdateAllNearbyChickenCoops();
             return;
         }
-        if (structure is AnimalStructure animalStructure)
+        if (structure is AnimalStructure animal)
         {
-            string animalType = animalStructure.GetAnimalType.ToString().ToLower();
+            // Add trigger for animal structures like chicken coop
+            string animalType = animal.GetAnimalType.ToString().ToLower();
             TutorialTrigger animalTrigger = animalType switch
             {
                 "chicken" => TutorialTrigger.BuiltChickenCoop,
@@ -840,7 +929,12 @@ public class BuildController : MonoBehaviour
                 "pig" => TutorialTrigger.BuiltPigPen,
                 _ => TutorialTrigger.None
             };
-            if (animalTrigger != TutorialTrigger.None) TutorialManager.Instance.Trigger(animalTrigger);
+            if (animalTrigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{animalType}_coop"))
+            {
+                TutorialManager.Instance.Trigger(animalTrigger);
+            }
+            // Trigger re-search for all barracks when a new animal structure is built
+            BarracksStructure.UpdateAllNearbyChickenCoops();
             return;
         }
         TutorialTrigger trigger = name switch
@@ -850,8 +944,22 @@ public class BuildController : MonoBehaviour
             var n when n.Contains("crop") || n.Contains("plot") => TutorialTrigger.BuiltCropPlot,
             _ => TutorialTrigger.None
         };
+        // Only trigger if the step isn't already completed (prevents reset on movement)
+        if (trigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{name.Replace(" ", "").ToLower()}"))
+        {
+            TutorialManager.Instance.Trigger(trigger);
+        }
         if (name.Contains("farm house") || name.Contains("farmhouse")) isHousePlaced = true;
-        if (trigger != TutorialTrigger.None) TutorialManager.Instance.Trigger(trigger);
+    }
+
+    public void OnStructureBuilt(Structure structure)
+    {
+        if (structure is AnimalStructure)
+        {
+            // Trigger re-search for all barracks when a new animal structure is built
+            BarracksStructure.UpdateAllNearbyChickenCoops();
+        }
+        HandleTutorialTriggers(structure);
     }
 
     private IEnumerator EnableSelectionAfterRelease(Structure structure)
@@ -870,8 +978,13 @@ public class BuildController : MonoBehaviour
         if (placedItem != null)
         {
             Structure structure = placedItem.GetComponent<Structure>();
-            if (structure is SiloStructure silo) InventoryManager.Instance.UnregisterSilo(silo);
-            if (structure != null && structure.GetStructureName().ToLower().Contains("farm house")) isHousePlaced = false;
+            // Prevent deletion of farmhouse
+            if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
+            {
+                Debug.Log("Cannot delete Farmhouse - it is indestructible!");
+                return;  // Skip deletion
+            }
+
             List<Vector2Int> footprint = GetStructureFootprint(placedItem);
             MoneyManager.Instance.AddMoney((int)(currentStructureData.cost * moneyBackAfterDeletePercentage));
             Debug.Log($"Added money back after deleting. cost {currentStructureData.cost} percentage: {moneyBackAfterDeletePercentage} money gained: {currentStructureData.cost * moneyBackAfterDeletePercentage}");
@@ -886,35 +999,20 @@ public class BuildController : MonoBehaviour
     private bool TryRemoveStructureByRaycast()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        int layerMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast"));
-        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, layerMask) && hit.transform.name != "BuildGhost")
+        if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Transform hitTransform = hit.transform;
-            while (hitTransform != null)
+            GameObject hitObject = hit.collider.gameObject;
+            Structure structure = hitObject.GetComponent<Structure>();
+            if (structure != null)
             {
-                if (hitTransform.name.StartsWith("Item_"))
+                // Prevent deletion of farmhouse
+                if (structure.GetStructureName().ToLower().Contains("farm house"))
                 {
-                    GameObject placedItem = hitTransform.gameObject;
-                    List<Vector2Int> footprint = GetStructureFootprint(placedItem);
-                    if (footprint.Count == 0) footprint = GetExtendedStructureFootprint(placedItem);
-                    string[] parts = placedItem.name.Split('_');
-                    if (parts.Length >= 3 && int.TryParse(parts[1], out int gridX) && int.TryParse(parts[2], out int gridY))
-                    {
-                        Structure structure = placedItem.GetComponent<Structure>();
-                        if (structure is SiloStructure silo) InventoryManager.Instance.UnregisterSilo(silo);
-                        if (structure != null && structure.GetStructureName().ToLower().Contains("farm house")) isHousePlaced = false;
-                        foreach (Vector2Int pos in footprint)
-                            if (gridController.IsValidCell(pos.x, pos.y)) gridController.SetCellOccupied(pos.x, pos.y, false);
-                        MoneyManager.Instance.AddMoney((int)(currentStructureData.cost * moneyBackAfterDeletePercentage));
-                        Debug.Log($"Added money back after deleting. cost {currentStructureData.cost} percentage: {moneyBackAfterDeletePercentage} money gained: {currentStructureData.cost * moneyBackAfterDeletePercentage}");
-                        Destroy(placedItem);
-                        AudioManager.Instance?.PlayRemoveSound();
-                        gridController.UpdateGridTexture();
-                        if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
-                        return true;
-                    }
+                    Debug.Log("Cannot delete Farmhouse - it is indestructible!");
+                    return true;  // Return true to indicate "handled" without deleting
                 }
-                hitTransform = hitTransform.parent;
+
+                // ...existing code...
             }
         }
         return false;
@@ -977,7 +1075,16 @@ public class BuildController : MonoBehaviour
                         }
                     }
             Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
-            if (gridPlane.Raycast(ray, out float distance)) hoveredCell = gridController.WorldToGridCoords(ray.GetPoint(distance));
+            if (gridPlane.Raycast(ray, out float distance))
+            {
+                Vector3 hitPoint = ray.GetPoint(distance);
+                hoveredCell = gridController.WorldToGridCoords(hitPoint);
+            }
+            else
+            {
+                // Fallback: Use the last known hovered cell if raycast fails
+                Debug.LogWarning("Raycast to grid plane failed - using last hovered cell");
+            }
         }
         return hoveredCell;
     }

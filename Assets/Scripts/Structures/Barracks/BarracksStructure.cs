@@ -12,7 +12,7 @@ public class BarracksStructure : Structure
     [SerializeField] private int recruitmentCostPerAnimal = 50;
     [SerializeField] private float protectionRadius = 5f;
     [SerializeField] private Color flagColor = Color.white;
-    [SerializeField] private float structureCheckInterval = 10f;
+    [SerializeField] private float structureCheckInterval = 2f;
 
     [Header("Sound effects")]
     [SerializeField] private AudioSource flagPlaceSound;
@@ -68,8 +68,15 @@ public class BarracksStructure : Structure
         nightManager?.RegisterBarracksStructure(this);
 
         InitializeFlag();
-        FindTargetAnimalStructure();
+        // Delay initial search to allow other structures to initialize
+        StartCoroutine(DelayedInitialSearch(1f));  // Wait 1 second before first search
         nextStructureCheckTime = Time.time + structureCheckInterval;
+    }
+
+    private IEnumerator DelayedInitialSearch(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        FindTargetAnimalStructure();
     }
 
     private void Update()
@@ -172,6 +179,7 @@ public class BarracksStructure : Structure
         GridController gridController = FindFirstObjectByType<GridController>();
         if (gridController == null)
         {
+            Debug.LogWarning($"{GetStructureName()}: GridController not found, cannot search for animal structures.");
             targetAnimalStructure = null;
             return;
         }
@@ -184,6 +192,7 @@ public class BarracksStructure : Structure
             {
                 Vector2Int animalCell = gridController.WorldToGridCoords(structure.transform.position);
                 float gridDistance = Vector2Int.Distance(barracksCell, animalCell);
+                Debug.Log($"{GetStructureName()}: Checking {structure.GetAnimalType} at distance {gridDistance}");
                 if (gridDistance < minGridDistance)
                 {
                     minGridDistance = gridDistance;
@@ -192,6 +201,14 @@ public class BarracksStructure : Structure
             }
         }
         targetAnimalStructure = closestStructure;
+        if (targetAnimalStructure != null)
+        {
+            Debug.Log($"{GetStructureName()}: Found target {targetAnimalStructure.GetAnimalType} at distance {minGridDistance}");
+        }
+        else
+        {
+            Debug.LogWarning($"{GetStructureName()}: No suitable {targetAnimalType} found nearby.");
+        }
         UpdateRecruitmentCostByDistance();
     }
 
@@ -236,6 +253,14 @@ public class BarracksStructure : Structure
             {
                 if (targetAnimalType == "Sheep")
                 {
+                    // Additional day check for sheep recruitment
+                    NightManager nightManager = NightManager.Instance;
+                    if (nightManager != null && !nightManager.IsDay)
+                    {
+                        Debug.LogWarning($"{GetStructureName()}: Cannot recruit sheep at night - flags cannot be placed.");
+                        Destroy(armyAnimal);  // Clean up the spawned unit
+                        continue;  // Skip this recruitment
+                    }
                     sheepUnits.Add(armyAnimal);
 
                     // GameObject sheepFlag = Instantiate(flagPrefab, armyAnimal.transform.position + new Vector3(0, 2, 0), Quaternion.identity, transform);

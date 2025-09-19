@@ -83,6 +83,12 @@ public class GridController : MonoBehaviour
     // Improve the UpdateHoveredCell method
     void UpdateHoveredCell()
     {
+        // Check if mouse is over UI - if so, don't update hover cell
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
         {
             Vector2Int gridCoords = WorldToGridCoords(hit.point);

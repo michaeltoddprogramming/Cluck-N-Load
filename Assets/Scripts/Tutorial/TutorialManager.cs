@@ -266,7 +266,30 @@ public partial class TutorialManager : MonoBehaviour
             return;
         }
 
+        // Prevent re-triggering for completed steps (fixes progress reset on movement)
+        if (trigger != TutorialTrigger.None && IsStepCompletedForTrigger(trigger))
+        {
+            Debug.LogWarning($"Tutorial: Ignoring trigger {trigger} because the step is already completed.");
+            return;
+        }
+
         ProcessTrigger(trigger);
+    }
+
+    private bool IsStepCompletedForTrigger(TutorialTrigger trigger)
+    {
+        // Map triggers to step IDs (add more as needed)
+        string stepId = trigger switch
+        {
+            TutorialTrigger.BoughtFirstAnimals => "buy_chickens",
+            TutorialTrigger.FedFirstAnimals => "feed_chickens",
+            TutorialTrigger.PlantedCrop => "plant_first_crop",
+            TutorialTrigger.HarvestedCrop => "harvest_first_crops",
+            TutorialTrigger.BuiltSilo => "build_silo",
+            // Add other mappings here
+            _ => null
+        };
+        return stepId != null && completedStepIds.Contains(stepId);
     }
 
     private void ProcessTrigger(TutorialTrigger trigger)
@@ -452,5 +475,12 @@ public partial class TutorialManager : MonoBehaviour
             StopCoroutine(typingCoroutine);
             typingCoroutine = null;
         }
+    }
+
+    public string GetCurrentStepId()
+    {
+        if (currentStepIndex >= 0 && currentStepIndex < steps.Count)
+            return steps[currentStepIndex].stepId;
+        return null;
     }
 }

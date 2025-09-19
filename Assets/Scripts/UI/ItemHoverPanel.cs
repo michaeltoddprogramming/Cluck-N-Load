@@ -131,9 +131,8 @@ public class ItemHoverPanel : MonoBehaviour
 
     public void HideImmediate()
     {
-        canvasGroup.alpha = 0f;
-        canvasGroup.interactable = false;
-        canvasGroup.blocksRaycasts = false;
+        LeanTween.cancel(gameObject);
+        canvasGroup.alpha = 0;
         gameObject.SetActive(false);
     }
 }

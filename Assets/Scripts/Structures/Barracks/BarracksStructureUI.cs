@@ -107,6 +107,17 @@ public class BarracksStructureUI : BaseStructureUI
             UpdateUI();
             lastUIUpdate = Time.time;
         }
+
+        // Additional safeguard for sheep flag button at night
+        if (barracksStructure != null && barracksStructure.GetAnimalType() == "Sheep")
+        {
+            NightManager nightManager = NightManager.Instance;
+            if (nightManager != null && !nightManager.IsDay && placeFlagButton != null)
+            {
+                placeFlagButton.interactable = false;
+                Debug.LogWarning("[Sheep Barracks UI] Force-disabled placeFlagButton at night");
+            }
+        }
     }
 
     // Removed Update() method for better performance - using event-driven updates instead
@@ -164,6 +175,13 @@ public class BarracksStructureUI : BaseStructureUI
             if (nightManager != null && !nightManager.IsDay)
             {
                 updateStatusText("Sheep flags can only be placed during the day");
+                // Optional: Add visual feedback, e.g., flash the button red
+                if (placeFlagButton != null)
+                {
+                    var buttonImage = placeFlagButton.GetComponent<Image>();
+                    if (buttonImage != null) buttonImage.color = Color.red;
+                    LeanTween.color(buttonImage.rectTransform, Color.white, 1f);  // Reset after 1 second
+                }
                 return; // Exit early, don't start flag placement
             }
         }
@@ -173,12 +191,10 @@ public class BarracksStructureUI : BaseStructureUI
         if (setFlagColorButton != null) setFlagColorButton.interactable = false;
         if (placeFlagButton != null)
         {
-            updateStatusText("Click anywhere to place flag");
+            placeFlagButton.interactable = false;
+            placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
         }
-        if (flagPlacementIndicator != null)
-        {
-            flagPlacementIndicator.SetActive(true);
-        }
+        if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(true);
         StartCoroutine(HandleFlagPlacement());
     }
 
@@ -367,14 +383,24 @@ public class BarracksStructureUI : BaseStructureUI
         {
             NightManager nightManager = NightManager.Instance;
             bool isDay = nightManager != null ? nightManager.IsDay : true;
+            Debug.Log($"[Sheep Barracks UI] IsDay: {isDay}, HasArmy: {hasArmy}");  // Debug log to check values
             
             if (placeFlagButton != null)
             {
-                placeFlagButton.interactable = isDay && barracksStructure.ArmyAnimalCount > 0;
+                placeFlagButton.interactable = isDay && hasArmy;
+                Debug.Log($"[Sheep Barracks UI] PlaceFlagButton interactable: {placeFlagButton.interactable}");  // Debug log for button state
                 
                 if (!isDay && statusText != null)
                 {
                     updateStatusText("Sheep flags can only be placed during the day");
+                }
+                else if (isDay && statusText != null && !hasArmy)
+                {
+                    updateStatusText("No sheep army to place flags for");
+                }
+                else if (isDay && hasArmy && statusText != null)
+                {
+                    updateStatusText("Ready to place sheep flags");
                 }
             }
         }
@@ -383,7 +409,7 @@ public class BarracksStructureUI : BaseStructureUI
             // For non-sheep animals, flags can be placed anytime (existing behavior)
             if (placeFlagButton != null)
             {
-                placeFlagButton.interactable = barracksStructure.ArmyAnimalCount > 0;
+                placeFlagButton.interactable = hasArmy;
             }
         }
 

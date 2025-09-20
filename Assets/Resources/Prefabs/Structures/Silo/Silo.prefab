@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1fd1e814565cb134aa5eb8211fc5f79b, type: 2}
+    - target: {fileID: -5754084199372789682, guid: f81f90a17075d9d4ca2bb7387f7cc799, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -2664605628696090635, guid: 928937de3e8797b4181b9b07d1a4008a, type: 3}
     - target: {fileID: 919132149155446097, guid: f81f90a17075d9d4ca2bb7387f7cc799, type: 3}
       propertyPath: m_Name
       value: Silo

@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 51bd7ace30ca2194d928831d0000ce08, type: 2}
+    - target: {fileID: -5754084199372789682, guid: f55cf6eada4bee548bda76ae9a93a744, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 64329212006718629, guid: f1d3e413c45b6c34ca43666838ccf21b, type: 3}
     - target: {fileID: 919132149155446097, guid: f55cf6eada4bee548bda76ae9a93a744, type: 3}
       propertyPath: m_Name
       value: chicken_coop_res
@@ -118,6 +122,12 @@ MonoBehaviour:
   maxAnimalCount: 10
   audioSource: {fileID: 8675408084513278302}
   backgroundClip: {fileID: 8300000, guid: 0ed8e3d8e473ed447a308e5eecf66c71, type: 3}
+  minDelay: 1
+  maxDelay: 3
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   siloSynergyRange: 15
   synergyFoodRequired: 0.8
   normalFoodRequired: 1

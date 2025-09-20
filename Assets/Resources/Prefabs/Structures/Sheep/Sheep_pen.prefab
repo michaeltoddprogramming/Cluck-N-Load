@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: d8e6adb6147f0764fb5b04e209ebaf77, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 59ad943156f8af94bbc75e523707706c, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4493585093827132993, guid: 9ea9adb5831608340af926e2c94a27be, type: 3}
     - target: {fileID: 919132149155446097, guid: 59ad943156f8af94bbc75e523707706c, type: 3}
       propertyPath: m_Name
       value: Sheep_pen
@@ -136,6 +140,12 @@ MonoBehaviour:
   maxAnimalCount: 10
   audioSource: {fileID: 2807904247166541674}
   backgroundClip: {fileID: 8300000, guid: ee85b2716834d16498eccefaf133d74c, type: 3}
+  minDelay: 1
+  maxDelay: 3
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   siloSynergyRange: 15
   synergyFoodRequired: 0.8
   normalFoodRequired: 1

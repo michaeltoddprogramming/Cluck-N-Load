@@ -455,6 +455,7 @@ public class BuildController : MonoBehaviour
             Destroy(currentGhost);
             currentGhost = null;
         }
+        ClearSynergyVisualization();
         gridController.HideGrid();
         DisableBuildMode();
     }
@@ -1053,6 +1054,7 @@ public class BuildController : MonoBehaviour
             Destroy(currentGhost);
             currentGhost = null;
         }
+        ClearSynergyVisualization(); // <-- Add this line
         currentBuildTargetPrefab = null;
     }
 

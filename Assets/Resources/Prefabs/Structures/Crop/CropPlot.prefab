@@ -132,9 +132,9 @@ MonoBehaviour:
   wheatTotal: 0
   carrotTotal: 0
   cropHarvestMultiplier: 1.5
-  cropHarvestMultiplierIncrease: 1.5
-  multiplierRange: 10
   baseCropHarvestAmount: 10
+  multiplierRange: 10
+  cropHarvestMultiplierIncrease: 1.5
 --- !u!114 &8489389777049512571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,8 +179,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.8363328, y: 0.15840478, z: 2.8363328}
-  m_Center: {x: -0.00000011920929, y: 0.024292596, z: 0.00000011920929}
+  m_Size: {x: 4.8854656, y: 0.22989452, z: 4.834507}
+  m_Center: {x: 0, y: 0.060037464, z: 0}
 --- !u!208 &6405745572079664544
 NavMeshObstacle:
   m_ObjectHideFlags: 0

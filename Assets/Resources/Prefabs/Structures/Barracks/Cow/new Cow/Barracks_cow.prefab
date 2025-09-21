@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
       propertyPath: m_LocalScale.x
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
       propertyPath: m_LocalScale.y
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
       propertyPath: m_LocalScale.z
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
       propertyPath: m_LocalPosition.x
@@ -34,19 +34,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -3.7493994e-33
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -6.123234e-17
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
-      propertyPath: m_LocalRotation.y
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 6.123234e-17
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2e52bb78c78960849b8a813c12a2a5df, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -215,8 +215,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.302403, y: 1.7060461, z: 1.1639681}
-  m_Center: {x: 0.009087294, y: 0.8441919, z: -0.020262064}
+  m_Size: {x: 6.23914, y: 4.143355, z: 7.284814}
+  m_Center: {x: -0.7789109, y: 2.062846, z: -0.19298506}
 --- !u!82 &1257368139050171668
 AudioSource:
   m_ObjectHideFlags: 0

@@ -1,18 +1,21 @@
 using UnityEngine;
 using System.Collections;
 
+// DISABLED: This script has been disabled to avoid conflicts with SelectionManager.cs
+// All selection logic has been consolidated into SelectionManager.cs for consistency
 public class StructureSelector : MonoBehaviour
 {
     private Structure lastSelectedStructure;
     private bool isProcessingClick = false;
 
-    void Update()
-    {
-        if (Input.GetMouseButtonDown(0) && !isProcessingClick)
-        {
-            StartCoroutine(ProcessClick());
-        }
-    }
+    // DISABLED: Update method commented out to prevent conflicts with SelectionManager
+    // void Update()
+    // {
+    //     if (Input.GetMouseButtonDown(0) && !isProcessingClick)
+    //     {
+    //         StartCoroutine(ProcessClick());
+    //     }
+    // }
 
     private IEnumerator ProcessClick()
     {

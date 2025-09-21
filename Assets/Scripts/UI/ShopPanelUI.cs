@@ -108,6 +108,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
 
+        Debug.Log($"PopulateShop called with display='{display}', tutorial active: {TutorialManager.Instance?.IsTutorialActive()}, current step: {TutorialManager.Instance?.GetCurrentStepId()}");
+
         if (database == null)
         {
             Debug.LogError("StructureDatabase is not assigned in the inspector!");
@@ -120,12 +122,15 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
         }
 
+        Debug.Log($"Found {database.allStructures.Count} structures in database");
+
         // Clear previous items
         foreach (Transform child in contentParent)
         {
             Destroy(child.gameObject);
         }
 
+        int itemsAdded = 0;
         foreach (StructureData data in database.allStructures)
         {
             if (data == null || data.prefab == null) continue;
@@ -145,7 +150,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 case 'A': showItem = data.type == StructureType.Barracks; break;
                 case 'S': showItem = data.type == StructureType.Defense; break;
                 case 'P': showItem = data.type == StructureType.CropPlot || data.type == StructureType.Silo; break;
-                case 'D': showItem = data.type == StructureType.Decoration; break;
+                case 'D': showItem = data.type == StructureType.Decoration || data.type == StructureType.Building; break;
                 default: break;
             }
 
@@ -160,8 +165,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             }
 
             itemUI.Setup(data);
+            itemsAdded++;
         }
 
+        Debug.Log($"PopulateShop completed: {itemsAdded} items added to shop for display '{display}'");
     }
 
     private void displayComingSoonPanel(int num)
@@ -263,27 +270,71 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private bool IsStructureAllowedInCurrentTutorialStep(StructureData data)
     {
-        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) return true; // Allow all if tutorial not active
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) 
+        {
+            Debug.Log($"Tutorial not active, allowing all structures");
+            return true; // Allow all if tutorial not active
+        }
 
         string currentStepId = TutorialManager.Instance.GetCurrentStepId();
         string structureName = data.structureName.ToLower();
+        
+        Debug.Log($"Tutorial filtering: currentStepId='{currentStepId}', checking structure='{structureName}', type={data.type}");
 
         // Define allowed structures per step (expand as needed)
+        bool isAllowed;
         switch (currentStepId)
         {
+            case "open_build_shop":
+                // When just opening shop, allow building types (start with farmhouse)
+                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration;
+                break;
             case "build_farmhouse":
-                return structureName.Contains("farm house");
+                // Allow building-type and decoration-type structures during farmhouse tutorial (farmhouse is Decoration type)
+                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration;
+                break;
             case "build_crop_plot":
-                return structureName.Contains("crop plot");
+                // Allow all production-type structures during crop plot tutorial
+                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
+                break;
             case "build_silo":
-                return structureName.Contains("silo");
+                // Allow all production-type structures during silo tutorial
+                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
+                break;
+            case "plant_first_crop":
+                // During planting, still allow crop plots and silos
+                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
+                break;
+            case "harvest_first_crops":
+                // During harvesting, still allow crop plots and silos
+                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
+                break;
             case "build_chicken_coop":
-                return structureName.Contains("chicken coop");
+                // Allow all animal-type structures during chicken coop tutorial
+                isAllowed = data.type == StructureType.Animal;
+                break;
             case "build_chicken_barracks":
-                return structureName.Contains("chicken barrack");
+                // Allow all barracks-type structures during chicken barracks tutorial
+                isAllowed = data.type == StructureType.Barracks;
+                break;
+            case "buy_chickens":
+            case "feed_chickens":
+            case "collect_eggs":
+                // During chicken management, allow animal types
+                isAllowed = data.type == StructureType.Animal;
+                break;
+            case "recruit_soldiers":
+            case "place_flag":
+                // During soldier recruitment, allow barracks
+                isAllowed = data.type == StructureType.Barracks;
+                break;
             // Add more cases for other steps
             default:
-                return false; // Block all other structures during tutorial
+                isAllowed = true; // Allow all structures for unknown tutorial steps
+                break;
         }
+        
+        Debug.Log($"Structure '{structureName}' (type: {data.type}) for step '{currentStepId}': {(isAllowed ? "ALLOWED" : "BLOCKED")}");
+        return isAllowed;
     }
 }

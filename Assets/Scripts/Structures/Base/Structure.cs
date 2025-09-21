@@ -499,6 +499,14 @@ public class Structure : MonoBehaviour
         {
             selectionIndicator.SetActive(false);
         }
+        
+        // Remove selection animation component if it exists
+        SelectionAnimation selector = GetComponent<SelectionAnimation>();
+        if (selector != null)
+        {
+            Destroy(selector);
+        }
+        
         Collider col = GetComponent<Collider>();
         if (col != null && !col.enabled)
         {

@@ -139,7 +139,14 @@ public class StructureUIManager : MonoBehaviour
             return;
         }
 
-        HideStructureUI(); // Ensure previous UI is closed
+        Debug.Log($"StructureUIManager: Showing UI for structure {structure.name}, HasActiveUI: {HasActiveUI()}");
+
+        // Only hide UI if there's an active UI to hide
+        if (HasActiveUI())
+        {
+            Debug.Log("StructureUIManager: Hiding existing UI before showing new UI");
+            HideStructureUI(); // Ensure previous UI is closed
+        }
 
         currentSelectedStructure = structure;
         currentSelectedStructure.OnStructureDestroyed += OnSelectedStructureDestroyed;
@@ -187,6 +194,7 @@ public class StructureUIManager : MonoBehaviour
 
     public void HideStructureUI()
     {
+        Debug.Log($"StructureUIManager: HideStructureUI called, activeUI: {activeUI?.name ?? "null"}, currentSelectedStructure: {currentSelectedStructure?.name ?? "null"}");
         isHidingUI = true;
 
         if (activeUI != null)
@@ -199,12 +207,26 @@ public class StructureUIManager : MonoBehaviour
 
         if (currentSelectedStructure != null)
         {
+            Debug.Log($"StructureUIManager: Deselecting structure {currentSelectedStructure.name}");
             currentSelectedStructure.Deselect(); // Explicitly deselect
             currentSelectedStructure.OnStructureDestroyed -= OnSelectedStructureDestroyed;
-            currentSelectedStructure = null;
+            // Don't set to null here - let SelectionManager handle that
+        }
+
+        // Notify SelectionManager to clear its selection state
+        SelectionManager selectionManager = FindFirstObjectByType<SelectionManager>();
+        if (selectionManager != null)
+        {
+            selectionManager.ForceClearSelection();
         }
 
         StartCoroutine(ResetHidingFlag());
+    }
+
+    // Public method to check if there's an active UI
+    public bool HasActiveUI()
+    {
+        return activeUI != null && !isHidingUI;
     }
 
     private IEnumerator ResetHidingFlag()

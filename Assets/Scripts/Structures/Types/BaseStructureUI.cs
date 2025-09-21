@@ -28,7 +28,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
         closeButton?.onClick.AddListener(() =>
         {
-            structure.Deselect();
+            // Don't call Deselect here - HideStructureUI will handle it
             StructureUIManager.Instance?.HideStructureUI();
         });
 

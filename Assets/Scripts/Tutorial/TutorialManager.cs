@@ -150,6 +150,9 @@ public partial class TutorialManager : MonoBehaviour
         waitingForStepToComplete = false;
         Debug.Log($"TutorialManager: Starting with {steps.Count} steps, calling NextStep()");
         NextStep();
+        
+        // Notify UI systems that tutorial has started
+        NotifyUISystemsOfStepChange();
     }
 
     void NextStep()
@@ -196,6 +199,10 @@ public partial class TutorialManager : MonoBehaviour
             }
 
             currentStepIndex++;
+            
+            // Notify UI systems that tutorial step has changed
+            NotifyUISystemsOfStepChange();
+            
             if (currentStepIndex >= steps.Count)
             {
                 EndTutorial();
@@ -333,6 +340,9 @@ public partial class TutorialManager : MonoBehaviour
         currentStepIndex = steps.Count;
         waitingForStepToComplete = false;
         Debug.Log($"Tutorial ended: currentStepIndex={currentStepIndex}, waitingForStepToComplete={waitingForStepToComplete}");
+        
+        // Notify UI systems that tutorial has ended
+        NotifyUISystemsOfStepChange();
     }
     
     public void SkipTutorial()
@@ -417,8 +427,10 @@ public partial class TutorialManager : MonoBehaviour
 
     public bool IsTutorialActive()
     {
-        bool active = tutorialPanel != null && tutorialPanel.activeSelf && currentStepIndex >= 0 && currentStepIndex < steps.Count;
-        Debug.Log($"IsTutorialActive: panelActive={tutorialPanel?.activeSelf}, currentStepIndex={currentStepIndex}, stepsCount={steps.Count}, result={active}");
+        // FIX: Tutorial should be active based on step progress, not panel visibility
+        // The panel can be hidden temporarily but tutorial restrictions should remain
+        bool active = currentStepIndex >= 0 && currentStepIndex < steps.Count && !IsTutorialCompleted();
+        Debug.Log($"IsTutorialActive: currentStepIndex={currentStepIndex}, stepsCount={steps.Count}, completed={IsTutorialCompleted()}, result={active}");
         return active;
     }
 
@@ -481,6 +493,20 @@ public partial class TutorialManager : MonoBehaviour
     {
         if (currentStepIndex >= 0 && currentStepIndex < steps.Count)
             return steps[currentStepIndex].stepId;
-        return null;
+        return "";
+    }
+    
+    private void NotifyUISystemsOfStepChange()
+    {
+        Debug.Log($"TUTORIAL SYSTEM: Notifying UI systems of step change to '{GetCurrentStepId()}'");
+        
+        // Notify ShopUIManager to update shop button state
+        if (ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.OnTutorialStepChanged();
+        }
+        
+        // ShopPanelUI tutorial filtering is handled in PopulateShop method
+        // No need for OnTutorialStepChanged notification
     }
 }

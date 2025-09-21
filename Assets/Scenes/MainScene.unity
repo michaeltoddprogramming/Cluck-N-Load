@@ -477,6 +477,12 @@ MonoBehaviour:
   poolStructureItems: 1
   maxVisibleItems: 20
   comingSoonPanel: {fileID: 1004186576}
+  tabButtons:
+  - {fileID: 1420257126}
+  - {fileID: 458064981}
+  - {fileID: 630448055}
+  - {fileID: 612084252}
+  - {fileID: 275921838}
 --- !u!1 &122739288
 GameObject:
   m_ObjectHideFlags: 0
@@ -11327,6 +11333,7 @@ MonoBehaviour:
   worldSpaceCanvas: {fileID: 0}
   enableSynergyVisuals: 1
   maxSynergyLines: 10
+  gridDataGenerator: {fileID: 0}
 --- !u!114 &1632256037
 MonoBehaviour:
   m_ObjectHideFlags: 0

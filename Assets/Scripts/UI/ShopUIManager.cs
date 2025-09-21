@@ -68,6 +68,89 @@ public class ShopUIManager : MonoBehaviour
         
         // Initially hide shop
         shopPanel.SetActive(false);
+        
+        // Set initial shop button state based on tutorial
+        UpdateShopButtonStateForTutorial();
+    }
+
+    private bool IsShopAllowedInTutorial()
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+        {
+            return true; // Shop always available when tutorial not active
+        }
+        
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+        
+        // Define which tutorial steps allow shop access
+        switch (currentStepId)
+        {
+            case "welcome":
+            case "camera_controls":
+            case "day_night_panel":
+            case "money_explanation":
+            case "time_controls":
+            case "season_bonuses":
+                // Introduction steps - shop should be disabled
+                return false;
+                
+            case "open_build_shop":
+            case "build_farmhouse":
+            case "build_crop_plot":
+            case "build_silo":
+            case "plant_first_crop":
+            case "harvest_first_crops":
+            case "build_chicken_coop":
+            case "buy_chickens":
+            case "feed_chickens":
+            case "collect_eggs":
+            case "build_chicken_barracks":
+            case "recruit_soldiers":
+            case "place_flag":
+            case "prepare_defense":
+            default:
+                // Building and later steps - shop is allowed
+                return true;
+        }
+    }
+    
+    public void UpdateShopButtonStateForTutorial()
+    {
+        if (shopButton == null) return;
+        
+        bool shopAllowed = IsShopAllowedInTutorial();
+        shopButton.interactable = shopAllowed;
+        
+        // Visual feedback - grey out the button when disabled
+        if (shopIcon != null)
+        {
+            if (shopAllowed)
+            {
+                shopIcon.color = dayShop; // Normal color
+                Debug.Log("TUTORIAL SHOP: Shop button ENABLED");
+            }
+            else
+            {
+                shopIcon.color = nightShop; // Greyed out color 
+                Debug.Log("TUTORIAL SHOP: Shop button DISABLED (introduction phase)");
+            }
+        }
+    }
+    
+    // Called by TutorialManager when tutorial steps change
+    public void OnTutorialStepChanged()
+    {
+        UpdateShopButtonStateForTutorial();
+    }
+    
+    private void Update()
+    {
+        // Periodically check and update shop button state as fallback
+        // Only do this occasionally to avoid performance issues
+        if (Time.frameCount % 60 == 0) // Check once per second at 60fps
+        {
+            UpdateShopButtonStateForTutorial();
+        }
     }
 
     public void ToggleShop()
@@ -79,6 +162,13 @@ public class ShopUIManager : MonoBehaviour
             return;
         }
         lastClickTime = Time.time;
+        
+        // Check if shop is allowed during current tutorial step
+        if (!IsShopAllowedInTutorial())
+        {
+            Debug.Log("TUTORIAL SHOP: Shop access blocked during current tutorial step");
+            return;
+        }
         
         Debug.Log($"ToggleShop called. Current isVisible: {isVisible}, panel active: {shopPanel != null && shopPanel.activeSelf}");
         
@@ -244,6 +334,16 @@ public class ShopUIManager : MonoBehaviour
 
     public void OnFarmHouseRemoved()
     {
+        IsFarmHousePlaced = false;
+        if (shopPanelUI != null)
+            shopPanelUI.PopulateShop();
+    }
+
+    // DEBUG METHOD: Force reset farmhouse placement status for testing
+    [ContextMenu("Debug: Reset Farmhouse Placed Flag")]
+    public void DebugResetFarmhousePlacedFlag()
+    {
+        Debug.Log($"🔧 DEBUG: Resetting IsFarmHousePlaced from {IsFarmHousePlaced} to false");
         IsFarmHousePlaced = false;
         if (shopPanelUI != null)
             shopPanelUI.PopulateShop();

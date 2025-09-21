@@ -132,11 +132,12 @@ public class ArmyUnit : BaseUnit
             if (agent.velocity.sqrMagnitude > 0.1f)
             {
                 SetFloat("speed", 1f);
+                SetBool("isWalking", true);
             }
             else
             {
                 SetFloat("speed", 0f);
-                // SetBool("isWalking", false);
+                SetBool("isWalking", false);
             }
 
         }
@@ -217,17 +218,15 @@ public class ArmyUnit : BaseUnit
                 StartCoroutine(RecoilAndReturnToFlag());
             }
         }
-
-
-        if (data.Type == ArmyType.Goat)
+        else if (data.Type == ArmyType.Goat)
         {
-            // Debug.Log("sdikrujghwiuherh giuwerhgoiueshrlkjhg hsdkjfhglkusedrhgpuoisdhgoiuhsdfkjg hsdfkulhg ;osudryhg ouisdnrg ousehdf gouseh rtgiouhsaertolkuj gh seodutg");
             // Delay impact for goats so it syncs with animation
-            StartCoroutine(DelayedImpact(0.8f)); // tweak 0.6f until it looks right
+            StartCoroutine(DelayedImpactAndReturn(0.8f));
         }
         else
         {
-            PerformAttackImpact();
+            // For cows, sheep, pigs - perform attack and return to flag
+            StartCoroutine(AttackAndReturnToFlag());
         }
 
         // PlaySound(data.AttackSound, 'a');
@@ -345,9 +344,68 @@ public class ArmyUnit : BaseUnit
         if (col != null) col.enabled = true;
     }
 
+    private IEnumerator DelayedImpactAndReturn(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        PerformAttackImpact();
+        
+        // After impact, return to flag
+        yield return StartCoroutine(ReturnToFlagAfterAttack());
+    }
 
+    private IEnumerator AttackAndReturnToFlag()
+    {
+        // Immediate impact for cows, sheep, pigs
+        PerformAttackImpact();
+        
+        // Then return to flag
+        yield return StartCoroutine(ReturnToFlagAfterAttack());
+    }
 
+    private IEnumerator ReturnToFlagAfterAttack()
+    {
+        // Wait a brief moment after attack
+        yield return new WaitForSeconds(0.5f);
+        
+        // Start moving back to flag using NavMesh
+        isReturningAfterAttack = true;
+        targetPosition = guardPosition;
+        isMoving = true;
 
+        // Ensure agent is enabled and on NavMesh
+        if (!agent.isOnNavMesh)
+        {
+            agent.enabled = true;
+            yield return new WaitUntil(() => agent.isOnNavMesh);
+        }
+        else
+        {
+            agent.enabled = true;
+        }
+
+        agent.ResetPath();
+
+        while (Vector3.Distance(transform.position, guardPosition) > agent.stoppingDistance + 0.1f)
+        {
+            if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
+                agent.SetDestination(targetPosition);
+
+            // Smooth rotation toward movement direction
+            if (agent.velocity.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(agent.velocity.normalized);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+            }
+
+            yield return null;
+        }
+
+        // Reached flag
+        agent.ResetPath();
+        isMoving = false;
+        isReturningAfterAttack = false;
+        canShoot = true;
+    }
 
     private IEnumerator ReenableAgentWhenStopped(Rigidbody rb)
     {
@@ -481,6 +539,8 @@ public class ArmyUnit : BaseUnit
 
             agent.ResetPath();
             isMoving = false;
+            SetBool("isWalking", false);
+            SetFloat("speed", 0f);
             if (!isNightTime)
             {
                 barracks.AfterBackToBarracks();
@@ -491,7 +551,7 @@ public class ArmyUnit : BaseUnit
 
         if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
         {
-            // SetBool("isWalking", true);
+            SetBool("isWalking", true);
             agent.SetDestination(targetPosition);
         }
 

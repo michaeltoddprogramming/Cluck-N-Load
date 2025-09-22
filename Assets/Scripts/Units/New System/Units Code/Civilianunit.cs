@@ -20,12 +20,15 @@ public class CivilianUnit : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+
+        // Allow Y rotation so the animal can face its direction
         rb.constraints = RigidbodyConstraints.FreezeRotationX |
-                         RigidbodyConstraints.FreezeRotationZ |
-                         RigidbodyConstraints.FreezeRotationY;
+                         RigidbodyConstraints.FreezeRotationZ;
+
         rb.useGravity = false;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        rb.isKinematic = false;
 
         // get all colliders inside the floor object
         penAreas = floorParent.GetComponentsInChildren<Collider>();
@@ -39,21 +42,12 @@ public class CivilianUnit : MonoBehaviour
 
     Vector3 GetRandomPointInPane(Collider pane)
     {
-        Vector3 point;
-        int attempts = 0;
-
-        do
-        {
-            Bounds b = pane.bounds;
-            point = new Vector3(
-                Random.Range(b.min.x, b.max.x),
-                b.center.y,
-                Random.Range(b.min.z, b.max.z)
-            );
-
-            attempts++;
-        } while (!pane.bounds.Contains(point) && attempts < 20);
-
+        Bounds b = pane.bounds;
+        Vector3 point = new Vector3(
+            Random.Range(b.min.x, b.max.x),
+            0f, // force Y = 0
+            Random.Range(b.min.z, b.max.z)
+        );
         return point;
     }
 
@@ -67,15 +61,19 @@ public class CivilianUnit : MonoBehaviour
     {
         while (true)
         {
-            while (Vector3.Distance(new Vector3(rb.position.x, 0, rb.position.z),
-                                    new Vector3(target.x, 0, target.z)) > stopThreshold)
+            while (Vector3.Distance(new Vector3(rb.position.x, 0f, rb.position.z),
+                                    new Vector3(target.x, 0f, target.z)) > stopThreshold)
             {
-                Vector3 dir = (target - rb.position).normalized;
-                dir.y = 0f; // ✅ no vertical movement
+                Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
+                Vector3 flatTarget = new Vector3(target.x, 0f, target.z);
+                Vector3 dir = (flatTarget - flatPos).normalized;
+
+                // Rotate to face the target every frame
+                if (dir.sqrMagnitude > 0f)
+                    transform.rotation = Quaternion.LookRotation(dir);
 
                 Vector3 nextPos = rb.position + dir * speed * Time.fixedDeltaTime;
-                nextPos.y = 0f; // ✅ force onto floor
-
+                nextPos.y = 0f; // keep Y locked
                 rb.MovePosition(nextPos);
 
                 yield return new WaitForFixedUpdate();
@@ -85,5 +83,4 @@ public class CivilianUnit : MonoBehaviour
             PickNewTarget();
         }
     }
-
 }

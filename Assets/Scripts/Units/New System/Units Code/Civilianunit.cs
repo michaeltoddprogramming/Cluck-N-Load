@@ -5,14 +5,16 @@ using UnityEngine;
 public class CivilianUnit : MonoBehaviour
 {
     [Header("Pen setup")]
-    public Transform floorParent; // Floor object of the pen prefab
+    public Transform floorParent;
     private Collider[] penAreas;
 
     [Header("Wander settings")]
-    public float speed = 2f;
-    public float minWait = 1f;
-    public float maxWait = 3f;
-    public float stopThreshold = 0.05f; // distance to consider "arrived"
+    [SerializeField] private CivilianData data;
+    public float speed;
+    public float minWait;
+    public float maxWait;
+    public float stopThreshold;
+    public float spawnY;
 
     private Rigidbody rb;
     private Vector3 target;
@@ -21,7 +23,6 @@ public class CivilianUnit : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
 
-        // Allow Y rotation so the animal can face its direction
         rb.constraints = RigidbodyConstraints.FreezeRotationX |
                          RigidbodyConstraints.FreezeRotationZ;
 
@@ -29,16 +30,32 @@ public class CivilianUnit : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.isKinematic = false;
-
-        // get all colliders inside the floor object
-        penAreas = floorParent.GetComponentsInChildren<Collider>();
     }
 
-    void Start()
+    public void Initialize(Transform floor)
     {
+        floorParent = floor;
+        penAreas = floorParent.GetComponentsInChildren<Collider>();
+
+        speed = data.MovementSpeed;
+        minWait = data.minWait;
+        maxWait = data.maxWait;
+        stopThreshold = data.stopThreshold;
+        spawnY = transform.position.y;
+
         PickNewTarget();
         StartCoroutine(WanderRoutine());
     }
+
+    // void Start()
+    // {
+    //     float speed = data.MovementSpeed;
+    //     float minWait = data.minWait;
+    //     float maxWait = data.maxWait;
+    //     float stopThreshold = data.stopThreshold;
+    //     PickNewTarget();
+    //     StartCoroutine(WanderRoutine());
+    // }
 
     Vector3 GetRandomPointInPane(Collider pane)
     {
@@ -55,6 +72,7 @@ public class CivilianUnit : MonoBehaviour
     {
         Collider pane = penAreas[Random.Range(0, penAreas.Length)];
         target = GetRandomPointInPane(pane);
+        Debug.Log($"New target: {target}, Unit pos: {rb.position}");
     }
 
     IEnumerator WanderRoutine()

@@ -22,6 +22,7 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] public Sprite sheepIcon;
     [SerializeField] public AudioClip clickSound;
     [SerializeField] public TextMeshProUGUI costText;
+    private CivilianSpawner civilianSpawner;
 
     private int newAnimalCount;
     private AnimalStructure animalStructure;
@@ -215,6 +216,9 @@ public class AnimalStructureUI : BaseStructureUI
         {
             animalStructure.BuyAnimals(newAnimalCount);
             newAnimalCount = 0;
+            CivilianSpawner spawner = animalStructure.GetComponentInChildren<CivilianSpawner>();
+            if (spawner != null)
+                spawner.SpawnAnimals(newAnimalCount);
         }
     }
 }

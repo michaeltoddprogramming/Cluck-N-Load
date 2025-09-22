@@ -167,11 +167,11 @@ NavMeshObstacle:
   m_Enabled: 1
   serializedVersion: 3
   m_Shape: 1
-  m_Extents: {x: 2.3430002, y: 2.529, z: 3.535}
+  m_Extents: {x: 2.4620001, y: 2.8420002, z: 4.229}
   m_MoveThreshold: 1
   m_Carve: 1
-  m_CarveOnlyStationary: 0
-  m_Center: {x: -0.036000002, y: 2.529, z: -0.051000003}
+  m_CarveOnlyStationary: 1
+  m_Center: {x: -0.016, y: 2.8420002, z: -0.018000001}
   m_TimeToStationary: 0.2
 --- !u!82 &3602910651321392252
 AudioSource:

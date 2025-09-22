@@ -146,11 +146,11 @@ NavMeshObstacle:
   m_Enabled: 1
   serializedVersion: 3
   m_Shape: 1
-  m_Extents: {x: 1.4510001, y: 3.1490002, z: 1.2670001}
+  m_Extents: {x: 2.509, y: 5.446, z: 2.1910002}
   m_MoveThreshold: 1
   m_Carve: 1
-  m_CarveOnlyStationary: 0
-  m_Center: {x: -0.008, y: 3.078, z: -0.14600001}
+  m_CarveOnlyStationary: 1
+  m_Center: {x: -0.032, y: 5.3620005, z: -0.19600001}
   m_TimeToStationary: 0.2
 --- !u!65 &-4937866017938651325
 BoxCollider:

@@ -67,10 +67,16 @@ public class CivilianUnit : MonoBehaviour
     {
         while (true)
         {
-            while (Vector3.Distance(rb.position, target) > stopThreshold)
+            while (Vector3.Distance(new Vector3(rb.position.x, 0, rb.position.z),
+                                    new Vector3(target.x, 0, target.z)) > stopThreshold)
             {
                 Vector3 dir = (target - rb.position).normalized;
-                rb.MovePosition(rb.position + dir * speed * Time.fixedDeltaTime);
+                dir.y = 0f; // ✅ no vertical movement
+
+                Vector3 nextPos = rb.position + dir * speed * Time.fixedDeltaTime;
+                nextPos.y = 0f; // ✅ force onto floor
+
+                rb.MovePosition(nextPos);
 
                 yield return new WaitForFixedUpdate();
             }
@@ -79,4 +85,5 @@ public class CivilianUnit : MonoBehaviour
             PickNewTarget();
         }
     }
+
 }

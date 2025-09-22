@@ -221,4 +221,14 @@ public class AnimalStructureUI : BaseStructureUI
                 spawner.SpawnAnimals(newAnimalCount);
         }
     }
+
+    // public void SpawnAnimals(int userPurchaseCount)
+    // {
+    //     int desiredSpawnCount = Mathf.CeilToInt(userPurchaseCount / 2f);
+
+    //     while (spawnedAnimals.Count < desiredSpawnCount)
+    //     {
+    //         SpawnSingleAnimal();
+    //     }
+    // }
 }

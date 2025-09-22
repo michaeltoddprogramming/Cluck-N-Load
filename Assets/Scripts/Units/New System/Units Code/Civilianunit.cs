@@ -32,6 +32,40 @@ public class CivilianUnit : MonoBehaviour
         rb.isKinematic = false;
     }
 
+    // public void Initialize(Transform floor)
+    // {
+    //     floorParent = floor;
+    //     penAreas = floorParent.GetComponentsInChildren<Collider>();
+
+    //     speed = data.MovementSpeed;
+    //     minWait = data.minWait;
+    //     maxWait = data.maxWait;
+    //     stopThreshold = data.stopThreshold;
+    //     spawnY = transform.position.y;
+
+    //     PickNewTarget();
+    //     StartCoroutine(WanderRoutine());
+    // }
+    // public void Initialize(Transform floor)
+    // {
+    //     floorParent = floor;
+    //     penAreas = floorParent.GetComponentsInChildren<Collider>();
+
+    //     speed = data.MovementSpeed;
+    //     minWait = data.minWait;
+    //     maxWait = data.maxWait;
+    //     stopThreshold = data.stopThreshold;
+
+    //     // Set unit exactly at the spawn location
+    //     // transform.position = spawnPosition;
+
+    //     // Store Y for movement
+    //     spawnY = transform.position.y;
+
+    //     PickNewTarget();
+    //     StartCoroutine(WanderRoutine());
+    // }
+
     public void Initialize(Transform floor)
     {
         floorParent = floor;
@@ -41,32 +75,76 @@ public class CivilianUnit : MonoBehaviour
         minWait = data.minWait;
         maxWait = data.maxWait;
         stopThreshold = data.stopThreshold;
+
+        // Lock the spawn Y
         spawnY = transform.position.y;
+
+        // Make sure Rigidbody uses the correct Y and constraints
+        rb.useGravity = false;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX |
+                         RigidbodyConstraints.FreezeRotationZ |
+                         RigidbodyConstraints.FreezePositionY;
+
+        // Force Rigidbody to spawn position immediately
+        rb.position = new Vector3(transform.position.x, spawnY, transform.position.z);
+        rb.MovePosition(rb.position); // ensures physics sees it at correct Y
 
         PickNewTarget();
         StartCoroutine(WanderRoutine());
     }
 
-    // void Start()
+
+
+
+
+
+
+
+    // public void Initialize(Transform floor)
     // {
-    //     float speed = data.MovementSpeed;
-    //     float minWait = data.minWait;
-    //     float maxWait = data.maxWait;
-    //     float stopThreshold = data.stopThreshold;
+    //     floorParent = floor;
+    //     penAreas = floorParent.GetComponentsInChildren<Collider>();
+
+    //     speed = data.MovementSpeed;
+    //     minWait = data.minWait;
+    //     maxWait = data.maxWait;
+    //     stopThreshold = data.stopThreshold;
+
+    //     // Spawn exactly on top of panel 0 (or your chosen panel)
+    //     Collider panel = penAreas[0];
+    //     CapsuleCollider col = GetComponent<CapsuleCollider>();
+    //     float panelTopY = panel.bounds.max.y + col.height / 2f;
+
+    //     transform.position = new Vector3(panel.bounds.center.x, panelTopY, panel.bounds.center.z);
+    //     spawnY = panelTopY; // now spawnY matches the panel top
+
     //     PickNewTarget();
     //     StartCoroutine(WanderRoutine());
     // }
 
     Vector3 GetRandomPointInPane(Collider pane)
     {
-        Bounds b = pane.bounds;
-        Vector3 point = new Vector3(
-            Random.Range(b.min.x, b.max.x),
-            0f, // force Y = 0
-            Random.Range(b.min.z, b.max.z)
+        return new Vector3(
+            Random.Range(pane.bounds.min.x, pane.bounds.max.x),
+            spawnY, // fixed vertical position
+            Random.Range(pane.bounds.min.z, pane.bounds.max.z)
         );
-        return point;
     }
+
+
+
+    // Vector3 GetRandomPointInPane(Collider pane)
+    // {
+    //     Bounds b = pane.bounds;
+    //     // float y = b.max.y + GetComponent<CapsuleCollider>().height / 2f; // top of panel + half capsule
+    //     return new Vector3(
+    //         Random.Range(b.min.x, b.max.x),
+    //         spawnY,
+    //         Random.Range(b.min.z, b.max.z)
+    //     );
+    // }
+
+
 
     void PickNewTarget()
     {
@@ -91,7 +169,7 @@ public class CivilianUnit : MonoBehaviour
                     transform.rotation = Quaternion.LookRotation(dir);
 
                 Vector3 nextPos = rb.position + dir * speed * Time.fixedDeltaTime;
-                nextPos.y = 0f; // keep Y locked
+                nextPos.y = spawnY; // keep Y locked
                 rb.MovePosition(nextPos);
 
                 yield return new WaitForFixedUpdate();

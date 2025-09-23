@@ -72,7 +72,7 @@ public class NightManager : MonoBehaviour
     [SerializeField] private float speedOfFast = 5f;
 
     [Tooltip("How many in-game minutes per real life second (0.02f -> 1 in-game minute = 0.02 seconds (1 day ≈ 36 minutes))")]
-    [SerializeField] private float inGameMinVSSec = 0.02f;
+    [SerializeField] private float inGameMinVSSec = 0.0000000000000001f;
     [SerializeField] private bool isFast = false;
     [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private bool isPaused = false;
@@ -224,10 +224,12 @@ public class NightManager : MonoBehaviour
         }
 
         tempSecond += Time.deltaTime * speedUp;
+        // tempSecond += Time.deltaTime * inGameMinVSSec * speedUp;
+        Debug.Log("here is the time: " + tempSecond);
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
 
-        float currentTimeRate = inGameMinVSSec;
-        if (tempSecond >= currentTimeRate)
+        // float currentTimeRate = inGameMinVSSec;
+        if (tempSecond >= 0.08)
         {
             Minutes += 1;
             tempSecond = 0;

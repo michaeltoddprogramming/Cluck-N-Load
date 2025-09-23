@@ -38,7 +38,7 @@ public class CivilianSpawner : MonoBehaviour
         GameObject newAnimal = Instantiate(data.Prefab, spawningLocation.transform.position, Quaternion.identity, transform);
         CivilianUnit unit = newAnimal.GetComponent<CivilianUnit>();
         if (unit != null)
-            unit.Initialize(floorParent.transform);
+            unit.Initialize(floorParent);
 
         spawnedAnimals.Add(newAnimal);
     }

@@ -7,7 +7,7 @@ public class ShopUIManager : MonoBehaviour
 
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private Button closeButton;
-    
+
     //open shop button
     [SerializeField] private Button shopButton;
     private Color dayShop = Color.white;
@@ -16,7 +16,7 @@ public class ShopUIManager : MonoBehaviour
 
     private ShopPanelUI shopPanelUI;
     private bool isVisible = false;
-    
+
     // Add debounce variables
     private float lastClickTime = 0f;
     private float clickCooldown = 0.1f; // 100ms cooldown
@@ -42,7 +42,7 @@ public class ShopUIManager : MonoBehaviour
             Debug.LogError("ShopUIManager: shopPanel is not assigned in the Inspector!");
             return;
         }
-        
+
         // Find ShopPanelUI component
         shopPanelUI = shopPanel.GetComponent<ShopPanelUI>();
         if (shopPanelUI == null)
@@ -54,7 +54,7 @@ public class ShopUIManager : MonoBehaviour
         {
             closeButton.onClick.AddListener(CloseShop);
         }
-        
+
         // Set up shop button onClick listener - CLEAR EXISTING LISTENERS FIRST
         if (shopButton != null)
         {
@@ -65,10 +65,10 @@ public class ShopUIManager : MonoBehaviour
         {
             Debug.LogError("ShopUIManager: Shop button is null!");
         }
-        
+
         // Initially hide shop
         shopPanel.SetActive(false);
-        
+
         // Set initial shop button state based on tutorial
         UpdateShopButtonStateForTutorial();
     }
@@ -79,9 +79,9 @@ public class ShopUIManager : MonoBehaviour
         {
             return true; // Shop always available when tutorial not active
         }
-        
+
         string currentStepId = TutorialManager.Instance.GetCurrentStepId();
-        
+
         // Define which tutorial steps allow shop access
         switch (currentStepId)
         {
@@ -93,7 +93,7 @@ public class ShopUIManager : MonoBehaviour
             case "season_bonuses":
                 // Introduction steps - shop should be disabled
                 return false;
-                
+
             case "open_build_shop":
             case "build_farmhouse":
             case "build_crop_plot":
@@ -113,36 +113,36 @@ public class ShopUIManager : MonoBehaviour
                 return true;
         }
     }
-    
+
     public void UpdateShopButtonStateForTutorial()
     {
         if (shopButton == null) return;
-        
+
         bool shopAllowed = IsShopAllowedInTutorial();
         shopButton.interactable = shopAllowed;
-        
+
         // Visual feedback - grey out the button when disabled
         if (shopIcon != null)
         {
             if (shopAllowed)
             {
                 shopIcon.color = dayShop; // Normal color
-                Debug.Log("TUTORIAL SHOP: Shop button ENABLED");
+                // Debug.Log("TUTORIAL SHOP: Shop button ENABLED");
             }
             else
             {
                 shopIcon.color = nightShop; // Greyed out color 
-                Debug.Log("TUTORIAL SHOP: Shop button DISABLED (introduction phase)");
+                // Debug.Log("TUTORIAL SHOP: Shop button DISABLED (introduction phase)");
             }
         }
     }
-    
+
     // Called by TutorialManager when tutorial steps change
     public void OnTutorialStepChanged()
     {
         UpdateShopButtonStateForTutorial();
     }
-    
+
     private void Update()
     {
         // Periodically check and update shop button state as fallback
@@ -162,19 +162,19 @@ public class ShopUIManager : MonoBehaviour
             return;
         }
         lastClickTime = Time.time;
-        
+
         // Check if shop is allowed during current tutorial step
         if (!IsShopAllowedInTutorial())
         {
             Debug.Log("TUTORIAL SHOP: Shop access blocked during current tutorial step");
             return;
         }
-        
+
         Debug.Log($"ToggleShop called. Current isVisible: {isVisible}, panel active: {shopPanel != null && shopPanel.activeSelf}");
-        
+
         // Use the actual panel state instead of isVisible flag
         bool shouldOpen = shopPanel != null && !shopPanel.activeSelf;
-        
+
         if (shouldOpen)
         {
             OpenShop();
@@ -188,24 +188,24 @@ public class ShopUIManager : MonoBehaviour
     public void OpenShop()
     {
         Debug.Log($"OpenShop called. Button interactable: {shopButton.interactable}");
-        
+
         // Don't allow opening shop if it's disabled (nighttime)
         if (!shopButton.interactable)
         {
             Debug.Log("Shop is disabled (nighttime)");
             return;
         }
-        
+
         // Check if already open
         if (shopPanel != null && shopPanel.activeSelf)
         {
             Debug.Log("Shop is already open");
             return;
         }
-        
+
         Debug.Log("Opening shop panel");
         isVisible = true;
-        
+
         // Activate the panel FIRST
         if (shopPanel != null)
         {
@@ -228,7 +228,7 @@ public class ShopUIManager : MonoBehaviour
         {
             Debug.LogError("ShopPanelUI is null!");
         }
-        
+
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.ShopOpened);
     }
@@ -236,22 +236,22 @@ public class ShopUIManager : MonoBehaviour
     public void CloseShop()
     {
         Debug.Log("CloseShop called");
-        
+
         // Check if already closed
         if (shopPanel != null && !shopPanel.activeSelf)
         {
             Debug.Log("Shop is already closed");
             return;
         }
-        
+
         isVisible = false;
-        
+
         // First notify ShopPanelUI to clean up its state
         if (shopPanelUI != null)
         {
             shopPanelUI.CloseShop();
         }
-        
+
         // Then deactivate the panel
         if (shopPanel != null)
         {
@@ -299,11 +299,11 @@ public class ShopUIManager : MonoBehaviour
     }
 
     //disable the shop button
-        public void disableShop()
-        {
-            shopButton.interactable = false;
-            shopIcon.color = nightShop;
-        }
+    public void disableShop()
+    {
+        shopButton.interactable = false;
+        shopIcon.color = nightShop;
+    }
 
     //enable the shop button
     public void enableShop()

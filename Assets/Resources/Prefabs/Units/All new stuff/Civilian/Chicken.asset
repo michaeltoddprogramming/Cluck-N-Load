@@ -17,4 +17,4 @@ MonoBehaviour:
   MovementSpeed: 3
   minWait: 1
   maxWait: 3
-  stopThreshold: 0.05
+  stopThreshold: 0.2

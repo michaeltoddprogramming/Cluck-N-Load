@@ -4,11 +4,6 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public class CivilianUnit : MonoBehaviour
 {
-    [Header("Pen setup")]
-    public Transform floorParent;
-    private Collider[] penAreas;
-
-    [Header("Wander settings")]
     [SerializeField] private CivilianData data;
     public float speed;
     public float minWait;
@@ -18,159 +13,123 @@ public class CivilianUnit : MonoBehaviour
 
     private Rigidbody rb;
     private Vector3 target;
+    private MeshCollider currentPane;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-
+        // Freeze all rotation and Y position
         rb.constraints = RigidbodyConstraints.FreezeRotationX |
-                         RigidbodyConstraints.FreezeRotationZ;
-
+                         RigidbodyConstraints.FreezeRotationY |
+                         RigidbodyConstraints.FreezeRotationZ |
+                         RigidbodyConstraints.FreezePositionY;
         rb.useGravity = false;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.isKinematic = false;
     }
 
-    // public void Initialize(Transform floor)
-    // {
-    //     floorParent = floor;
-    //     penAreas = floorParent.GetComponentsInChildren<Collider>();
-
-    //     speed = data.MovementSpeed;
-    //     minWait = data.minWait;
-    //     maxWait = data.maxWait;
-    //     stopThreshold = data.stopThreshold;
-    //     spawnY = transform.position.y;
-
-    //     PickNewTarget();
-    //     StartCoroutine(WanderRoutine());
-    // }
-    // public void Initialize(Transform floor)
-    // {
-    //     floorParent = floor;
-    //     penAreas = floorParent.GetComponentsInChildren<Collider>();
-
-    //     speed = data.MovementSpeed;
-    //     minWait = data.minWait;
-    //     maxWait = data.maxWait;
-    //     stopThreshold = data.stopThreshold;
-
-    //     // Set unit exactly at the spawn location
-    //     // transform.position = spawnPosition;
-
-    //     // Store Y for movement
-    //     spawnY = transform.position.y;
-
-    //     PickNewTarget();
-    //     StartCoroutine(WanderRoutine());
-    // }
-
-    public void Initialize(Transform floor)
+    public void Initialize(GameObject floor)
     {
-        floorParent = floor;
-        penAreas = floorParent.GetComponentsInChildren<Collider>();
+        MeshCollider[] panels = floor.GetComponentsInChildren<MeshCollider>();
+        if (panels.Length == 0)
+        {
+            Debug.LogError("No walkable MeshColliders found!");
+            return;
+        }
+
+        foreach (var p in panels)
+        {
+            if (p.bounds.Contains(transform.position))
+            {
+                currentPane = p;
+                break;
+            }
+        }
+        if (currentPane == null)
+            currentPane = panels[Random.Range(0, panels.Length)];
 
         speed = data.MovementSpeed;
         minWait = data.minWait;
         maxWait = data.maxWait;
         stopThreshold = data.stopThreshold;
-
-        // Lock the spawn Y
         spawnY = transform.position.y;
 
-        // Make sure Rigidbody uses the correct Y and constraints
-        rb.useGravity = false;
-        rb.constraints = RigidbodyConstraints.FreezeRotationX |
-                         RigidbodyConstraints.FreezeRotationZ |
-                         RigidbodyConstraints.FreezePositionY;
-
-        // Force Rigidbody to spawn position immediately
-        rb.position = new Vector3(transform.position.x, spawnY, transform.position.z);
-        rb.MovePosition(rb.position); // ensures physics sees it at correct Y
-
         PickNewTarget();
+
+        rb.MovePosition(new Vector3(transform.position.x, spawnY, transform.position.z));
         StartCoroutine(WanderRoutine());
     }
 
-
-
-
-
-
-
-
-    // public void Initialize(Transform floor)
-    // {
-    //     floorParent = floor;
-    //     penAreas = floorParent.GetComponentsInChildren<Collider>();
-
-    //     speed = data.MovementSpeed;
-    //     minWait = data.minWait;
-    //     maxWait = data.maxWait;
-    //     stopThreshold = data.stopThreshold;
-
-    //     // Spawn exactly on top of panel 0 (or your chosen panel)
-    //     Collider panel = penAreas[0];
-    //     CapsuleCollider col = GetComponent<CapsuleCollider>();
-    //     float panelTopY = panel.bounds.max.y + col.height / 2f;
-
-    //     transform.position = new Vector3(panel.bounds.center.x, panelTopY, panel.bounds.center.z);
-    //     spawnY = panelTopY; // now spawnY matches the panel top
-
-    //     PickNewTarget();
-    //     StartCoroutine(WanderRoutine());
-    // }
-
-    Vector3 GetRandomPointInPane(Collider pane)
+    Vector3 GetRandomPointOnPanel(MeshCollider pane)
     {
-        return new Vector3(
-            Random.Range(pane.bounds.min.x, pane.bounds.max.x),
-            spawnY, // fixed vertical position
-            Random.Range(pane.bounds.min.z, pane.bounds.max.z)
-        );
+        Mesh mesh = pane.sharedMesh;
+        Vector3[] verts = mesh.vertices;
+        int[] tris = mesh.triangles;
+
+        for (int attempt = 0; attempt < 100; attempt++)
+        {
+            int triIndex = Random.Range(0, tris.Length / 3) * 3;
+            Vector3 v0 = pane.transform.TransformPoint(verts[tris[triIndex]]);
+            Vector3 v1 = pane.transform.TransformPoint(verts[tris[triIndex + 1]]);
+            Vector3 v2 = pane.transform.TransformPoint(verts[tris[triIndex + 2]]);
+
+            float r1 = Random.Range(0f, 1f);
+            float r2 = Random.Range(0f, 1f);
+            if (r1 + r2 > 1f) { r1 = 1f - r1; r2 = 1f - r2; }
+
+            Vector3 point = v0 + r1 * (v1 - v0) + r2 * (v2 - v0);
+            point.y = spawnY;
+            return point;
+        }
+
+        return rb.position;
     }
-
-
-
-    // Vector3 GetRandomPointInPane(Collider pane)
-    // {
-    //     Bounds b = pane.bounds;
-    //     // float y = b.max.y + GetComponent<CapsuleCollider>().height / 2f; // top of panel + half capsule
-    //     return new Vector3(
-    //         Random.Range(b.min.x, b.max.x),
-    //         spawnY,
-    //         Random.Range(b.min.z, b.max.z)
-    //     );
-    // }
-
-
 
     void PickNewTarget()
     {
-        Collider pane = penAreas[Random.Range(0, penAreas.Length)];
-        target = GetRandomPointInPane(pane);
-        Debug.Log($"New target: {target}, Unit pos: {rb.position}");
+        target = GetRandomPointOnPanel(currentPane);
+
+        // Rotate once to face the new target
+        Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
+        Vector3 flatTarget = new Vector3(target.x, 0f, target.z);
+        Vector3 lookDir = (flatTarget - flatPos).normalized;
+
+        if (lookDir.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(lookDir);
     }
 
     IEnumerator WanderRoutine()
     {
         while (true)
         {
-            while (Vector3.Distance(new Vector3(rb.position.x, 0f, rb.position.z),
-                                    new Vector3(target.x, 0f, target.z)) > stopThreshold)
+            // Face the new target immediately
+            Vector3 flatTarget = new Vector3(target.x, spawnY, target.z);
+            Vector3 flatPos = new Vector3(transform.position.x, spawnY, transform.position.z);
+            Vector3 lookDir = (flatTarget - flatPos).normalized;
+            if (lookDir.sqrMagnitude > 0.0001f)
+                transform.rotation = Quaternion.LookRotation(lookDir);
+
+            // Move toward target
+            while (Vector3.Distance(flatPos, flatTarget) > stopThreshold)
             {
-                Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
-                Vector3 flatTarget = new Vector3(target.x, 0f, target.z);
-                Vector3 dir = (flatTarget - flatPos).normalized;
+                flatPos = new Vector3(rb.position.x, spawnY, rb.position.z);
+                Vector3 moveDir = (flatTarget - flatPos).normalized;
+                Vector3 nextPos = rb.position + moveDir * speed * Time.fixedDeltaTime;
+                nextPos.y = spawnY;
 
-                // Rotate to face the target every frame
-                if (dir.sqrMagnitude > 0f)
-                    transform.rotation = Quaternion.LookRotation(dir);
-
-                Vector3 nextPos = rb.position + dir * speed * Time.fixedDeltaTime;
-                nextPos.y = spawnY; // keep Y locked
-                rb.MovePosition(nextPos);
+                Ray ray = new Ray(nextPos + Vector3.up * 5f, Vector3.down);
+                if (currentPane.Raycast(ray, out RaycastHit hit, 10f))
+                {
+                    nextPos = hit.point;
+                    nextPos.y = spawnY;
+                    rb.MovePosition(nextPos);
+                }
+                else
+                {
+                    PickNewTarget();
+                    break;
+                }
 
                 yield return new WaitForFixedUpdate();
             }
@@ -179,4 +138,32 @@ public class CivilianUnit : MonoBehaviour
             PickNewTarget();
         }
     }
+
+
+#if UNITY_EDITOR
+    void OnDrawGizmos()
+    {
+        if (currentPane == null || !(currentPane is MeshCollider meshCol) || meshCol.sharedMesh == null)
+            return;
+
+        Gizmos.color = Color.green;
+        Mesh mesh = meshCol.sharedMesh;
+        Vector3[] vertices = mesh.vertices;
+        int[] triangles = mesh.triangles;
+
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            Vector3 v0 = meshCol.transform.TransformPoint(vertices[triangles[i]]);
+            Vector3 v1 = meshCol.transform.TransformPoint(vertices[triangles[i + 1]]);
+            Vector3 v2 = meshCol.transform.TransformPoint(vertices[triangles[i + 2]]);
+
+            Gizmos.DrawLine(v0, v1);
+            Gizmos.DrawLine(v1, v2);
+            Gizmos.DrawLine(v2, v0);
+        }
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(rb.position, target);
+    }
+#endif
 }

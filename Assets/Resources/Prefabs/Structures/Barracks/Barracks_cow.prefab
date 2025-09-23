@@ -175,7 +175,7 @@ NavMeshObstacle:
   m_Extents: {x: 3.084, y: 2.9970002, z: 3.9400003}
   m_MoveThreshold: 1
   m_Carve: 1
-  m_CarveOnlyStationary: 1
+  m_CarveOnlyStationary: 0
   m_Center: {x: -0.82600003, y: 2.92, z: -0.025}
   m_TimeToStationary: 0.2
 --- !u!65 &8089061827712934713

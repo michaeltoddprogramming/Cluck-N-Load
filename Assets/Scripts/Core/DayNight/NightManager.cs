@@ -241,7 +241,7 @@ public class NightManager : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f;
-        
+
         if (shopManager != null)
         {
             shopManager.UpdateShopButtonStateForTimeControls();
@@ -249,21 +249,21 @@ public class NightManager : MonoBehaviour
 
         GameEventManager.Instance?.OnGamePaused?.Invoke();
     }
-    
+
     public void playTime()
     {
         isPaused = false;
         isFast = false;
         speedUp = 1f;
         Time.timeScale = 1f;
-        
+
         if (shopManager != null)
         {
             shopManager.UpdateShopButtonStateForTimeControls();
         }
-        
+
         GameEventManager.Instance?.OnGameResumed?.Invoke();
-        
+
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.TimeControlsUsed);
     }
@@ -274,16 +274,16 @@ public class NightManager : MonoBehaviour
         {
             Time.timeScale = 1f;
         }
-    
+
         isFast = !isFast;
         isPaused = false;
         Time.timeScale = isFast ? speedOfFast : 1f;
-    
+
         if (shopManager != null)
         {
             shopManager.UpdateShopButtonStateForTimeControls();
         }
-    
+
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.TimeControlsUsed);
     }
@@ -313,14 +313,14 @@ public class NightManager : MonoBehaviour
 
         // Disable shop for night
         shopManager.disableShop();
-        
+
         // IMPORTANT: Force disable build mode to place any moving structures
         if (buildController != null)
         {
             Debug.Log("StartNight: Calling DisableBuildMode to force-place any moving structures");
             buildController.DisableBuildMode();
         }
-        
+
         buildController.HideDeleteIcon();
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
@@ -389,7 +389,7 @@ public class NightManager : MonoBehaviour
     {
         isDay = true;
         buttonText.text = "End Day";
-        
+
         // Use shop manager to properly handle tutorial state
         if (!isPaused)
         {
@@ -399,7 +399,7 @@ public class NightManager : MonoBehaviour
         {
             shopManager.UpdateShopButtonStateForTimeControls();
         }
-        
+
         if (isFirstDay)
         {
             combatManager.StopCombat();
@@ -458,7 +458,7 @@ public class NightManager : MonoBehaviour
 
         isDay = true;
         buttonText.text = "Start Night";
-        
+
         // Use shop manager to properly handle tutorial state
         if (shopManager != null)
         {
@@ -538,7 +538,7 @@ public class NightManager : MonoBehaviour
 
             sceneLight.colorTemperature = 6000f;
         }
-        else if (value == 15)
+        else if (value == 18)
         {
             if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
@@ -567,7 +567,7 @@ public class NightManager : MonoBehaviour
 
             sceneLight.colorTemperature = 2000f;
         }
-        else if (value == 18)
+        else if (value == 20)
         {
             if (clockTickingSource.isPlaying)
             {
@@ -717,7 +717,7 @@ public class NightManager : MonoBehaviour
         // Always call chooseAnimalProductForSeason (it will handle tutorial appropriately now)
         chooseAnimalProductForSeason();
 
-    // Debug log removed: Setting season to ...
+        // Debug log removed: Setting season to ...
         if (!isFirstDay)
         {
             combatManager.increaseAfterSeason();
@@ -848,7 +848,7 @@ public class NightManager : MonoBehaviour
                 productionBoosts.SetBoosted(normalValues);
             }
 
-            return; 
+            return;
         }
 
         float sameProduct = Random.Range(0f, 1f);
@@ -1175,51 +1175,85 @@ public class NightManager : MonoBehaviour
     }
 
 
+    // private void rotateDayNightIcon()
+    // {
+    //     // Day: 7:00 to 18:00 (11 hours, 660 minutes)
+    //     // Night: 18:00 to next 7:00 (13 hours, 780 minutes)
+    //     float totalMinutes = Hours * 60 + Minutes;
+    //     float rotation = 0f;
+
+    //     if (Hours >= 5 && Hours < 20)
+    //     {
+    //         // Daytime: 7:00 (0 min) to 18:00 (660 min)
+    //         float dayMinutes = totalMinutes - (5 * 60);
+    //         rotation = Mathf.Clamp01(dayMinutes / 780f) * 180f;
+    //     }
+    //     else
+    //     {
+    //         // Nighttime: 18:00 (1080 min) to next 7:00 (420 min, but next day)
+    //         float nightMinutes;
+    //         if (Hours >= 20)
+    //         {
+    //             // 20:00 to 24:00
+    //             nightMinutes = totalMinutes - (20 * 60);
+    //         }
+    //         else
+    //         {
+    //             // 0:00 to 7:00
+    //             nightMinutes = (totalMinutes + (6 * 60)); // (0:00 is 0, 7:00 is 420)
+    //         }
+    //         rotation = 180f + Mathf.Clamp01(nightMinutes / 660f) * 180f;
+    //     }
+
+    //     timeOfDayIcon.rectTransform.localRotation = Quaternion.Euler(0, 0, -rotation);
+    // }
+
     private void rotateDayNightIcon()
     {
-        // Day: 7:00 to 18:00 (11 hours, 660 minutes)
-        // Night: 18:00 to next 7:00 (13 hours, 780 minutes)
+        // Day: 5:00 to 20:00 (15 hours, 900 minutes)
+        // Night: 20:00 to next 5:00 (9 hours, 540 minutes)
         float totalMinutes = Hours * 60 + Minutes;
         float rotation = 0f;
 
-        if (Hours >= 5 && Hours < 18)
+        if (Hours >= 5 && Hours < 20)
         {
-            // Daytime: 7:00 (0 min) to 18:00 (660 min)
+            // Daytime: 5:00 (0 min) to 20:00 (900 min)
             float dayMinutes = totalMinutes - (5 * 60);
-            rotation = Mathf.Clamp01(dayMinutes / 780f) * 180f;
+            rotation = Mathf.Clamp01(dayMinutes / 900f) * 180f;
         }
         else
         {
-            // Nighttime: 18:00 (1080 min) to next 7:00 (420 min, but next day)
+            // Nighttime: 20:00 (1200 min) to next 5:00 (300 min)
             float nightMinutes;
-            if (Hours >= 18)
+            if (Hours >= 20)
             {
-                // 18:00 to 24:00
-                nightMinutes = totalMinutes - (18 * 60);
+                // 20:00 to 24:00
+                nightMinutes = totalMinutes - (20 * 60);
             }
             else
             {
-                // 0:00 to 7:00
-                nightMinutes = (totalMinutes + (6 * 60)); // (0:00 is 0, 7:00 is 420)
+                // 0:00 to 5:00
+                nightMinutes = totalMinutes + (4 * 60); // 0:00 -> 0, 5:00 -> 300
             }
-            rotation = 180f + Mathf.Clamp01(nightMinutes / 660f) * 180f;
+            rotation = 180f + Mathf.Clamp01(nightMinutes / 540f) * 180f;
         }
 
         timeOfDayIcon.rectTransform.localRotation = Quaternion.Euler(0, 0, -rotation);
     }
 
+
     public void SetSeason(int season)
     {
         if (season < 1 || season > 4) return;
-        
+
         currentSeason = season;
-        
+
         // Trigger season change events
         if (GameEventManager.Instance != null)
         {
             GameEventManager.Instance.TriggerSeasonChanged(season);
         }
-        
+
         Debug.Log($"Season changed to {season}");
     }
 
@@ -1235,7 +1269,7 @@ public class NightManager : MonoBehaviour
         days = newDays;
         OnDayChange(newDays);
         OnDayChanged?.Invoke(days);
-    UpdateDayCountUI();
+        UpdateDayCountUI();
     }
 
     public void CheatForceNight()

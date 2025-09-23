@@ -120,6 +120,13 @@ MonoBehaviour:
   isProducing: 0
   productReady: 0
   productionProgress: 0
+  productionSettings:
+    productionTime: 24
+    productAmount: 1
+    moneyPerProduct: 50
+    baseFoodRequired: 2
+    costPerAnimal: 50
+    boostedProduction: 0
   animalCount: 0
   maxAnimalCount: 10
   audioSource: {fileID: 304884754617273539}
@@ -322,6 +329,6 @@ NavMeshObstacle:
   m_Extents: {x: 4.144, y: 1.358, z: 4.201}
   m_MoveThreshold: 1
   m_Carve: 1
-  m_CarveOnlyStationary: 1
+  m_CarveOnlyStationary: 0
   m_Center: {x: -1.7090001, y: 1.296, z: -0.029000001}
   m_TimeToStationary: 0.2

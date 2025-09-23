@@ -46,6 +46,7 @@ public class ArmyUnit : BaseUnit
     [SerializeField] private float recoilTime = 0.2f;    // how fast it moves back
     private bool isRecoiling = false;
     private bool canShoot = true; // Only true when at the flag
+    public bool attackNow = false;
 
 
     protected override void Awake()
@@ -103,6 +104,12 @@ public class ArmyUnit : BaseUnit
 
     public void Update()
     {
+        if (attackNow)
+        {
+            Attack();
+            attackNow = false;
+        }
+
         if (currentTarget != null)
         {
             FaceTarget();
@@ -186,7 +193,7 @@ public class ArmyUnit : BaseUnit
             }
             else
             {
-                return; // No enemies to attack
+                // return; // No enemies to attack
             }
         }
 
@@ -316,7 +323,7 @@ public class ArmyUnit : BaseUnit
         isMoving = true;
 
         agent.enabled = true;
-        
+
         yield return null;
 
         if (IsDead() || !gameObject.activeInHierarchy || agent == null)
@@ -391,7 +398,7 @@ public class ArmyUnit : BaseUnit
         {
             agent.ResetPath();
         }
-        
+
         isMoving = false;
         isReturningAfterAttack = false;
         canShoot = true;
@@ -403,7 +410,7 @@ public class ArmyUnit : BaseUnit
     {
         yield return new WaitForSeconds(delay);
         PerformAttackImpact();
-        
+
         // After impact, return to flag
         yield return StartCoroutine(ReturnToFlagAfterAttack());
     }
@@ -412,7 +419,7 @@ public class ArmyUnit : BaseUnit
     {
         // Immediate impact for cows, sheep, pigs
         PerformAttackImpact();
-        
+
         // Then return to flag
         yield return StartCoroutine(ReturnToFlagAfterAttack());
     }
@@ -421,7 +428,7 @@ public class ArmyUnit : BaseUnit
     {
         // Wait a brief moment after attack
         yield return new WaitForSeconds(0.5f);
-        
+
         // Start moving back to flag using NavMesh
         isReturningAfterAttack = true;
         targetPosition = guardPosition;
@@ -729,7 +736,7 @@ public class ArmyUnit : BaseUnit
 
             Vector2 randomCircle = Random.insideUnitCircle * roamRadius;
             Vector3 roamPoint = roamCenter + new Vector3(randomCircle.x, 0, randomCircle.y);
-            
+
             // Set destination safely
             agent.SetDestination(roamPoint);
 
@@ -747,7 +754,7 @@ public class ArmyUnit : BaseUnit
             StopCoroutine(roamingRoutine);
             roamingRoutine = null;
             isRoaming = false;
-            
+
             // ADDED: Safety check before ResetPath
             if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
             {

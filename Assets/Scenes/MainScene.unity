@@ -9348,6 +9348,63 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1001 &1279930809
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5825747814434693355, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_Name
+      value: Wolf
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -8.97096
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 24.279087
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598589746938853969, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6964437ea21b2c14393ccec57b79e149, type: 3}
 --- !u!1 &1288401790
 GameObject:
   m_ObjectHideFlags: 0
@@ -11218,7 +11275,6 @@ MonoBehaviour:
   buildControlsPanelGroup: {fileID: 2052507876}
   cursorOffset: {x: 50, y: -60}
   moneyBackAfterDeletePercentage: 0.5
-  enableLandBuying: 0
   rangeIndicatorPrefab: {fileID: 0}
   validSynergyMaterial: {fileID: 0}
   potentialSynergyMaterial: {fileID: 0}
@@ -11228,6 +11284,7 @@ MonoBehaviour:
   worldSpaceCanvas: {fileID: 0}
   enableSynergyVisuals: 1
   maxSynergyLines: 10
+  snapGhostToNearestValidCellWhenOutside: 1
   gridDataGenerator: {fileID: 0}
 --- !u!114 &1632256037
 MonoBehaviour:
@@ -14954,3 +15011,4 @@ SceneRoots:
   - {fileID: 2059154241}
   - {fileID: 445734245}
   - {fileID: 1753231148}
+  - {fileID: 1279930809}

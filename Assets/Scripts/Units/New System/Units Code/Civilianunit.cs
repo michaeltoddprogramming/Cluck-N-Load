@@ -5,6 +5,8 @@ using UnityEngine;
 public class CivilianUnit : MonoBehaviour
 {
     [SerializeField] private CivilianData data;
+    [SerializeField] private Animator animator;
+
     public float speed;
     public float minWait;
     public float maxWait;
@@ -14,11 +16,14 @@ public class CivilianUnit : MonoBehaviour
     private Rigidbody rb;
     private Vector3 target;
     private MeshCollider currentPane;
+    private bool isChoosingIdle = false;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        // Freeze all rotation and Y position
+        animator = GetComponent<Animator>();
+
+        // Freeze rotations, lock Y position
         rb.constraints = RigidbodyConstraints.FreezeRotationX |
                          RigidbodyConstraints.FreezeRotationY |
                          RigidbodyConstraints.FreezeRotationZ |
@@ -46,6 +51,7 @@ public class CivilianUnit : MonoBehaviour
                 break;
             }
         }
+
         if (currentPane == null)
             currentPane = panels[Random.Range(0, panels.Length)];
 
@@ -56,7 +62,6 @@ public class CivilianUnit : MonoBehaviour
         spawnY = transform.position.y;
 
         PickNewTarget();
-
         rb.MovePosition(new Vector3(transform.position.x, spawnY, transform.position.z));
         StartCoroutine(WanderRoutine());
     }
@@ -90,32 +95,29 @@ public class CivilianUnit : MonoBehaviour
     {
         target = GetRandomPointOnPanel(currentPane);
 
-        // Rotate once to face the new target
-        Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
-        Vector3 flatTarget = new Vector3(target.x, 0f, target.z);
-        Vector3 lookDir = (flatTarget - flatPos).normalized;
-
-        if (lookDir.sqrMagnitude > 0.001f)
-            transform.rotation = Quaternion.LookRotation(lookDir);
+        // Rotate once to face new target
+        Vector3 dir = (target - transform.position).normalized;
+        dir.y = 0f; // keep rotation horizontal
+        if (dir.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(dir);
     }
 
     IEnumerator WanderRoutine()
     {
         while (true)
         {
-            // Face the new target immediately
-            Vector3 flatTarget = new Vector3(target.x, spawnY, target.z);
-            Vector3 flatPos = new Vector3(transform.position.x, spawnY, transform.position.z);
-            Vector3 lookDir = (flatTarget - flatPos).normalized;
-            if (lookDir.sqrMagnitude > 0.0001f)
-                transform.rotation = Quaternion.LookRotation(lookDir);
+#if UNITY_EDITOR
+            Debug.DrawLine(rb.position, target, Color.red, 1f);
+#endif
+            Vector3 flatTarget = new Vector3(target.x, 0f, target.z);
 
-            // Move toward target
-            while (Vector3.Distance(flatPos, flatTarget) > stopThreshold)
+            while (Vector3.Distance(new Vector3(rb.position.x, 0f, rb.position.z), flatTarget) > stopThreshold)
             {
-                flatPos = new Vector3(rb.position.x, spawnY, rb.position.z);
+                Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
                 Vector3 moveDir = (flatTarget - flatPos).normalized;
-                Vector3 nextPos = rb.position + moveDir * speed * Time.fixedDeltaTime;
+
+                float step = speed * Time.fixedDeltaTime;
+                Vector3 nextPos = rb.position + moveDir * step;
                 nextPos.y = spawnY;
 
                 Ray ray = new Ray(nextPos + Vector3.up * 5f, Vector3.down);
@@ -123,7 +125,19 @@ public class CivilianUnit : MonoBehaviour
                 {
                     nextPos = hit.point;
                     nextPos.y = spawnY;
+
                     rb.MovePosition(nextPos);
+
+                    // Set walking speed for animation
+                    animator.SetFloat("speed", speed);
+
+                    // Reset idle choice if moving
+                    if (isChoosingIdle)
+                    {
+                        animator.SetBool("isFeeding", false);
+                        animator.SetBool("isSleeping", false);
+                        isChoosingIdle = false;
+                    }
                 }
                 else
                 {
@@ -134,11 +148,40 @@ public class CivilianUnit : MonoBehaviour
                 yield return new WaitForFixedUpdate();
             }
 
+            // Stopped → pick idle/eat/sleep
+            animator.SetFloat("speed", 0f);
+            if (!isChoosingIdle)
+            {
+                isChoosingIdle = true;
+                StartCoroutine(PickIdleAnimation());
+            }
+
             yield return new WaitForSeconds(Random.Range(minWait, maxWait));
             PickNewTarget();
         }
     }
 
+    private IEnumerator PickIdleAnimation()
+    {
+        yield return new WaitForSeconds(0.1f); // small delay
+
+        float rand = Random.value;
+        if (rand < 0.33f)
+        {
+            animator.SetBool("isFeeding", true);
+            animator.SetBool("isSleeping", false);
+        }
+        else if (rand < 0.66f)
+        {
+            animator.SetBool("isSleeping", true);
+            animator.SetBool("isFeeding", false);
+        }
+        else
+        {
+            animator.SetBool("isFeeding", false);
+            animator.SetBool("isSleeping", false);
+        }
+    }
 
 #if UNITY_EDITOR
     void OnDrawGizmos()

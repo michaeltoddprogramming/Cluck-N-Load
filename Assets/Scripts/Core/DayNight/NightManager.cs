@@ -389,6 +389,7 @@ public class NightManager : MonoBehaviour
 
     private void StartDay(int flag)
     {
+        playTime();
         isDay = true;
         buttonText.text = "End Day";
 

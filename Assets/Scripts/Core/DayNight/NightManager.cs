@@ -73,9 +73,10 @@ public class NightManager : MonoBehaviour
 
     [Tooltip("How many in-game minutes per real life second (0.02f -> 1 in-game minute = 0.02 seconds (1 day ≈ 36 minutes))")]
     [SerializeField] private float inGameMinVSSec = 0.02f;
-    private bool isPaused = false;
     [SerializeField] private bool isFast = false;
     [SerializeField] private TextMeshProUGUI timeText;
+    [SerializeField] private bool isPaused = false;
+    public bool IsPaused => isPaused;
 
     // Time
     [Header("Time")]
@@ -240,11 +241,15 @@ public class NightManager : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f;
-        shopManager.disableShop();
-        shopButton.interactable = false;
-        shopIcon.color = nightShop;
-    }
+        
+        if (shopManager != null)
+        {
+            shopManager.UpdateShopButtonStateForTimeControls();
+        }
 
+        GameEventManager.Instance?.OnGamePaused?.Invoke();
+    }
+    
     public void playTime()
     {
         isPaused = false;
@@ -252,12 +257,12 @@ public class NightManager : MonoBehaviour
         speedUp = 1f;
         Time.timeScale = 1f;
         
-        // Only enable shop if it's daytime
-        if (isDay)
+        if (shopManager != null)
         {
-            shopButton.interactable = true;
-            shopIcon.color = dayShop;
+            shopManager.UpdateShopButtonStateForTimeControls();
         }
+        
+        GameEventManager.Instance?.OnGameResumed?.Invoke();
         
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.TimeControlsUsed);
@@ -269,15 +274,19 @@ public class NightManager : MonoBehaviour
         {
             Time.timeScale = 1f;
         }
-
+    
         isFast = !isFast;
         isPaused = false;
-        Time.timeScale = isFast ? speedOfFast : 1f; // Fast forward or normal speed
-
+        Time.timeScale = isFast ? speedOfFast : 1f;
+    
+        if (shopManager != null)
+        {
+            shopManager.UpdateShopButtonStateForTimeControls();
+        }
+    
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.TimeControlsUsed);
     }
-
     private void cropGrowthOnAll(int stage)
     {
         CropStructure[] allCrops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
@@ -304,6 +313,14 @@ public class NightManager : MonoBehaviour
 
         // Disable shop for night
         shopManager.disableShop();
+        
+        // IMPORTANT: Force disable build mode to place any moving structures
+        if (buildController != null)
+        {
+            Debug.Log("StartNight: Calling DisableBuildMode to force-place any moving structures");
+            buildController.DisableBuildMode();
+        }
+        
         buildController.HideDeleteIcon();
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
@@ -373,14 +390,14 @@ public class NightManager : MonoBehaviour
         isDay = true;
         buttonText.text = "End Day";
         
-        // Enable shop for day
-        shopButton.interactable = true;
-        shopIcon.color = dayShop;
-        
-        // Only enable shop manager if not paused
+        // Use shop manager to properly handle tutorial state
         if (!isPaused)
         {
             shopManager.enableShop();
+        }
+        else
+        {
+            shopManager.UpdateShopButtonStateForTimeControls();
         }
         
         if (isFirstDay)
@@ -439,10 +456,14 @@ public class NightManager : MonoBehaviour
         // Advance growing crops to stage 2, preserve ready-to-harvest crops
         cropGrowthOnAll(2);
 
-        shopButton.interactable = true;
-        shopIcon.color = dayShop;
         isDay = true;
         buttonText.text = "Start Night";
+        
+        // Use shop manager to properly handle tutorial state
+        if (shopManager != null)
+        {
+            shopManager.UpdateShopButtonStateForTimeControls();
+        }
 
         // Manage skybox coroutines
         Coroutine skyboxCor = StartCoroutine(Skybox(skyboxNight, skyboxDay, flag == 0 ? 0f : 5f));
@@ -468,7 +489,7 @@ public class NightManager : MonoBehaviour
 
     private void OnMinutesChange(int value)
     {
-        sceneLight.transform.Rotate(Vector3.up, (4f / 1440f) * 360f, Space.World);
+        sceneLight.transform.Rotate(Vector3.up, (1f / 1440f) * 360f, Space.World);
         if (value >= 60)
         {
             Hours++;
@@ -553,15 +574,12 @@ public class NightManager : MonoBehaviour
                 clockTickingSource.Stop();
             }
 
-            // Better tutorial check - use IsTutorialActive instead of just checking panel
             if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
-                Debug.Log("Tutorial active - preventing automatic night transition");
-                hours = 17; // Keep at 17 to prevent night from starting
+                hours = 17;
                 return;
             }
 
-            Debug.Log("NightManager: Starting night at 18:00 - tutorial checks passed");
             StartNight(2);
 
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxAfternoon, skyboxNight, 2f));
@@ -699,7 +717,7 @@ public class NightManager : MonoBehaviour
         // Always call chooseAnimalProductForSeason (it will handle tutorial appropriately now)
         chooseAnimalProductForSeason();
 
-        // Debug.Log($"Setting season to {season} with notification: {text}+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    // Debug log removed: Setting season to ...
         if (!isFirstDay)
         {
             combatManager.increaseAfterSeason();
@@ -711,7 +729,7 @@ public class NightManager : MonoBehaviour
         // Only show season notification if not in tutorial
         if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
         {
-            Debug.Log("Tutorial active: Suppressing regular season notification");
+            // Debug log removed: Tutorial active: Suppressing regular season notification
             return;
         }
 
@@ -830,11 +848,9 @@ public class NightManager : MonoBehaviour
                 productionBoosts.SetBoosted(normalValues);
             }
 
-            Debug.Log("Tutorial active: Skipping automatic season bonus explanation");
-            return; // Skip all the complex bonus logic during tutorial
+            return; 
         }
 
-        // Regular gameplay code continues below, using the same variable
         float sameProduct = Random.Range(0f, 1f);
         int product1 = Random.Range(1, 6);
         int product2 = Random.Range(1, 6);
@@ -856,7 +872,7 @@ public class NightManager : MonoBehaviour
 
             if (animal == "E")
             {
-                Debug.LogError("Invalid animal product determined.");
+                Debug.LogError("Invalid animal product determined."); // Keep this error log
                 return;
             }
 
@@ -892,11 +908,9 @@ public class NightManager : MonoBehaviour
             {
                 return;
             }
-            // Debug.Log("these are the things that are boosted: " + fullAnimalName + (sameProductIncreasePercent * 100) / 2);
 
             string message = $"Animal production increased for <b>{fullAnimalName}</b> by <b>{(sameProductIncreasePercent * 100) / 2}</b>%!\nLUCKY!!! You got a <b>double</b> production bonus!";
 
-            // Play the sound for the lucky bonus case
             if (doubleProductionSource != null)
             {
                 doubleProductionSource.Play();
@@ -976,7 +990,7 @@ public class NightManager : MonoBehaviour
 
                 productionBoosts.SetBoosted(boostedProducts);
 
-                // Debug.Log("these are the things that are boosted: " + fullAnimalName1 + (increasePercent * 100) / 3);
+
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
@@ -1070,7 +1084,6 @@ public class NightManager : MonoBehaviour
                     return;
                 }
 
-                // Debug.Log("these are the things that are boosted: " + fullAnimalName1 + (increasePercent * 100) / 3);
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
@@ -1087,7 +1100,6 @@ public class NightManager : MonoBehaviour
     // New helper method to show simplified tutorial explanation
     public void ShowSimplifiedTutorialSeasonBonus()
     {
-        Debug.Log("Tutorial: Showing simplified season bonus explanation");
 
         // During tutorial, we'll just show a message explaining the concept
         string tutorialMessage = "Each season brings <b>special bonuses</b> to your farm animals!\n\nAfter completing the tutorial, you'll see which animals produce more each season.";
@@ -1211,7 +1223,6 @@ public class NightManager : MonoBehaviour
         Debug.Log($"Season changed to {season}");
     }
 
-    // Add property for cheats
     public int GetDays() => days;
     public bool GetIsDay() => isDay;
     public int GetCurrentSeason()
@@ -1219,13 +1230,12 @@ public class NightManager : MonoBehaviour
         return currentSeason;
     }
 
-    // Add these cheat methods to NightManager class
     public void CheatSetDays(int newDays)
     {
         days = newDays;
         OnDayChange(newDays);
         OnDayChanged?.Invoke(days);
-        UpdateDayCountUI();
+    UpdateDayCountUI();
     }
 
     public void CheatForceNight()

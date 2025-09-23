@@ -16,7 +16,7 @@
 | `2`           | Zoom out                             |
 | `ESC`         | Pause Game                           |
 | `CTRL + Right Mouse Click` (While Shop open)         | Remove places buildings                            |
-| `Left Mouse Click` (While Shop open on dark green boxes)         | Can buy extra land to add to buildable space                            |
+
 
 #### **Mouse Controls**
 | Mouse Action           | Action                        |

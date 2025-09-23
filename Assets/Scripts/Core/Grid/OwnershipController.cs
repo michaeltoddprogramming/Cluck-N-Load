@@ -249,8 +249,8 @@ public class OwnershipController : MonoBehaviour
         }
     }
     
-    // Update the BuyLandAtPosition method to check visibility
-
+    // DISABLED: Land buying functionality removed
+    /*
     public void BuyLandAtPosition(Vector3 worldPosition)
     {
         if (gridDataGenerator == null || !gridDataGenerator.IsInitialized) return;
@@ -288,7 +288,9 @@ public class OwnershipController : MonoBehaviour
             // Notify grid monitor
             if (gridMonitor != null)
             {
-                gridMonitor.NotifyCellChanged(cellCoords.x, cellCoords.y, GridChangeType.Ownership);
+                gridMonitor.NotifyCell
+
+gridMonitor.NotifyCellChanged(cellCoords.x, cellCoords.y, GridChangeType.Ownership);
             }
             
             if (logDebugInfo)
@@ -299,6 +301,7 @@ public class OwnershipController : MonoBehaviour
             RefreshGridTexture();
         }
     }
+    */
 
     // Just update the texture without recalculating ownership
     private void RefreshGridTexture()

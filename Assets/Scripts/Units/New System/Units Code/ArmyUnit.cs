@@ -79,12 +79,6 @@ public class ArmyUnit : BaseUnit
         }
     }
 
-    private void Start()
-    {
-        PlayBackgroundSound(data.backgroundSound);
-
-    }
-
     private void UpdateHealthBar()
     {
         if (healthBarSlider != null)
@@ -132,14 +126,11 @@ public class ArmyUnit : BaseUnit
             if (agent.velocity.sqrMagnitude > 0.1f)
             {
                 SetFloat("speed", 1f);
-                SetBool("isWalking", true);
             }
             else
             {
                 SetFloat("speed", 0f);
-                SetBool("isWalking", false);
             }
-
         }
 
 
@@ -179,9 +170,9 @@ public class ArmyUnit : BaseUnit
             return;
         }
 
-        if (currentTarget == null || currentTarget.IsDead())
+        var enemies = GetNearbyEnemies();
+        if (currentTarget == null || !enemies.Contains(currentTarget) || currentTarget.IsDead())
         {
-            var enemies = GetNearbyEnemies();
             if (enemies.Count > 0)
             {
                 currentTarget = enemies[0];
@@ -200,11 +191,6 @@ public class ArmyUnit : BaseUnit
         }
 
         lastAttackTime = Time.time;
-        if (data.AttackSound != null)
-        {
-            // Debug.Log("here is the attacj sounf: " + data.AttackSound);
-
-        }
 
         canShoot = false;
         agent.enabled = false;
@@ -241,15 +227,26 @@ public class ArmyUnit : BaseUnit
 
     private void PerformAttackImpact()
     {
-        // sound
-        PlaySound(data.AttackSound, 'a');
+        // Check if target is still valid before VFX and damage
+        if (currentTarget == null || !currentTarget.gameObject || !currentTarget.gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning($"Target invalid during attack impact for {gameObject.name}");
+            return;
+        }
+
+        // Sound (restored to original timing)
+        if (data.AttackSound != null)
+        {
+            PlaySound(data.AttackSound, 'a');
+        }
 
         // VFX
         playVFX();
 
         // damage
-        if (currentTarget != null)
-            currentTarget.TakeDamage(data.AttackDamage);
+        currentTarget.TakeDamage(data.AttackDamage);
+
+        canShoot = true;
     }
 
     private IEnumerator DelayedImpact(float delay)
@@ -292,8 +289,6 @@ public class ArmyUnit : BaseUnit
         if (UnityEngine.AI.NavMesh.SamplePosition(endPos, out hit, 1f, UnityEngine.AI.NavMesh.AllAreas))
             endPos = hit.position;
 
-
-
         float elapsed = 0f;
         while (elapsed < recoilTime)
         {
@@ -304,26 +299,85 @@ public class ArmyUnit : BaseUnit
         transform.position = endPos;
         isRecoiling = false;
 
-        // Start moving back to flag using NavMesh
+        if (IsDead() || !gameObject.activeInHierarchy)
+        {
+            if (col != null) col.enabled = true;
+            yield break;
+        }
+
+        // Only perform attack impact if unit is still valid
+        if (!IsDead() && gameObject.activeInHierarchy && currentTarget != null && !currentTarget.IsDead())
+        {
+            PerformAttackImpact();
+        }
+
         isReturningAfterAttack = true;
         targetPosition = guardPosition;
         isMoving = true;
 
-        // Ensure agent is enabled and on NavMesh
-        if (!agent.isOnNavMesh)
+        agent.enabled = true;
+        
+        yield return null;
+
+        if (IsDead() || !gameObject.activeInHierarchy || agent == null)
         {
-            agent.enabled = true;
-            yield return new WaitUntil(() => agent.isOnNavMesh); // wait until placed on NavMesh
+            if (col != null) col.enabled = true;
+            yield break;
         }
 
-        agent.ResetPath();
+        if (!agent.isOnNavMesh)
+        {
+            UnityEngine.AI.NavMeshHit navHit;
+            if (UnityEngine.AI.NavMesh.SamplePosition(transform.position, out navHit, 2f, UnityEngine.AI.NavMesh.AllAreas))
+            {
+                agent.Warp(navHit.position);
+            }
+            else
+            {
+                Debug.LogWarning($"Could not place {gameObject.name} back on NavMesh after recoil!");
+                if (col != null) col.enabled = true;
+                canShoot = true;
+                yield break;
+            }
+        }
+
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+        }
+
+        float moveTimeout = 10f;
+        float moveStartTime = Time.time;
 
         while (Vector3.Distance(transform.position, guardPosition) > agent.stoppingDistance + 0.1f)
         {
-            if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
-                agent.SetDestination(targetPosition);
+            if (Time.time - moveStartTime > moveTimeout)
+            {
+                Debug.LogWarning($"Movement timeout for {gameObject.name}, stopping movement");
+                break;
+            }
 
-            // Smooth rotation toward movement direction
+            if (IsDead() || !gameObject.activeInHierarchy || agent == null)
+            {
+                Debug.Log($"Unit {gameObject.name} became invalid during movement (died or disabled)");
+                if (col != null) col.enabled = true;
+                canShoot = true;
+                yield break;
+            }
+
+            if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
+                    agent.SetDestination(targetPosition);
+            }
+            else
+            {
+                Debug.LogWarning($"Agent became invalid during movement for {gameObject.name}");
+                if (col != null) col.enabled = true;
+                canShoot = true;
+                yield break;
+            }
+
             if (agent.velocity.sqrMagnitude > 0.01f)
             {
                 Quaternion targetRot = Quaternion.LookRotation(agent.velocity.normalized);
@@ -333,14 +387,15 @@ public class ArmyUnit : BaseUnit
             yield return null;
         }
 
-        // Reached flag
-        agent.ResetPath();
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+        }
+        
         isMoving = false;
         isReturningAfterAttack = false;
         canShoot = true;
 
-        // Re-enable collider
-        agent.enabled = true;
         if (col != null) col.enabled = true;
     }
 
@@ -383,12 +438,18 @@ public class ArmyUnit : BaseUnit
             agent.enabled = true;
         }
 
-        agent.ResetPath();
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+        }
 
         while (Vector3.Distance(transform.position, guardPosition) > agent.stoppingDistance + 0.1f)
         {
-            if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
-                agent.SetDestination(targetPosition);
+            if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
+                    agent.SetDestination(targetPosition);
+            }
 
             // Smooth rotation toward movement direction
             if (agent.velocity.sqrMagnitude > 0.01f)
@@ -401,7 +462,10 @@ public class ArmyUnit : BaseUnit
         }
 
         // Reached flag
-        agent.ResetPath();
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+        }
         isMoving = false;
         isReturningAfterAttack = false;
         canShoot = true;
@@ -424,14 +488,29 @@ public class ArmyUnit : BaseUnit
         isReturningToFlag = false;
     }
 
+    private float lastNearbyCheckTime = 0f;
+    private List<EnemyUnit> cachedNearbyEnemies = new List<EnemyUnit>();
+    private float nearbyCheckInterval;
+
+    private void Start()
+    {
+        PlayBackgroundSound(data.backgroundSound);
+        nearbyCheckInterval = Mathf.Max(0.05f, 0.2f / (data.AttackRange / 10f)); // Shorter interval for larger ranges
+    }
+
     public List<EnemyUnit> GetNearbyEnemies()
     {
-        return GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
+        if (Time.time - lastNearbyCheckTime > nearbyCheckInterval)
+        {
+            cachedNearbyEnemies = GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
+            lastNearbyCheckTime = Time.time;
+        }
+        return cachedNearbyEnemies;
     }
 
     public void TakeDamage(int damage)
     {
-        // Debug.Log("Army unit took damage: " + damage + "siedruhfgiowuehfiuwehfiuwehiufhweiurfhiuehrfg");
+        // Debug.Log("Army unit took damage: " + damage + "siedruhfgiowuehfiuwehfiuwehfiuwehiufhweiurfhiuehrfg");
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
             PlaySound(data.DeathSound, 'd');
@@ -521,9 +600,17 @@ public class ArmyUnit : BaseUnit
 
     private void MoveToTargetPosition()
     {
+        // ADDED: Check if unit is valid before proceeding
+        if (agent == null || !agent.isActiveAndEnabled || IsDead())
+        {
+            isMoving = false;
+            return;
+        }
+
         if (!agent.isOnNavMesh)
         {
             Debug.LogWarning("Army unit not on NavMesh.");
+            isMoving = false;
             return;
         }
 
@@ -531,15 +618,11 @@ public class ArmyUnit : BaseUnit
 
         if (distance < agent.stoppingDistance + 1.5f)
         {
-            // Debug.Log("16531278634568124598761263458762347895628371465 87231 59723459721349750 2309745 609273456 50972365 0978236 5097235490 762390745 5629307465 09723465 907");
-            // if (isReturningAfterAttack)
-            // {
-            //     isReturningAfterAttack = false;
-            // }
-
-            agent.ResetPath();
+            if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+            }
             isMoving = false;
-            SetBool("isWalking", false);
             SetFloat("speed", 0f);
             if (!isNightTime)
             {
@@ -551,8 +634,10 @@ public class ArmyUnit : BaseUnit
 
         if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
         {
-            SetBool("isWalking", true);
-            agent.SetDestination(targetPosition);
+            if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                agent.SetDestination(targetPosition);
+            }
         }
 
         // Optional: Smooth manual rotation (if needed)
@@ -625,8 +710,27 @@ public class ArmyUnit : BaseUnit
         {
             yield return new WaitForSeconds(Random.Range(0.5f, 1.5f)); // Small wait before moving
 
+            // Check if unit is still valid
+            if (!gameObject.activeInHierarchy || IsDead())
+            {
+                isRoaming = false;
+                roamingRoutine = null;
+                yield break;
+            }
+
+            // Check if agent is valid before setting destination
+            if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
+            {
+                Debug.LogWarning($"NavMeshAgent invalid in RoamAroundFlag for {gameObject.name}");
+                isRoaming = false;
+                roamingRoutine = null;
+                yield break;
+            }
+
             Vector2 randomCircle = Random.insideUnitCircle * roamRadius;
             Vector3 roamPoint = roamCenter + new Vector3(randomCircle.x, 0, randomCircle.y);
+            
+            // Set destination safely
             agent.SetDestination(roamPoint);
 
             yield return new WaitForSeconds(roamInterval);
@@ -643,7 +747,12 @@ public class ArmyUnit : BaseUnit
             StopCoroutine(roamingRoutine);
             roamingRoutine = null;
             isRoaming = false;
-            agent.ResetPath();
+            
+            // ADDED: Safety check before ResetPath
+            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+            }
         }
     }
 
@@ -664,6 +773,13 @@ public class ArmyUnit : BaseUnit
 
     public Vector3 GetTargetCenter(EnemyUnit enemy)
     {
+        // Check if enemy is null or destroyed
+        if (enemy == null || !enemy.gameObject || !enemy.isActiveAndEnabled)
+        {
+            // Return a fallback position if target is invalid
+            return transform.position + transform.forward * 5f; // Some position in front of the unit
+        }
+
         // Try to get the collider
         Collider col = enemy.GetComponent<Collider>();
         if (col != null)
@@ -677,6 +793,13 @@ public class ArmyUnit : BaseUnit
 
     private void playVFX()
     {
+        // Check if target is valid before playing VFX
+        if (currentTarget == null || !currentTarget.gameObject || !currentTarget.gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning($"Skipping VFX for {gameObject.name} - target is invalid");
+            return;
+        }
+
         if (data.Type == ArmyType.Chicken)
         {
             ShootingVFX shootingVFX = GetComponent<ShootingVFX>();

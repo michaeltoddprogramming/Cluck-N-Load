@@ -259,7 +259,7 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
-   private void CheckGameOverConditions()
+private void CheckGameOverConditions()
 {
     if (isGameOver) return;
 
@@ -267,8 +267,11 @@ public class GameLoopManager : MonoBehaviour
 
     allStructures.RemoveAll(s => s == null || !s);
 
-    // End game ONLY if farmhouse is destroyed
-    if (checkFarmHouseDestruction)
+    // Check if tutorial was skipped by developer using Backspace
+    bool devSkippedTutorial = TutorialManager.Instance != null && TutorialManager.Instance.WasTutorialSkippedByDev();
+
+    // End game ONLY if farmhouse is destroyed AND tutorial wasn't dev-skipped
+    if (checkFarmHouseDestruction && !devSkippedTutorial)
     {
         bool farmhouseExists = allStructures.Exists(s =>
             s != null &&
@@ -281,8 +284,8 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
-    // End game if all structures destroyed
-    if (checkAllStructuresDestroyed && allStructures.Count == 0 && totalStructuresBuilt > 0)
+    // End game if all structures destroyed AND tutorial wasn't dev-skipped
+    if (checkAllStructuresDestroyed && !devSkippedTutorial && allStructures.Count == 0 && totalStructuresBuilt > 0)
     {
         shouldGameOver = true;
         Debug.Log("Game Over: All structures destroyed!");

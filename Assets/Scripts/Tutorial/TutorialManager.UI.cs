@@ -82,8 +82,28 @@ public partial class TutorialManager
 
         float nextCharTime = 0f;
         int charIndex = 0;
+        bool wasMumblePlaying = false;
         while (charIndex < text.Length)
         {
+            // If the game is paused, wait until unpaused before continuing
+            if (Time.timeScale == 0f)
+            {
+                if (mumbleAudioSource != null)
+                {
+                    wasMumblePlaying = mumbleAudioSource.isPlaying;
+                    if (mumbleAudioSource.isPlaying)
+                        mumbleAudioSource.Pause();
+                }
+                // Wait until unpaused
+                while (Time.timeScale == 0f)
+                {
+                    yield return null;
+                }
+                // Resume audio only if it was playing before pause
+                if (mumbleAudioSource != null && wasMumblePlaying && mumbleAudioSource.clip != null && !isMumblePaused)
+                    mumbleAudioSource.UnPause();
+            }
+
             nextCharTime += Time.unscaledDeltaTime;
             while (nextCharTime >= typeSpeed && charIndex < text.Length)
             {

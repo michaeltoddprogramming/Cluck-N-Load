@@ -45,6 +45,10 @@ public class GridController : MonoBehaviour
 
     void Start()
     {
+        // Force update to new improved grid colors
+        gridColors.ownedOccupied = new Color(0.8f, 0.4f, 0.4f, 0.4f); // Light red/pink to indicate occupied
+        gridColors.ownedObstacle = new Color(0.6f, 0.3f, 0.0f, 0.4f); // Brown for obstacles
+        
         GridCellColorResolver.Colors = gridColors;
 
         if (gridDataGenerator == null)
@@ -64,11 +68,11 @@ public class GridController : MonoBehaviour
 
     void Update()
     {
-        // Only update hover cell when grid is visible and mouse is moving
-        if (gridOverlayInstance.activeSelf && (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0))
-        {
-            UpdateHoveredCell();
-        }
+        // Hover highlighting disabled - player doesn't need to see yellow grid highlighting
+        // if (gridOverlayInstance.activeSelf && (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0))
+        // {
+        //     UpdateHoveredCell();
+        // }
     }
 
     private void LateUpdate()

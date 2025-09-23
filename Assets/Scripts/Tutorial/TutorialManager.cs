@@ -58,18 +58,18 @@ public partial class TutorialManager : MonoBehaviour
     private bool isProcessingStep = false;
     private float lastStepCompletionTime = 0f;
     private const float MIN_STEP_DURATION = 0.5f;
+    private bool isMumblePaused = false;
+
+    private bool wasTutorialSkippedByDev = false; // Add this field near the other private fields
 
     private void Awake()
     {
-        Debug.Log("TutorialManager: Awake called");
         if (instance == null)
         {
             instance = this;
-            Debug.Log("TutorialManager: Instance set");
             if (tutorialPanel != null)
             {
                 tutorialPanel.SetActive(false);
-                Debug.Log("TutorialManager: Tutorial panel deactivated");
             }
             else
             {
@@ -78,35 +78,43 @@ public partial class TutorialManager : MonoBehaviour
             mumbleAudioSource = mumbleAudioSource ?? gameObject.AddComponent<AudioSource>();
             effectsAudioSource = gameObject.AddComponent<AudioSource>();
             effectsAudioSource.playOnAwake = false;
-            Debug.Log("TutorialManager: Audio sources configured");
             InitializeTutorialSteps();
-            Debug.Log("TutorialManager: Tutorial steps initialized");
             skipTutorialButton?.gameObject.SetActive(false); // Hide skip button at start
             SetupChecklist();
-            Debug.Log("TutorialManager: Awake completed successfully");
+
+            // Subscribe to pause/resume events
+            if (GameEventManager.Instance != null)
+            {
+                GameEventManager.Instance.OnGamePaused.AddListener(PauseMumbleAudio);
+                GameEventManager.Instance.OnGameResumed.AddListener(ResumeMumbleAudio);
+            }
         }
         else
         {
-            Debug.Log("TutorialManager: Destroying duplicate instance");
             Destroy(gameObject);
         }
     }
 
     private void Start()
     {
-        Debug.Log("TutorialManager: Starting tutorial...");
         StartTutorial();
     }
 
     private void Update()
     {
+        // Developer option: Skip tutorial with Backspace key
+        if (Input.GetKeyDown(KeyCode.Backspace) && IsTutorialActive())
+        {
+            DevSkipTutorial(); // Call developer-specific method
+        }
+    
         HandleRequiredInputDetection();
-
+    
         if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
             var step = steps[currentStepIndex];
             float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
-
+    
             if (scrollDelta > 0 && step.requiredInputs.Contains(KeyCode.Mouse3))
             {
                 detectedInputs.Add(KeyCode.Mouse3);
@@ -118,7 +126,7 @@ public partial class TutorialManager : MonoBehaviour
                 UpdateKeyIndicatorVisual(KeyCode.Mouse4, true);
             }
         }
-
+    
         if (!isProcessingStep && pendingTriggers.Count > 0)
         {
             TutorialTrigger nextTrigger = pendingTriggers.Dequeue();
@@ -128,27 +136,30 @@ public partial class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
-        Debug.Log($"TutorialManager: StartTutorial called - Panel exists: {tutorialPanel != null}, Steps count: {steps.Count}");
+        // Prevent multiple simultaneous starts
+        if (isProcessingStep || IsTutorialActive())
+        {
+            return;
+        }
+        
         if (tutorialPanel != null)
         {
             tutorialPanel.SetActive(true);
-            Debug.Log("TutorialManager: Tutorial panel activated");
         }
         else
         {
-            Debug.LogError("TutorialManager: Tutorial panel is null! Cannot start tutorial.");
+            Debug.LogError("Tutorial panel is null - cannot start tutorial");
             return;
         }
         
         if (steps.Count == 0)
         {
-            Debug.LogError("TutorialManager: No tutorial steps found! Cannot start tutorial.");
+            Debug.LogError("No tutorial steps found - cannot start tutorial");
             return;
         }
         
         currentStepIndex = -1;
         waitingForStepToComplete = false;
-        Debug.Log($"TutorialManager: Starting with {steps.Count} steps, calling NextStep()");
         NextStep();
         
         // Notify UI systems that tutorial has started
@@ -157,11 +168,29 @@ public partial class TutorialManager : MonoBehaviour
 
     void NextStep()
     {
-        Debug.Log($"TutorialManager: NextStep called - currentStepIndex: {currentStepIndex}, steps.Count: {steps.Count}, isProcessingStep: {isProcessingStep}");
-        
+        // Prevent spam-clicking by checking if we're already processing a step
         if (isProcessingStep)
         {
-            isProcessingStep = false;
+            return;
+        }
+
+        // Add minimum time between steps to prevent rapid advancement (but not for the first step)
+        if (lastStepCompletionTime > 0 && Time.realtimeSinceStartup - lastStepCompletionTime < MIN_STEP_DURATION)
+        {
+            return;
+        }
+
+        // Safety check: ensure we have valid steps collection
+        if (steps == null || steps.Count == 0)
+        {
+            EndTutorial();
+            return;
+        }
+
+        // Safety check: if we're already past the end, don't continue
+        if (currentStepIndex >= steps.Count)
+        {
+            return; // Already ended
         }
 
         // Mark current step as complete if it hasn't been already
@@ -179,6 +208,13 @@ public partial class TutorialManager : MonoBehaviour
         }
 
         isProcessingStep = true;
+        
+        // Disable the next button immediately to prevent further clicks
+        if (nextStepButton != null)
+        {
+            nextStepButton.interactable = false;
+        }
+        
         StartCoroutine(ProcessNextStepSafely());
     }
 
@@ -209,9 +245,25 @@ public partial class TutorialManager : MonoBehaviour
                 yield break;
             }
 
-            yield return new WaitForSecondsRealtime(0.1f);
-
+            // Get the step reference immediately after bounds check to prevent index issues
+            // Double-check bounds again in case something changed during execution
+            if (currentStepIndex < 0 || currentStepIndex >= steps.Count)
+            {
+                EndTutorial();
+                yield break;
+            }
+            
             var step = steps[currentStepIndex];
+
+            yield return new WaitForSecondsRealtime(0.1f);
+            
+            // Triple-check that we still have a valid step after the yield
+            if (currentStepIndex < 0 || currentStepIndex >= steps.Count || step == null)
+            {
+                EndTutorial();
+                yield break;
+            }
+            
             detectedInputs.Clear();
 
             if (typingCoroutine != null)
@@ -239,7 +291,15 @@ public partial class TutorialManager : MonoBehaviour
                 nextStepButton.interactable = !requiresUserAction; // Disable if action required
                 nextStepButton.onClick.RemoveAllListeners();
                 if (!requiresUserAction)
-                    nextStepButton.onClick.AddListener(NextStep);
+                {
+                    nextStepButton.onClick.AddListener(() => {
+                        // Double-check that we can still advance (prevent bypassing action-required steps)
+                        if (!waitingForStepToComplete && !isProcessingStep)
+                        {
+                            NextStep();
+                        }
+                    });
+                }
             }
 
             step.onStepStart?.Invoke();
@@ -253,6 +313,7 @@ public partial class TutorialManager : MonoBehaviour
         finally
         {
             isProcessingStep = false;
+            lastStepCompletionTime = Time.realtimeSinceStartup;
         }
 
         // Show the next button for normal steps
@@ -273,10 +334,8 @@ public partial class TutorialManager : MonoBehaviour
             return;
         }
 
-        // Prevent re-triggering for completed steps (fixes progress reset on movement)
         if (trigger != TutorialTrigger.None && IsStepCompletedForTrigger(trigger))
         {
-            Debug.LogWarning($"Tutorial: Ignoring trigger {trigger} because the step is already completed.");
             return;
         }
 
@@ -317,7 +376,12 @@ public partial class TutorialManager : MonoBehaviour
                 if (!string.IsNullOrEmpty(step.stepId))
                     MarkStepComplete(step.stepId);
 
-                NextStep();
+                // Only advance if we're not already processing a step
+                if (!isProcessingStep)
+                {
+                    // Add a small delay to prevent immediate re-triggering
+                    StartCoroutine(DelayedNextStep());
+                }
                 return;
             }
         }
@@ -332,16 +396,15 @@ public partial class TutorialManager : MonoBehaviour
 
     public void EndTutorial()
     {
-        Debug.Log("EndTutorial called");
+        // Hide tutorial UI
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
     
         currentStepIndex = steps.Count;
         waitingForStepToComplete = false;
-        Debug.Log($"Tutorial ended: currentStepIndex={currentStepIndex}, waitingForStepToComplete={waitingForStepToComplete}");
+        isProcessingStep = false; // Reset processing flag
         
-        // Notify UI systems that tutorial has ended
         NotifyUISystemsOfStepChange();
     }
     
@@ -351,10 +414,25 @@ public partial class TutorialManager : MonoBehaviour
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
-    
+
         CleanupAllWorldHighlights();
         CleanupShopHighlights();
+        
+        EndTutorial();
+    }
     
+    private void DevSkipTutorial()
+    {
+        Debug.Log("DevSkipTutorial called - skipping tutorial in developer mode");
+        tutorialPanel.SetActive(false);
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(false);
+
+        CleanupAllWorldHighlights();
+        CleanupShopHighlights();
+
+        wasTutorialSkippedByDev = true;
+
         EndTutorial();
     }
 
@@ -362,6 +440,12 @@ public partial class TutorialManager : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(10f);
         Trigger(TutorialTrigger.None);
+    }
+
+    IEnumerator DelayedNextStep()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
+        NextStep();
     }
 
     public bool IsShowingDiscovery()
@@ -419,7 +503,7 @@ public partial class TutorialManager : MonoBehaviour
             checklistPanel.SetActive(restoreChecklistState);
 
         if (skipTutorialButton != null)
-            skipTutorialButton.gameObject.SetActive(true); // Show skip button again
+            skipTutorialButton.gameObject.SetActive(true);
 
         isShowingDiscovery = false;
         currentDiscoveryStep = null;
@@ -427,10 +511,7 @@ public partial class TutorialManager : MonoBehaviour
 
     public bool IsTutorialActive()
     {
-        // FIX: Tutorial should be active based on step progress, not panel visibility
-        // The panel can be hidden temporarily but tutorial restrictions should remain
         bool active = currentStepIndex >= 0 && currentStepIndex < steps.Count && !IsTutorialCompleted();
-        Debug.Log($"IsTutorialActive: currentStepIndex={currentStepIndex}, stepsCount={steps.Count}, completed={IsTutorialCompleted()}, result={active}");
         return active;
     }
 
@@ -440,6 +521,12 @@ public partial class TutorialManager : MonoBehaviour
 
     public void SetTutorialProgress(List<string> completedSteps, int stepIndex, bool completed)
     {
+        // Prevent concurrent modifications while processing steps
+        if (isProcessingStep)
+        {
+            return;
+        }
+        
         completedStepIds = completedSteps ?? new List<string>();
         currentStepIndex = stepIndex;
         if (completed)
@@ -450,6 +537,18 @@ public partial class TutorialManager : MonoBehaviour
 
     public void StartTutorialFromStep(int stepIndex)
     {
+        // Prevent concurrent modifications while processing steps
+        if (isProcessingStep)
+        {
+            return;
+        }
+        
+        // Validate step index before proceeding
+        if (stepIndex < 0 || stepIndex > steps.Count)
+        {
+            return;
+        }
+        
         tutorialPanel.SetActive(true);
         currentStepIndex = stepIndex - 1;
         waitingForStepToComplete = false;
@@ -479,13 +578,31 @@ public partial class TutorialManager : MonoBehaviour
         currentDiscoveryStep = null;
     }
 
+    // --- Pause/Resume tutorial mumble audio on game pause/resume ---
     private void OnDestroy()
     {
-        // Clean up typing coroutine to prevent memory leaks
-        if (typingCoroutine != null)
+        if (GameEventManager.Instance != null)
         {
-            StopCoroutine(typingCoroutine);
-            typingCoroutine = null;
+            GameEventManager.Instance.OnGamePaused.RemoveListener(PauseMumbleAudio);
+            GameEventManager.Instance.OnGameResumed.RemoveListener(ResumeMumbleAudio);
+        }
+    }
+
+    private void PauseMumbleAudio()
+    {
+        if (mumbleAudioSource != null && mumbleAudioSource.isPlaying && !isMumblePaused)
+        {
+            mumbleAudioSource.Pause();
+            isMumblePaused = true;
+        }
+    }
+
+    private void ResumeMumbleAudio()
+    {
+        if (mumbleAudioSource != null && isMumblePaused)
+        {
+            mumbleAudioSource.UnPause();
+            isMumblePaused = false;
         }
     }
 
@@ -498,15 +615,16 @@ public partial class TutorialManager : MonoBehaviour
     
     private void NotifyUISystemsOfStepChange()
     {
-        Debug.Log($"TUTORIAL SYSTEM: Notifying UI systems of step change to '{GetCurrentStepId()}'");
         
-        // Notify ShopUIManager to update shop button state
         if (ShopUIManager.Instance != null)
         {
             ShopUIManager.Instance.OnTutorialStepChanged();
         }
         
-        // ShopPanelUI tutorial filtering is handled in PopulateShop method
-        // No need for OnTutorialStepChanged notification
+    }
+
+    public bool WasTutorialSkippedByDev()
+    {
+        return wasTutorialSkippedByDev;
     }
 }

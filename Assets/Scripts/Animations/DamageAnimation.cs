@@ -4,8 +4,11 @@ public class DamageAnimation : MonoBehaviour
 {
     public AudioClip hitSound;
     private AudioSource audioSource;
-
     private AudioSource damageAudioSource;
+    
+    private Color originalSpriteColor;
+    private Color originalMeshColor;
+    private bool hasInitializedColors = false;
 
     private void Awake()
     {
@@ -72,22 +75,42 @@ public class DamageAnimation : MonoBehaviour
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         MeshRenderer mr = GetComponent<MeshRenderer>();
 
+        if (!hasInitializedColors)
+        {
+            if (sr != null)
+            {
+                originalSpriteColor = sr.color;
+            }
+            else if (mr != null && mr.material != null)
+            {
+                originalMeshColor = mr.material.color;
+            }
+            hasInitializedColors = true;
+        }
+
+        CancelInvoke("RestoreOriginalColor");
+
         if (sr != null)
         {
-            Color originalColor = sr.color;
+            if (sr.color != Color.red)
+            {
+                originalSpriteColor = sr.color;
+            }
             sr.color = Color.red;
-            LeanTween.delayedCall(gameObject, 0.1f, () => sr.color = originalColor);
         }
         else if (mr != null)
         {
             Material mat = mr.material;
-            Color originalColor = mat.color;
+            if (mat.color != Color.red)
+            {
+                originalMeshColor = mat.color;
+            }
             mat.color = Color.red;
-            LeanTween.delayedCall(gameObject, 0.1f, () => mat.color = originalColor);
         }
 
-        // Play sound
-        if (hitSound != null)
+        Invoke("RestoreOriginalColor", 0.1f);
+
+        if (hitSound != null && damageAudioSource != null)
         {
             damageAudioSource.PlayOneShot(hitSound);
         }
@@ -107,6 +130,18 @@ public class DamageAnimation : MonoBehaviour
             });
     }
 
+    private void RestoreOriginalColor()
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        MeshRenderer mr = GetComponent<MeshRenderer>();
 
-
+        if (sr != null)
+        {
+            sr.color = originalSpriteColor;
+        }
+        else if (mr != null && mr.material != null)
+        {
+            mr.material.color = originalMeshColor;
+        }
+    }
 }

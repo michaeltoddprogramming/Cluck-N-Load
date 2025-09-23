@@ -7,25 +7,21 @@ public class SelectionManager : MonoBehaviour
 
     private void Update()
     {
-        // Temporarily disable BuildController checks to resolve compilation issue
-        // BuildController buildController = FindFirstObjectByType<BuildController>();
-        // if (buildController != null && (buildController.IsBuildModeActive() || buildController.IsMoveModeActiveProperty || buildController.IsDeleteModeActive()))
-        // {
-        //     return;
-        // }
-
+        // Check if BuildController is in delete mode and skip processing
+        BuildController buildController = FindFirstObjectByType<BuildController>();
+        if (buildController != null && buildController.IsDeleteModeActive())
+        {
+            return; // Let BuildController handle the input
+        }
+        
         if (Input.GetMouseButtonDown(0))
         {
-            // Check if pointer is over UI
             bool isOverUI = EventSystem.current.IsPointerOverGameObject();
-            Debug.Log($"Mouse click - Over UI: {isOverUI}");
             if (isOverUI)
             {
-                Debug.Log("Selection blocked: Pointer over UI");
                 return;
             }
 
-            Debug.Log($"Mouse click detected. Current selected structure: {currentSelectedStructure?.name ?? "null"}");
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             int layerMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast"));
@@ -49,19 +45,14 @@ public class SelectionManager : MonoBehaviour
                     hitTransform = hitTransform.parent;
                 }
 
-                // If we hit something but no valid structure, deselect
-                Debug.Log("Hit something but no valid structure found, deselecting");
                 DeselectCurrent();
             }
             else
             {
-                // If we didn't hit anything, deselect
-                Debug.Log("No raycast hit, deselecting");
                 DeselectCurrent();
             }
         }
 
-        // Right-click to deselect when not in build mode
         if (Input.GetMouseButtonDown(1))
         {
             bool isOverUI = EventSystem.current.IsPointerOverGameObject();
@@ -100,18 +91,15 @@ public class SelectionManager : MonoBehaviour
         }
 
         StructureUIManager.Instance.ShowStructureUI(structure);
-        Debug.Log($"Selected structure: {structure.name}");
     }
 
     public void DeselectCurrent()
     {
-        Debug.Log($"DeselectCurrent called. Current structure: {currentSelectedStructure?.name ?? "null"}");
         if (currentSelectedStructure != null)
         {
             currentSelectedStructure.Deselect();
             StructureUIManager.Instance?.HideStructureUI();
             currentSelectedStructure = null;
-            Debug.Log("Deselected current structure");
         }
         else
         {
@@ -119,12 +107,9 @@ public class SelectionManager : MonoBehaviour
         }
     }
 
-    // Public method to force clear selection state (called by UI when closed)
     public void ForceClearSelection()
     {
-        // Structure is already deselected by StructureUIManager, just clear the reference
         currentSelectedStructure = null;
-        Debug.Log("Force cleared selection state");
     }
 
     public Structure GetCurrentSelectedStructure()

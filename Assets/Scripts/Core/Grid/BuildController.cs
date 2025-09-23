@@ -34,8 +34,7 @@ public class BuildController : MonoBehaviour
     [SerializeField] private Vector2 cursorOffset = new Vector2(15f, 15f);
     [SerializeField] private float moneyBackAfterDeletePercentage = 0.5f;
 
-    [Header("Land Ownership")]
-    [SerializeField] private bool enableLandBuying = true;
+
 
     [Header("Synergy Visualization")]
     [SerializeField] private GameObject rangeIndicatorPrefab;
@@ -49,6 +48,7 @@ public class BuildController : MonoBehaviour
     [Header("Performance Settings")]
     [SerializeField] private bool enableSynergyVisuals = true;
     [SerializeField] private int maxSynergyLines = 10;
+    [SerializeField] private bool snapGhostToNearestValidCellWhenOutside = true;
 
     private List<GameObject> synergyIndicators = new List<GameObject>();
     private List<LineRenderer> synergyLines = new List<LineRenderer>();
@@ -65,7 +65,6 @@ public class BuildController : MonoBehaviour
     private bool isBuildModeActive;
     private bool isMoveModeActive;
     private bool isDeleteModeActive;
-    private bool isInLandBuyMode;
     private bool isGhostTemporarilyHidden;
     private int currentPrefabIndex;
     private Quaternion currentRotation = Quaternion.identity;
@@ -73,6 +72,8 @@ public class BuildController : MonoBehaviour
     private StructureData currentStructureData;
 
     [SerializeField] private GridDataGenerator gridDataGenerator;
+
+
 
     void Start()
     {
@@ -140,8 +141,23 @@ public class BuildController : MonoBehaviour
 
     void Update()
     {
-        if (!isBuildModeActive && !isMoveModeActive) return;
-
+        // Debug: Check if we're getting input but build mode isn't active
+        if (Input.GetKey(removeModifierKey) && (!isBuildModeActive && !isMoveModeActive))
+        {
+            Debug.Log("Ctrl pressed but build mode is not active. BuildMode: " + isBuildModeActive + ", MoveMode: " + isMoveModeActive);
+        }
+        
+        if (!isBuildModeActive && !isMoveModeActive)
+        {
+            // Reset delete mode if build mode is not active
+            if (isDeleteModeActive)
+            {
+                isDeleteModeActive = false;
+                if (itemDeleteIcon != null) itemDeleteIcon.gameObject.SetActive(false);
+            }
+            return;
+        }
+        
         if (enableSynergyVisuals && activeSynergyLines.Count > maxSynergyLines)
         {
             while (activeSynergyLines.Count > maxSynergyLines)
@@ -156,6 +172,7 @@ public class BuildController : MonoBehaviour
         if (deleteKeyPressed != isDeleteModeActive)
         {
             isDeleteModeActive = deleteKeyPressed;
+            Debug.Log($"Delete mode changed to: {isDeleteModeActive}");
             if (isDeleteModeActive)
             {
                 if (currentGhost != null) currentGhost.SetActive(false);
@@ -178,7 +195,6 @@ public class BuildController : MonoBehaviour
 
     public void EnableBuildMode()
     {
-        Debug.Log("EnableBuildMode called");
         isBuildModeActive = true;
         isMoveModeActive = false;
         gridController.ShowGrid();
@@ -200,6 +216,47 @@ public class BuildController : MonoBehaviour
     public void DisableBuildMode()
     {
         ClearSynergyVisualization();
+        
+        // IMPORTANT: If a structure is being moved, place it immediately at current position
+        if (movingStructure != null)
+        {
+            Debug.Log($"DisableBuildMode: Force-placing moving structure {movingStructure.name} at current position due to night transition");
+            
+            // Get current ghost position (where the structure would be placed)
+            Vector3 currentPosition = currentGhost != null ? currentGhost.transform.position : originalPosition;
+            Vector2Int gridCoords = gridController.WorldToGridCoords(currentPosition);
+            
+            // Check if current position is valid, if not use original position as fallback
+            if (IsValidPlacement(gridCoords.x, gridCoords.y))
+            {
+                // Place at current ghost position
+                movingStructure.transform.position = currentPosition;
+                movingStructure.transform.rotation = currentRotation;
+                movingStructure.gameObject.SetActive(true);
+                
+                // Update grid occupancy for new position
+                List<Vector2Int> newFootprint = GetStructureFootprint(movingStructure.gameObject);
+                foreach (Vector2Int cell in newFootprint) 
+                {
+                    gridController.SetCellOccupied(cell.x, cell.y, true);
+                }
+                
+                movingStructure.RegisterWithGrid();
+                Debug.Log($"Structure placed at new position: {currentPosition}");
+            }
+            else
+            {
+                // Fallback to original position if current position is invalid
+                Debug.LogWarning($"Current position invalid, restoring to original position");
+                movingStructure.transform.position = originalPosition;
+                movingStructure.transform.rotation = originalRotation;
+                movingStructure.gameObject.SetActive(true);
+                movingStructure.RegisterWithGrid();
+            }
+            
+            movingStructure = null;
+        }
+        
         isBuildModeActive = false;
         isMoveModeActive = false;
         gridController.HideGrid();
@@ -208,7 +265,6 @@ public class BuildController : MonoBehaviour
             Destroy(currentGhost);
             currentGhost = null;
         }
-        movingStructure = null;
         if (itemDeleteIcon != null)
             itemDeleteIcon.gameObject.SetActive(false);
 
@@ -227,6 +283,7 @@ public class BuildController : MonoBehaviour
     }
 
     public bool IsBuildModeActive() => isBuildModeActive;
+    public bool IsDeleteModeActive() => isDeleteModeActive;
 
     public void ToggleMoveMode()
     {
@@ -307,7 +364,7 @@ public class BuildController : MonoBehaviour
     void HandleBuildInput()
     {
         if (isGhostTemporarilyHidden) return;
-        isInLandBuyMode = enableLandBuying && currentBuildTargetPrefab == null;
+
 
         if (Input.GetKeyDown(moveKey) && !isDeleteModeActive)
         {
@@ -340,15 +397,17 @@ public class BuildController : MonoBehaviour
             {
                 if (isDeleteModeActive)
                 {
-                    if (TryRemoveStructureByRaycast()) return;
+                    Debug.Log("Left click detected in delete mode");
+                    if (TryRemoveStructureByRaycast()) 
+                    {
+                        Debug.Log("Structure removed by raycast");
+                        return;
+                    }
                     Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+                    Debug.Log($"Attempting to remove at grid cell: {hoveredCell}");
                     RemoveItem(hoveredCell.x, hoveredCell.y);
                 }
-                else if (currentBuildTargetPrefab == null || isInLandBuyMode)
-                {
-                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out RaycastHit hit)) ownershipController?.BuyLandAtPosition(hit.point);
-                }
+
                 else if (currentBuildTargetPrefab != null)
                 {
                     Vector2Int hoveredCell = GetGridCellUnderCursor(true);
@@ -463,22 +522,32 @@ public class BuildController : MonoBehaviour
     void UpdateGhostPosition()
     {
         if (currentGhost == null) return;
-        if (isInLandBuyMode)
-        {
-            currentGhost.SetActive(false);
-            return;
-        }
-        else if (!currentGhost.activeSelf && !isGhostTemporarilyHidden && !isDeleteModeActive) currentGhost.SetActive(true);
+        if (!currentGhost.activeSelf && !isGhostTemporarilyHidden && !isDeleteModeActive) currentGhost.SetActive(true);
 
         Vector2Int hoveredCell = GetGridCellUnderCursor(true);
-        if (!gridController.IsValidCell(hoveredCell.x, hoveredCell.y))
+        bool hoveredValid = gridController.IsValidCell(hoveredCell.x, hoveredCell.y);
+
+        // If the hover cell is outside the logical grid, optionally snap to the nearest valid cell
+        int useX = hoveredCell.x;
+        int useY = hoveredCell.y;
+        if (!hoveredValid)
         {
-            currentGhost.SetActive(false);
-            return;
+            if (snapGhostToNearestValidCellWhenOutside && gridController.TextureWidth > 0 && gridController.TextureHeight > 0)
+            {
+                useX = Mathf.Clamp(hoveredCell.x, 0, gridController.TextureWidth - 1);
+                useY = Mathf.Clamp(hoveredCell.y, 0, gridController.TextureHeight - 1);
+                hoveredValid = gridController.IsValidCell(useX, useY);
+            }
+            else
+            {
+                currentGhost.SetActive(false);
+                return;
+            }
         }
-        Vector3 cellCenter = gridController.GetCellCenterFromTexture(hoveredCell.x, hoveredCell.y);
+
+        Vector3 cellCenter = gridController.GetCellCenterFromTexture(useX, useY);
         currentGhost.transform.position = cellCenter;
-        bool isValidPlacement = IsValidPlacement(hoveredCell.x, hoveredCell.y);
+        bool isValidPlacement = IsValidPlacement(useX, useY);
         bool canAfford = currentStructureData != null && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(currentStructureData.cost);
 
         // Update ghost color based on affordability and placement
@@ -685,15 +754,28 @@ public class BuildController : MonoBehaviour
     {
         if (currentGhost == null || movingStructure == null) return;
         Vector2Int hoveredCell = GetGridCellUnderCursor(true);
-        if (!gridController.IsValidCell(hoveredCell.x, hoveredCell.y))
+        bool hoveredValid = gridController.IsValidCell(hoveredCell.x, hoveredCell.y);
+
+        int useX = hoveredCell.x;
+        int useY = hoveredCell.y;
+        if (!hoveredValid)
         {
-            currentGhost.SetActive(false);
-            return;
+            if (snapGhostToNearestValidCellWhenOutside && gridController.TextureWidth > 0 && gridController.TextureHeight > 0)
+            {
+                useX = Mathf.Clamp(hoveredCell.x, 0, gridController.TextureWidth - 1);
+                useY = Mathf.Clamp(hoveredCell.y, 0, gridController.TextureHeight - 1);
+                hoveredValid = gridController.IsValidCell(useX, useY);
+            }
+            else
+            {
+                currentGhost.SetActive(false);
+                return;
+            }
         }
-        Vector3 cellCenter = gridController.GetCellCenterFromTexture(hoveredCell.x, hoveredCell.y);
+        Vector3 cellCenter = gridController.GetCellCenterFromTexture(useX, useY);
         currentGhost.transform.position = cellCenter;
         currentGhost.SetActive(true);
-        bool isValidPlacement = IsValidPlacement(hoveredCell.x, hoveredCell.y);
+        bool isValidPlacement = IsValidPlacement(useX, useY);
         foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
             renderer.material.color = isValidPlacement ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
         UpdateSynergyVisualization();
@@ -768,7 +850,7 @@ public class BuildController : MonoBehaviour
         return occupiedCells;
     }
 
-    bool IsValidPlacement(int x, int y)
+        bool IsValidPlacement(int x, int y)
     {
         // Add null checks FIRST
         if (gridController == null || gridDataGenerator == null) 
@@ -777,23 +859,26 @@ public class BuildController : MonoBehaviour
             return false;
         }
         
-        // Unlimited building mode bypasses most restrictions
+        // STRICT bounds checking - prevent placement outside logical grid
+        if (x < 0 || x >= gridDataGenerator.GetGridWidth() || 
+            y < 0 || y >= gridDataGenerator.GetGridHeight())
+        {
+            Debug.LogWarning($"Placement blocked: ({x},{y}) is outside logical grid bounds (0,0) to ({gridDataGenerator.GetGridWidth()-1},{gridDataGenerator.GetGridHeight()-1})");
+            return false;
+        }
+        
+        // Unlimited building mode bypasses most restrictions but still respects grid bounds
         if (CheatManager.Instance != null && CheatManager.Instance.IsUnlimitedBuildingActive())
         {
             return gridController.IsValidCell(x, y);
         }
         
-        // Your existing validation logic...
-        if (!gridController.IsValidCell(x, y)) return false;
-        
+        // Rest of existing validation...
         GridCell cell = gridDataGenerator.GetCell(x, y);
         if (cell == null) return false;
         
-        // Check if cell is occupied
         if (cell.flags.isOccupied) return false;
-        
-        // Check ownership
-        if (!cell.flags.isOwned && enableLandBuying) return false;
+        if (!cell.flags.isOwned) return false;
         
         // Check money
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost)) 
@@ -971,11 +1056,49 @@ public class BuildController : MonoBehaviour
 
     void RemoveItem(int x, int y)
     {
-        if (!gridController.IsValidCell(x, y)) return;
+        Debug.Log($"RemoveItem called at ({x}, {y})");
+        
+        if (!gridController.IsValidCell(x, y)) 
+        {
+            Debug.Log($"Invalid cell at ({x}, {y})");
+            return;
+        }
+        
         GridCell cell = gridController.GetCell(x, y);
-        if (cell == null || !cell.flags.isOccupied) return;
+        if (cell == null) 
+        {
+            Debug.Log($"Cell is null at ({x}, {y})");
+            return;
+        }
+        
+        if (!cell.flags.isOccupied) 
+        {
+            Debug.Log($"Cell at ({x}, {y}) is not occupied");
+            return;
+        }
+        
+        // Try to find the item by name first
         string itemName = $"Item_{x}_{y}";
         GameObject placedItem = GameObject.Find(itemName);
+        Debug.Log($"Looking for item with name: {itemName}, found: {placedItem != null}");
+        
+        // If not found by exact name, try to find any structure that occupies this cell
+        if (placedItem == null)
+        {
+            Debug.Log($"Item not found by name, searching for structures occupying cell ({x}, {y})");
+            Structure[] allStructures = FindObjectsByType<Structure>(FindObjectsSortMode.None);
+            foreach (Structure structure in allStructures)
+            {
+                List<Vector2Int> footprint = GetStructureFootprint(structure.gameObject);
+                if (footprint.Contains(new Vector2Int(x, y)))
+                {
+                    placedItem = structure.gameObject;
+                    Debug.Log($"Found structure {structure.gameObject.name} occupying cell ({x}, {y})");
+                    break;
+                }
+            }
+        }
+        
         if (placedItem != null)
         {
             Structure structure = placedItem.GetComponent<Structure>();
@@ -986,24 +1109,58 @@ public class BuildController : MonoBehaviour
                 return;  // Skip deletion
             }
 
+            Debug.Log($"Removing structure: {placedItem.name}");
             List<Vector2Int> footprint = GetStructureFootprint(placedItem);
-            MoneyManager.Instance.AddMoney((int)(currentStructureData.cost * moneyBackAfterDeletePercentage));
-            Debug.Log($"Added money back after deleting. cost {currentStructureData.cost} percentage: {moneyBackAfterDeletePercentage} money gained: {currentStructureData.cost * moneyBackAfterDeletePercentage}");
+            
+            // Get the structure data for money back calculation
+            StructureData structureData = structure?.structureData;
+            if (structureData != null)
+            {
+                int moneyBack = (int)(structureData.cost * moneyBackAfterDeletePercentage);
+                MoneyManager.Instance.AddMoney(moneyBack);
+                Debug.Log($"Added money back after deleting. cost {structureData.cost} percentage: {moneyBackAfterDeletePercentage} money gained: {moneyBack}");
+            }
+            else
+            {
+                Debug.Log("No structure data found for money back calculation");
+            }
+            
             Destroy(placedItem);
             AudioManager.Instance?.PlayRemoveSound();
             foreach (Vector2Int pos in footprint) gridController.SetCellOccupied(pos.x, pos.y, false);
             gridController.UpdateGridTexture();
             if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
         }
+        else
+        {
+            Debug.Log($"No structure found at cell ({x}, {y})");
+        }
     }
 
     private bool TryRemoveStructureByRaycast()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Debug.Log("Performing raycast for structure removal");
+        
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            GameObject hitObject = hit.collider.gameObject;
-            Structure structure = hitObject.GetComponent<Structure>();
+            Debug.Log($"Raycast hit: {hit.collider.gameObject.name}");
+            
+            // Look for a Structure component in the hit object or its parents
+            Transform currentTransform = hit.collider.transform;
+            Structure structure = null;
+            
+            while (currentTransform != null)
+            {
+                structure = currentTransform.GetComponent<Structure>();
+                if (structure != null)
+                {
+                    Debug.Log($"Found structure: {structure.gameObject.name}");
+                    break;
+                }
+                currentTransform = currentTransform.parent;
+            }
+            
             if (structure != null)
             {
                 // Prevent deletion of farmhouse
@@ -1013,8 +1170,47 @@ public class BuildController : MonoBehaviour
                     return true;  // Return true to indicate "handled" without deleting
                 }
 
-                // ...existing code...
+                Debug.Log($"Attempting to remove structure by raycast: {structure.gameObject.name}");
+                
+                // Get the structure's footprint and remove it
+                List<Vector2Int> footprint = GetStructureFootprint(structure.gameObject);
+                
+                // Get money back
+                StructureData structureData = structure.structureData;
+                if (structureData != null)
+                {
+                    int moneyBack = (int)(structureData.cost * moneyBackAfterDeletePercentage);
+                    MoneyManager.Instance.AddMoney(moneyBack);
+                    Debug.Log($"Added money back after deleting by raycast. cost {structureData.cost} money gained: {moneyBack}");
+                }
+                
+                // Remove from grid
+                foreach (Vector2Int pos in footprint) 
+                {
+                    gridController.SetCellOccupied(pos.x, pos.y, false);
+                }
+                
+                // Destroy the structure
+                Destroy(structure.gameObject);
+                AudioManager.Instance?.PlayRemoveSound();
+                gridController.UpdateGridTexture();
+                
+                if (gridMonitor != null && footprint.Count > 0) 
+                {
+                    gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+                }
+                
+                Debug.Log("Structure successfully removed by raycast");
+                return true;
             }
+            else
+            {
+                Debug.Log("No structure component found in raycast hit");
+            }
+        }
+        else
+        {
+            Debug.Log("Raycast missed - no objects hit");
         }
         return false;
     }
@@ -1088,6 +1284,12 @@ public class BuildController : MonoBehaviour
                 Debug.LogWarning("Raycast to grid plane failed - using last hovered cell");
             }
         }
+        
+        if (gridController.TextureWidth > 0 && gridController.TextureHeight > 0)
+        {
+            hoveredCell.x = Mathf.Clamp(hoveredCell.x, 0, gridController.TextureWidth - 1);
+            hoveredCell.y = Mathf.Clamp(hoveredCell.y, 0, gridController.TextureHeight - 1);
+        }
         return hoveredCell;
     }
 
@@ -1096,9 +1298,4 @@ public class BuildController : MonoBehaviour
     public void HideDeleteIcon() => itemDeleteIcon.gameObject.SetActive(false);
     public Vector2 DeleteIconOffset { get => cursorOffset; set => cursorOffset = value; }
     public bool IsHousePlaced() => isHousePlaced;
-
-    public bool IsDeleteModeActive()
-    {
-        return isDeleteModeActive;
-    }
 }

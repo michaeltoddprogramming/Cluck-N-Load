@@ -55,17 +55,12 @@ public static class GridCellColorResolver
         if (!flags.isVisible)
             return new Color(0, 0, 0, 0);
             
-        if (!flags.isOwned)
-        {
-            if (flags.isObstacle) return Colors.notOwnedObstacle;
-            return Colors.notOwned;
-        }
-
-        if (flags.isOwned && flags.isObstacle) return Colors.ownedObstacle;
-        if (flags.isOwned && flags.isOccupied) return Colors.ownedOccupied;
-        if (flags.isOwned) return Colors.owned;
-
-        return Colors.unavailable;
+        // Use default grid color for all visible cells - no owned/unowned distinction
+        if (flags.isOccupied) return Colors.ownedOccupied; // Still show occupied cells differently
+        if (flags.isObstacle) return Colors.ownedObstacle; // Still show obstacles differently
+        
+        // Default grid color for all other cells
+        return Colors.owned;
     }
 }
 
@@ -74,8 +69,8 @@ public class GridColors
 {
     public Color notOwned = new Color(0.0f, 0.5f, 0.0f, 0.3f);
     public Color owned = new Color(0f, 1f, 0f, 0.3f);
-    public Color ownedOccupied = new Color(1f, 1f, 0f, 0.3f);
-    public Color ownedObstacle = new Color(0.1f, 0f, 1f, 0.3f);
+    public Color ownedOccupied = new Color(0.8f, 0.4f, 0.4f, 0.4f); // Light red/pink to indicate occupied
+    public Color ownedObstacle = new Color(0.6f, 0.3f, 0.0f, 0.4f); // Brown for obstacles
     public Color notOwnedObstacle = new Color(0f, 0.2f, 0f, 0.3f);
     public Color unavailable = new Color(0.5f, 0f, 0.5f, 0.3f);
 }

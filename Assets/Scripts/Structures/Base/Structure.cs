@@ -130,16 +130,19 @@ public class Structure : MonoBehaviour
             return;
         }
 
-        // Only register with GameLoopManager if not already registered (prevents double registration)
-        if (!isRegisteredWithGameLoop && GameLoopManager.Instance != null && !GameLoopManager.Instance.IsStructureRegistered(this))
-        {
-            GameLoopManager.Instance.RegisterStructure(this);
-            isRegisteredWithGameLoop = true;
-        }
-
+        // First, attempt to register the structure with the grid if requested
         if (autoRegisterWithGrid && gridController != null)
         {
             RegisterWithGrid();
+        }
+
+        // Only register with GameLoopManager if not already registered (prevents double registration)
+        // and if the structure either does not occupy grid cells or has at least one valid occupied cell.
+        bool hasValidGridOccupation = !occupiesGridCells || (occupiedCells != null && occupiedCells.Count > 0);
+        if (!isRegisteredWithGameLoop && GameLoopManager.Instance != null && !GameLoopManager.Instance.IsStructureRegistered(this) && hasValidGridOccupation)
+        {
+            GameLoopManager.Instance.RegisterStructure(this);
+            isRegisteredWithGameLoop = true;
         }
 
         if (GetComponent<Collider>() == null)

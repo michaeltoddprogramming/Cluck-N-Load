@@ -100,23 +100,27 @@ public class AnimalStructureUI : BaseStructureUI
 
         costText.text = (newAnimalCount * animalStructure.ProductionSettings.costPerAnimal).ToString();
 
-        // Enhanced feedback for insufficient feed (add visual indicator)
-        if (!canFeed && animalCount > 0 && !isProducing && !productReady)
+        if (feedButton != null)
         {
-            // Add a red tint to the feed button or an icon
-            if (feedButton != null)
+            var buttonImage = feedButton.GetComponent<Image>();
+            TextMeshProUGUI feedText = feedButton.GetComponentInChildren<TextMeshProUGUI>();
+            
+            bool needsFeedAndCantFeed = !canFeed && animalCount > 0 && !isProducing && !productReady &&
+                InventoryManager.Instance != null && 
+                !InventoryManager.Instance.HasItem(animalStructure.RequiredFood, 
+                    (int)((animalStructure.ProductionSettings.baseFoodRequired * animalCount) * animalStructure.foodMultiplier));
+            
+            if (buttonImage != null)
             {
-                var buttonImage = feedButton.GetComponent<Image>();
-                if (buttonImage != null) buttonImage.color = Color.red;  // Visual indicator for insufficient feed
+                // Grey out the button when feed needed but can't feed
+                Color greyColor = new Color(0.7f, 0.7f, 0.7f, 1.0f); // Medium grey
+                buttonImage.color = needsFeedAndCantFeed ? greyColor : Color.white;
             }
-        }
-        else
-        {
-            // Reset color if conditions are met
-            if (feedButton != null)
+            
+            // Change notification text to yellow when feed needed
+            if (feedText != null)
             {
-                var buttonImage = feedButton.GetComponent<Image>();
-                if (buttonImage != null) buttonImage.color = Color.white;
+                feedText.color = needsFeedAndCantFeed ? Color.yellow : Color.white;
             }
         }
 
@@ -168,7 +172,7 @@ public class AnimalStructureUI : BaseStructureUI
                 int requiredFood = (int)((animalStructure.ProductionSettings.baseFoodRequired * animalCount) * animalStructure.foodMultiplier);
                 int availableFood = InventoryManager.Instance != null ? InventoryManager.Instance.GetItemCount(animalStructure.RequiredFood) : 0;
                 statusText.text = $"Not enough {animalStructure.RequiredFood} to feed! Need {requiredFood}, have {availableFood}.";
-                statusText.color = Color.red;  // More prominent color for insufficient feed
+                statusText.color = Color.yellow;  // Changed from red to yellow
             }
             else
             {

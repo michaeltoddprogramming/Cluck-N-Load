@@ -793,7 +793,7 @@ public class BuildController : MonoBehaviour
         if (cell.flags.isOccupied) return false;
         
         // Check ownership
-        if (!cell.flags.isOwned && enableLandBuying) return false;
+        if (!cell.flags.isOwned) return false;
         
         // Check money
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost)) 

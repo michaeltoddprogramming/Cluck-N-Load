@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Cow Barn
   description: 'Cows produce milk. Feed with Wheat.  '
-  prefab: {fileID: 8921371263811498732, guid: 73d56bec68accdb46a42b94af8267d0a, type: 3}
+  prefab: {fileID: 8551711891283429149, guid: 6a8c907cd97d7334c9f1d796e069c0b9, type: 3}
   icon: {fileID: 21300000, guid: 22c616fcc593d794ca9573d5e6610dd6, type: 3}
   type: 8
   cost: 100

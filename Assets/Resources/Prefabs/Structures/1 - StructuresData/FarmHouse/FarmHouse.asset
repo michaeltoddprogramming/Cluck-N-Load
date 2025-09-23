@@ -15,7 +15,7 @@ MonoBehaviour:
   structureName: Farm House
   description: Only one can be built. If the farmhouse is destroyed, the game is
     over. Essential for crop and animal management.
-  prefab: {fileID: 5033101337580006205, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
+  prefab: {fileID: 2101515704163305632, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
   icon: {fileID: 21300000, guid: 13bc3438508c04448b9a40684a2cf9d4, type: 3}
   type: 10
   cost: 500

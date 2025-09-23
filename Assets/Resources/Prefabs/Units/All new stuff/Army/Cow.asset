@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Cow
   Prefab: {fileID: 1618091314338763466, guid: 8d75fa41e2013634c9d3f1cdbcc0bfa6, type: 3}
-  MovementSpeed: 2.5
+  MovementSpeed: 3
   Type: 4
-  Health: 300
-  AttackDamage: 8
+  Health: 380
+  AttackDamage: 15
   AttackRange: 4
   AttackCooldown: 0.5
   Acceleration: 4

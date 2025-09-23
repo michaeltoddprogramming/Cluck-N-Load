@@ -19,8 +19,17 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
   cost: 150
-  health: 250
+  health: 500
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  costPerAnimal: 50
+  moneyPerProduct: 50
+  baseFoodRequired: 2
+  foodSynergyMultiplier: 1
+  sunflowerBaseHarvestAmount: 10
+  wheatBaseHarvestAmount: 10
+  carrotsBaseHarvestAmount: 10
+  cropSynergyMultiplier: 1.5
+  totalPerSilo: 100
   unlockDay: 0
   targetAnimalType: Chicken
   armyAnimalPrefabs:
@@ -28,5 +37,5 @@ MonoBehaviour:
   flagPrefab: {fileID: 644296213450521698, guid: 3a6f0a44bc1ead84c8d83185c3a205d0, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
-  recruitmentCostPerAnimal: 50
+  recruitmentCostPerAnimal: 20
   protectionRadius: 5

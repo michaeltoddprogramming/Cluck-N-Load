@@ -17,12 +17,12 @@ MonoBehaviour:
   MovementSpeed: 5.5
   Type: 0
   AttType: 0
-  Health: 75
+  Health: 120
   AttackDamage: 15
   AttackRange: 1000
   AttackCooldown: 1
-  Acceleration: 10
-  AngularSpeed: 360
+  Acceleration: 8
+  AngularSpeed: 200
   StoppingDistance: 2
   AttackSound: {fileID: 8300000, guid: 21b639a05b3773147837ddcb548fc184, type: 3}
   DeathSound: {fileID: 8300000, guid: 7b0841ab96974e249804d83be3e4fbc4, type: 3}

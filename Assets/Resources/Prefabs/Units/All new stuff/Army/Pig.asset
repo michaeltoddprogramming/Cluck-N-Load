@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: pig
   Prefab: {fileID: 4898585818345014531, guid: 179d2a93b04af634ba533e40b1492b2a, type: 3}
-  MovementSpeed: 3
+  MovementSpeed: 4
   Type: 1
-  Health: 120
-  AttackDamage: 20
+  Health: 220
+  AttackDamage: 25
   AttackRange: 8
-  AttackCooldown: 2
+  AttackCooldown: 1.2
   Acceleration: 6
   AngularSpeed: 180
   StoppingDistance: 1.5

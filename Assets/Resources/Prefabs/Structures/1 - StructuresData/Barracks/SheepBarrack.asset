@@ -18,9 +18,18 @@ MonoBehaviour:
   prefab: {fileID: 6362942478896378572, guid: f1f6c69fbd2d5b9439a7a27c30d7a327, type: 3}
   icon: {fileID: 21300000, guid: 7dc9a05d38d7dc145847e7284a071c23, type: 3}
   type: 9
-  cost: 300
-  health: 650
+  cost: 225
+  health: 520
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  costPerAnimal: 50
+  moneyPerProduct: 50
+  baseFoodRequired: 2
+  foodSynergyMultiplier: 1
+  sunflowerBaseHarvestAmount: 10
+  wheatBaseHarvestAmount: 10
+  carrotsBaseHarvestAmount: 10
+  cropSynergyMultiplier: 1.5
+  totalPerSilo: 100
   unlockDay: 10
   targetAnimalType: Sheep
   armyAnimalPrefabs:
@@ -28,5 +37,5 @@ MonoBehaviour:
   flagPrefab: {fileID: 5011848787234979181, guid: 8ecba7c70d5778e429d659fe26a69ad5, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
-  recruitmentCostPerAnimal: 50
+  recruitmentCostPerAnimal: 35
   protectionRadius: 5

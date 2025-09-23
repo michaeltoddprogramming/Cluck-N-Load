@@ -21,6 +21,15 @@ MonoBehaviour:
   cost: 5
   health: 250
   uiPrefab: {fileID: 3724273108228962489, guid: fd1bea9db1eb8ac479596a37aad8d8b7, type: 3}
+  costPerAnimal: 50
+  moneyPerProduct: 50
+  baseFoodRequired: 2
+  foodSynergyMultiplier: 1
+  sunflowerBaseHarvestAmount: 10
+  wheatBaseHarvestAmount: 10
+  carrotsBaseHarvestAmount: 10
+  cropSynergyMultiplier: 1.5
+  totalPerSilo: 100
   unlockDay: 0
   targetAnimalType: 
   armyAnimalPrefabs: []

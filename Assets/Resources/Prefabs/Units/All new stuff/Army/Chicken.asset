@@ -17,7 +17,7 @@ MonoBehaviour:
   MovementSpeed: 6
   Type: 3
   Health: 100
-  AttackDamage: 8
+  AttackDamage: 10
   AttackRange: 1
   AttackCooldown: 0.7
   Acceleration: 10

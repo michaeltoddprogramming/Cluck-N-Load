@@ -17,9 +17,18 @@ MonoBehaviour:
   prefab: {fileID: 5393729371489912459, guid: afa7f5c2e426c15459f0b1d4913e90fb, type: 3}
   icon: {fileID: 21300000, guid: ba92087104e3e24448c32900f2ca15fd, type: 3}
   type: 9
-  cost: 220
+  cost: 200
   health: 550
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
+  costPerAnimal: 50
+  moneyPerProduct: 50
+  baseFoodRequired: 2
+  foodSynergyMultiplier: 1
+  sunflowerBaseHarvestAmount: 10
+  wheatBaseHarvestAmount: 10
+  carrotsBaseHarvestAmount: 10
+  cropSynergyMultiplier: 1.5
+  totalPerSilo: 100
   unlockDay: 5
   targetAnimalType: Pig
   armyAnimalPrefabs:
@@ -27,5 +36,5 @@ MonoBehaviour:
   flagPrefab: {fileID: 5255820357472239640, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
-  recruitmentCostPerAnimal: 50
+  recruitmentCostPerAnimal: 40
   protectionRadius: 5

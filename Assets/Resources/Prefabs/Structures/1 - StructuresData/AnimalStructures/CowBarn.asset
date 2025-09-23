@@ -17,9 +17,18 @@ MonoBehaviour:
   prefab: {fileID: 8551711891283429149, guid: 6a8c907cd97d7334c9f1d796e069c0b9, type: 3}
   icon: {fileID: 21300000, guid: 22c616fcc593d794ca9573d5e6610dd6, type: 3}
   type: 8
-  cost: 350
-  health: 350
+  cost: 200
+  health: 500
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
+  costPerAnimal: 80
+  moneyPerProduct: 100
+  baseFoodRequired: 3
+  foodSynergyMultiplier: 0.8
+  sunflowerBaseHarvestAmount: 10
+  wheatBaseHarvestAmount: 10
+  carrotsBaseHarvestAmount: 10
+  cropSynergyMultiplier: 1.5
+  totalPerSilo: 100
   unlockDay: 10
   targetAnimalType: 
   armyAnimalPrefabs: []

@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Bear
   Prefab: {fileID: 1330120598086573249, guid: 30316c040bbd7ef43a5798061aa74905, type: 3}
-  MovementSpeed: 3
+  MovementSpeed: 2.5
   Type: 2
   AttType: 2
-  Health: 250
-  AttackDamage: 25
+  Health: 400
+  AttackDamage: 50
   AttackRange: 1000
-  AttackCooldown: 1.5
-  Acceleration: 5
-  AngularSpeed: 180
+  AttackCooldown: 2
+  Acceleration: 2.5
+  AngularSpeed: 90
   StoppingDistance: 1.5
   AttackSound: {fileID: 8300000, guid: a1899514e2635c046ac76660b78a753a, type: 3}
   DeathSound: {fileID: 8300000, guid: 2ca6600384effcb4aba77a3d1ca90ef9, type: 3}

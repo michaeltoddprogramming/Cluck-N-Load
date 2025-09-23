@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Boar
   Prefab: {fileID: 4049575017246058793, guid: 65bfd5244fac2114fa9cf660ef507179, type: 3}
-  MovementSpeed: 4.5
+  MovementSpeed: 4
   Type: 3
   AttType: 3
-  Health: 150
-  AttackDamage: 25
+  Health: 250
+  AttackDamage: 30
   AttackRange: 1000
   AttackCooldown: 1.5
   Acceleration: 7
-  AngularSpeed: 250
+  AngularSpeed: 150
   StoppingDistance: 1.2
   AttackSound: {fileID: 8300000, guid: 58a4c3e5ebdd664408b2733b5e217575, type: 3}
   DeathSound: {fileID: 8300000, guid: eb08ab7409ba78046a60c598c4efce78, type: 3}

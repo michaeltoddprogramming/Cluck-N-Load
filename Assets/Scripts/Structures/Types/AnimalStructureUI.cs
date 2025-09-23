@@ -214,11 +214,11 @@ public class AnimalStructureUI : BaseStructureUI
     {
         if (newAnimalCount > 0 && MoneyManager.Instance != null)
         {
-            animalStructure.BuyAnimals(newAnimalCount);
-            newAnimalCount = 0;
             CivilianSpawner spawner = animalStructure.GetComponentInChildren<CivilianSpawner>();
             if (spawner != null)
-                spawner.SpawnAnimals(newAnimalCount);
+                spawner.SpawnAnimals(newAnimalCount + animalStructure.AnimalCount);
+            animalStructure.BuyAnimals(newAnimalCount);
+            newAnimalCount = 0;
         }
     }
 

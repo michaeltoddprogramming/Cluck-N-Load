@@ -9,18 +9,29 @@ public class CivilianSpawner : MonoBehaviour
     [SerializeField] private CivilianData data;
     private List<GameObject> spawnedAnimals = new List<GameObject>();
 
-    public void SpawnAnimals(int userPurchaseCount)
+    public void SpawnAnimals(int totalPurchases)
     {
-        if (userPurchaseCount == 1)
+        int desiredTotalAnimals = 1; // default
+
+        if (totalPurchases >= 10)
+            desiredTotalAnimals = 5;
+        else if (totalPurchases >= 8)
+            desiredTotalAnimals = 4;
+        else if (totalPurchases >= 6)
+            desiredTotalAnimals = 3;
+        else if (totalPurchases >= 3)
+            desiredTotalAnimals = 2;
+        else
+            desiredTotalAnimals = 1;
+
+        // Spawn the difference
+        while (spawnedAnimals.Count < desiredTotalAnimals)
         {
             SpawnSingleAnimal();
         }
-        else if (userPurchaseCount % 2 == 0)
-        {
-            SpawnSingleAnimal();
-        }
-        return;
     }
+
+
 
     private void SpawnSingleAnimal()
     {
@@ -32,7 +43,7 @@ public class CivilianSpawner : MonoBehaviour
         spawnedAnimals.Add(newAnimal);
     }
 
-    private void RemoveAnimal()
+    public void RemoveAnimal()
     {
         if (spawnedAnimals.Count == 0) return;
 

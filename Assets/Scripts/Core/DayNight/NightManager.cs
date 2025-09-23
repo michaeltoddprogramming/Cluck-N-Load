@@ -225,7 +225,7 @@ public class NightManager : MonoBehaviour
 
         tempSecond += Time.deltaTime * speedUp;
         // tempSecond += Time.deltaTime * inGameMinVSSec * speedUp;
-        Debug.Log("here is the time: " + tempSecond);
+        // Debug.Log("here is the time: " + tempSecond);
         timeText.text = $"{Hours:D2}:{Minutes:D2}";
 
         // float currentTimeRate = inGameMinVSSec;

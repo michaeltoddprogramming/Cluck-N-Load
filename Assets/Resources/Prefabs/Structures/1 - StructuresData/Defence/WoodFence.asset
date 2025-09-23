@@ -15,7 +15,7 @@ MonoBehaviour:
   structureName: Wooden Fence
   description: A moderately strong barrier made of wood. Use it to shape enemy paths
     and provide temporary protection.
-  prefab: {fileID: 3790603597921493294, guid: a41bf287ba854c04896dcdad3a1fb4e6, type: 3}
+  prefab: {fileID: 571157952748499214, guid: 5bffab62a5bf5d14c8cc80503a9e2391, type: 3}
   icon: {fileID: 21300000, guid: 9be045d29dfc39243b66e955a1ce58d5, type: 3}
   type: 3
   cost: 15

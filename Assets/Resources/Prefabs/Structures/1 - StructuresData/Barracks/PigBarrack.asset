@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Pig Barrack
   description: Pigs are sturdy units equipped with flamethrowers for area damage.
-  prefab: {fileID: 127442347093937361, guid: bd7a7a41cb5fc2049b5b4624aa7246ba, type: 3}
+  prefab: {fileID: 5393729371489912459, guid: afa7f5c2e426c15459f0b1d4913e90fb, type: 3}
   icon: {fileID: 21300000, guid: ba92087104e3e24448c32900f2ca15fd, type: 3}
   type: 9
   cost: 50

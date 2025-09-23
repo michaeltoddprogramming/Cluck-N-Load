@@ -873,12 +873,36 @@ public class BuildController : MonoBehaviour
             return gridController.IsValidCell(x, y);
         }
         
-        // Rest of existing validation...
-        GridCell cell = gridDataGenerator.GetCell(x, y);
-        if (cell == null) return false;
-        
-        if (cell.flags.isOccupied) return false;
-        if (!cell.flags.isOwned) return false;
+        // Get the structure's footprint and check ALL cells
+        if (currentGhost != null)
+        {
+            List<Vector2Int> footprint = GetStructureFootprint(currentGhost);
+            
+            foreach (Vector2Int cell in footprint)
+            {
+                // Check if each cell in footprint is valid
+                if (!gridController.IsValidCell(cell.x, cell.y))
+                    return false;
+                    
+                GridCell gridCell = gridDataGenerator.GetCell(cell.x, cell.y);
+                if (gridCell == null) return false;
+                
+                // Check if any cell in footprint is occupied
+                if (gridCell.flags.isOccupied) return false;
+                
+                // Check if any cell in footprint is not owned
+                if (!gridCell.flags.isOwned) return false;
+            }
+        }
+        else
+        {
+            // Fallback: check single cell if no ghost exists
+            GridCell cell = gridDataGenerator.GetCell(x, y);
+            if (cell == null) return false;
+            
+            if (cell.flags.isOccupied) return false;
+            if (!cell.flags.isOwned) return false;
+        }
         
         // Check money
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost)) 

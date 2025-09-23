@@ -2286,7 +2286,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
   m_Name: 
@@ -4040,15 +4040,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
       propertyPath: m_LocalScale.x
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
       propertyPath: m_LocalScale.y
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
       propertyPath: m_LocalScale.z
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2923026759854590654, guid: c324acf0002020d4bbc05d6434b24330, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4352,11 +4352,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetMeshRenderer: {fileID: 465760067}
   useFixedGridSize: 0
-  fixedGridWidth: 200
-  fixedGridHeight: 200
+  fixedGridWidth: 50
+  fixedGridHeight: 50
   cellSize: 1.7
-  gridWidth: 200
-  gridHeight: 200
+  gridWidth: 100
+  gridHeight: 100
 --- !u!4 &527660423
 Transform:
   m_ObjectHideFlags: 0
@@ -4416,7 +4416,7 @@ MonoBehaviour:
   gridDataGenerator: {fileID: 527660422}
   centerBuilding: {fileID: 0}
   centerPosition: {x: 0, y: 0, z: 0}
-  ownershipRadius: 30
+  ownershipRadius: 20
   shapeBlend: 1
   visualizeInEditor: 0
   gizmoColor: {r: 1, g: 0.9813726, b: 0, a: 1}
@@ -13731,7 +13731,7 @@ MonoBehaviour:
   racoon: {fileID: 11400000, guid: c0a54c791569ae4479782394f2901f1b, type: 2}
   bear: {fileID: 11400000, guid: 30e48aeed0a514f4ab64f14cb134051e, type: 2}
   boar: {fileID: 11400000, guid: aa8c850b7eca6b2468f489a333cc415a, type: 2}
-  _gridDataGenerator: {fileID: 0}
+  _gridDataGenerator: {fileID: 527660422}
 --- !u!1 &1924309105
 GameObject:
   m_ObjectHideFlags: 0

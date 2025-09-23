@@ -21,6 +21,8 @@ public class InventoryManager : MonoBehaviour
     private Dictionary<string, int> inventory = new Dictionary<string, int>();
     private Dictionary<string, TextMeshProUGUI> itemTextComponents = new Dictionary<string, TextMeshProUGUI>();
 
+    public StructureData data;
+
     private void Awake()
     {
         // Singleton setup
@@ -39,13 +41,16 @@ public class InventoryManager : MonoBehaviour
         inventory["Sunflower"] = 5;
         inventory["Wheat"] = 5;
         inventory["Carrots"] = 5;
-        }
+    }
 
     // Removed Update() method - capacity is now calculated when silos are added/removed
     // This improves performance by not calculating capacity every frame
 
     private void Start()
     {
+        totalPerSilo = data.totalPerSilo;
+
+
         if (sunflowerText != null) itemTextComponents["Sunflower"] = sunflowerText;
         if (wheatText != null) itemTextComponents["Wheat"] = wheatText;
         if (carrotsText != null) itemTextComponents["Carrots"] = carrotsText;
@@ -133,7 +138,7 @@ public class InventoryManager : MonoBehaviour
         if (itemTextComponents.ContainsKey(itemName) && itemTextComponents[itemName] != null)
         {
             itemTextComponents[itemName].text = inventory[itemName].ToString();
-            }
+        }
         else
         {
             Debug.LogWarning($"No TextMeshProUGUI assigned for {itemName}");

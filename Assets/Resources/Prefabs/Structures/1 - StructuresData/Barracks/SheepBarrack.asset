@@ -18,10 +18,10 @@ MonoBehaviour:
   prefab: {fileID: 6362942478896378572, guid: f1f6c69fbd2d5b9439a7a27c30d7a327, type: 3}
   icon: {fileID: 21300000, guid: 7dc9a05d38d7dc145847e7284a071c23, type: 3}
   type: 9
-  cost: 50
+  cost: 300
   health: 650
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
-  unlockDay: 15
+  unlockDay: 10
   targetAnimalType: Sheep
   armyAnimalPrefabs:
   - {fileID: 9081500957736614236, guid: 0a2b9821b8055f846bdfd34fa8f2a7a2, type: 3}

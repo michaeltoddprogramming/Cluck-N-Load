@@ -47,10 +47,27 @@ public class CropStructure : Structure
     public bool CropReady => cropReady;
     public float ProductionMultiplier => productionMultiplier;
     public CropType CurrentCropType => currentCropType;
+    StructureData data;
 
     protected override void Start()
     {
         base.Start();
+        data = GetData();
+        if (currentCropType == CropType.Carrots)
+        {
+            baseCropHarvestAmount = data.carrotsBaseHarvestAmount;
+        }
+        else if (currentCropType == CropType.Sunflower)
+        {
+            baseCropHarvestAmount = data.sunflowerBaseHarvestAmount;
+        }
+        else
+        {
+            baseCropHarvestAmount = data.wheatBaseHarvestAmount;
+        }
+
+        cropHarvestMultiplierIncrease = data.cropSynergyMultiplier;
+
         UpdateSiloSynergy();
         nightManager = nightManager ?? NightManager.Instance ?? FindFirstObjectByType<NightManager>();
     }

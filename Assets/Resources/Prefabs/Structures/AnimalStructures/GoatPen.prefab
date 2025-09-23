@@ -131,9 +131,9 @@ MonoBehaviour:
   maxPitch: 1.05
   siloSynergyRange: 15
   synergyFoodRequired: 0.8
-  normalFoodRequired: 1
+  normalFoodRequired: 4
   foodMultiplier: 1
-  baseMoneyPerProduct: 10
+  baseMoneyPerProduct: 60
   baseProductMultiplier: 1
 --- !u!82 &4148003080414070179
 AudioSource:

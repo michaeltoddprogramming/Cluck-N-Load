@@ -17,7 +17,7 @@ MonoBehaviour:
   prefab: {fileID: 7715943247418612006, guid: c4cc5775b6757f14bbdb6969125deaee, type: 3}
   icon: {fileID: 21300000, guid: edf6e7cff72ddd64ca638184f059f553, type: 3}
   type: 8
-  cost: 50
+  cost: 100
   health: 250
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
   unlockDay: 0
@@ -27,5 +27,5 @@ MonoBehaviour:
   flagPrefab: {fileID: 7043309248494615266, guid: 20f0c6f544540b440bcffbf5a437e946, type: 3}
   recruitmentRange: 4000
   maxArmyAnimals: 5
-  recruitmentCostPerAnimal: 50
+  recruitmentCostPerAnimal: 51
   protectionRadius: 2

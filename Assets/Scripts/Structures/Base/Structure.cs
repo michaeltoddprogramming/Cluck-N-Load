@@ -11,6 +11,8 @@ public class Structure : MonoBehaviour
     private bool isRegisteredWithGameLoop = false;
 
     public StructureData StructureData => structureData; // Public property for external access
+    // public StructureData StructureData;
+    // public StructureDatabase StructureDatabase => structureDatabase;
 
     [Header("Structure Properties")]
     [Tooltip("Reference to structure data asset")]
@@ -88,6 +90,11 @@ public class Structure : MonoBehaviour
     // }
 
     #region Unity Lifecycle
+
+    public StructureData GetData()
+    {
+        return structureData;
+    }
 
     private void Awake()
     {
@@ -502,14 +509,14 @@ public class Structure : MonoBehaviour
         {
             selectionIndicator.SetActive(false);
         }
-        
+
         // Remove selection animation component if it exists
         SelectionAnimation selector = GetComponent<SelectionAnimation>();
         if (selector != null)
         {
             Destroy(selector);
         }
-        
+
         Collider col = GetComponent<Collider>();
         if (col != null && !col.enabled)
         {
@@ -551,9 +558,9 @@ public class Structure : MonoBehaviour
         {
             return;
         }
-        
+
         currentHealth = Mathf.Max(0, currentHealth - damage);
-        
+
         if (currentHealth <= 0)
         {
             OnStructureDestroyed?.Invoke(this); // Pass 'this' as the argument

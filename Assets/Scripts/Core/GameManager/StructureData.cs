@@ -4,6 +4,7 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "NewStructure", menuName = "Build System/Structure Data")]
 public class StructureData : ScriptableObject
 {
+    [Header("Structure Info")]
     public string structureName;
     public string description;
     public GameObject prefab;
@@ -12,6 +13,21 @@ public class StructureData : ScriptableObject
     public int cost;
     public int health;
     public GameObject uiPrefab;
+
+    [Header("Civilian stats")]
+    public int costPerAnimal = 50;
+    public int moneyPerProduct = 50;
+    public int baseFoodRequired = 2;
+    public float foodSynergyMultiplier = 1f;
+
+    [Header("Crop stats")]
+    public float sunflowerBaseHarvestAmount = 10f;
+    public float wheatBaseHarvestAmount = 10f;
+    public float carrotsBaseHarvestAmount = 10f;
+    public float cropSynergyMultiplier = 1.5f;
+
+    [Header("Silo stats")]
+    public int totalPerSilo = 100;
 
     [Header("Progressive Unlocks")]
     [Tooltip("Day number when this structure becomes available in the shop/game.")]

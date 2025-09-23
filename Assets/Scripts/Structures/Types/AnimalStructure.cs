@@ -30,6 +30,7 @@ public class AnimalStructure : Structure
 
     private Coroutine backgroundCoroutine;
 
+    [System.Serializable]
     public class AnimalProductionSettings
     {
         public float productionTime = 24f;
@@ -63,13 +64,24 @@ public class AnimalStructure : Structure
     [SerializeField] public int baseMoneyPerProduct = 50;
     [SerializeField] public int baseProductMultiplier = 1;
 
+    StructureData data;
+
     protected override void Start()
     {
         base.Start();
-        
+
+        data = GetData();
+
+
+        productionSettings.costPerAnimal = data.costPerAnimal;
+        productionSettings.moneyPerProduct = data.moneyPerProduct;
+        productionSettings.baseFoodRequired = data.baseFoodRequired;
+        synergyFoodRequired = data.foodSynergyMultiplier;
+
+
         // Register with static list for efficient lookups
         allAnimalStructures.Add(this);
-        
+
         updateSiloSynergy();
         BarracksStructure.UpdateAllNearbyChickenCoops();
         isProducing = false;
@@ -145,8 +157,8 @@ public class AnimalStructure : Structure
         return animalType switch
         {
             AnimalType.Chicken => "Sunflower",
-            AnimalType.Cow => "Wheat",
-            AnimalType.Sheep or AnimalType.Goat or AnimalType.Pig => "Carrots",
+            AnimalType.Cow or AnimalType.Sheep => "Wheat",
+            AnimalType.Goat or AnimalType.Pig => "Carrots",
             _ => "Unknown"
         };
     }
@@ -254,14 +266,14 @@ public class AnimalStructure : Structure
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        
+
         // Clean up background coroutine to prevent memory leaks
         if (backgroundCoroutine != null)
         {
             StopCoroutine(backgroundCoroutine);
             backgroundCoroutine = null;
         }
-        
+
         if (nightManager != null && isRegisteredWithNightManager)
         {
             nightManager.UnregisterAnimalStructure(this);

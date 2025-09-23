@@ -18,7 +18,7 @@ MonoBehaviour:
   prefab: {fileID: 1773444123984712478, guid: 29ff30d11ea4a764cbed58bcddc57038, type: 3}
   icon: {fileID: 21300000, guid: 5605d60cb6feb244999ea2a1d7be8aaf, type: 3}
   type: 9
-  cost: 50
+  cost: 150
   health: 250
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
   unlockDay: 0

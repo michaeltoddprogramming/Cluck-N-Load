@@ -18,10 +18,10 @@ MonoBehaviour:
   prefab: {fileID: 7501336543757764166, guid: db5ee0fcb6d9d3e448435df9d568c448, type: 3}
   icon: {fileID: 21300000, guid: cecbd1f9f4a245840a9ae6eb29a6ac2d, type: 3}
   type: 9
-  cost: 50
+  cost: 350
   health: 350
   uiPrefab: {fileID: 3724273108228962489, guid: 353aef88195799845b545892f020d9c0, type: 3}
-  unlockDay: 5
+  unlockDay: 10
   targetAnimalType: Cow
   armyAnimalPrefabs:
   - {fileID: 1618091314338763466, guid: 8d75fa41e2013634c9d3f1cdbcc0bfa6, type: 3}

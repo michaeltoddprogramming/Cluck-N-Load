@@ -15,7 +15,7 @@ MonoBehaviour:
   structureName: Goat Barrack
   description: Goats are agile units equipped with snipers for long range and precise
     attacks.
-  prefab: {fileID: 5808619500396567147, guid: b18305c600899ca419fa2b21d0fa41f5, type: 3}
+  prefab: {fileID: 8117336626537134864, guid: b000d3b6c60f5814c9d0af336eae91b9, type: 3}
   icon: {fileID: 21300000, guid: 0b0ca4f613417214f948d5758beccc6b, type: 3}
   type: 9
   cost: 50

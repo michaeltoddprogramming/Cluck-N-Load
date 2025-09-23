@@ -15,7 +15,7 @@ MonoBehaviour:
   structureName: Hay Bale
   description: Hay bale with low health that acts as a temporary wall. Use it to
     funnel enemies into kill zones and control the battlefield.
-  prefab: {fileID: 6967584051540009547, guid: f657ab3a594635944b42537e93f7f43d, type: 3}
+  prefab: {fileID: 1052537911471977704, guid: a2d803876da35f248b80d81b1a05943f, type: 3}
   icon: {fileID: 21300000, guid: 8c5c0a109d21a4b4ba0c09885fca4856, type: 3}
   type: 3
   cost: 5

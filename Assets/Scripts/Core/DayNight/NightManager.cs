@@ -1350,4 +1350,9 @@ public class NightManager : MonoBehaviour
             StopCoroutine(cor);
         }
     }
+
+    public bool getIsPaused()
+    {
+        return isPaused;
+    }
 }

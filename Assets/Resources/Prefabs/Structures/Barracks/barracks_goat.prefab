@@ -128,6 +128,10 @@ MonoBehaviour:
   protectionRadius: 5
   flagColor: {r: 1, g: 1, b: 1, a: 1}
   structureCheckInterval: 10
+  flagHeightOffset: 7
+  useTerrainDetection: 1
+  terrainHeightBuffer: 0.5
+  maxRaycastDistance: 50
   flagPlaceSound: {fileID: 4641587279603044371}
   flagPlaceSong: {fileID: 7975839364533272490}
   audioSource: {fileID: 9058677573911990895}

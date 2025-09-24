@@ -10,15 +10,55 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public TextMeshProUGUI costText;
     public TextMeshProUGUI descriptionText; 
     public Button selectButton;
-    public GameObject lockedOverlay; // <-- Add this to your prefab and assign in inspector
+    public GameObject lockedOverlay;
+    public NightManager nightManager;
 
     private StructureData data;
-    private BuildController buildController;  // Add this field to cache the reference
+    private BuildController buildController;
+    
+    // Track if item is locked due to day requirement (not pause)
+    private bool isLockedByDay = false;
 
     private void Start()
     {
-        // Cache the BuildController reference
         buildController = FindFirstObjectByType<BuildController>();
+        nightManager = FindFirstObjectByType<NightManager>();
+    }
+
+    private void Update()
+    {
+        // Simple pause check - show locked overlay if paused
+        bool isPaused = nightManager != null && nightManager.getIsPaused();
+        
+        if (lockedOverlay != null)
+        {
+            // Show overlay if paused OR locked by day requirement
+            lockedOverlay.SetActive(isPaused || isLockedByDay);
+            
+            // Update the overlay text based on why it's locked
+            if (lockedOverlay.activeInHierarchy)
+            {
+                var overlayText = lockedOverlay.GetComponentInChildren<TextMeshProUGUI>();
+                if (overlayText != null)
+                {
+                    if (isPaused)
+                    {
+                        overlayText.text = "Game Paused";
+                    }
+                    else if (isLockedByDay)
+                    {
+                        overlayText.text = $"Unlocks on Day {data?.unlockDay ?? 0}";
+                    }
+                }
+            }
+        }
+        
+        // Disable button if paused
+        if (selectButton != null)
+        {
+            selectButton.interactable = !isPaused && !isLockedByDay && 
+                (MoneyManager.Instance?.CanAfford(data?.cost ?? 0) ?? false);
+        }
     }
 
     public void Setup(StructureData structure)
@@ -44,19 +84,15 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             descriptionText.text = structure.description;
 
         int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
-        bool isLocked = structure.unlockDay > currentDay;
+        isLockedByDay = structure.unlockDay > currentDay; // Store the day lock state
 
-        if (lockedOverlay != null)
-            lockedOverlay.SetActive(isLocked);
-
-        if (isLocked)
+        if (isLockedByDay)
         {
             if (selectButton != null)
                 selectButton.interactable = false;
             if (icon != null)
                 icon.color = new Color(0.7f, 0.7f, 0.7f, 0.5f);
 
-            // Only update UnlockText in overlay, not the price
             if (lockedOverlay != null)
             {
                 var unlockText = lockedOverlay.GetComponentInChildren<TextMeshProUGUI>();
@@ -80,6 +116,14 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void SelectStructure()
     {
+        // Check if game is paused first
+        bool isPaused = nightManager != null && nightManager.getIsPaused();
+        if (isPaused)
+        {
+            Debug.Log("Game is paused. Cannot select structure.");
+            return;
+        }
+        
         if (data == null)
         {
             Debug.LogError("StructureData is null when selecting structure!");

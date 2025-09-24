@@ -120,10 +120,10 @@ public class ShopUIManager : MonoBehaviour
         bool isNightTime = NightManager.Instance != null && !NightManager.Instance.IsDay;
         
         // Also check if the game is paused - if it is, always disable
-        bool isPaused = NightManager.Instance != null && NightManager.Instance.IsPaused;
+        // bool isPaused = NightManager.Instance != null && NightManager.Instance.IsPaused;
 
-        // Only check tutorial conditions if it's daytime AND not paused
-        bool shopAllowed = !isNightTime && !isPaused && IsShopAllowedInTutorial();
+        // Only check tutorial conditions if it's daytime
+        bool shopAllowed = !isNightTime && IsShopAllowedInTutorial();
 
         shopButton.interactable = shopAllowed;
 
@@ -363,7 +363,7 @@ public class ShopUIManager : MonoBehaviour
             
             // If shop is allowed in tutorial (or tutorial not active), handle based on day/night and pause state
             NightManager nightManager = NightManager.Instance;
-            if (nightManager != null && nightManager.IsDay && !nightManager.IsPaused)
+            if (nightManager != null && nightManager.IsDay) // && !nightManager.IsPaused)
             {
                 shopButton.interactable = true;
                 shopIcon.color = dayShop;

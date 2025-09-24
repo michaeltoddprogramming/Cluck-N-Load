@@ -219,7 +219,7 @@ public class ArmyUnit : BaseUnit
             // Delay impact for goats so it syncs with animation
             StartCoroutine(DelayedImpactAndReturn(0.8f));
         }
-        else
+        else if (data.Type == ArmyType.Cow)
         {
             // SetTrigger("Attack");
             // StartCoroutine(DelayedImpactAndReturn(0.33f));
@@ -228,6 +228,10 @@ public class ArmyUnit : BaseUnit
             // PerformAttackImpact();
             // For cows, sheep, pigs - perform attack and return to flag
             // StartCoroutine(AttackAndReturnToFlag());
+        }
+        else
+        {
+            PerformAttackImpact();
         }
 
         // PlaySound(data.AttackSound, 'a');

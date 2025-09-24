@@ -578,6 +578,49 @@ public partial class TutorialManager : MonoBehaviour
         currentDiscoveryStep = null;
     }
 
+    public void ShowPeteSeasonNotification(TutorialStep seasonStep)
+    {
+        // Use the existing discovery popup system to show Pete's season notifications
+        if (isShowingDiscovery) return; // Don't interrupt existing discovery
+
+        // Temporarily register this as a discovery step
+        isShowingDiscovery = true;
+        currentDiscoveryStep = seasonStep;
+
+        // Show the tutorial panel and populate with Pete's season message
+        tutorialPanel.SetActive(true);
+        
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+
+        typingCoroutine = StartCoroutine(TypeTextWithMumble(seasonStep.instructionText));
+        titleText.text = seasonStep.title;
+        UpdateCharacterPortrait(seasonStep);
+
+        // Hide next step button and show discovery close button
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(false);
+
+        if (discoveryCloseButton != null)
+        {
+            discoveryCloseButton.gameObject.SetActive(true);
+            discoveryCloseButton.onClick.RemoveAllListeners();
+            discoveryCloseButton.onClick.AddListener(ClosePeteSeasonNotification);
+        }
+    }
+
+    private void ClosePeteSeasonNotification()
+    {
+        // Clean up Pete season notification
+        tutorialPanel.SetActive(false);
+        
+        if (discoveryCloseButton != null)
+            discoveryCloseButton.gameObject.SetActive(false);
+
+        isShowingDiscovery = false;
+        currentDiscoveryStep = null;
+    }
+
     // --- Pause/Resume tutorial mumble audio on game pause/resume ---
     private void OnDestroy()
     {

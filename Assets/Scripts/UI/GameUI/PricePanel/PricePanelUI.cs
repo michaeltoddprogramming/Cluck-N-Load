@@ -206,6 +206,10 @@ public class PricePanelUI : MonoBehaviour
         populatePricePanel();
         if (audioClipOpen != null && audioSourceOpen != null)
             audioSourceOpen.PlayOneShot(audioClipOpen);
+        
+        // Trigger tutorial step for price panel opened
+        if (TutorialManager.Instance != null)
+            TutorialManager.Instance.Trigger(TutorialTrigger.PricePanelOpened);
         // if (activePricePanelInstance == null)
         // {
         // Canvas canvas = FindFirstObjectByType<Canvas>();
@@ -231,6 +235,10 @@ public class PricePanelUI : MonoBehaviour
         gameObject.SetActive(false);
         if (audioClipClose != null && audioSourceClose != null)
             audioSourceClose.PlayOneShot(audioClipClose);
+        
+        // Trigger tutorial step for price panel closed
+        if (TutorialManager.Instance != null)
+            TutorialManager.Instance.Trigger(TutorialTrigger.PricePanelClosed);
         // if (activePricePanelInstance != null)
         // {
         // AudioSource.PlayClipAtPoint(audioClipClose, Camera.main.transform.position);

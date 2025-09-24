@@ -11,6 +11,8 @@ public class ShopTabController : MonoBehaviour
     {
         foreach (Image img in imageButtons)
         {
+            // Skip null images (for removed tabs)
+            if (img == null) continue;
             RectTransform rt = img.GetComponent<RectTransform>();
             // rt.pivot = new Vector2(1f, 0.5f); // pivot right, grow left
             // rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
@@ -45,7 +47,12 @@ rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
     {
         foreach (Image img in imageButtons)
         {
+            // Add null check to handle removed tabs
+            if (img == null) continue;
+            
             RectTransform rt = img.GetComponent<RectTransform>();
+            if (rt == null) continue;
+            
             bool isSelected = img == clickedImage;
             float width = isSelected ? selectedWidth : normalWidth;
             rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);

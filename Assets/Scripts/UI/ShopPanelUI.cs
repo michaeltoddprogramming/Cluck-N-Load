@@ -79,7 +79,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         switch (num)
         {
             case 0:
-                currNav = 'C'; // animals
+                currNav = 'C'; // animals (includes farmhouse)
                 break;
             case 1:
                 currNav = 'A'; // army
@@ -89,9 +89,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 break;
             case 3:
                 currNav = 'S'; // defence 
-                break;
-            case 4:
-                currNav = 'D'; // decoration
                 break;
             default:
                 Debug.LogWarning("Invalid nav bar selection: " + num);
@@ -146,11 +143,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             bool showItem = false;
             switch (display)
             {
-                case 'C': showItem = data.type == StructureType.Animal; break;
+                case 'C': showItem = data.type == StructureType.Animal || data.type == StructureType.Decoration || data.type == StructureType.Building; break;
                 case 'A': showItem = data.type == StructureType.Barracks; break;
                 case 'S': showItem = data.type == StructureType.Defense; break;
                 case 'P': showItem = data.type == StructureType.CropPlot || data.type == StructureType.Silo; break;
-                case 'D': showItem = data.type == StructureType.Decoration || data.type == StructureType.Building; break;
                 default: break;
             }
 
@@ -286,12 +282,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         switch (currentStepId)
         {
             case "open_build_shop":
-                // When just opening shop, allow building types (start with farmhouse)
-                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration;
+                // When just opening shop, allow building types (farmhouse is now in Animal tab)
+                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration || data.type == StructureType.Animal;
                 break;
             case "build_farmhouse":
-                // Allow building-type and decoration-type structures during farmhouse tutorial (farmhouse is Decoration type)
-                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration;
+                // Allow building-type and decoration-type structures during farmhouse tutorial (farmhouse moved to Animal tab)
+                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration || data.type == StructureType.Animal;
                 break;
             case "build_crop_plot":
                 // Allow all production-type structures during crop plot tutorial

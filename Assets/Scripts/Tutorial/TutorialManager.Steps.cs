@@ -28,7 +28,7 @@ public partial class TutorialManager
         {
             stepId = "camera_controls",
             title = "Look Around",
-            instructionText = "Lost chicken alert! Use WASD, Q/E, and Mouse Wheel to hunt for Melony. Oh and you can zoom in and out with scroll wheel or 1/2 and rotate with mouse wheel down! How catering am I!?",
+            instructionText = "Use WASD, Q/E to move. Mouse wheel to zoom. Scroll wheel + middle mouse to rotate!",
             triggerToWaitFor = TutorialTrigger.InputDetected,
             requiredInputs = new List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.Q, KeyCode.E, KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Mouse3, KeyCode.Mouse4, KeyCode.Mouse2 }
         });
@@ -54,8 +54,8 @@ public partial class TutorialManager
         steps.Add(new TutorialStep
         {
             stepId = "time_controls",
-            title = "Speed Up or Chill",
-            instructionText = "Pause, play, fast-forward. Time is money, and so are eggs.",
+            title = "Time Controls",
+            instructionText = "Pause, play, fast-forward. Control time itself!",
             triggerToWaitFor = TutorialTrigger.TimeControlsUsed,
             uiToHighlight = GameObject.Find("PAUSE BG")
         });
@@ -64,7 +64,7 @@ public partial class TutorialManager
         {
             stepId = "season_bonuses",
             title = "Seasonal Bonuses",
-            instructionText = "Seasons change, animals get moody. Watch the icons up top!",
+            instructionText = "Seasons boost different animals. Watch the season icon!",
             triggerToWaitFor = TutorialTrigger.None
         };
         seasonBonusStep.onStepStart = new UnityEvent();
@@ -98,7 +98,7 @@ public partial class TutorialManager
         {
             stepId = "build_farmhouse",
             title = "Build Farmhouse",
-            instructionText = "Every legend needs a house. Plop down a Farmhouse! BE WARNED, IF THIS STRUCTURE IS DESTROYED YOUR FARM WILL FAIL IMMEDIATLY - PROTECT IT!",
+            instructionText = "Build your Farmhouse first! WARNING: If destroyed, you lose! Protect it!",
             triggerToWaitFor = TutorialTrigger.BuiltFarmHouse,
             uiToHighlight = farmhouseButton
         };
@@ -122,7 +122,7 @@ public partial class TutorialManager
         {
             stepId = "build_silo",
             title = "Build Silo",
-            instructionText = "Store your loot! Build a Silo for all those crops.",
+            instructionText = "Build a Silo to store harvested crops.",
             triggerToWaitFor = TutorialTrigger.BuiltSilo,
             uiToHighlight = siloButton
         };
@@ -130,11 +130,59 @@ public partial class TutorialManager
         siloStep.onStepStart.AddListener(() => UpdateBuildButtonReference("Silo"));
         steps.Add(siloStep);
 
+        var pricePanelStep = new TutorialStep
+        {
+            stepId = "price_panel_tutorial",
+            title = "Check Market Prices",
+            instructionText = "Smart farmers check prices! Click the price panel to see what your crops and animals are worth!",
+            triggerToWaitFor = TutorialTrigger.PricePanelOpened
+        };
+        pricePanelStep.onStepStart = new UnityEvent();
+        pricePanelStep.onStepStart.AddListener(() =>
+        {
+            // Force close the shop first so it doesn't block the price panel
+            if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen())
+            {
+                ShopUIManager.Instance.CloseShop();
+            }
+            
+            // Try to find the clickable price panel element - check common names
+            GameObject pricePanel = GameObject.Find("PricePanel") ?? 
+                                   GameObject.Find("Price") ?? 
+                                   GameObject.Find("PricePanelUI") ?? 
+                                   GameObject.Find("Price Panel") ?? 
+                                   FindFirstObjectByType<PricePanelUI>()?.gameObject;
+            
+            if (pricePanel != null)
+                HighlightUI(pricePanel, true);
+        });
+        pricePanelStep.onStepComplete = new UnityEvent();
+        pricePanelStep.onStepComplete.AddListener(() =>
+        {
+            GameObject pricePanel = GameObject.Find("PricePanel") ?? 
+                                   GameObject.Find("Price") ?? 
+                                   GameObject.Find("PricePanelUI") ?? 
+                                   GameObject.Find("Price Panel") ?? 
+                                   FindFirstObjectByType<PricePanelUI>()?.gameObject;
+            
+            if (pricePanel != null)
+                HighlightUI(pricePanel, false);
+        });
+        steps.Add(pricePanelStep);
+
+        steps.Add(new TutorialStep
+        {
+            stepId = "price_panel_explanation",
+            title = "Market Intelligence",
+            instructionText = "See the numbers? Left shows your inventory, right shows current prices! Green % means seasonal bonus. Close when done!",
+            triggerToWaitFor = TutorialTrigger.PricePanelClosed
+        });
+
         var plantCropStep = new TutorialStep
         {
             stepId = "plant_first_crop",
             title = "Plant Crops",
-            instructionText = "Click your Crop Plot. Plant sunflowers. Easy peasy.",
+            instructionText = "Click your Crop Plot. Plant sunflowers - free animal food means more profit!",
             triggerToWaitFor = TutorialTrigger.PlantedCrop
         };
         plantCropStep.onStepStart = new UnityEvent();
@@ -145,7 +193,7 @@ public partial class TutorialManager
         {
             stepId = "harvest_first_crops",
             title = "Harvest!",
-            instructionText = "Sunflowers are ready! (I sped up the growth) Click Harvest. Seeds = chicken snacks.",
+            instructionText = "Sunflowers are ready! (I sped up the growth) Click Harvest. Free chicken food = bigger profits!",
             triggerToWaitFor = TutorialTrigger.HarvestedCrop
         };
         harvestCropStep.onStepStart = new UnityEvent();
@@ -194,7 +242,7 @@ public partial class TutorialManager
         {
             stepId = "feed_chickens",
             title = "Feed Chickens",
-            instructionText = "Hungry chickens? Click Feed. Sunflower seeds = happy clucks.",
+            instructionText = "Feed chickens to make eggs! Well-fed animals = ready to produce. Click Feed.",
             triggerToWaitFor = TutorialTrigger.FedFirstAnimals
         });
 
@@ -202,7 +250,7 @@ public partial class TutorialManager
         {
             stepId = "collect_eggs",
             title = "Collect Eggs",
-            instructionText = "Eggs are ready! (I also sped that up - I don't have much patience) Click Collect. Cha-ching!",
+            instructionText = "Eggs ready! Click Collect - eggs automatically sell for coins! This is how you make money.",
             triggerToWaitFor = TutorialTrigger.CollectedFirstProducts
         });
 
@@ -228,13 +276,24 @@ public partial class TutorialManager
         placeFlagStep.onStepStart.AddListener(() => { HighlightLastBuiltStructure("ChickenBarracks"); HighlightPlaceFlagButton(); });
         steps.Add(placeFlagStep);
 
-        steps.Add(new TutorialStep
+        var finalStep = new TutorialStep
         {
             stepId = "prepare_defense",
             title = "Farm Defended!",
             instructionText = "You did it! Eggs, soldiers, and no wolves (hopefully). Night time starts soon make sure that flag is placed or not you'll find out!",
             triggerToWaitFor = TutorialTrigger.None
+        };
+        finalStep.onStepStart = new UnityEvent();
+        finalStep.onStepStart.AddListener(() =>
+        {
+            // Set time to midday so players have time to explore after tutorial
+            if (NightManager.Instance != null)
+            {
+                NightManager.Instance.Hours = 12; // Set to 12:00 (midday)
+                NightManager.Instance.Minutes = 0; // Set to exactly 12:00
+            }
         });
+        steps.Add(finalStep);
 
         InitializeDiscoverySteps();
         CleanupAllWorldHighlights();
@@ -286,7 +345,7 @@ public partial class TutorialManager
         {
             stepId = "discover_cow_pen",
             title = "Cow Pen!",
-            instructionText = "Moo! Cows = milk and muscle.",
+            instructionText = "Cows produce valuable milk! They eat wheat and make sturdy soldiers - slow but powerful.",
             triggerToWaitFor = TutorialTrigger.BuiltCowPen
         });
 
@@ -294,7 +353,7 @@ public partial class TutorialManager
         {
             stepId = "discover_sheep_pen",
             title = "Sheep Pen!",
-            instructionText = "Sheep! Wool and fluffy armor.",
+            instructionText = "Sheep produce wool! They eat wheat like cows but their soldiers have natural wool armor - tough defenders!",
             triggerToWaitFor = TutorialTrigger.BuiltSheepPen
         });
 
@@ -302,7 +361,7 @@ public partial class TutorialManager
         {
             stepId = "discover_goat_pen",
             title = "Goat Pen!",
-            instructionText = "Goats climb and give milk. Cheese, anyone?",
+            instructionText = "Goats produce cheese! They eat carrots and are agile climbers - their soldiers are fast mountain ninjas!",
             triggerToWaitFor = TutorialTrigger.BuiltGoatPen
         });
 
@@ -310,7 +369,7 @@ public partial class TutorialManager
         {
             stepId = "discover_pig_pen",
             title = "Pig Pen!",
-            instructionText = "Oink! Pigs forage and smash.",
+            instructionText = "Pigs produce bacon! They eat carrots like goats but their soldiers charge fearlessly and break through enemy lines!",
             triggerToWaitFor = TutorialTrigger.BuiltPigPen
         });
 
@@ -318,7 +377,7 @@ public partial class TutorialManager
         {
             stepId = "discover_cow_barracks",
             title = "Cow Barracks!",
-            instructionText = "Cow soldiers: slow, strong, unstoppable.",
+            instructionText = "Train cow soldiers! Heavy hitters with high health - perfect tanks for your army formations.",
             triggerToWaitFor = TutorialTrigger.BuiltCowBarracks
         });
 
@@ -326,7 +385,7 @@ public partial class TutorialManager
         {
             stepId = "discover_sheep_barracks",
             title = "Sheep Barracks!",
-            instructionText = "Sheep soldiers: wool armor, tough cookies.",
+            instructionText = "Train sheep soldiers! Natural wool armor makes them excellent defensive units with great survivability.",
             triggerToWaitFor = TutorialTrigger.BuiltSheepBarracks
         });
 
@@ -334,7 +393,7 @@ public partial class TutorialManager
         {
             stepId = "discover_goat_barracks",
             title = "Goat Barracks!",
-            instructionText = "Goat soldiers: mountain ninjas.",
+            instructionText = "Train goat soldiers! Fast and agile mountain fighters - perfect for hit-and-run tactics!",
             triggerToWaitFor = TutorialTrigger.BuiltGoatBarracks
         });
 
@@ -342,8 +401,24 @@ public partial class TutorialManager
         {
             stepId = "discover_pig_barracks",
             title = "Pig Barracks!",
-            instructionText = "Pig soldiers: charge and break stuff.",
+            instructionText = "Train pig soldiers! Fearless chargers who break enemy formations with devastating rushes!",
             triggerToWaitFor = TutorialTrigger.BuiltPigBarracks
+        });
+
+        RegisterDiscoveryStep(new TutorialStep
+        {
+            stepId = "discover_price_panel",
+            title = "Price Panel Discovery!",
+            instructionText = "Market prices revealed! Smart farming means knowing when to sell!",
+            triggerToWaitFor = TutorialTrigger.PricePanelOpened
+        });
+
+        RegisterDiscoveryStep(new TutorialStep
+        {
+            stepId = "discover_price_panel_usage",
+            title = "Market Master!",
+            instructionText = "You've learned to read the markets! Knowledge is power and profit!",
+            triggerToWaitFor = TutorialTrigger.PricePanelClosed
         });
     }
 
@@ -364,8 +439,8 @@ public partial class TutorialManager
                 tabName = "Animals";
                 break;
             case "farmhouse":
-                targetTabIndex = 4;
-                tabName = "Decorations";
+                targetTabIndex = 0;
+                tabName = "Animals";
                 break;
             case "silo":
             case "cropplot":

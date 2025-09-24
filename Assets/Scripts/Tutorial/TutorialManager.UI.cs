@@ -15,10 +15,53 @@ public partial class TutorialManager
             arrowRect = tutorialArrow.AddComponent<RectTransform>();
             arrowRect.sizeDelta = new Vector2(40, 40);
             Texture2D texture = new Texture2D(40, 40);
-            Color arrowColor = new Color(1f, 0.8f, 0.2f, 0.95f);
+            Color arrowColor = new Color(0f, 1f, 0.4f, 1f); // Bright green
+            Color edgeColor = new Color(1f, 1f, 1f, 1f); // White edge
+            
+            // Create a better triangle shape
             for (int y = 0; y < 40; y++)
+            {
                 for (int x = 0; x < 40; x++)
-                    texture.SetPixel(x, y, y > Mathf.Abs(x - 19.5f) * 2 ? arrowColor : Color.clear);
+                {
+                    float centerX = 20f;
+                    float centerY = 30f;
+                    
+                    // Triangle pointing down
+                    bool insideTriangle = (y <= centerY) && 
+                                        (x >= centerX - (centerY - y) * 0.8f) && 
+                                        (x <= centerX + (centerY - y) * 0.8f);
+                    
+                    // Edge detection for white outline
+                    bool isEdge = false;
+                    if (insideTriangle)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            for (int dy = -1; dy <= 1; dy++)
+                            {
+                                int nx = x + dx, ny = y + dy;
+                                if (nx >= 0 && nx < 40 && ny >= 0 && ny < 40)
+                                {
+                                    bool neighborInside = (ny <= centerY) && 
+                                                        (nx >= centerX - (centerY - ny) * 0.8f) && 
+                                                        (nx <= centerX + (centerY - ny) * 0.8f);
+                                    if (!neighborInside)
+                                    {
+                                        isEdge = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (isEdge) break;
+                        }
+                    }
+                    
+                    if (insideTriangle)
+                        texture.SetPixel(x, y, isEdge ? edgeColor : arrowColor);
+                    else
+                        texture.SetPixel(x, y, Color.clear);
+                }
+            }
             texture.Apply();
             Sprite triangleSprite = Sprite.Create(texture, new Rect(0, 0, 40, 40), new Vector2(0.5f, 0.5f), 100f);
             Image arrowImage = tutorialArrow.AddComponent<Image>();
@@ -56,8 +99,13 @@ public partial class TutorialManager
                 arrowRect.rotation = Quaternion.Euler(0, 0, 0);
                 tutorialArrow.SetActive(true);
                 LeanTween.cancel(tutorialArrow);
-                LeanTween.scale(tutorialArrow, new Vector3(1.2f, 1.2f, 1.2f), 0.5f).setLoopPingPong().setEase(LeanTweenType.easeInOutQuad);
-                LeanTween.move(tutorialArrow, arrowPosition + new Vector3(0, -10, 0), 0.6f).setLoopPingPong().setEase(LeanTweenType.easeInOutQuad);
+                
+                // More prominent bounce animation
+                LeanTween.scale(tutorialArrow, new Vector3(1.3f, 1.3f, 1.3f), 0.4f).setLoopPingPong().setEase(LeanTweenType.easeInOutBack);
+                LeanTween.move(tutorialArrow, arrowPosition + new Vector3(0, -15, 0), 0.5f).setLoopPingPong().setEase(LeanTweenType.easeInOutBack);
+                
+                // Add rotation wobble for extra attention
+                LeanTween.rotate(tutorialArrow, new Vector3(0, 0, 5f), 0.3f).setLoopPingPong().setEase(LeanTweenType.easeInOutSine);
             }
         }
         else
@@ -152,23 +200,29 @@ public partial class TutorialManager
             outline.enabled = enable;
             if (enable)
             {
-                outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f);
-                outline.effectDistance = new Vector2(3, 3);
-                LeanTween.value(target, 2f, 5f, 0.8f).setLoopPingPong().setEase(LeanTweenType.easeInOutSine).setOnUpdate((float val) =>
+                outline.effectColor = new Color(0f, 1f, 0.4f, 1f); // Bright green to match arrow
+                outline.effectDistance = new Vector2(4, 4); // Thicker outline
+                
+                // Pulsing effect with more vibrant colors
+                LeanTween.value(target, 3f, 6f, 0.8f).setLoopPingPong().setEase(LeanTweenType.easeInOutSine).setOnUpdate((float val) =>
                 {
                     outline.effectDistance = new Vector2(val, val);
                 });
-                LeanTween.value(target, 0f, 1f, 1.2f).setLoopPingPong().setEase(LeanTweenType.easeInOutSine).setOnUpdate((float val) =>
+                
+                // Color pulsing between bright green and bright cyan
+                LeanTween.value(target, 0f, 1f, 1.0f).setLoopPingPong().setEase(LeanTweenType.easeInOutSine).setOnUpdate((float val) =>
                 {
-                    outline.effectColor = Color.Lerp(new Color(1f, 0.8f, 0.2f, 0.7f), new Color(1f, 1f, 0.5f, 1f), val);
+                    outline.effectColor = Color.Lerp(new Color(0f, 1f, 0.4f, 1f), new Color(0f, 0.8f, 1f, 1f), val);
                 });
+                
+                // Gentle scale pulsing
                 if (target.GetComponent<RectTransform>() != null)
-                    LeanTween.scale(target, target.transform.localScale * 1.05f, 0.5f).setLoopPingPong().setEase(LeanTweenType.easeInOutQuad);
+                    LeanTween.scale(target, target.transform.localScale * 1.08f, 0.6f).setLoopPingPong().setEase(LeanTweenType.easeInOutQuad);
             }
             else
             {
-                outline.effectDistance = new Vector2(3, 3);
-                outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f);
+                outline.effectDistance = new Vector2(4, 4);
+                outline.effectColor = new Color(0f, 1f, 0.4f, 1f);
                 if (target.GetComponent<RectTransform>() != null)
                     target.transform.localScale = Vector3.one;
             }

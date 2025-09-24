@@ -729,15 +729,11 @@ public class NightManager : MonoBehaviour
 
         combatManager.SetSeason(season);
 
-        // Only show season notification if not in tutorial
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        // Use Pete for season notifications instead of basic text
+        if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
         {
-            // Debug log removed: Tutorial active: Suppressing regular season notification
-            return;
+            ShowPeteSeasonNotification(season);
         }
-
-
-        StartNotification(text, 5);
     }
 
     private void SetSeasonWeather()
@@ -1120,6 +1116,53 @@ public class NightManager : MonoBehaviour
             productionBoostsManager.SetBoosted(normalValues);
         }
     }
+
+    public void ShowPeteSeasonNotification(int season)
+    {
+        if (TutorialManager.Instance == null) return;
+
+        string seasonName = GetSeasonName(season);
+        string peteMessage = GetPeteSeasonMessage(season);
+        
+        // Create a Pete notification using the tutorial system
+        var seasonStep = new TutorialStep
+        {
+            stepId = $"pete_season_{season}",
+            title = $"Pete's {seasonName} Update",
+            instructionText = peteMessage,
+            triggerToWaitFor = TutorialTrigger.None
+        };
+
+        // Show Pete's season notification as a discovery popup
+        TutorialManager.Instance.ShowPeteSeasonNotification(seasonStep);
+    }
+
+    private string GetSeasonName(int season)
+    {
+        return season switch
+        {
+            1 => "Spring",
+            2 => "Summer", 
+            3 => "Fall",
+            4 => "Winter",
+            _ => "Unknown Season"
+        };
+    }
+
+    private string GetPeteSeasonMessage(int season)
+    {
+        return season switch
+        {
+            1 => yearsChanged ? 
+                $"Howdy! Year {Years} is in the books! Welcome to Spring!\n\nEverything's blooming - perfect time for chickens and basic farming. Spring brings renewed energy to your animals!" :
+                "Spring's here! Time for fresh starts and happy chickens. Your animals are feeling energetic - great season for egg production!",
+            2 => "Summer heat is upon us! Your crops grow faster, but watch out - wolves get extra cranky in this weather. Stock up on defenses!",
+            3 => "Fall harvest season! Animals eat heartier and produce more. Perfect time to expand your livestock before winter hits!",
+            4 => "Winter's arrived! Crops grow slower but your animals huddle together for warmth. Expect snow and tougher enemies!",
+            _ => "Something's wrong with the seasons, partner..."
+        };
+    }
+
     private string determineAnimalProduct(int product)
     {
         switch (product)

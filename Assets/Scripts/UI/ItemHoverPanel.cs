@@ -21,50 +21,51 @@ public class ItemHoverPanel : MonoBehaviour
 
     public void Show(StructureData data)
     {
+        if (data == null)
+        {
+            Debug.LogWarning("ItemHoverPanel.Show: StructureData is null");
+            return;
+        }
+
         LeanTween.cancel(gameObject);
 
-        nameText.text = data.structureName;
-        descriptionText.text = data.description;
+        // Hide name text entirely since it's redundant with the icon
+        if (nameText != null)
+        {
+            nameText.gameObject.SetActive(false);
+        }
 
-        string stats = $"Cost: {data.cost}\n\nHealth: {data.health}\n";
+        // Set description if available
+        if (descriptionText != null)
+        {
+            descriptionText.text = data.description;
+        }
 
+        // Make stats more concise for the small box
+        string stats = $"${data.cost} • HP: {data.health}";
+
+        // Compact stats for different structure types
         if (data.type == StructureType.Silo)
         {
             int perSilo = 0;
-            int current = 0;
-            int total = 0;
             if (InventoryManager.Instance != null)
             {
                 perSilo = InventoryManager.Instance.totalPerSilo;
-                current = InventoryManager.Instance.GetCurrentSiloCapacity();
-                total = InventoryManager.Instance.GetTotalSiloCapacity();
             }
-            stats += $"\nSingle Silo Capacity: {perSilo}\n";
-            stats += $"\nYour Used Capacity: {current} / {total}";
+            stats += $" • Cap: {perSilo}";
         }
-
-        if (data.type == StructureType.CropPlot)
+        else if (data.type == StructureType.CropPlot)
         {
-            stats += "\nGrows: Sunflower, Wheat, Carrots";
+            stats += " • Grows Crops";
         }
-
-        if (data.type == StructureType.Animal)
+        else if (data.type == StructureType.Animal)
         {
-            if (data.prefab == null)
-            {
-                stats += "\n<color=red>Prefab not assigned in StructureData!</color>";
-            }
-            else
+            if (data.prefab != null)
             {
                 var animalStructure = data.prefab.GetComponent<AnimalStructure>();
-                if (animalStructure == null)
+                if (animalStructure != null)
                 {
-                    stats += "\n<color=red>AnimalStructure script missing on prefab!</color>";
-                }
-                else
-                {
-                    stats += $"\nMax Capacity: {animalStructure.MaxAnimalCount}\n";
-                    stats += $"\nProduction Return: {animalStructure.baseMoneyPerProduct}";
+                    stats += $" • Max: {animalStructure.MaxAnimalCount} • ${animalStructure.baseMoneyPerProduct}/prod";
                 }
             }
         }
@@ -76,36 +77,32 @@ public class ItemHoverPanel : MonoBehaviour
                 ArmyData armyData = Resources.Load<ArmyData>($"Prefabs/Units/All new stuff/Army/{armyType}");
                 if (armyData != null)
                 {
-                    stats +=
-                        $"\nArmy Health: {armyData.Health}\n" +
-                        $"\nDamage: {armyData.AttackDamage}\n" +
-                        $"\nSpeed: {armyData.MovementSpeed}\n" +
-                        $"\nAttack Range: {armyData.AttackRange}";
+                    stats += $" • DMG: {armyData.AttackDamage} • SPD: {armyData.MovementSpeed}";
                 }
-                else
-                {
-                    stats += $"\n<color=red>No ArmyData found for type '{armyType}'!</color>";
-                }
-            }
-            else
-            {
-                stats += $"\n<color=red>Invalid army type: '{data.targetAnimalType}'</color>";
             }
         }
 
-        statsText.text = stats;
+        // Set stats text if available
+        if (statsText != null)
+        {
+            statsText.text = stats;
+        }
 
-        string tips = "";
-        if (data.type == StructureType.Silo)
-            tips = "<color=#FFD700>Tip: Place silos near crops and animal pens for synergy bonuses!</color>";
-        else if (data.type == StructureType.CropPlot)
-            tips = "<color=#FFD700>Tip: Place crop plots near silos for increased yield synergy!</color>\n<color=#FFD700>Seasonal production boosts may increase harvests!</color>";
-        else if (data.type == StructureType.Animal)
-            tips = "<color=#FFD700>Tip: Place animal pens near silos for food efficiency synergy!</color>\n<color=#FFD700>Seasonal boosts can increase animal product output!</color>";
-        else if (data.type == StructureType.Barracks)
-            tips = "<color=#FFD700>Tip: Place barracks far away from animal pens for recruitment discounts!</color>";
+        // Shorter, more concise tips
+        if (tipsText != null)
+        {
+            string tips = "";
+            if (data.type == StructureType.Silo)
+                tips = "<color=#FFD700>Near crops & animals for synergy</color>";
+            else if (data.type == StructureType.CropPlot)
+                tips = "<color=#FFD700>Near silos for yield bonus</color>";
+            else if (data.type == StructureType.Animal)
+                tips = "<color=#FFD700>Near silos for efficiency</color>";
+            else if (data.type == StructureType.Barracks)
+                tips = "<color=#FFD700>Far from animals for discounts</color>";
 
-        tipsText.text = tips;
+            tipsText.text = tips;
+        }
 
         gameObject.SetActive(true);
         canvasGroup.interactable = true;

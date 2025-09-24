@@ -123,6 +123,10 @@ PrefabInstance:
       value: Army Cow
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 611c40d3dba0bb542bda9d9cc29470ef, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 611c40d3dba0bb542bda9d9cc29470ef, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 260b449dd9879c04fbb44a7eaa216d27, type: 2}
@@ -212,6 +216,7 @@ MonoBehaviour:
   shoot: 0
   recoilDistance: 2
   recoilTime: 0.2
+  attackNow: 0
 --- !u!114 &9124281764059500251
 MonoBehaviour:
   m_ObjectHideFlags: 0

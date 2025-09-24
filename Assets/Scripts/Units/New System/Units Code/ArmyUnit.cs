@@ -311,8 +311,22 @@ public class ArmyUnit : BaseUnit
         while (Vector3.Distance(transform.position, guardPosition) > agent.stoppingDistance + 0.1f)
         {
             // Only reset destination if needed
-            if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
-                agent.SetDestination(targetPosition);
+            // Only reset destination if agent is valid
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+            {
+                if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
+                {
+                    agent.SetDestination(targetPosition);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"{gameObject.name} agent not on NavMesh during return to flag");
+                yield break; // stop coroutine if agent can't move
+            }
+
+            // if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
+            //     agent.SetDestination(targetPosition);
 
             // Smooth rotation toward movement
             if (agent.velocity.sqrMagnitude > 0.01f)

@@ -172,13 +172,20 @@ MonoBehaviour:
   soundEffectSource: {fileID: 2554742337230177393}
   backgroundAudioSource: {fileID: 5953992380896936884}
   animator: {fileID: 1102974884407093422}
+  minDelay: 1
+  maxDelay: 3
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   data: {fileID: 11400000, guid: 651ec1a38579c084cb9a5c381781d066, type: 2}
-  recoilForce: 20
+  recoilForce: 8.6
   Recoil: 0
   healthBarPrefab: {fileID: 4122911237217708408, guid: 5901a419293af0a41829f449f21dc8a0, type: 3}
   shoot: 0
-  recoilDistance: 2
-  recoilTime: 0.2
+  recoilDistance: 5
+  recoilTime: 0.8
+  attackNow: 0
 --- !u!114 &6624633191325895113
 MonoBehaviour:
   m_ObjectHideFlags: 0

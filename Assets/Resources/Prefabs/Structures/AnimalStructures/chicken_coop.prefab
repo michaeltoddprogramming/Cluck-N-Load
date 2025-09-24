@@ -16,8 +16,8 @@ GameObject:
   - component: {fileID: 8257734745317330725}
   - component: {fileID: 4446341007750431735}
   - component: {fileID: 394424555876664294}
-  - component: {fileID: 3317269069754812585}
-  - component: {fileID: 6930480557717244873}
+  - component: {fileID: 3451570892406241197}
+  - component: {fileID: 8355374990448356477}
   m_Layer: 0
   m_Name: chicken_coop
   m_TagString: Untagged
@@ -295,7 +295,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a955076890812eb4a8fa0e5a3dceb661, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!65 &3317269069754812585
+--- !u!65 &3451570892406241197
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -314,9 +314,9 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 8.167367, y: 2.2611275, z: 8.561981}
-  m_Center: {x: -1.75882, y: 1.0437174, z: -0.08767319}
---- !u!208 &6930480557717244873
+  m_Size: {x: 8.288652, y: 2.7164602, z: 8.40245}
+  m_Center: {x: -1.7087998, y: 1.2958732, z: -0.028589725}
+--- !u!208 &8355374990448356477
 NavMeshObstacle:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

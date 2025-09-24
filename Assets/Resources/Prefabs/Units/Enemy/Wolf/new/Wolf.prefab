@@ -108,6 +108,12 @@ MonoBehaviour:
   soundEffectSource: {fileID: 6407235423117822447}
   backgroundAudioSource: {fileID: 6982847011080700061}
   animator: {fileID: 969059784977211435}
+  minDelay: 1
+  maxDelay: 3
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   data: {fileID: 11400000, guid: 717bb4e88f267c84fa94d8a156267309, type: 2}
   healthBarPrefab: {fileID: 4122911237217708408, guid: 5901a419293af0a41829f449f21dc8a0, type: 3}
   currentMaxSpawn: 0
@@ -160,7 +166,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 5825747814434693355}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.17
+  m_Radius: 1.07
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50

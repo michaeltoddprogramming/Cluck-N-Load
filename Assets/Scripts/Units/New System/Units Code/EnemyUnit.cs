@@ -127,6 +127,7 @@ public class EnemyUnit : BaseUnit
     private void Start()
     {
         currentTarget = GetNearestAggroTargetOptimized();
+        lastAttackTime = Time.time;
     }
 
 
@@ -138,6 +139,7 @@ public class EnemyUnit : BaseUnit
 
     private void Update()
     {
+        lastAttackTime += Time.deltaTime;
         // Debug.Log("------------------------------------------------------------------ target: " + currentTarget);
         if (retreating)
         {
@@ -513,14 +515,15 @@ public class EnemyUnit : BaseUnit
 
 
         // Debug logs for verification
-        Debug.Log($"Time: {Time.time}, Last Attack: {lastAttackTime}, Next Allowed: {lastAttackTime + data.AttackCooldown}");
-        Debug.Log($"Distance: {distanceBetween}, Stopping Distance: {data.StoppingDistance}");
+        // Debug.Log($"Time: {Time.time}, Last Attack: {lastAttackTime}, Next Allowed: {lastAttackTime + data.AttackCooldown}");
+        // Debug.Log($"Distance: {distanceBetween}, Stopping Distance: {data.StoppingDistance}");
 
         // Only attack if within stopping distance and cooldown has passed
-        if (distanceBetween <= data.StoppingDistance && Time.time >= (lastAttackTime + data.AttackCooldown))
+        // if (distanceBetween <= data.StoppingDistance && Time.time >= (lastAttackTime + data.AttackCooldown))
+        if (distanceBetween <= data.StoppingDistance && lastAttackTime >= data.AttackCooldown && !IsDead())
         {
-            Debug.Log("Attacking now: " + currentTarget.name + " whit this much: " + data.AttackDamage);
-            lastAttackTime = Time.time;
+            // Debug.Log("Attacking now: " + currentTarget.name + " whit this much: " + data.AttackDamage);
+            lastAttackTime = 0f;
             SetTrigger("Attack");
             Attack(currentTarget);
         }

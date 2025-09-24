@@ -104,6 +104,7 @@ public class ArmyUnit : BaseUnit
 
     public void Update()
     {
+        lastAttackTime += Time.deltaTime;
         if (attackNow)
         {
             Attack();
@@ -172,7 +173,8 @@ public class ArmyUnit : BaseUnit
         // }
 
         //apply cooldown
-        if (Time.time < lastAttackTime + data.AttackCooldown)
+        // if (Time.time < lastAttackTime + data.AttackCooldown)
+        if (lastAttackTime < data.AttackCooldown && !IsDead())
         {
             return;
         }
@@ -197,7 +199,7 @@ public class ArmyUnit : BaseUnit
             }
         }
 
-        lastAttackTime = Time.time;
+        lastAttackTime = 0f;
 
         canShoot = false;
         agent.enabled = false;

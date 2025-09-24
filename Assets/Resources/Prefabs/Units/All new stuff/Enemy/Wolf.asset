@@ -20,7 +20,7 @@ MonoBehaviour:
   Health: 120
   AttackDamage: 15
   AttackRange: 1000
-  AttackCooldown: 2
+  AttackCooldown: 1
   Acceleration: 8
   AngularSpeed: 200
   StoppingDistance: 1

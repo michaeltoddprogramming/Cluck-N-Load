@@ -104,6 +104,7 @@ public class ArmyUnit : BaseUnit
 
     public void Update()
     {
+        lastAttackTime += Time.deltaTime;
         if (attackNow)
         {
             Attack();
@@ -172,7 +173,8 @@ public class ArmyUnit : BaseUnit
         // }
 
         //apply cooldown
-        if (Time.time < lastAttackTime + data.AttackCooldown)
+        // if (Time.time < lastAttackTime + data.AttackCooldown)
+        if (lastAttackTime < data.AttackCooldown && !IsDead())
         {
             return;
         }
@@ -197,29 +199,39 @@ public class ArmyUnit : BaseUnit
             }
         }
 
-        lastAttackTime = Time.time;
+        lastAttackTime = 0f;
 
         canShoot = false;
-        agent.enabled = false;
 
 
         if (data.Type == ArmyType.Chicken)
         {
             if (!isRecoiling)
             {
+                agent.enabled = false;
                 // SetTrigger("Attack");
                 StartCoroutine(RecoilAndReturnToFlag());
             }
         }
         else if (data.Type == ArmyType.Goat)
         {
+            SetTrigger("Attack");
             // Delay impact for goats so it syncs with animation
             StartCoroutine(DelayedImpactAndReturn(0.8f));
         }
+        else if (data.Type == ArmyType.Cow)
+        {
+            // SetTrigger("Attack");
+            // StartCoroutine(DelayedImpactAndReturn(0.33f));
+            StartCoroutine(CowAttack());
+            // SetTrigger("Attack");
+            // PerformAttackImpact();
+            // For cows, sheep, pigs - perform attack and return to flag
+            // StartCoroutine(AttackAndReturnToFlag());
+        }
         else
         {
-            // For cows, sheep, pigs - perform attack and return to flag
-            StartCoroutine(AttackAndReturnToFlag());
+            PerformAttackImpact();
         }
 
         // PlaySound(data.AttackSound, 'a');
@@ -232,13 +244,101 @@ public class ArmyUnit : BaseUnit
         // currentTarget.TakeDamage(data.AttackDamage);
     }
 
+    // private IEnumerator CowAttackRoutine()
+    // {
+    //     if (isRecoiling) yield break;
+
+    //     canShoot = false;
+    //     agent.ResetPath();
+    //     agent.isStopped = true; // stop movement
+    //     agent.velocity = Vector3.zero;
+    //     agent.enabled = false;
+
+    //     if (data.AttackSound != null)
+    //     {
+    //         PlaySound(data.AttackSound, 'a');
+    //     }
+
+    //     // Trigger attack animation
+    //     SetTrigger("Attack");
+
+    //     // Remember last known target position
+    //     Vector3 targetPos = currentTarget != null ? currentTarget.transform.position : transform.position + transform.forward * 3f;
+
+    //     // Shoot VFX
+    //     CowShootingVFX cowVFX = GetComponent<CowShootingVFX>();
+    //     cowVFX.ShootCow(targetPos);
+
+    //     currentTarget.TakeDamage(data.AttackDamage);
+
+    //     // Stay still for 2.5 seconds
+    //     yield return new WaitForSeconds(2.5f);
+
+    //     // Unlock cow and move back to flag
+    //     agent.enabled = true;
+    //     agent.isStopped = false;
+    //     canShoot = true;
+
+    //     // Optional: set destination to flag
+    //     if (guardPosition != Vector3.zero)
+    //     {
+    //         isMoving = true;
+    //         agent.SetDestination(guardPosition);
+    //     }
+    // }
+
+    public IEnumerator CowAttack()
+    {
+        if (isRecoiling) yield break;
+
+        canShoot = false;
+
+        // --- STOP MOVEMENT COMPLETELY ---
+        agent.ResetPath();
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+        agent.enabled = false;
+
+        float attackDuration = 2.5f;
+        float elapsed = 0f;
+        float fireRate = 0.1f; // shoot every 0.1s
+
+        // Trigger attack animation
+        SetTrigger("Attack");
+
+        // Loop fire for 2.5s
+        while (elapsed < attackDuration && currentTarget != null && !currentTarget.IsDead())
+        {
+            // Play sound (limited by SoundLimiter)
+            PlaySound(data.AttackSound, 'a');
+
+            // Fire VFX toward target’s current position
+            GetComponent<CowShootingVFX>().ShootCow(currentTarget.transform.position);
+            currentTarget.TakeDamage(data.AttackDamage);
+
+            yield return new WaitForSeconds(fireRate);
+            elapsed += fireRate;
+        }
+
+        // --- UNLOCK MOVEMENT ---
+        agent.enabled = true;
+        agent.isStopped = false;
+        canShoot = true;
+
+
+    }
+
+
+
+
+
 
     private void PerformAttackImpact()
     {
         // Check if target is still valid before VFX and damage
         if (currentTarget == null || !currentTarget.gameObject || !currentTarget.gameObject.activeInHierarchy)
         {
-            Debug.LogWarning($"Target invalid during attack impact for {gameObject.name}");
+            // Debug.LogWarning($"Target invalid during attack impact for {gameObject.name}");
             return;
         }
 
@@ -252,10 +352,10 @@ public class ArmyUnit : BaseUnit
         playVFX();
 
         // damage
-        Debug.Log("Chicken attacking " + currentTarget.name);
+        // Debug.Log("Chicken attacking " + currentTarget.name);
         currentTarget.TakeDamage(data.AttackDamage);
 
-        // canShoot = true;
+        canShoot = true;
     }
 
     private IEnumerator DelayedImpact(float delay)
@@ -280,6 +380,7 @@ public class ArmyUnit : BaseUnit
         if (!IsDead() && currentTarget != null && !currentTarget.IsDead())
         {
             PerformAttackImpact();
+            canShoot = false;
         }
 
         // --- Step 2: Trigger attack animation ---
@@ -356,7 +457,7 @@ public class ArmyUnit : BaseUnit
         PerformAttackImpact();
 
         // After impact, return to flag
-        yield return StartCoroutine(ReturnToFlagAfterAttack());
+        // yield return StartCoroutine(ReturnToFlagAfterAttack());
     }
 
     private IEnumerator AttackAndReturnToFlag()

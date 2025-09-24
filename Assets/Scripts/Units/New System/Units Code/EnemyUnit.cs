@@ -1514,6 +1514,67 @@ public class EnemyUnit : BaseUnit
     //     // }
     // }
 
+    private Vector3 GetAttackPoint(MonoBehaviour target)
+    {
+        Collider targetCollider = target.GetComponent<Collider>();
+        if (targetCollider == null)
+            return target.transform.position;
+
+        Vector3 directionToEnemy = (transform.position - target.transform.position).normalized;
+        Vector3 closestPoint = targetCollider.ClosestPoint(transform.position);
+
+        // Offset slightly away from the building to avoid "inside collider" attacks
+        float offset = 0.5f; // tweak as needed
+        Vector3 attackPoint = closestPoint + directionToEnemy * offset;
+        return attackPoint;
+    }
+
+
+
+    // private void HandleTargetingAndMovement()
+    // {
+    //     if (!agent.isOnNavMesh) return;
+
+    //     // Ensure we have a main target
+    //     if (mainTarget == null || IsTargetDead(mainTarget))
+    //     {
+    //         mainTarget = GetNearestAggroTargetOptimized();
+    //         obstacleTarget = null;
+    //         if (mainTarget == null)
+    //         {
+    //             agent.ResetPath();
+    //             return;
+    //         }
+    //     }
+
+    //     // Check if the main target is reachable
+    //     bool targetReachable = IsTargetEffectivelyReachable(mainTarget);
+
+    //     // If not reachable, find the blocking object
+    //     if (!targetReachable)
+    //     {
+    //         obstacleTarget = GetBlockingObjectDirect();
+    //     }
+    //     else
+    //     {
+    //         obstacleTarget = null;
+    //     }
+
+    //     // Decide what to move toward
+    //     currentTarget = obstacleTarget != null ? obstacleTarget : mainTarget;
+
+    //     if (currentTarget == null) return;
+
+    //     Vector3 targetPos = currentTarget.transform.position;
+
+    //     // Only update destination if it moved far enough
+    //     if ((targetPos - lastDestination).sqrMagnitude > destinationUpdateThreshold * destinationUpdateThreshold)
+    //     {
+    //         agent.SetDestination(targetPos);
+    //         lastDestination = targetPos;
+    //     }
+    // }
+
 
     private void HandleTargetingAndMovement()
     {
@@ -1549,7 +1610,8 @@ public class EnemyUnit : BaseUnit
 
         if (currentTarget == null) return;
 
-        Vector3 targetPos = currentTarget.transform.position;
+        // Use attack point if attacking a target
+        Vector3 targetPos = (currentTarget == mainTarget) ? GetAttackPoint(mainTarget) : currentTarget.transform.position;
 
         // Only update destination if it moved far enough
         if ((targetPos - lastDestination).sqrMagnitude > destinationUpdateThreshold * destinationUpdateThreshold)
@@ -1558,6 +1620,7 @@ public class EnemyUnit : BaseUnit
             lastDestination = targetPos;
         }
     }
+
 
 
 
@@ -1736,33 +1799,71 @@ public class EnemyUnit : BaseUnit
     //     }
     // }
 
+    // private void AttackIfInRange()
+    // {
+    //     if (currentTarget == null || IsTargetDead(currentTarget))
+    //         return;
+
+    //     // Distance to target
+    //     float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
+
+    //     // Debug log when in attack range
+    //     if (distanceToTarget <= data.StoppingDistance)
+    //     {
+    //         Debug.Log($"[DEBUG] Enemy {name} has reached target {currentTarget.name} " +
+    //                   $"(distanceToTarget: {distanceToTarget:F2}) and will start attacking.");
+    //     }
+
+    //     // Attack cooldown check
+    //     if (distanceToTarget <= data.StoppingDistance && Time.time >= lastAttackTime + data.AttackCooldown)
+    //     {
+    //         lastAttackTime = Time.time;
+    //         SetTrigger("Attack");
+
+    //         // Perform attack and log
+    //         int damage = data.AttackDamage;
+    //         Attack(currentTarget);
+    //         Debug.Log($"[DEBUG] Enemy {name} attacks {currentTarget.name} for {damage} damage.");
+    //     }
+    // }
+
     private void AttackIfInRange()
     {
         if (currentTarget == null || IsTargetDead(currentTarget))
             return;
 
-        // Distance to target
-        float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
+        // Use cached collider for enemy
+        Collider enemyCollider = cachedCollider;
+        Collider targetCollider = currentTarget.GetComponent<Collider>();
 
-        // Debug log when in attack range
-        if (distanceToTarget <= data.StoppingDistance)
+        if (enemyCollider == null || targetCollider == null)
+            return;
+
+        // Distance between closest points of colliders
+        Vector3 closestPointEnemy = enemyCollider.ClosestPoint(targetCollider.transform.position);
+        Vector3 closestPointTarget = targetCollider.ClosestPoint(closestPointEnemy);
+        float distanceBetween = Vector3.Distance(closestPointEnemy, closestPointTarget);
+
+        // Debug log
+        if (distanceBetween <= data.StoppingDistance)
         {
             Debug.Log($"[DEBUG] Enemy {name} has reached target {currentTarget.name} " +
-                      $"(distanceToTarget: {distanceToTarget:F2}) and will start attacking.");
+                      $"(closestPointDistance: {distanceBetween:F2}) and will start attacking.");
         }
 
         // Attack cooldown check
-        if (distanceToTarget <= data.StoppingDistance && Time.time >= lastAttackTime + data.AttackCooldown)
+        if (distanceBetween <= data.StoppingDistance && Time.time >= lastAttackTime + data.AttackCooldown)
         {
             lastAttackTime = Time.time;
             SetTrigger("Attack");
 
-            // Perform attack and log
+            // Perform attack
             int damage = data.AttackDamage;
             Attack(currentTarget);
             Debug.Log($"[DEBUG] Enemy {name} attacks {currentTarget.name} for {damage} damage.");
         }
     }
+
 
 
 

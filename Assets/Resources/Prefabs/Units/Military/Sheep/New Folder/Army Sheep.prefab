@@ -145,6 +145,7 @@ MonoBehaviour:
   shoot: 0
   recoilDistance: 2
   recoilTime: 0.2
+  attackNow: 0
   data1: {fileID: 11400000, guid: cc3a249b25994474487ec83611dc01d5, type: 2}
   explosionRadius: 30
   explosionDamage: 50

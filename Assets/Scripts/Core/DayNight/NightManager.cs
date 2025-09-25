@@ -155,6 +155,8 @@ public class NightManager : MonoBehaviour
 
     private CombatManager combatManager;
     private bool isFirstDay = true;
+    private EnemyIndicator enemyIndicator;
+
 
     private void Awake()
     {
@@ -175,6 +177,9 @@ public class NightManager : MonoBehaviour
         {
             Debug.LogError("CombatManager not found in scene!");
         }
+
+        enemyIndicator = FindObjectOfType<EnemyIndicator>();
+
     }
 
     private void Start()
@@ -597,21 +602,27 @@ public class NightManager : MonoBehaviour
 
     private void OnDayChange(int value)
     {
+
         if (value == 0)
         {
             setSeason(1);
+            enemyIndicator.MakeWolfVisible();
+
         }
         else if (value == 5 && hours == 5)
         {
             setSeason(2);
+            enemyIndicator.MakeRacoonVisible();
         }
         else if (value == 10 && hours == 5)
         {
             setSeason(3);
+            enemyIndicator.MakeBoarVisible();
         }
         else if (value == 15 && hours == 5)
         {
             setSeason(4);
+            enemyIndicator.MakeBearVisible();
         }
         else if (value == 20 && hours == 5)
         {
@@ -629,6 +640,7 @@ public class NightManager : MonoBehaviour
             yearsChanged = true;
 
             setSeason(1);
+            enemyIndicator.MakeWolfVisible();
 
             StartDay(0); // force reset to day state
             // setSeason(1); // reset season if needed
@@ -642,6 +654,7 @@ public class NightManager : MonoBehaviour
 
             StartDay(0); // force reset to day state
             setSeason(1); // reset season if needed
+            enemyIndicator.MakeWolfVisible();
         }
 
         UpdateDayCountUI();
@@ -1123,7 +1136,7 @@ public class NightManager : MonoBehaviour
 
         string seasonName = GetSeasonName(season);
         string peteMessage = GetPeteSeasonMessage(season);
-        
+
         // Create a Pete notification using the tutorial system
         var seasonStep = new TutorialStep
         {
@@ -1142,7 +1155,7 @@ public class NightManager : MonoBehaviour
         return season switch
         {
             1 => "Spring",
-            2 => "Summer", 
+            2 => "Summer",
             3 => "Fall",
             4 => "Winter",
             _ => "Unknown Season"
@@ -1153,7 +1166,7 @@ public class NightManager : MonoBehaviour
     {
         return season switch
         {
-            1 => yearsChanged ? 
+            1 => yearsChanged ?
                 $"Howdy! Year {Years} is in the books! Welcome to Spring!\n\nEverything's blooming - perfect time for chickens and basic farming. Spring brings renewed energy to your animals!" :
                 "Spring's here! Time for fresh starts and happy chickens. Your animals are feeling energetic - great season for egg production!",
             2 => "Summer heat is upon us! Your crops grow faster, but watch out - wolves get extra cranky in this weather. Stock up on defenses!",

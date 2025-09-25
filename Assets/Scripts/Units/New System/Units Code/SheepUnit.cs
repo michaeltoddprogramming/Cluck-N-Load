@@ -142,18 +142,16 @@ public class SheepUnit : ArmyUnit
         if (vfx != null)
             vfx.Explode(transform.position);
         PlaySound(data1.AttackSound, 'a');
-        // CameraShake.Instance.TriggerShakeAtPosition(transform.position, 15f, 0.5f, 0.3f);
-        // CameraShake.Instance.TriggerShake(0.3f, 0.5f);
-        // CameraShake.Instance.Shake(1.5f, 0.4f);
         CameraShake.Instance.ShakeAtPosition(transform.position);
         foreach (var enemy in enemies)
         {
-            // Debug.Log("I did damageqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
             enemy.TakeDamage(explosionDamage);
         }
 
-        // gameObject.SetActive(false);
-        hasExploded = true;
-        Die();
+        // Damage the sheep by 34% of its max health
+        int selfDamage = Mathf.CeilToInt(data1.Health * 0.34f);
+        TakeDamage(selfDamage);
+
+    hasExploded = true;
     }
 }

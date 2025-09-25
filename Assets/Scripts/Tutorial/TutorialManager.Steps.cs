@@ -24,14 +24,59 @@ public partial class TutorialManager
             triggerToWaitFor = TutorialTrigger.None
         });
 
-        steps.Add(new TutorialStep
+        // Melony Hunt: Movement Controls
+        var melonyMovementStep = new TutorialStep
         {
-            stepId = "camera_controls",
-            title = "Look Around",
-            instructionText = "Use WASD, Q/E to move. Mouse wheel to zoom. Scroll wheel + middle mouse to rotate!",
-            triggerToWaitFor = TutorialTrigger.InputDetected,
-            requiredInputs = new List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.Q, KeyCode.E, KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Mouse3, KeyCode.Mouse4, KeyCode.Mouse2 }
+            stepId = "melony_movement",
+            title = "Find Melony - Movement!",
+            instructionText = "Melony's hiding! Use all movement keys below, then find and click her!",
+            triggerToWaitFor = TutorialTrigger.MelonyMovementTest,
+            requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.Q, KeyCode.E },
+            waitForAllInputs = true
+        };
+        melonyMovementStep.onStepStart = new UnityEvent();
+        melonyMovementStep.onStepStart.AddListener(() =>
+        {
+            SpawnMelonyForTask("movement");
+            Debug.Log("Melony Movement Step: Key indicators should now show WASD + Q/E");
         });
+        steps.Add(melonyMovementStep);
+
+        // Melony Hunt: Zoom Controls
+        var melonyZoomStep = new TutorialStep
+        {
+            stepId = "melony_zoom",
+            title = "Find Melony - Zoom!",
+            instructionText = "Use mouse wheel to zoom in/out, then find and click Melony!",
+            triggerToWaitFor = TutorialTrigger.MelonyZoomTest,
+            requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.Mouse3, KeyCode.Mouse4 }, // Mouse wheel up/down
+            waitForAllInputs = true
+        };
+        melonyZoomStep.onStepStart = new UnityEvent();
+        melonyZoomStep.onStepStart.AddListener(() =>
+        {
+            SpawnMelonyForTask("zoom");
+            Debug.Log("Melony Zoom Step: Mouse wheel indicators should now show");
+        });
+        steps.Add(melonyZoomStep);
+
+        // Melony Hunt: Rotation Controls
+        var melonyRotateStep = new TutorialStep
+        {
+            stepId = "melony_rotate",
+            title = "Find Melony - Rotate!",
+            instructionText = "Hold middle mouse + move to rotate camera, then find Melony!",
+            triggerToWaitFor = TutorialTrigger.MelonyRotateTest,
+            requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.Mouse2 }, // Middle mouse button
+            waitForAllInputs = true
+        };
+        melonyRotateStep.onStepStart = new UnityEvent();
+        melonyRotateStep.onStepStart.AddListener(() =>
+        {
+            SpawnMelonyForTask("rotate");
+            Debug.Log("Melony Rotate Step: Middle mouse button indicator should now show");
+        });
+        steps.Add(melonyRotateStep);
 
         steps.Add(new TutorialStep
         {
@@ -742,5 +787,263 @@ public partial class TutorialManager
         }
         yield return new WaitForSeconds(0.3f);
         UpdateBuildButtonReference(buildingToHighlight);
+    }
+    
+    public void SpawnMelonyForTask(string task)
+    {
+        currentMelonyTask = task;
+        detectedMelonyActions.Clear();
+        
+        // Clean up existing Melony
+        if (currentMelony != null)
+        {
+            Destroy(currentMelony);
+        }
+        
+        if (melonyPrefab == null)
+        {
+            Debug.LogError("Melony prefab not assigned! Please assign the civilian chicken prefab.");
+            return;
+        }
+        
+        Vector3 spawnPosition = GetMelonySpawnPositionForTask(task);
+        // Create a random Y-axis rotation (keeping chicken upright)
+        Quaternion uprightRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+        currentMelony = Instantiate(melonyPrefab, spawnPosition, uprightRotation);
+        
+        // Make Melony clickable
+        if (currentMelony.GetComponent<Collider>() == null)
+        {
+            currentMelony.AddComponent<SphereCollider>();
+        }
+        
+        // Add a component to identify this as Melony (instead of using tags)
+        currentMelony.name = "MelonyChicken_Tutorial";
+        
+        // Add a distinctive effect to make her easier to spot
+        AddMelonyEffects();
+        
+        Debug.Log($"Spawned Melony for task: {task} at grid-based position: {spawnPosition}");
+    }
+    
+    private Vector3 GetMelonySpawnPositionForTask(string task)
+    {
+        // Get the grid system to spawn within valid building area
+        GridController gridController = FindFirstObjectByType<GridController>();
+        if (gridController == null)
+        {
+            Debug.LogError("GridController not found! Melony will spawn at camera position.");
+            return Camera.main.transform.position + Vector3.forward * 5f;
+        }
+
+        Camera mainCamera = Camera.main;
+        Vector3 cameraPos = mainCamera.transform.position;
+        Vector3 cameraForward = mainCamera.transform.forward;
+        
+        // Get grid bounds
+        GridDataGenerator gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
+        if (gridDataGenerator == null)
+        {
+            Debug.LogError("GridDataGenerator not found! Using fallback position.");
+            return cameraPos + Vector3.forward * 5f;
+        }
+        
+        // Get camera position in grid coordinates to spawn relative to player view
+        Vector2Int cameraGridPos = gridController.WorldToGridCoords(cameraPos);
+        
+        // Find all valid buildable cells first
+        var validCells = GetValidBuildableCells(gridDataGenerator, gridController);
+        if (validCells.Count == 0)
+        {
+            Debug.LogError("No valid buildable cells found! Using camera position.");
+            return cameraPos + Vector3.forward * 5f;
+        }
+        
+        // Filter valid cells based on task requirements
+        var suitableCells = FilterCellsByTask(validCells, cameraGridPos, task);
+        
+        if (suitableCells.Count == 0)
+        {
+            Debug.LogWarning($"No suitable cells found for task {task}, using any valid cell.");
+            suitableCells = validCells;
+        }
+        
+        // Pick a random suitable cell
+        Vector2Int chosenCell = suitableCells[Random.Range(0, suitableCells.Count)];
+        Vector3 worldPos = gridController.GetCellCenterFromTexture(chosenCell.x, chosenCell.y);
+        
+        Debug.Log($"Melony spawn: Task={task}, GridPos=({chosenCell.x}, {chosenCell.y}), WorldPos={worldPos}, ValidCells={validCells.Count}, SuitableCells={suitableCells.Count}");
+        
+        // Convert back to world position
+        return worldPos;
+    }
+    
+    private System.Collections.Generic.List<Vector2Int> GetValidBuildableCells(GridDataGenerator gridDataGenerator, GridController gridController)
+    {
+        var validCells = new System.Collections.Generic.List<Vector2Int>();
+        int gridWidth = gridDataGenerator.GetGridWidth();
+        int gridHeight = gridDataGenerator.GetGridHeight();
+        
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GridCell cell = gridDataGenerator.GetCell(x, y);
+                if (cell != null && cell.flags.isVisible && !cell.flags.isOccupied && !cell.flags.isObstacle)
+                {
+                    validCells.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+        
+        return validCells;
+    }
+    
+    private System.Collections.Generic.List<Vector2Int> FilterCellsByTask(System.Collections.Generic.List<Vector2Int> validCells, Vector2Int cameraPos, string task)
+    {
+        var suitableCells = new System.Collections.Generic.List<Vector2Int>();
+        
+        foreach (var cell in validCells)
+        {
+            float distance = Vector2Int.Distance(cameraPos, cell);
+            
+            switch (task.ToLower())
+            {
+                case "movement":
+                    // Medium distance for movement practice
+                    if (distance >= 8f && distance <= 15f)
+                        suitableCells.Add(cell);
+                    break;
+                    
+                case "zoom":
+                    // Either close (3-6) or far (20-30) for zoom practice
+                    if ((distance >= 3f && distance <= 6f) || (distance >= 20f && distance <= 30f))
+                        suitableCells.Add(cell);
+                    break;
+                    
+                case "rotate":
+                    // Behind camera (use basic distance check for simplicity)
+                    if (distance >= 10f && distance <= 18f)
+                        suitableCells.Add(cell);
+                    break;
+                    
+                default:
+                    // Any reasonable distance
+                    if (distance >= 5f && distance <= 20f)
+                        suitableCells.Add(cell);
+                    break;
+            }
+        }
+        
+        return suitableCells;
+    }
+
+
+    
+    private void AddMelonyEffects()
+    {
+        if (currentMelony == null) return;
+        
+        // Add a glowing effect
+        Light melonyLight = currentMelony.GetComponent<Light>();
+        if (melonyLight == null)
+        {
+            melonyLight = currentMelony.AddComponent<Light>();
+        }
+        melonyLight.type = LightType.Point;
+        melonyLight.color = Color.yellow;
+        melonyLight.intensity = 2f;
+        melonyLight.range = 8f;
+        
+        // Add a bouncing animation
+        LeanTween.moveY(currentMelony, currentMelony.transform.position.y + 0.5f, 1f)
+            .setEase(LeanTweenType.easeInOutSine)
+            .setLoopPingPong();
+            
+        // Add rotation animation
+        LeanTween.rotateAround(currentMelony, Vector3.up, 360f, 3f)
+            .setLoopClamp();
+    }
+    
+    public void OnMelonyClicked()
+    {
+        if (currentMelony == null) return;
+        
+        // Get current step to check required inputs
+        if (currentStepIndex < 0 || currentStepIndex >= steps.Count) return;
+        var currentStep = steps[currentStepIndex];
+        
+        // Check if all required key inputs have been detected
+        bool allRequiredKeysPressed = true;
+        string missingKeys = "";
+        
+        if (currentStep.requiredInputs != null && currentStep.requiredInputs.Count > 0)
+        {
+            foreach (KeyCode key in currentStep.requiredInputs)
+            {
+                if (!detectedInputs.Contains(key))
+                {
+                    allRequiredKeysPressed = false;
+                    if (missingKeys.Length > 0) missingKeys += ", ";
+                    missingKeys += key.ToString();
+                }
+            }
+        }
+        
+        // Also check if player has performed the specific action for this task
+        bool hasRequiredAction = false;
+        TutorialTrigger triggerToFire = TutorialTrigger.MelonyFound;
+        
+        switch (currentMelonyTask.ToLower())
+        {
+            case "movement":
+                hasRequiredAction = detectedMelonyActions.Contains("movement");
+                triggerToFire = TutorialTrigger.MelonyMovementTest;
+                break;
+            case "zoom":
+                hasRequiredAction = detectedMelonyActions.Contains("zoom");
+                triggerToFire = TutorialTrigger.MelonyZoomTest;
+                break;
+            case "rotate":
+                hasRequiredAction = detectedMelonyActions.Contains("rotate");
+                triggerToFire = TutorialTrigger.MelonyRotateTest;
+                break;
+        }
+        
+        if (!allRequiredKeysPressed)
+        {
+            Debug.Log($"Player found Melony but hasn't used all required keys yet! Missing: {missingKeys}. Practice the controls first!");
+            ShowMelonyFeedback($"Use all keys first! Missing: {missingKeys.Replace("Mouse", "Mouse ")}");
+            return; // Don't complete the step until they've used all required controls
+        }
+        
+        if (!hasRequiredAction)
+        {
+            Debug.Log($"Player found Melony but hasn't used {currentMelonyTask} controls yet! Try using the controls first.");
+            ShowMelonyFeedback($"Practice {currentMelonyTask} first!");
+            return; // Don't complete the step until they've used the required controls
+        }
+        
+        // Play explosion effect
+        if (explosionEffectPrefab != null)
+        {
+            GameObject explosion = Instantiate(explosionEffectPrefab, currentMelony.transform.position, Quaternion.identity);
+            Destroy(explosion, 3f);
+        }
+        
+        // Play explosion sound
+        if (melonyExplosionSound != null && effectsAudioSource != null)
+        {
+            effectsAudioSource.PlayOneShot(melonyExplosionSound);
+        }
+        
+        // Destroy Melony
+        Destroy(currentMelony);
+        currentMelony = null;
+        
+        // Trigger the tutorial step completion
+        Trigger(triggerToFire);
+        
+        Debug.Log($"Melony found for task: {currentMelonyTask}! Player demonstrated {currentMelonyTask} controls.");
     }
 }

@@ -16,6 +16,9 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private StructureData data;
     private BuildController buildController;
     
+    // Public property to access the structure data
+    public StructureData Data => data;
+    
     // Track if item is locked due to day requirement
     private bool isLockedByDay = false;
 

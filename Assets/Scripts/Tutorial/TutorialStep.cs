@@ -23,5 +23,6 @@ public enum TutorialTrigger
     BuiltChickenCoop, BuiltCowPen, BuiltSheepPen, BuiltGoatPen, BuiltPigPen,
     BuiltChickenBarracks, BuiltCowBarracks, BuiltSheepBarracks, BuiltGoatBarracks, BuiltPigBarracks,
     BoughtFirstAnimals, FedFirstAnimals, CollectedFirstProducts, RecruitedFirstSoldiers, PlacedFirstFlag,
-    InputDetected, SpringSeason, SummerSeason, FallSeason, WinterSeason, AnimalProductionBoosted, PricePanelOpened, PricePanelClosed
+    InputDetected, SpringSeason, SummerSeason, FallSeason, WinterSeason, AnimalProductionBoosted, PricePanelOpened, PricePanelClosed,
+    MelonyFound, MelonyMovementTest, MelonyZoomTest, MelonyRotateTest
 }

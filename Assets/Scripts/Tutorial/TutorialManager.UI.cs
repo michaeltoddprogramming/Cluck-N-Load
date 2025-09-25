@@ -68,6 +68,7 @@ public partial class TutorialManager
             arrowImage.sprite = triangleSprite;
             arrowImage.preserveAspect = true;
             arrowImage.color = Color.white;
+            arrowImage.raycastTarget = false; // Allow clicks to pass through the arrow
             tutorialArrow.SetActive(false);
         }
     }

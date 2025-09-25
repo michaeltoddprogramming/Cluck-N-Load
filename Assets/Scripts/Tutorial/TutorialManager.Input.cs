@@ -11,6 +11,10 @@ public partial class TutorialManager
             return;
 
         var step = steps[currentStepIndex];
+        
+        // Handle Melony hunt input detection
+        HandleMelonyInputDetection(step);
+        
         if (step.requiredInputs == null || step.requiredInputs.Count == 0)
             return;
 
@@ -25,6 +29,55 @@ public partial class TutorialManager
         if (shouldAdvance)
             Trigger(TutorialTrigger.InputDetected);
     }
+    
+    void HandleMelonyInputDetection(TutorialStep step)
+    {
+        if (currentMelony == null) return;
+        
+        switch (step.stepId)
+        {
+            case "melony_movement":
+                // Detect WASD and Q/E movement
+                if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || 
+                    Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) ||
+                    Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.E))
+                {
+                    if (!detectedMelonyActions.Contains("movement"))
+                    {
+                        detectedMelonyActions.Add("movement");
+                        Debug.Log("Movement input detected for Melony hunt!");
+                    }
+                }
+                break;
+                
+            case "melony_zoom":
+                // Detect mouse wheel zoom
+                float scroll = Input.GetAxis("Mouse ScrollWheel");
+                if (Mathf.Abs(scroll) > 0.01f)
+                {
+                    if (!detectedMelonyActions.Contains("zoom"))
+                    {
+                        detectedMelonyActions.Add("zoom");
+                        Debug.Log("Zoom input detected for Melony hunt!");
+                    }
+                }
+                break;
+                
+            case "melony_rotate":
+                // Detect middle mouse button rotation
+                if (Input.GetMouseButton(2) && 
+                    (Mathf.Abs(Input.GetAxis("Mouse X")) > 0.01f || 
+                     Mathf.Abs(Input.GetAxis("Mouse Y")) > 0.01f))
+                {
+                    if (!detectedMelonyActions.Contains("rotate"))
+                    {
+                        detectedMelonyActions.Add("rotate");
+                        Debug.Log("Rotation input detected for Melony hunt!");
+                    }
+                }
+                break;
+        }
+    }
 
     void ShowKeyIndicators(List<KeyCode> keys)
     {
@@ -38,9 +91,41 @@ public partial class TutorialManager
             GameObject indicator = Instantiate(keyIndicatorPrefab, keyIndicatorContainer, false);
             indicator.name = $"Key_{key}";
             indicator.transform.localPosition = GetKeyPositionForLayout(key);
-            TextMeshProUGUI label = indicator.GetComponentInChildren<TextMeshProUGUI>();
-            if (label != null)
-                label.text = GetKeyDisplayName(key);
+            
+            // Check if this is a mouse button that should use an icon instead of text
+            Sprite mouseIcon = GetMouseIconSprite(key);
+            if (mouseIcon != null)
+            {
+                // Use the mouse icon sprite
+                Image iconImage = indicator.GetComponentInChildren<Image>();
+                if (iconImage != null)
+                {
+                    iconImage.sprite = mouseIcon;
+                    iconImage.preserveAspect = true;
+                    iconImage.raycastTarget = false; // Allow clicks to pass through
+                    
+                    // Use configurable scale for mouse icons
+                    iconImage.transform.localScale = Vector3.one * mouseIconScale;
+                }
+                
+                // Hide the text label for mouse buttons
+                TextMeshProUGUI label = indicator.GetComponentInChildren<TextMeshProUGUI>();
+                if (label != null)
+                    label.gameObject.SetActive(false);
+            }
+            else
+            {
+                // Use text label for keyboard keys
+                TextMeshProUGUI label = indicator.GetComponentInChildren<TextMeshProUGUI>();
+                if (label != null)
+                    label.text = GetKeyDisplayName(key);
+                
+                // Also disable raycast for keyboard key backgrounds
+                Image backgroundImage = indicator.GetComponentInChildren<Image>();
+                if (backgroundImage != null)
+                    backgroundImage.raycastTarget = false;
+            }
+            
             keyIndicatorMap[key] = indicator;
             keyIndicators.Add(indicator);
         }
@@ -60,6 +145,19 @@ public partial class TutorialManager
 
         if (pressed)
             LeanTween.scale(indicator, Vector3.one * 1.2f, 0.2f).setEasePunch();
+    }
+
+    Sprite GetMouseIconSprite(KeyCode key)
+    {
+        return key switch
+        {
+            KeyCode.Mouse0 => lmbIcon,        // Left Mouse Button
+            KeyCode.Mouse1 => rmbIcon,        // Right Mouse Button  
+            KeyCode.Mouse2 => mmbIcon,        // Middle Mouse Button
+            KeyCode.Mouse3 => mmbUpIcon,      // Mouse Wheel Up
+            KeyCode.Mouse4 => mmbDownIcon,    // Mouse Wheel Down
+            _ => null // Not a mouse button, return null to use text
+        };
     }
 
     string GetKeyDisplayName(KeyCode key)

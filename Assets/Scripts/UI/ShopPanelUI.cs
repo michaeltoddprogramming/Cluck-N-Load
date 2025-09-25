@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 
 public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -107,6 +109,18 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         Debug.Log($"PopulateShop called with display='{display}', tutorial active: {TutorialManager.Instance?.IsTutorialActive()}, current step: {TutorialManager.Instance?.GetCurrentStepId()}");
 
+        // Check if shop should be completely empty during current tutorial step
+        if (ShouldShopBeEmptyForCurrentTutorialStep())
+        {
+            Debug.Log("Shop should be empty for current tutorial step - clearing all items");
+            // Clear all items and show empty shop
+            foreach (Transform child in contentParent)
+            {
+                Destroy(child.gameObject);
+            }
+            return;
+        }
+
         if (database == null)
         {
             Debug.LogError("StructureDatabase is not assigned in the inspector!");
@@ -165,6 +179,408 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         Debug.Log($"PopulateShop completed: {itemsAdded} items added to shop for display '{display}'");
+        
+        // After populating, highlight the tutorial target building if tutorial is active
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            StartCoroutine(HighlightTutorialTargetBuilding());
+        }
+    }
+    
+    private System.Collections.IEnumerator HighlightTutorialTargetBuilding()
+    {
+        // Wait a frame for items to be instantiated
+        yield return null;
+        
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+            yield break;
+            
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+        string targetBuildingName = GetTargetBuildingForTutorialStep(currentStepId);
+        
+        if (string.IsNullOrEmpty(targetBuildingName))
+            yield break;
+            
+        Debug.Log($"Looking for tutorial target building: {targetBuildingName}");
+        
+        // Find and highlight the target building item
+        foreach (Transform child in contentParent)
+        {
+            StructureItemUI itemUI = child.GetComponent<StructureItemUI>();
+            if (itemUI != null && itemUI.Data != null)
+            {
+                string itemName = itemUI.Data.structureName.ToLower();
+                if (IsTargetBuildingMatch(itemName, targetBuildingName))
+                {
+                    Debug.Log($"Found and highlighting tutorial target: {itemUI.Data.structureName}");
+                    HighlightBuildingItem(child.gameObject);
+                    break;
+                }
+            }
+        }
+    }
+    
+    private string GetTargetBuildingForTutorialStep(string stepId)
+    {
+        switch (stepId)
+        {
+            case "open_build_shop":
+            case "build_farmhouse":
+                return "farmhouse";
+            case "build_crop_plot":
+                return "cropplot";
+            case "build_silo":
+                return "silo";
+            case "build_chicken_coop":
+                return "chickencoop";
+            case "build_chicken_barracks":
+                return "barracks";
+            default:
+                return "";
+        }
+    }
+    
+    private bool IsTargetBuildingMatch(string itemName, string targetName)
+    {
+        switch (targetName)
+        {
+            case "farmhouse":
+                return itemName.Contains("farm") && itemName.Contains("house");
+            case "cropplot":
+                return (itemName.Contains("crop") && itemName.Contains("plot")) || itemName.Contains("cropplot");
+            case "silo":
+                return itemName.Contains("silo");
+            case "chickencoop":
+                return (itemName.Contains("chicken") && itemName.Contains("coop")) || 
+                       itemName.Contains("chickenhouse") || itemName.Contains("hen house");
+            case "barracks":
+                return itemName.Contains("barracks");
+            default:
+                return false;
+        }
+    }
+    
+    private void HighlightBuildingItem(GameObject itemObject)
+    {
+        // Clear any existing highlights first
+        ClearAllBuildingHighlights();
+        
+        // Add visual highlighting to this specific item
+        AddBuildingItemHighlight(itemObject);
+    }
+    
+    private void ClearAllBuildingHighlights()
+    {
+        // Remove highlights from all items
+        foreach (Transform child in contentParent)
+        {
+            RemoveBuildingItemHighlight(child.gameObject);
+        }
+    }
+    
+    private void AddBuildingItemHighlight(GameObject itemObject)
+    {
+        Debug.Log($"Adding highlight to building item: {itemObject.name}");
+        
+        // Method 1: Scale the item slightly to make it stand out
+        Transform transform = itemObject.transform;
+        transform.localScale = Vector3.one * 1.05f;
+        
+        // Method 2: Find and modify background images for visual feedback
+        Image[] images = itemObject.GetComponentsInChildren<Image>();
+        
+        foreach (Image img in images)
+        {
+            if (img != null)
+            {
+                // Store original color and apply highlight
+                Color originalColor = img.color;
+                Color highlightColor = new Color(1f, 1f, 0.3f, 1f); // Bright yellow tint
+                img.color = Color.Lerp(originalColor, highlightColor, 0.4f);
+                
+                // Store original color for restoration
+                HighlightInfo highlightInfo = img.gameObject.GetComponent<HighlightInfo>();
+                if (highlightInfo == null)
+                {
+                    highlightInfo = img.gameObject.AddComponent<HighlightInfo>();
+                }
+                highlightInfo.originalColor = originalColor;
+                highlightInfo.backgroundImage = img;
+                
+                Debug.Log($"Applied highlight color to image: {img.name}");
+            }
+        }
+        
+        // Method 3: Add a pulsing animation
+        StartCoroutine(PulseHighlight(itemObject));
+        
+        Debug.Log($"Successfully highlighted building item: {itemObject.name}");
+    }
+    
+    private void RemoveBuildingItemHighlight(GameObject itemObject)
+    {
+        // Reset scale
+        Transform transform = itemObject.transform;
+        transform.localScale = Vector3.one;
+        
+        // Restore original colors for all images with highlight info
+        HighlightInfo[] highlightInfos = itemObject.GetComponentsInChildren<HighlightInfo>();
+        foreach (HighlightInfo info in highlightInfos)
+        {
+            if (info != null && info.backgroundImage != null)
+            {
+                info.backgroundImage.color = info.originalColor;
+                DestroyImmediate(info); // Clean up the component
+            }
+        }
+    }
+    
+    private System.Collections.IEnumerator PulseHighlight(GameObject itemObject)
+    {
+        float pulseSpeed = 2.5f;
+        float baseScale = 1.05f; // Already scaled up
+        
+        while (itemObject != null && itemObject.activeInHierarchy)
+        {
+            // Very gentle pulsing between 1.05 and 1.07 scale
+            float pulse = 0.02f * Mathf.Sin(Time.time * pulseSpeed);
+            float currentScale = baseScale + pulse;
+            
+            itemObject.transform.localScale = Vector3.one * currentScale;
+            
+            yield return null;
+        }
+        
+        // Reset to normal scale when done
+        if (itemObject != null)
+        {
+            itemObject.transform.localScale = Vector3.one;
+        }
+    }
+    
+    // Helper component to store highlight information
+    private class HighlightInfo : MonoBehaviour
+    {
+        public Color originalColor;
+        public Image backgroundImage;
+    }
+
+    private char GetCorrectTabForCurrentTutorialStep()
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) 
+        {
+            return 'C'; // Default to animals tab
+        }
+
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+        
+        // Return the tab that contains the building needed for current tutorial step
+        switch (currentStepId)
+        {
+            case "open_build_shop":
+            case "build_farmhouse":
+                return 'C'; // Farmhouse is in Animals tab (tab 0)
+                
+            case "build_crop_plot":
+            case "build_silo":
+                return 'P'; // Crop Plot and Silo are in Plant tab (tab 2)
+                
+            case "build_chicken_coop":
+                return 'C'; // Chicken Coop is in Animals tab (tab 0)
+                
+            case "build_chicken_barracks":
+                return 'A'; // Barracks are in Army tab (tab 1)
+                
+            default:
+                return 'C'; // Default to animals tab
+        }
+    }
+
+    public void EnsureCorrectTabForTutorial()
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) 
+        {
+            return; // No change needed if tutorial not active
+        }
+
+        char neededTab = GetCorrectTabForCurrentTutorialStep();
+        if (currNav != neededTab)
+        {
+            currNav = neededTab;
+            PopulateShop(currNav);
+            
+            // Also trigger the visual tab switching in the UI
+            int tabIndex = neededTab switch 
+            {
+                'C' => 0, // Animals 
+                'A' => 1, // Army
+                'P' => 2, // Plant
+                'S' => 3, // Defense
+                _ => 0
+            };
+            
+            Debug.Log($"Auto-switched to tab {tabIndex} ({neededTab}) for tutorial step: {TutorialManager.Instance.GetCurrentStepId()}");
+            
+            // Also trigger the UI tab change if we have a tab controller
+            TriggerTabUIUpdate(tabIndex);
+        }
+    }
+    
+    private void TriggerTabUIUpdate(int tabIndex)
+    {
+        // Try to find and trigger tab UI elements
+        // This will work with common UI patterns for tab controllers
+        
+        // Extended search patterns for tab buttons
+        string[] buttonNames = {
+            // Common patterns
+            $"Tab{tabIndex}Button", $"TabButton{tabIndex}", $"Tab_{tabIndex}", 
+            $"Button{tabIndex}", $"NavButton{tabIndex}", $"CategoryButton{tabIndex}",
+            // Shop-specific patterns
+            $"ShopTab{tabIndex}", $"Category{tabIndex}", $"Nav{tabIndex}",
+            // Index-based patterns  
+            $"TabButton ({tabIndex})", $"Tab Button {tabIndex}", $"Button ({tabIndex})"
+        };
+        
+        GameObject foundButton = null;
+        
+        // First try to find the button
+        foreach (string buttonName in buttonNames)
+        {
+            foundButton = GameObject.Find(buttonName);
+            if (foundButton != null)
+            {
+                Debug.Log($"Found tab button: {buttonName}");
+                break;
+            }
+        }
+        
+        // If we found a button, click it to trigger both logic and visual state
+        if (foundButton != null)
+        {
+            Button button = foundButton.GetComponent<Button>();
+            if (button != null && button.interactable)
+            {
+                Debug.Log($"Clicking tab button to update visual state: {foundButton.name}");
+                button.onClick.Invoke();
+                return;
+            }
+        }
+        
+        // Fallback: Try to find all tab buttons and manually update their states
+        UpdateTabButtonStates(tabIndex);
+        
+        // Try to find a tab controller component and call it directly
+        TryUpdateTabController(tabIndex);
+        
+        // Still call changeNavBar to ensure content updates
+        changeNavBar(tabIndex);
+    }
+    
+    private void TryUpdateTabController(int tabIndex)
+    {
+        // Look for common tab controller components
+        string[] controllerNames = {
+            "TabController", "ShopTabController", "NavController", 
+            "TabManager", "ShopTabs", "CategoryTabs"
+        };
+        
+        foreach (string controllerName in controllerNames)
+        {
+            GameObject controller = GameObject.Find(controllerName);
+            if (controller != null)
+            {
+                // Try to find a method to select the tab
+                Component[] components = controller.GetComponents<Component>();
+                foreach (Component comp in components)
+                {
+                    var type = comp.GetType();
+                    
+                    // Look for common tab selection method names
+                    var selectMethod = type.GetMethod("SelectTab") ?? 
+                                      type.GetMethod("SetActiveTab") ?? 
+                                      type.GetMethod("SwitchToTab") ??
+                                      type.GetMethod("ActivateTab");
+                    
+                    if (selectMethod != null)
+                    {
+                        try
+                        {
+                            selectMethod.Invoke(comp, new object[] { tabIndex });
+                            Debug.Log($"Called {selectMethod.Name}({tabIndex}) on {type.Name}");
+                            return;
+                        }
+                        catch (System.Exception e)
+                        {
+                            Debug.LogWarning($"Failed to call {selectMethod.Name}: {e.Message}");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void UpdateTabButtonStates(int activeTabIndex)
+    {
+        // Try to find and update all tab button states manually
+        for (int i = 0; i < 4; i++) // We have 4 tabs (0-3)
+        {
+            string[] buttonPatterns = {
+                $"Tab{i}Button", $"TabButton{i}", $"Button{i}", 
+                $"NavButton{i}", $"ShopTab{i}", $"Category{i}"
+            };
+            
+            foreach (string pattern in buttonPatterns)
+            {
+                GameObject tabButton = GameObject.Find(pattern);
+                if (tabButton != null)
+                {
+                    // Try to update button state visually
+                    Button button = tabButton.GetComponent<Button>();
+                    if (button != null)
+                    {
+                        // Update button color or state based on whether it's the active tab
+                        ColorBlock colors = button.colors;
+                        if (i == activeTabIndex)
+                        {
+                            // Set as selected/pressed state
+                            button.interactable = false; // Temporarily disable to show selected state
+                            StartCoroutine(ReEnableButtonAfterFrame(button));
+                        }
+                        else
+                        {
+                            // Set as normal state
+                            button.interactable = true;
+                        }
+                        
+                        Debug.Log($"Updated tab button {pattern} state: active={i == activeTabIndex}");
+                        break; // Found this tab button, move to next index
+                    }
+                }
+            }
+        }
+    }
+    
+    private System.Collections.IEnumerator ReEnableButtonAfterFrame(Button button)
+    {
+        yield return null; // Wait one frame
+        if (button != null)
+        {
+            button.interactable = true;
+        }
+    }
+    
+    public void RefreshForTutorialChange()
+    {
+        // Called when tutorial step changes to ensure shop is showing correct content
+        EnsureCorrectTabForTutorial();
+        PopulateShop(currNav);
+        
+        // Also ensure building gets highlighted after refresh
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            StartCoroutine(HighlightTutorialTargetBuilding());
+        }
     }
 
     private void displayComingSoonPanel(int num)
@@ -191,6 +607,13 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (buildController == null)
         {
             buildController = FindFirstObjectByType<BuildController>();
+        }
+        
+        // Ensure correct tab and highlight tutorial building when shop opens
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            EnsureCorrectTabForTutorial();
+            StartCoroutine(HighlightTutorialTargetBuilding());
         }
 
         // DON'T call HandleShopOpened here - it's already connected via UnityEvent
@@ -277,60 +700,104 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         
         Debug.Log($"Tutorial filtering: currentStepId='{currentStepId}', checking structure='{structureName}', type={data.type}");
 
-        // Define allowed structures per step (expand as needed)
-        bool isAllowed;
+        // INTUITIVE: Show related buildings that make sense for current tutorial phase
+        bool isAllowed = false;
         switch (currentStepId)
         {
             case "open_build_shop":
-                // When just opening shop, allow building types (farmhouse is now in Animal tab)
-                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration || data.type == StructureType.Animal;
-                break;
             case "build_farmhouse":
-                // Allow building-type and decoration-type structures during farmhouse tutorial (farmhouse moved to Animal tab)
-                isAllowed = data.type == StructureType.Building || data.type == StructureType.Decoration || data.type == StructureType.Animal;
+                // Only allow farmhouse during farmhouse tutorial steps
+                isAllowed = structureName.Contains("farm") && structureName.Contains("house");
                 break;
+                
             case "build_crop_plot":
-                // Allow all production-type structures during crop plot tutorial
-                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
+                // During crop plot step, show both crop plot AND silo since they work together
+                isAllowed = ((structureName.Contains("crop") && structureName.Contains("plot")) || 
+                            structureName.Contains("cropplot") ||
+                            structureName.Contains("silo"));
                 break;
+                
             case "build_silo":
-                // Allow all production-type structures during silo tutorial
-                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
+                // During silo step, show both silo AND crop plot since they work together  
+                isAllowed = (structureName.Contains("silo") ||
+                            (structureName.Contains("crop") && structureName.Contains("plot")) || 
+                            structureName.Contains("cropplot"));
                 break;
-            case "plant_first_crop":
-                // During planting, still allow crop plots and silos
-                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
-                break;
-            case "harvest_first_crops":
-                // During harvesting, still allow crop plots and silos
-                isAllowed = data.type == StructureType.CropPlot || data.type == StructureType.Silo;
-                break;
+                
             case "build_chicken_coop":
-                // Allow all animal-type structures during chicken coop tutorial
-                isAllowed = data.type == StructureType.Animal;
+                // Only allow chicken coop during chicken coop tutorial step
+                isAllowed = (structureName.Contains("chicken") && structureName.Contains("coop")) ||
+                           structureName.Contains("chickenhouse") || structureName.Contains("hen house");
                 break;
+                
             case "build_chicken_barracks":
-                // Allow all barracks-type structures during chicken barracks tutorial
-                isAllowed = data.type == StructureType.Barracks;
+                // Only allow chicken barracks during chicken barracks tutorial step
+                isAllowed = (structureName.Contains("chicken") && structureName.Contains("barracks")) ||
+                           (structureName.Contains("barracks") && data.type == StructureType.Barracks);
                 break;
+                
+            // All non-building tutorial steps - no buildings allowed
+            case "plant_first_crop":
+            case "harvest_first_crops":
+            case "price_panel_tutorial":
+            case "price_panel_explanation":
             case "buy_chickens":
             case "feed_chickens":
             case "collect_eggs":
-                // During chicken management, allow animal types
-                isAllowed = data.type == StructureType.Animal;
-                break;
             case "recruit_soldiers":
             case "place_flag":
-                // During soldier recruitment, allow barracks
-                isAllowed = data.type == StructureType.Barracks;
+            case "welcome":
+            case "melony_movement":
+            case "melony_zoom":
+            case "melony_rotate":
+            case "day_night_panel":
+            case "money_explanation":
+            case "resources_explanation":
+                // No buildings during explanation/action steps - hide shop completely
+                isAllowed = false;
                 break;
-            // Add more cases for other steps
+                
             default:
-                isAllowed = true; // Allow all structures for unknown tutorial steps
+                // Unknown tutorial steps - be cautious and block everything
+                isAllowed = false;
                 break;
         }
         
         Debug.Log($"Structure '{structureName}' (type: {data.type}) for step '{currentStepId}': {(isAllowed ? "ALLOWED" : "BLOCKED")}");
         return isAllowed;
+    }
+
+    private bool ShouldShopBeEmptyForCurrentTutorialStep()
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) 
+        {
+            return false; // Shop works normally if tutorial not active
+        }
+
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+        
+        // Steps where shop should be completely empty (no building allowed)
+        switch (currentStepId)
+        {
+            case "plant_first_crop":
+            case "harvest_first_crops":
+            case "price_panel_tutorial":
+            case "price_panel_explanation":
+            case "buy_chickens":
+            case "feed_chickens":
+            case "collect_eggs":
+            case "recruit_soldiers":
+            case "place_flag":
+            case "welcome":
+            case "melony_movement":
+            case "melony_zoom":
+            case "melony_rotate":
+            case "day_night_panel":
+            case "money_explanation":
+            case "resources_explanation":
+                return true;
+            default:
+                return false;
+        }
     }
 }

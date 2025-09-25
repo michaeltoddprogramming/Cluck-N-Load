@@ -14,6 +14,18 @@ public partial class TutorialManager : MonoBehaviour
     public Button skipTutorialButton;
     public GameObject keyIndicatorPrefab;
     public RectTransform keyIndicatorContainer;
+    
+    [Header("Mouse Icon Sprites")]
+    public Sprite lmbIcon;      // Left Mouse Button
+    public Sprite rmbIcon;      // Right Mouse Button  
+    public Sprite mmbIcon;      // Middle Mouse Button
+    public Sprite mmbDownIcon;  // Middle Mouse Button Down (scroll down)
+    public Sprite mmbUpIcon;    // Middle Mouse Button Up (scroll up)
+    
+    [Header("Mouse Icon Settings")]
+    [Range(0.5f, 5.0f)]
+    public float mouseIconScale = 2.0f;  // Configurable scale for mouse icons
+    
     private GameObject tutorialArrow;
     private RectTransform arrowRect;
 
@@ -61,6 +73,16 @@ public partial class TutorialManager : MonoBehaviour
     private bool isMumblePaused = false;
 
     private bool wasTutorialSkippedByDev = false; // Add this field near the other private fields
+    
+    [Header("Melony Hunt System")]
+    public GameObject melonyPrefab; // Civilian chicken prefab
+    public AudioClip melonyExplosionSound;
+    public GameObject explosionEffectPrefab;
+    
+    private GameObject currentMelony;
+    private string currentMelonyTask = "";
+    private List<KeyCode> detectedMelonyInputs = new List<KeyCode>();
+    private List<string> detectedMelonyActions = new List<string>();
 
     private void Awake()
     {
@@ -109,6 +131,7 @@ public partial class TutorialManager : MonoBehaviour
         }
     
         HandleRequiredInputDetection();
+        HandleMelonyClickDetection();
     
         if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
@@ -669,5 +692,58 @@ public partial class TutorialManager : MonoBehaviour
     public bool WasTutorialSkippedByDev()
     {
         return wasTutorialSkippedByDev;
+    }
+    
+    private void HandleMelonyClickDetection()
+    {
+        if (currentMelony == null) return;
+        
+        // Check for mouse click
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Check if we're not clicking on UI
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return;
+                
+            // Cast ray from camera through mouse position
+            Camera cam = Camera.main;
+            if (cam == null) return;
+            
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.transform.gameObject == currentMelony)
+                {
+                    OnMelonyClicked();
+                }
+            }
+        }
+    }
+    
+    public void ShowMelonyFeedback(string message)
+    {
+        // Temporarily update the dialogue text to show feedback
+        if (dialogueText != null)
+        {
+            StartCoroutine(ShowTemporaryFeedback(message));
+        }
+    }
+    
+    private System.Collections.IEnumerator ShowTemporaryFeedback(string message)
+    {
+        // Store original text
+        string originalText = dialogueText.text;
+        
+        // Show feedback message
+        dialogueText.text = $"Melony says: \"{message}\"";
+        
+        // Wait for 3 seconds
+        yield return new WaitForSeconds(3f);
+        
+        // Restore original text
+        dialogueText.text = originalText;
     }
 }

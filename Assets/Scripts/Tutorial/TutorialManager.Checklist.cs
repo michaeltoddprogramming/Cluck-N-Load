@@ -12,7 +12,7 @@ public partial class TutorialManager
 
     private readonly Dictionary<string, string[]> categories = new Dictionary<string, string[]>
     {
-        { "Farm Basics", new[] { "welcome", "camera_controls", "day_night_panel", "money_explanation", "time_controls", "season_bonuses" } },
+        { "Farm Basics", new[] { "welcome", "melony_movement", "melony_zoom", "melony_rotate", "day_night_panel", "money_explanation", "time_controls", "season_bonuses" } },
         { "Building", new[] { "open_build_shop", "build_farmhouse", "build_crop_plot", "build_silo" } },
         { "Farming", new[] { "plant_first_crop", "harvest_first_crops" } },
         { "Animals", new[] { "build_chicken_coop", "build_chicken_barracks", "buy_chickens", "feed_chickens", "collect_eggs" } },

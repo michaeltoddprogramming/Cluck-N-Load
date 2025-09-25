@@ -23,6 +23,9 @@ public class BarracksStructureUI : BaseStructureUI
     private int newAnimalCount = 0;
     private int animalCount = 0;
     private int maxAnimalCount = 0;
+    
+    // Public property to check if this barracks is currently placing a flag
+    public bool IsPlacingFlag => isPlacingFlag;
 
     [SerializeField] public Image animalIcon1;
     [SerializeField] public Image animalIcon2;
@@ -187,6 +190,8 @@ public class BarracksStructureUI : BaseStructureUI
         }
         
         isPlacingFlag = true;
+        updateStatusText("Click on the ground to place flag");
+        
         if (recruitButton != null) recruitButton.interactable = false;
         if (setFlagColorButton != null) setFlagColorButton.interactable = false;
         if (placeFlagButton != null)
@@ -195,7 +200,16 @@ public class BarracksStructureUI : BaseStructureUI
             placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
         }
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(true);
-        StartCoroutine(HandleFlagPlacement());
+        
+        // Add a small delay to prevent input conflicts
+        StartCoroutine(HandleFlagPlacementWithDelay());
+    }
+    
+    private IEnumerator HandleFlagPlacementWithDelay()
+    {
+        // Wait a frame to prevent immediate input consumption
+        yield return null;
+        yield return StartCoroutine(HandleFlagPlacement());
     }
 
     private IEnumerator HandleFlagPlacement()
@@ -231,26 +245,38 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (isPlacingFlag)
         {
-            Ray finalRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit finalHit;
-            LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
-            
-            if (Physics.Raycast(finalRay, out finalHit, 1000f, groundLayer))
+            // Make sure we don't place on UI elements
+            if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
-                // Final check before placing the flag
-                if (barracksStructure.GetAnimalType() == "Sheep")
-                {
-                    NightManager nightManager = NightManager.Instance;
-                    if (nightManager != null && !nightManager.IsDay)
-                    {
-                        updateStatusText("Cannot place sheep flags at night");
-                        EndFlagPlacement();
-                        yield break;
-                    }
-                }
+                Ray finalRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit finalHit;
+                LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
                 
-                barracksStructure.PlaceFlag(finalHit.point);
-                updateStatusText("Flag placed successfully!");
+                if (Physics.Raycast(finalRay, out finalHit, 1000f, groundLayer))
+                {
+                    // Final check before placing the flag
+                    if (barracksStructure.GetAnimalType() == "Sheep")
+                    {
+                        NightManager nightManager = NightManager.Instance;
+                        if (nightManager != null && !nightManager.IsDay)
+                        {
+                            updateStatusText("Cannot place sheep flags at night");
+                            EndFlagPlacement();
+                            yield break;
+                        }
+                    }
+                    
+                    barracksStructure.PlaceFlag(finalHit.point);
+                    updateStatusText("Flag placed successfully!");
+                }
+                else
+                {
+                    updateStatusText("Cannot place flag here - try clicking on the ground");
+                }
+            }
+            else
+            {
+                updateStatusText("Cannot place flag on UI - click on the ground");
             }
         }
         

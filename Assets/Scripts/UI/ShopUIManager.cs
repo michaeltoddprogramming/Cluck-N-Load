@@ -80,35 +80,41 @@ public class ShopUIManager : MonoBehaviour
 
         string currentStepId = TutorialManager.Instance.GetCurrentStepId();
 
-        // Define which tutorial steps allow shop access
+        // RESTRICTIVE: Only allow shop access during actual building tutorial steps
         switch (currentStepId)
         {
-            case "welcome":
-            case "camera_controls":
-            case "day_night_panel":
-            case "money_explanation":
-            case "time_controls":
-            case "season_bonuses":
-                // Introduction steps - shop should be disabled
-                return false;
-
             case "open_build_shop":
             case "build_farmhouse":
-            case "build_crop_plot":
+            case "build_crop_plot": 
             case "build_silo":
+            case "build_chicken_coop":
+            case "build_chicken_barracks":
+                // Only during building steps - shop is allowed
+                return true;
+
+            // All other tutorial steps - shop should be disabled
+            case "welcome":
+            case "melony_movement":
+            case "melony_zoom":
+            case "melony_rotate":
+            case "day_night_panel":
+            case "money_explanation":
+            case "resources_explanation":
+            case "time_controls":
+            case "season_bonuses":
             case "plant_first_crop":
             case "harvest_first_crops":
-            case "build_chicken_coop":
+            case "price_panel_tutorial":
+            case "price_panel_explanation":
             case "buy_chickens":
             case "feed_chickens":
             case "collect_eggs":
-            case "build_chicken_barracks":
             case "recruit_soldiers":
             case "place_flag":
             case "prepare_defense":
             default:
-                // Building and later steps - shop is allowed
-                return true;
+                // All explanation, action, and non-building steps - shop disabled
+                return false;
         }
     }
 
@@ -149,6 +155,19 @@ public class ShopUIManager : MonoBehaviour
     public void OnTutorialStepChanged()
     {
         UpdateShopButtonStateForTutorial();
+        
+        // Close shop if it's open but not allowed in current tutorial step
+        if (isVisible && !IsShopAllowedInTutorial())
+        {
+            CloseShop();
+        }
+        
+        // Also refresh shop contents if shop is currently open and allowed
+        if (shopPanelUI != null && isVisible && IsShopAllowedInTutorial())
+        {
+            // Refresh shop with correct tab and restrictions for new tutorial step
+            shopPanelUI.RefreshForTutorialChange();
+        }
     }
 
     private void Update()
@@ -227,6 +246,8 @@ public class ShopUIManager : MonoBehaviour
         // THEN call ShopPanelUI methods
         if (shopPanelUI != null)
         {
+            // Ensure we're on the correct tab for the tutorial BEFORE opening
+            shopPanelUI.EnsureCorrectTabForTutorial();
             shopPanelUI.OpenShop();
         }
         else
@@ -345,7 +366,7 @@ public class ShopUIManager : MonoBehaviour
     [ContextMenu("Debug: Reset Farmhouse Placed Flag")]
     public void DebugResetFarmhousePlacedFlag()
     {
-        Debug.Log($"🔧 DEBUG: Resetting IsFarmHousePlaced from {IsFarmHousePlaced} to false");
+        Debug.Log($"DEBUG: Resetting IsFarmHousePlaced from {IsFarmHousePlaced} to false");
         IsFarmHousePlaced = false;
         if (shopPanelUI != null)
             shopPanelUI.PopulateShop();

@@ -113,8 +113,26 @@ public class PricePanelUI : MonoBehaviour
 
     public void populatePricePanel()
     {
+        // Ensure all required managers are initialized
         if (inventoryManager == null)
-            Debug.LogError("inventoryManager is null!");
+        {
+            inventoryManager = FindFirstObjectByType<InventoryManager>();
+            if (inventoryManager == null)
+            {
+                Debug.LogError("InventoryManager not found in scene!");
+                return;
+            }
+        }
+
+        if (productionBoosts == null)
+        {
+            productionBoosts = FindFirstObjectByType<ProductionBoosts>();
+            if (productionBoosts == null)
+            {
+                Debug.LogError("ProductionBoosts not found in scene!");
+                return;
+            }
+        }
 
         cropAmounts = inventoryManager.getInventory(crops);
         // produceAmounts = AnimalStructure.getProductPrices(animals);
@@ -122,8 +140,17 @@ public class PricePanelUI : MonoBehaviour
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         boostedProducts = productionBoosts.GetBoostedProducts();
-        Debug.Log($"These are the products boosted: {boostedProducts.Length}");
-        Debug.Log($"These are the products boosted: {boostedProducts[0]}, {boostedProducts[1]}, {boostedProducts[2]}, {boostedProducts[3]}, {boostedProducts[4]}");
+        
+        // Safe debug logging with null and bounds checking
+        if (boostedProducts != null)
+        {
+            Debug.Log($"These are the products boosted: {boostedProducts.Length}");
+            if (boostedProducts.Length >= 5)
+            {
+                Debug.Log($"These are the products boosted: {boostedProducts[0]}, {boostedProducts[1]}, {boostedProducts[2]}, {boostedProducts[3]}, {boostedProducts[4]}");
+            }
+        }
+        
         // boostedCrops = inventoryManager.whichProductsAreBoosted(animals);
         populateCrops();
         populateProduce();

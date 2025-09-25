@@ -118,6 +118,33 @@ public class Structure : MonoBehaviour
         OnHealthChanged += UpdateHealthBar;
     }
 
+    private bool lastIsDayState = true;
+    private bool hasInitialized = false;
+    
+    private void Update()
+    {
+        // Check for day/night transitions to update health bar visibility
+        if (healthBarCanvasGroup != null && NightManager.Instance != null)
+        {
+            bool currentIsDayState = NightManager.Instance.IsDay;
+            
+            // Initialize the day state on first frame
+            if (!hasInitialized)
+            {
+                lastIsDayState = currentIsDayState;
+                hasInitialized = true;
+                return;
+            }
+            
+            // Only update when day/night actually changes
+            if (currentIsDayState != lastIsDayState)
+            {
+                lastIsDayState = currentIsDayState;
+                UpdateHealthBarVisibility(); // Use separate method for visibility updates
+            }
+        }
+    }
+
     protected virtual void Start()
     {
         if (isRegisteredWithGameLoop)
@@ -162,16 +189,20 @@ public class Structure : MonoBehaviour
         {
             healthBarInstance = Instantiate(healthBarPrefab, transform);
 
-            // Position the health bar above the structure
+            // Position the health bar above the structure based on its height
             var rect = healthBarInstance.GetComponent<RectTransform>();
             if (rect != null)
             {
-                rect.localPosition = new Vector3(0, 6f, 0); // Adjust Y as needed for your models
+                float structureHeight = GetStructureHeight();
+                rect.localPosition = new Vector3(0, structureHeight + 1.5f, 0); // Add 1.5f buffer above structure
             }
             healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
             healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
             healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
             healthBarInstance.SetActive(false); // Start hidden
+            
+            // Set initial visibility based on current health and time of day
+            UpdateHealthBar();
         }
 
 
@@ -181,7 +212,6 @@ public class Structure : MonoBehaviour
     {
         if (healthBarSlider != null)
         {
-            Debug.Log($"Updating health bar for {gameObject.name}: {GetCurrentHealth()}/{GetMaxHealth()}");
             float pct = Mathf.Clamp01((float)GetCurrentHealth() / GetMaxHealth());
             healthBarSlider.value = pct;
             healthBarSlider.fillRect.GetComponent<Image>().color =
@@ -190,18 +220,23 @@ public class Structure : MonoBehaviour
             if (healthBarText != null)
                 healthBarText.text = $"{GetCurrentHealth()} / {GetMaxHealth()}";
 
-            // Only show health bar if not at full health
+            // Show health bar based on health percentage and time of day
             if (healthBarCanvasGroup != null)
             {
-                bool showBar = GetCurrentHealth() < GetMaxHealth();
-                healthBarCanvasGroup.alpha = showBar ? 1f : 0f;
-                healthBarCanvasGroup.interactable = showBar;
-                healthBarCanvasGroup.blocksRaycasts = showBar;
-                healthBarInstance.SetActive(showBar);
+                bool isDaytime = NightManager.Instance != null ? NightManager.Instance.IsDay : true;
+                float healthPercent = (float)GetCurrentHealth() / GetMaxHealth();
+                
+                // During day: hide health bar if health is above 50%
+                // During night: always show health bar if not at full health (for danger awareness)
+                bool shouldShow = GetCurrentHealth() < GetMaxHealth() && 
+                                 (!isDaytime || healthPercent <= 0.5f);
+                
+                // Smoothly fade health bar in/out
+                FadeHealthBar(shouldShow);
             }
 
-            // Animate feedback if showing
-            if (healthBarCanvasGroup != null && GetCurrentHealth() < GetMaxHealth())
+            // Animate feedback only if health bar is visible
+            if (healthBarCanvasGroup != null && healthBarCanvasGroup.alpha > 0f)
             {
                 LeanTween.cancel(healthBarInstance);
                 LeanTween.alphaCanvas(healthBarCanvasGroup, 0.7f, 0.3f).setLoopPingPong(1);
@@ -212,8 +247,6 @@ public class Structure : MonoBehaviour
                 }
             }
 
-            if (healthBarInstance != null)
-                Debug.Log($"Health bar instance active: {healthBarInstance.activeSelf}");
         }
         else
         {
@@ -424,6 +457,78 @@ public class Structure : MonoBehaviour
     #endregion
 
     #region Utility
+
+    private float GetStructureHeight()
+    {
+        float height = 1f; // Default height
+        Renderer renderer = GetComponentInChildren<Renderer>();
+        if (renderer != null)
+        {
+            height = renderer.bounds.size.y;
+        }
+        return height;
+    }
+
+    private void UpdateHealthBarVisibility()
+    {
+        // Only update visibility logic without changing health values
+        if (healthBarCanvasGroup != null)
+        {
+            bool isDaytime = NightManager.Instance != null ? NightManager.Instance.IsDay : true;
+            float healthPercent = (float)GetCurrentHealth() / GetMaxHealth();
+            
+            // During day: hide health bar if health is above 50%
+            // During night: always show health bar if not at full health (for danger awareness)
+            bool shouldShow = GetCurrentHealth() < GetMaxHealth() && 
+                             (!isDaytime || healthPercent <= 0.5f);
+            
+            Debug.Log($"[{gameObject.name}] Day/Night Change - Health: {GetCurrentHealth()}/{GetMaxHealth()} | IsDay: {isDaytime} | ShouldShow: {shouldShow}");
+            
+            // Smoothly fade health bar in/out
+            FadeHealthBar(shouldShow);
+        }
+    }
+
+    private void FadeHealthBar(bool shouldShow)
+    {
+        if (healthBarCanvasGroup == null || healthBarInstance == null) return;
+
+        // Cancel any existing fade animations
+        LeanTween.cancel(healthBarInstance);
+
+        float targetAlpha = shouldShow ? 1f : 0f;
+        float currentAlpha = healthBarCanvasGroup.alpha;
+
+        // Always make sure the health bar is active when we need to show it
+        if (shouldShow)
+        {
+            healthBarInstance.SetActive(true);
+        }
+
+        // Check if we need to animate or set immediately
+        if (Mathf.Abs(currentAlpha - targetAlpha) > 0.01f)
+        {
+            // Smooth fade animation
+            LeanTween.alphaCanvas(healthBarCanvasGroup, targetAlpha, 5f)
+                .setEase(LeanTweenType.easeOutQuad)
+                .setOnComplete(() => {
+                    // Hide the GameObject when fully faded out to save performance
+                    if (targetAlpha == 0f)
+                    {
+                        healthBarInstance.SetActive(false);
+                    }
+                });
+        }
+        else if (!shouldShow && currentAlpha == 0f)
+        {
+            // If already hidden, make sure GameObject is deactivated
+            healthBarInstance.SetActive(false);
+        }
+
+        // Update interactability immediately
+        healthBarCanvasGroup.interactable = shouldShow;
+        healthBarCanvasGroup.blocksRaycasts = shouldShow;
+    }
 
     public bool OccupiesCell(int x, int y)
     {

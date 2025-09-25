@@ -60,6 +60,14 @@ public class PauseManager : MonoBehaviour
             shopManager.disableShop();
             // itemHoverPanel.HideImmediate();
             ItemHoverPanel.Instance.HideImmediate();
+            
+            // Close price panel if it's open to prevent overlap with pause menu
+            PricePanelUI pricePanel = FindFirstObjectByType<PricePanelUI>();
+            if (pricePanel != null && pricePanel.gameObject.activeInHierarchy)
+            {
+                pricePanel.ClosePanel();
+            }
+            
             isPaused = true;
         }
     }

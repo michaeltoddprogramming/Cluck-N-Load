@@ -146,6 +146,7 @@ public class NightManager : MonoBehaviour
     // Structures
     private List<AnimalStructure> animalStructures = new List<AnimalStructure>();
     private List<BarracksStructure> barracksStructures = new List<BarracksStructure>();
+    private List<FarmHouseStructure> farmHouseStructures = new List<FarmHouseStructure>();
 
     private Coroutine seasonNotificationCoroutine = null;
     private Coroutine productionNotificationCoroutine = null;
@@ -720,6 +721,15 @@ public class NightManager : MonoBehaviour
         // Always call chooseAnimalProductForSeason (it will handle tutorial appropriately now)
         chooseAnimalProductForSeason();
 
+        // Heal all farm houses to full HP at the start of a new season
+        foreach (FarmHouseStructure farmHouse in farmHouseStructures)
+        {
+            if (farmHouse != null)
+            {
+                farmHouse.OnNewSeason(season);
+            }
+        }
+
         // Debug log removed: Setting season to ...
         if (!isFirstDay)
         {
@@ -830,6 +840,22 @@ public class NightManager : MonoBehaviour
     {
         if (barracks != null && barracksStructures.Remove(barracks))
         {
+        }
+    }
+
+    public void RegisterFarmHouseStructure(FarmHouseStructure farmHouse)
+    {
+        if (farmHouse != null && !farmHouseStructures.Contains(farmHouse))
+        {
+            farmHouseStructures.Add(farmHouse);
+        }
+    }
+
+    public void UnregisterFarmHouseStructure(FarmHouseStructure farmHouse)
+    {
+        if (farmHouse != null)
+        {
+            farmHouseStructures.Remove(farmHouse);
         }
     }
 

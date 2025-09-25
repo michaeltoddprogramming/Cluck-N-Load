@@ -644,6 +644,47 @@ public partial class TutorialManager : MonoBehaviour
         currentDiscoveryStep = null;
     }
 
+    // Static flag to track if we've already shown the farm house healing explanation
+    private static bool hasShownFarmHouseHealing = false;
+
+    public void TriggerFarmHouseSeasonalHealing(int season)
+    {
+        // Only show Pete's explanation the first time this happens and not during active tutorial
+        if (hasShownFarmHouseHealing || IsTutorialActive()) return;
+        
+        hasShownFarmHouseHealing = true;
+        
+        string seasonName = GetSeasonNameForHealing(season);
+        string peteMessage = $"Hey there, partner! Notice anything about your farm house?\n\n" +
+                           $"Every time a new season rolls around, your farm house gets restored to <b>full health</b>! " +
+                           $"Mother Nature's way of giving you a fresh start.\n\n" +
+                           $"No need to worry about repairs - each season brings renewal!";
+        
+        // Create a discovery step for Pete's healing explanation
+        var healingStep = new TutorialStep
+        {
+            stepId = "pete_farmhouse_healing",
+            title = "Pete's Farm House Tip",
+            instructionText = peteMessage,
+            triggerToWaitFor = TutorialTrigger.None
+        };
+
+        // Show Pete's healing explanation as a discovery popup
+        ShowPeteSeasonNotification(healingStep);
+    }
+
+    private string GetSeasonNameForHealing(int season)
+    {
+        return season switch
+        {
+            1 => "Spring",
+            2 => "Summer", 
+            3 => "Fall",
+            4 => "Winter",
+            _ => "Unknown Season"
+        };
+    }
+
     // --- Pause/Resume tutorial mumble audio on game pause/resume ---
     private void OnDestroy()
     {

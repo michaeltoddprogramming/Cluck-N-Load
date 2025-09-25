@@ -43,6 +43,12 @@ public class FarmHouseStructure : Structure
         // Start ambient sounds
         PlayAmbientSounds();
 
+        // Register with NightManager for seasonal healing
+        if (NightManager.Instance != null)
+        {
+            NightManager.Instance.RegisterFarmHouseStructure(this);
+        }
+
         // NOTE: Tutorial notification is handled by TutorialConditionTracker
         // No need to notify here to avoid duplicate triggers
 
@@ -62,6 +68,12 @@ public class FarmHouseStructure : Structure
 
     protected override void OnDestroy()
     {
+        // Unregister from NightManager
+        if (NightManager.Instance != null)
+        {
+            NightManager.Instance.UnregisterFarmHouseStructure(this);
+        }
+        
         // Don't log destruction to reduce console spam
         base.OnDestroy();
     }
@@ -94,5 +106,23 @@ public class FarmHouseStructure : Structure
     {
         if (maxWorkers == 0) return 1f;
         return 1f + (currentWorkers / (float)maxWorkers) * 0.5f; // Up to 50% bonus
+    }
+
+    // Called when a new season starts - heals farm house to full HP
+    public void OnNewSeason(int season)
+    {
+        int previousHealth = GetCurrentHealth();
+        int maxHealth = GetMaxHealth();
+        
+        // Always heal to full HP at season change using the existing method
+        CheatSetMaxHealth();
+        
+        Debug.Log($"Farm House healed to full HP ({maxHealth}) for new season {season}!");
+        
+        // Trigger Pete's explanation if this is the first time healing happened and house was actually damaged
+        if (previousHealth < maxHealth && TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.TriggerFarmHouseSeasonalHealing(season);
+        }
     }
 }

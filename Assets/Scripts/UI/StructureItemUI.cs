@@ -31,7 +31,6 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             // Only show overlay if locked by day requirement
             lockedOverlay.SetActive(isLockedByDay);
-            
             // Update the overlay text for day lock
             if (lockedOverlay.activeInHierarchy && isLockedByDay)
             {
@@ -42,7 +41,24 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 }
             }
         }
-        
+
+        // Grayscale overlay logic (ignore if locked by day)
+        if (!isLockedByDay)
+        {
+            Transform grayscaleOverlay = transform.Find("grayOverlay");
+            if (grayscaleOverlay != null && nightManager != null)
+            {
+                if (nightManager.getIsPaused())
+                {
+                    grayscaleOverlay.gameObject.SetActive(true);
+                }
+                else
+                {
+                    grayscaleOverlay.gameObject.SetActive(false);
+                }
+            }
+        }
+
         // Button interactability only considers day lock and affordability
         if (selectButton != null)
         {

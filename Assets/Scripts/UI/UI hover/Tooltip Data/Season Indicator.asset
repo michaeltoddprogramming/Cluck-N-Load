@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5971d1876913654ebb2f1d157d246d1, type: 3}
   m_Name: Season Indicator
   m_EditorClassIdentifier: 
-  Title: Day & Season Indicator
+  Title: Day & Season
   Type: 2
   Description: 'Season: {0,-10}\nDay: {1,-10}'

@@ -1404,4 +1404,9 @@ public class NightManager : MonoBehaviour
     {
         return isPaused;
     }
+
+    public string GetSeason()
+    {
+        return GetSeasonName(currentSeason);
+    }
 }

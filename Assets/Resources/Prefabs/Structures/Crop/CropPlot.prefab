@@ -119,15 +119,15 @@ MonoBehaviour:
   isGrowing: 0
   cropReady: 0
   nightManager: {fileID: 0}
-  sunflowerPrefab1: {fileID: 936194210774049971, guid: b998b7f12627bb94dad3554f91bc5c01, type: 3}
-  sunflowerPrefab2: {fileID: 4380064504038660135, guid: 7fa86abdee5fb7c4d905405d9e6d581f, type: 3}
-  sunflowerPrefab3: {fileID: 4975784255248263840, guid: cee00475cb3f9e047a9d7502447b51e5, type: 3}
-  wheatPrefab1: {fileID: 6385371561918464571, guid: 0c25c214c786f3b4794b2b0d4d61b950, type: 3}
-  wheatPrefab2: {fileID: 1591981543358835794, guid: 690388f3e87ed2142a34c03c076207e8, type: 3}
-  wheatPrefab3: {fileID: 3924880885926439274, guid: ecd07388a85fcf34d9e91e13af96796b, type: 3}
-  carrotsPrefab1: {fileID: 213702193634212735, guid: 358180686f7b22d45b76870065627c50, type: 3}
-  carrotsPrefab2: {fileID: 8688213524354977936, guid: aca23cd0ce3cee54198d6198951a6d06, type: 3}
-  carrotsPrefab3: {fileID: 8333999685953290440, guid: 3e94667b9e44e604a848bc7147dfbeed, type: 3}
+  sunflowerPrefab1: {fileID: 3235390569157657606, guid: b998b7f12627bb94dad3554f91bc5c01, type: 3}
+  sunflowerPrefab2: {fileID: 6070859014283598878, guid: 7fa86abdee5fb7c4d905405d9e6d581f, type: 3}
+  sunflowerPrefab3: {fileID: 2809930095350021466, guid: de128c4213dd78d449122e17effef3a9, type: 3}
+  wheatPrefab1: {fileID: 7892283786319623733, guid: 0c25c214c786f3b4794b2b0d4d61b950, type: 3}
+  wheatPrefab2: {fileID: 8373396665857596405, guid: 690388f3e87ed2142a34c03c076207e8, type: 3}
+  wheatPrefab3: {fileID: 1379668170578293336, guid: ecd07388a85fcf34d9e91e13af96796b, type: 3}
+  carrotsPrefab1: {fileID: 3200880899954369262, guid: 358180686f7b22d45b76870065627c50, type: 3}
+  carrotsPrefab2: {fileID: 8581483190066205013, guid: aca23cd0ce3cee54198d6198951a6d06, type: 3}
+  carrotsPrefab3: {fileID: 2384399803933818536, guid: 3e94667b9e44e604a848bc7147dfbeed, type: 3}
   sunflowerTotal: 0
   wheatTotal: 0
   carrotTotal: 0

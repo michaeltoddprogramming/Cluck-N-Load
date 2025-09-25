@@ -2,9 +2,19 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
+// Ensures an Image component is present
+[RequireComponent(typeof(Image))]
 public class TimeSpeedEffect : MonoBehaviour
 {
     [SerializeField] private Image borderImage;
+    private void Awake()
+    {
+        // Only warn if borderImage is not assigned in Inspector
+        if (borderImage == null)
+        {
+            Debug.LogError("TimeSpeedEffect: borderImage is not assigned! Please assign the correct Image in the Inspector.");
+        }
+    }
     [SerializeField] private float pulseDuration = 3f; // seconds for a full fade cycle
     [SerializeField] private float minAlpha = 0.2f;
     [SerializeField] private float maxAlpha = 0.6f;
@@ -43,7 +53,10 @@ public class TimeSpeedEffect : MonoBehaviour
     private void SetAlpha(float alpha)
     {
         Debug.Log("Alpha set to: " + alpha);
-        if (borderImage == null) return;
+        if (borderImage == null) {
+            Debug.LogWarning("RUAN BLED FOR YOU, WHY ARE YOU LIKE THIS?");
+            return;
+        }
         Color c = borderImage.color;
         c.a = alpha;
         borderImage.color = c;

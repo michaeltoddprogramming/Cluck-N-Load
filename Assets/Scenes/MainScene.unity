@@ -526,6 +526,7 @@ GameObject:
   - component: {fileID: 122739291}
   - component: {fileID: 122739290}
   - component: {fileID: 122739292}
+  - component: {fileID: 122739293}
   m_Layer: 5
   m_Name: PAUSE BG
   m_TagString: TimeControls
@@ -690,6 +691,27 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &122739293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 122739288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4128d43f080a0614588b451014f26c97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pause: {fileID: 441202428}
+  play: {fileID: 902858523}
+  fastForward: {fileID: 1139224270}
+  selectedPause: {fileID: 21300000, guid: 4a7c7f51517acdb408e0c70d61952e0d, type: 3}
+  normalPause: {fileID: 21300000, guid: 83e72468f795d1b4ca61b6ac2119d5ca, type: 3}
+  selectedPlay: {fileID: 21300000, guid: 7731c20069807e147901206b75913f4c, type: 3}
+  normalPlay: {fileID: 21300000, guid: 029dc9b4ea599414f9a80cb4b55f9d70, type: 3}
+  selectedFast: {fileID: 21300000, guid: 59c9d1f96bba07946a45f57457c6b45e, type: 3}
+  normalFast: {fileID: 21300000, guid: c8076a2405a00a4489d98a040d79b7ea, type: 3}
 --- !u!1 &132953203
 GameObject:
   m_ObjectHideFlags: 0
@@ -6079,7 +6101,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1142, y: 51.34}
+  m_AnchoredPosition: {x: 1142, y: 394}
   m_SizeDelta: {x: 692.869, y: 318.457}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &684538655

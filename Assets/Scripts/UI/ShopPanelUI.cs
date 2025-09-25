@@ -732,8 +732,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 
             case "build_chicken_barracks":
                 // Only allow chicken barracks during chicken barracks tutorial step
-                isAllowed = (structureName.Contains("chicken") && structureName.Contains("barracks")) ||
-                           (structureName.Contains("barracks") && data.type == StructureType.Barracks);
+                isAllowed = (structureName.Contains("chicken") && (structureName.Contains("barracks") || structureName.Contains("barrack"))) ||
+                           structureName.ToLower().Contains("chicken barrack");
                 break;
                 
             // All non-building tutorial steps - no buildings allowed

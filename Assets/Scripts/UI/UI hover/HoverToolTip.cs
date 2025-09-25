@@ -33,26 +33,26 @@ public class HoverToolTip : MonoBehaviour
             case TooltipType.enemies:
                 offset.x = 0;
                 string season = NightManager.Instance.GetSeason();
-                string template = string.Format("{0,-10}{1}", "Animals", "AttackType");
+                string template = string.Format("{0,-15}{1}", "Animals", "AttackType");
 
                 if (season == "Spring")
                 {
-                    description = string.Format("{0}\n{1,-10}{2}", template, "Wolves", "Animals");
+                    description = string.Format("{0}\n{1,-15}{2}", template, "Wolves", "Animals");
                 }
                 else if (season == "Summer")
                 {
-                    description = string.Format("{0}\n{1,-10}{2}\n{3,-10}{4}", template, "Wolves", "Animals", "Racoons", "Resources");
+                    description = string.Format("{0}\n{1,-15}{2}\n{3,-15}{4}", template, "Wolves", "Animals", "Racoons", "Resources");
                 }
                 else if (season == "Fall")
                 {
-                    description = string.Format("{0}\n{1,-10}{2}\n{3,-10}{4}\n{5,-10}{6}", template,
+                    description = string.Format("{0}\n{1,-15}{2}\n{3,-15}{4}\n{5,-15}{6}", template,
                         "Wolves", "Animals",
                         "Racoons", "Resources",
                         "Boars", "Walls");
                 }
                 else if (season == "Winter")
                 {
-                    description = string.Format("{0}\n{1,-10}{2}\n{3,-10}{4}\n{5,-10}{6}\n{7,-10}{8}", template,
+                    description = string.Format("{0}\n{1,-15}{2}\n{3,-15}{4}\n{5,-15}{6}\n{7,-15}{8}", template,
                         "Wolves", "Animals",
                         "Racoons", "Resources",
                         "Boars", "Walls",

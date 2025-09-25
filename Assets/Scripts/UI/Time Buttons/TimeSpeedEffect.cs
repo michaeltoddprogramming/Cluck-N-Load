@@ -92,7 +92,7 @@ public class TimeSpeedEffect : MonoBehaviour
 
     public void StartSpeedEffect()
     {
-        Debug.Log("laikojedrfb gbj ihgserhjk bghkjb gsdfkhbjl");
+        // Debug.Log("laikojedrfb gbj ihgserhjk bghkjb gsdfkhbjl");
         if (pulseCoroutine != null) StopCoroutine(pulseCoroutine);
         pulseCoroutine = StartCoroutine(PulseBorder());
     }
@@ -121,7 +121,7 @@ public class TimeSpeedEffect : MonoBehaviour
 
     private void SetAlpha(float alpha)
     {
-        Debug.Log("Alpha set to: " + alpha);
+        // Debug.Log("Alpha set to: " + alpha);
         if (img == null) {
             Debug.LogWarning("TimeSpeedEffect: No Image component found!");
             return;

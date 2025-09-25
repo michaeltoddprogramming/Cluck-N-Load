@@ -158,6 +158,7 @@ public class NightManager : MonoBehaviour
     private bool isFirstDay = true;
     private EnemyIndicator enemyIndicator;
     private TimeIndicator timeIndicator;
+    private TimeSpeedEffect timeSpeedEffect;
 
 
     private void Awake()
@@ -182,6 +183,7 @@ public class NightManager : MonoBehaviour
 
         enemyIndicator = FindObjectOfType<EnemyIndicator>();
         timeIndicator = FindObjectOfType<TimeIndicator>();
+        timeSpeedEffect = FindObjectOfType<TimeSpeedEffect>();
 
     }
 
@@ -250,6 +252,7 @@ public class NightManager : MonoBehaviour
     public void pauseTime()
     {
         timeIndicator.exchangeTimeIcon("pause");
+        timeSpeedEffect.StopSpeedEffect();
         isPaused = true;
         Time.timeScale = 0f;
 
@@ -264,6 +267,7 @@ public class NightManager : MonoBehaviour
     public void playTime()
     {
         timeIndicator.exchangeTimeIcon("play");
+        timeSpeedEffect.StopSpeedEffect();
         isPaused = false;
         isFast = false;
         speedUp = 1f;
@@ -283,6 +287,7 @@ public class NightManager : MonoBehaviour
     public void fastForwardTime()
     {
         timeIndicator.exchangeTimeIcon("fast");
+        timeSpeedEffect.StartSpeedEffect();
         if (isPaused)
         {
             Time.timeScale = 1f;

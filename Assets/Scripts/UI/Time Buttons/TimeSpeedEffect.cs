@@ -13,6 +13,7 @@ public class TimeSpeedEffect : MonoBehaviour
 
     public void StartSpeedEffect()
     {
+        Debug.Log("laikojedrfb gbj ihgserhjk bghkjb gsdfkhbjl");
         if (pulseCoroutine != null) StopCoroutine(pulseCoroutine);
         pulseCoroutine = StartCoroutine(PulseBorder());
     }
@@ -41,6 +42,7 @@ public class TimeSpeedEffect : MonoBehaviour
 
     private void SetAlpha(float alpha)
     {
+        Debug.Log("Alpha set to: " + alpha);
         if (borderImage == null) return;
         Color c = borderImage.color;
         c.a = alpha;

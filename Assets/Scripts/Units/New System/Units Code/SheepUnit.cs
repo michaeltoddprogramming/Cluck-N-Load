@@ -12,6 +12,13 @@ public class SheepUnit : ArmyUnit
     [SerializeField] public AudioClip beep2;
     [SerializeField] public AudioClip beep3;
 
+    [Header("Sheep Meshes")]
+    [SerializeField] private Mesh meshStage1;
+    [SerializeField] private Mesh meshStage2;
+    [SerializeField] private Mesh meshStage3;
+    private SkinnedMeshRenderer skinnedMeshRenderer;
+    private int currentMeshStage = 1;
+
     private int lastBeepStage = 0;
 
     private bool hasExploded = false;
@@ -19,6 +26,16 @@ public class SheepUnit : ArmyUnit
     protected override void Awake()
     {
         base.Awake();
+            // Find SkinnedMeshRenderer in children
+            skinnedMeshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
+            if (skinnedMeshRenderer != null)
+            {
+                if (meshStage1 != null)
+                {
+                    skinnedMeshRenderer.sharedMesh = meshStage1;
+                    currentMeshStage = 1;
+                }
+            }
     }
 
     private void Start()
@@ -56,6 +73,27 @@ public class SheepUnit : ArmyUnit
     public void Update()
     {
         base.Update();
+
+        // Mesh swap logic based on health percentage
+        if (skinnedMeshRenderer != null && data1 != null)
+        {
+            float healthPercent = (float)CurrentHealth / (float)data1.Health;
+            if (healthPercent <= 0.4f && currentMeshStage < 3 && meshStage3 != null)
+            {
+                skinnedMeshRenderer.sharedMesh = meshStage3;
+                currentMeshStage = 3;
+            }
+            else if (healthPercent <= 0.7f && currentMeshStage < 2 && meshStage2 != null)
+            {
+                skinnedMeshRenderer.sharedMesh = meshStage2;
+                currentMeshStage = 2;
+            }
+            else if (healthPercent > 0.7f && currentMeshStage != 1 && meshStage1 != null)
+            {
+                skinnedMeshRenderer.sharedMesh = meshStage1;
+                currentMeshStage = 1;
+            }
+        }
 
         List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
 
@@ -104,18 +142,16 @@ public class SheepUnit : ArmyUnit
         if (vfx != null)
             vfx.Explode(transform.position);
         PlaySound(data1.AttackSound, 'a');
-        // CameraShake.Instance.TriggerShakeAtPosition(transform.position, 15f, 0.5f, 0.3f);
-        // CameraShake.Instance.TriggerShake(0.3f, 0.5f);
-        // CameraShake.Instance.Shake(1.5f, 0.4f);
         CameraShake.Instance.ShakeAtPosition(transform.position);
         foreach (var enemy in enemies)
         {
-            // Debug.Log("I did damageqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
             enemy.TakeDamage(explosionDamage);
         }
 
-        // gameObject.SetActive(false);
-        hasExploded = true;
-        Die();
+        // Damage the sheep by 34% of its max health
+        int selfDamage = Mathf.CeilToInt(data1.Health * 0.34f);
+        TakeDamage(selfDamage);
+
+    hasExploded = true;
     }
 }

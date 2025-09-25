@@ -11,6 +11,10 @@ public class ArmyUnit : BaseUnit
     private float roamRadius;
     private float roamInterval;
     private int currHealth;
+    
+    // Add protected getter for current health
+    protected int CurrentHealth => currHealth;
+
     private float lastAttackTime = 0f;
     private EnemyUnit currentTarget;
 
@@ -742,6 +746,8 @@ public class ArmyUnit : BaseUnit
             Gizmos.DrawLine(transform.position, currentTarget.transform.position);
         }
 
+        // if (agent == null) return;
+
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(guardPosition, roamRadius);
 
@@ -895,5 +901,6 @@ public class ArmyUnit : BaseUnit
         }
     }
 }
+
 
 

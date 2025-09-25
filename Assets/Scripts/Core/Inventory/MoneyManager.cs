@@ -124,15 +124,26 @@ public class MoneyManager : MonoBehaviour
         return _currentMoney >= amount;
     }
     
-    // ADD THIS MISSING METHOD
-    public void AddMoney(int amount)
+    // Update MoneyManager.AddMoney
+    public void AddMoney(int amount, Vector3? collectionPosition = null)
     {
         _currentMoney += amount;
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);
+        
+        // Debug coin animation
+        if (collectionPosition.HasValue) {
+            Debug.Log($"AddMoney with position: {amount} at {collectionPosition.Value}");
+            
+            if (CoinAnimation.Instance != null) {
+                CoinAnimation.Instance.PlayCoinAnimation(collectionPosition.Value, amount);
+            }
+            else {
+                Debug.LogWarning("CoinAnimation.Instance is null! Make sure it's in the scene.");
+            }
+        }
     }
-    
     // Keep cheat method separate
     public void CheatSetMoney(int amount)
     {

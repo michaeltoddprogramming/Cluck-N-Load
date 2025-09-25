@@ -43,6 +43,7 @@ public class AnimalStructure : Structure
     private NightManager nightManager;
     private float lastCheckedHour;
     private string requiredFood;
+    private ReadyIndicator readyIndicator;
 
     public System.Action OnAnimalCountChanged;
 
@@ -85,6 +86,11 @@ public class AnimalStructure : Structure
             isRegisteredWithNightManager = true;
         }
         audioSource = audioSource ?? GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+        
+        // Initialize ready indicator
+        readyIndicator = GetComponent<ReadyIndicator>();
+        if (readyIndicator == null)
+            readyIndicator = gameObject.AddComponent<ReadyIndicator>();
     }
 
     private void OnDisable()
@@ -114,6 +120,11 @@ public class AnimalStructure : Structure
             productReady = false;
             productionProgress = 0f;
             lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
+            
+            // Hide indicator during production
+            if (readyIndicator != null)
+                readyIndicator.HideIndicator();
+                
             if (TutorialManager.Instance != null && animalCount >= 3) StartCoroutine(DelayedInstantCompleteForTutorial());
         }
     }
@@ -189,12 +200,16 @@ public class AnimalStructure : Structure
 
         if (MoneyManager.Instance != null)
         {
-            MoneyManager.Instance.AddMoney(totalMoneyEarned);
+            MoneyManager.Instance.AddMoney(totalMoneyEarned, transform.position);
             TutorialManager.Instance?.Trigger(TutorialTrigger.CollectedFirstProducts);
         }
         productReady = false;
         isProducing = false;
         productionProgress = 0f;
+        
+        // Hide ready indicator after collection
+        if (readyIndicator != null)
+            readyIndicator.HideIndicator();
         lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
     }
 
@@ -217,6 +232,10 @@ public class AnimalStructure : Structure
             productReady = true;
             isProducing = false;
             productionProgress = productionSettings.productionTime;
+            
+            // Show ready indicator when production is complete
+            if (readyIndicator != null)
+                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
         }
     }
 
@@ -418,4 +437,7 @@ public class AnimalStructure : Structure
         // this.lastCheckedHour = lastCheckedHour;
         OnAnimalCountChanged?.Invoke();
     }
+
+
+
 }

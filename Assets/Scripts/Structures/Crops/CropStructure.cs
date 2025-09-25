@@ -27,6 +27,7 @@ public class CropStructure : Structure
 
     private GameObject currentCropInstance;
     private float productionMultiplier = 1f;
+    private ReadyIndicator readyIndicator;
 
     [Header("Mechanic variations")]
     [SerializeField] private float cropHarvestMultiplier = 1.5f;
@@ -53,6 +54,11 @@ public class CropStructure : Structure
         base.Start();
         UpdateSiloSynergy();
         nightManager = nightManager ?? NightManager.Instance ?? FindFirstObjectByType<NightManager>();
+        
+        // Initialize ready indicator
+        readyIndicator = GetComponent<ReadyIndicator>();
+        if (readyIndicator == null)
+            readyIndicator = gameObject.AddComponent<ReadyIndicator>();
     }
 
     public void Plant(CropType cropType)
@@ -60,6 +66,11 @@ public class CropStructure : Structure
         if (cropType == CropType.None || isGrowing || cropReady) return;
         currentCropType = cropType;
         isGrowing = true;
+        
+        // Hide indicator during growing
+        if (readyIndicator != null)
+            readyIndicator.HideIndicator();
+            
         UpdateCropVisual(cropType, 0);
     }
 
@@ -69,10 +80,7 @@ public class CropStructure : Structure
         int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
         string cropName = currentCropType.ToString();
 
-        // Add direct money reward for harvesting
-        int moneyReward = GetCropMoneyValue(currentCropType, totalCrops);
-        MoneyManager.Instance?.AddMoney(moneyReward);
-
+        // Crops give inventory items only - money comes from selling products
         InventoryManager.Instance.AddItem(cropName, totalCrops);
 
         switch (currentCropType)
@@ -89,6 +97,11 @@ public class CropStructure : Structure
         currentCropType = CropType.None;
         cropReady = false;
         isGrowing = false;
+        
+        // Hide indicator after harvest
+        if (readyIndicator != null)
+            readyIndicator.HideIndicator();
+            
         DestroyCrop();
         return "yes";
     }
@@ -148,6 +161,10 @@ public class CropStructure : Structure
         {
             cropReady = true;
             isGrowing = false;
+            
+            // Show ready indicator when crop is ready for harvest
+            if (readyIndicator != null)
+                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Harvest);
         }
     }
 

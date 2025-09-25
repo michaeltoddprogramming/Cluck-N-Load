@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
@@ -115,20 +116,48 @@ public partial class TutorialManager
         seasonBonusStep.onStepStart = new UnityEvent();
         seasonBonusStep.onStepStart.AddListener(() =>
         {
-            GameObject seasonDisplay = GameObject.Find("SeasonIcon") ?? GameObject.Find("Season");
-            if (seasonDisplay != null)
-                HighlightUI(seasonDisplay, true);
+            // Highlight the entire Season panel
+            GameObject seasonPanel = GameObject.Find("SeasonPanel");
+            if (seasonPanel != null)
+                HighlightUI(seasonPanel, true);
             if (NightManager.Instance != null)
                 NightManager.Instance.ShowSimplifiedTutorialSeasonBonus();
         });
         seasonBonusStep.onStepComplete = new UnityEvent();
         seasonBonusStep.onStepComplete.AddListener(() =>
         {
-            GameObject seasonDisplay = GameObject.Find("SeasonIcon") ?? GameObject.Find("Season");
-            if (seasonDisplay != null)
-                HighlightUI(seasonDisplay, false);
+            // Clear highlight from the Season panel
+            GameObject seasonPanel = GameObject.Find("SeasonPanel");
+            if (seasonPanel != null)
+                HighlightUI(seasonPanel, false);
         });
         steps.Add(seasonBonusStep);
+
+        // Enemy Indicator Tutorial Step
+        var enemyIndicatorStep = new TutorialStep
+        {
+            stepId = "enemy_indicator_tutorial",
+            title = "Enemy Indicators",
+            instructionText = "Watch this to know what types of enemies you can possibly expect at night! Every new season brings new threats, so keep an eye on this!",
+            triggerToWaitFor = TutorialTrigger.None,
+        };
+        enemyIndicatorStep.onStepStart = new UnityEvent();
+        enemyIndicatorStep.onStepStart.AddListener(() =>
+        {
+            // Highlight the Enemy Indicator panel
+            GameObject enemyIndicatorPanel = GameObject.Find("Enemy Indicator");
+            if (enemyIndicatorPanel != null)
+                HighlightUI(enemyIndicatorPanel, true);
+        });
+        enemyIndicatorStep.onStepComplete = new UnityEvent();
+        enemyIndicatorStep.onStepComplete.AddListener(() =>
+        {
+            // Clear highlight from Enemy Indicator panel
+            GameObject enemyIndicatorPanel = GameObject.Find("Enemy Indicator");
+            if (enemyIndicatorPanel != null)
+                HighlightUI(enemyIndicatorPanel, false);
+        });
+        steps.Add(enemyIndicatorStep);
 
         steps.Add(new TutorialStep
         {
@@ -811,11 +840,15 @@ public partial class TutorialManager
         Quaternion uprightRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
         currentMelony = Instantiate(melonyPrefab, spawnPosition, uprightRotation);
         
-        // Make Melony clickable
-        if (currentMelony.GetComponent<Collider>() == null)
+        // Make Melony clickable with a bigger click area
+        SphereCollider melonyCollider = currentMelony.GetComponent<SphereCollider>();
+        if (melonyCollider == null)
         {
-            currentMelony.AddComponent<SphereCollider>();
+            melonyCollider = currentMelony.AddComponent<SphereCollider>();
         }
+        // Make the clickable area bigger for easier clicking
+        melonyCollider.radius = 2.5f; // Increased from default ~1f to 2.5f
+        melonyCollider.isTrigger = true;
         
         // Add a component to identify this as Melony (instead of using tags)
         currentMelony.name = "MelonyChicken_Tutorial";
@@ -910,26 +943,29 @@ public partial class TutorialManager
             switch (task.ToLower())
             {
                 case "movement":
-                    // Medium distance for movement practice
-                    if (distance >= 8f && distance <= 15f)
+                    // More constrained distance for movement practice, avoid edges
+                    if (distance >= 10f && distance <= 12f && IsCellSafeFromObstacles(cell, validCells))
                         suitableCells.Add(cell);
                     break;
                     
                 case "zoom":
-                    // Either close (3-6) or far (20-30) for zoom practice
-                    if ((distance >= 3f && distance <= 6f) || (distance >= 20f && distance <= 30f))
-                        suitableCells.Add(cell);
+                    // More constrained zoom distances, avoid edges
+                    if ((distance >= 4f && distance <= 5f) || (distance >= 15f && distance <= 18f))
+                    {
+                        if (IsCellSafeFromObstacles(cell, validCells))
+                            suitableCells.Add(cell);
+                    }
                     break;
                     
                 case "rotate":
-                    // Behind camera (use basic distance check for simplicity)
-                    if (distance >= 10f && distance <= 18f)
+                    // More constrained rotation distance, avoid edges  
+                    if (distance >= 12f && distance <= 15f && IsCellSafeFromObstacles(cell, validCells))
                         suitableCells.Add(cell);
                     break;
                     
                 default:
-                    // Any reasonable distance
-                    if (distance >= 5f && distance <= 20f)
+                    // More constrained default distance, avoid edges
+                    if (distance >= 8f && distance <= 15f && IsCellSafeFromObstacles(cell, validCells))
                         suitableCells.Add(cell);
                     break;
             }
@@ -938,7 +974,24 @@ public partial class TutorialManager
         return suitableCells;
     }
 
-
+    private bool IsCellSafeFromObstacles(Vector2Int cell, System.Collections.Generic.List<Vector2Int> validCells)
+    {
+        // Check if the cell has enough clearance around it (no obstacles in a 3x3 area)
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                Vector2Int neighborCell = new Vector2Int(cell.x + dx, cell.y + dy);
+                
+                // If this neighbor cell is not in our valid cells list, it might be an obstacle
+                if (!validCells.Contains(neighborCell))
+                {
+                    return false; // Not safe - there's an obstacle nearby
+                }
+            }
+        }
+        return true; // Safe - all surrounding cells are valid
+    }
     
     private void AddMelonyEffects()
     {

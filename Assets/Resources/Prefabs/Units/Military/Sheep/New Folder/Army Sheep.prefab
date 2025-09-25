@@ -153,6 +153,9 @@ MonoBehaviour:
   beep1: {fileID: 8300000, guid: 400b90bf00d6acd43b4376779ee0b193, type: 3}
   beep2: {fileID: 8300000, guid: 64afb66df5bc67f4caad61e2931ff4db, type: 3}
   beep3: {fileID: 8300000, guid: 1129bc32a1958f54eb95de8f47236c98, type: 3}
+  meshStage1: {fileID: 2554926791050909923, guid: 6fc714c47f9023548b0b7c20a9fc0744, type: 3}
+  meshStage2: {fileID: 2554926791050909923, guid: 864cc95b60f54ca4f9a6ded49707acd1, type: 3}
+  meshStage3: {fileID: 2554926791050909923, guid: 6599615f6ee96c94a8207023001eccd7, type: 3}
   doIt: 0
 --- !u!114 &6028723452498544579
 MonoBehaviour:

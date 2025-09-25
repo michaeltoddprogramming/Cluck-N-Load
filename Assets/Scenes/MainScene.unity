@@ -131,6 +131,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Speed Effect
       objectReference: {fileID: 0}
+    - target: {fileID: 6940862327415516341, guid: 80ee9709ba4432845ab3f688f13a0dcc, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9097562159680890129, guid: 80ee9709ba4432845ab3f688f13a0dcc, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

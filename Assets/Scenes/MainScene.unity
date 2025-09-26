@@ -11740,6 +11740,7 @@ MonoBehaviour:
   cameraTransform: {fileID: 330585546}
   normalSpeed: 20
   fastSpeed: 40
+  keyboardSpeedMultiplier: 2
   movementTime: 5
   rotationAmount: 1
   lockRotationDuringMovement: 0
@@ -11748,7 +11749,7 @@ MonoBehaviour:
   maxX: 30
   minZ: -30
   maxZ: 30
-  minZoom: 3
+  minZoom: 5
   maxZoom: 120
   fixedPitch: -1
   cursor: {fileID: 1632256037}
@@ -18597,6 +18598,10 @@ PrefabInstance:
     - target: {fileID: 1108532387992617657, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108532387992617657, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6962895586497866111, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
       propertyPath: m_Name

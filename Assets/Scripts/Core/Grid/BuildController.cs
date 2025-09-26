@@ -441,11 +441,13 @@ public class BuildController : MonoBehaviour
                 // Left click to finalize chain
                 if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
+                    Debug.Log("HandleBuildInput: Left click detected in defense chain mode - calling FinalizeDefenceChain");
                     FinalizeDefenceChain();
                 }
                 // Right click to cancel chain
                 if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
+                    Debug.Log("HandleBuildInput: Right click detected in defense chain mode - calling CancelDefenceChain");
                     CancelDefenceChain();
                 }
             }
@@ -543,23 +545,71 @@ public class BuildController : MonoBehaviour
     // Helper: Is this a defence type structure?
     private bool IsDefenceType(StructureData data)
     {
-        if (data == null) return false;
+        if (data == null) 
+        {
+            Debug.Log("IsDefenceType: data is null");
+            return false;
+        }
+        
+        string structureName = data.structureName.ToLower();
+        Debug.Log($"IsDefenceType: Checking structure '{structureName}'");
+        
         // Add your defense structure type checks here
-        // For example, check if the structure name contains "fence", "wall", "turret", etc.
-        return data.structureName.ToLower().Contains("fence") || 
-               data.structureName.ToLower().Contains("wall") ||
-               data.structureName.ToLower().Contains("turret");
+        bool isDefense = structureName.Contains("fence") || 
+                        structureName.Contains("wall") ||
+                        structureName.Contains("turret") ||
+                        structureName.Contains("barrier") ||
+                        structureName.Contains("barricade") ||
+                        structureName.Contains("defense") ||
+                        structureName.Contains("defence");
+                        
+        Debug.Log($"IsDefenceType: '{structureName}' is defense type: {isDefense}");
+        return isDefense;
     }
 
     // Start defence chain mode
     private void StartDefenceChain(Vector2Int startCell)
     {
-        Debug.Log($"Starting defense chain at {startCell}");
-        isDefenceChainModeActive = true;
-        initialDefenceCell = startCell;
-        lastDefenceHoverCell = Vector2Int.one * -1;
-        ClearDefenceGhostChain();
-        if (currentGhost != null) currentGhost.SetActive(false);
+        Debug.Log($"StartDefenceChain: Starting defense chain at {startCell}");
+        
+        // First, place the initial structure immediately
+        if (IsValidPlacement(startCell.x, startCell.y))
+        {
+            Debug.Log($"StartDefenceChain: First cell {startCell} is valid for placement");
+            
+            if (currentStructureData != null && MoneyManager.Instance != null)
+            {
+                Debug.Log($"StartDefenceChain: Structure cost: {currentStructureData.cost}, Available money: {MoneyManager.Instance.GetCurrentMoney()}");
+                
+                if (MoneyManager.Instance.SpendMoney(currentStructureData.cost))
+                {
+                    Debug.Log($"StartDefenceChain: Successfully spent money for first structure");
+                    PlaceItemWithoutMoneyCheck(startCell.x, startCell.y);
+                    Debug.Log($"StartDefenceChain: First structure placed at {startCell}");
+                    
+                    // Now start chain mode for additional structures
+                    isDefenceChainModeActive = true;
+                    initialDefenceCell = startCell;
+                    lastDefenceHoverCell = Vector2Int.one * -1;
+                    ClearDefenceGhostChain();
+                    if (currentGhost != null) currentGhost.SetActive(false);
+                    
+                    Debug.Log($"StartDefenceChain: Defense chain mode activated");
+                }
+                else
+                {
+                    Debug.Log("StartDefenceChain: Failed to spend money for first structure");
+                }
+            }
+            else
+            {
+                Debug.Log("StartDefenceChain: currentStructureData or MoneyManager is null");
+            }
+        }
+        else
+        {
+            Debug.Log($"StartDefenceChain: First cell {startCell} is invalid for placement");
+        }
     }
 
     // Cancel defence chain mode
@@ -574,9 +624,14 @@ public class BuildController : MonoBehaviour
     // Finalize defence chain: place real objects
     private void FinalizeDefenceChain()
     {
-        if (!isDefenceChainModeActive || defenceGhostChain.Count == 0) return;
+        if (!isDefenceChainModeActive || defenceGhostChain.Count == 0) 
+        {
+            Debug.Log("Cannot finalize defense chain - no ghost chain or not in chain mode");
+            CancelDefenceChain();
+            return;
+        }
         
-        // Check if player can afford all structures
+        // Check if player can afford all remaining structures
         int totalCost = defenceGhostChain.Count * (currentStructureData?.cost ?? 0);
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(totalCost))
         {
@@ -588,14 +643,30 @@ public class BuildController : MonoBehaviour
         if (currentStructureData != null && MoneyManager.Instance != null)
         {
             MoneyManager.Instance.SpendMoney(totalCost);
+            Debug.Log($"Spent {totalCost} for chain of {defenceGhostChain.Count} structures");
         }
 
-        // Place all structures
+        // Place all structures in the chain
+        int placedCount = 0;
         foreach (GameObject ghost in defenceGhostChain)
         {
             Vector2Int gridCoords = gridController.WorldToGridCoords(ghost.transform.position);
-            PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y);
+            Debug.Log($"FinalizeDefenceChain: Attempting to place structure {placedCount + 1} at {gridCoords}");
+            
+            // Check if this position is still valid before placing
+            if (IsValidPlacementForChain(gridCoords.x, gridCoords.y))
+            {
+                PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y);
+                placedCount++;
+                Debug.Log($"FinalizeDefenceChain: Successfully placed structure {placedCount} at {gridCoords}");
+            }
+            else
+            {
+                Debug.LogWarning($"FinalizeDefenceChain: Cannot place structure at {gridCoords} - position no longer valid");
+            }
         }
+
+        Debug.Log($"FinalizeDefenceChain: Successfully placed {placedCount} out of {defenceGhostChain.Count} structures in chain");
 
         // Clean up
         CancelDefenceChain();
@@ -621,9 +692,11 @@ public class BuildController : MonoBehaviour
         
         List<Vector2Int> cellsBetween = GetCellsBetween(start, end);
         
-        foreach (Vector2Int cell in cellsBetween)
+        // Skip the first cell (start) since it's already placed
+        for (int i = 1; i < cellsBetween.Count; i++)
         {
-            if (IsValidPlacementWithoutMoney(cell.x, cell.y))
+            Vector2Int cell = cellsBetween[i];
+            if (IsValidPlacementForChain(cell.x, cell.y))
             {
                 Vector3 worldPos = gridController.GetCellCenterFromTexture(cell.x, cell.y);
                 GameObject ghost = GetGhostFromPool(worldPos, currentRotation);
@@ -1365,11 +1438,14 @@ public class BuildController : MonoBehaviour
     {
         Debug.Log($"PlaceItemWithoutMoneyCheck at ({x}, {y})");
         
-        if (!IsValidPlacementWithoutMoney(x, y)) 
+        // Use chain-specific validation instead of the ghost-based one
+        if (!IsValidPlacementForChain(x, y)) 
         {
-            Debug.LogWarning($"Invalid placement at ({x}, {y})");
+            Debug.LogWarning($"PlaceItemWithoutMoneyCheck: Invalid placement at ({x}, {y})");
             return;
         }
+
+        Debug.Log($"PlaceItemWithoutMoneyCheck: Position ({x}, {y}) is valid, proceeding with placement");
 
         // Prevent placing more than one farmhouse
         if (currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
@@ -1483,6 +1559,39 @@ public class BuildController : MonoBehaviour
             if (cell.flags.isOccupied) return false;
             if (!cell.flags.isOwned) return false;
         }
+
+        return true;
+    }
+
+    // Check placement validity for chain building (single cell, no money check)
+    private bool IsValidPlacementForChain(int x, int y)
+    {
+        // Add null checks FIRST
+        if (gridController == null || gridDataGenerator == null) 
+        {
+            Debug.LogError("GridController or GridDataGenerator is null in IsValidPlacementForChain");
+            return false;
+        }
+        
+        // Check if coordinates are within grid bounds
+        if (x < 0 || x >= gridDataGenerator.GetGridWidth() || 
+            y < 0 || y >= gridDataGenerator.GetGridHeight())
+        {
+            return false;
+        }
+        
+        // Check ownership first for efficiency
+        if (CheatManager.Instance != null && CheatManager.Instance.IsUnlimitedBuildingActive())
+        {
+            return true;
+        }
+
+        // Check single cell placement (no footprint calculation needed for chain)
+        GridCell cell = gridController.GetCell(x, y);
+        if (cell == null) return false;
+        
+        if (cell.flags.isOccupied) return false;
+        if (!cell.flags.isOwned) return false;
 
         return true;
     }

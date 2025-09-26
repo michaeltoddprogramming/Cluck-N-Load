@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: SheepBarrack
   m_EditorClassIdentifier: 
   structureName: Sheep Barrack
-  description: Sheep are balanced units equipped with C4 wool bombs for explosive
-    high damage.
+  description: Trains balanced units. Explosive C4 attacks for massive damage.
   prefab: {fileID: 6362942478896378572, guid: f1f6c69fbd2d5b9439a7a27c30d7a327, type: 3}
   icon: {fileID: 21300000, guid: 7dc9a05d38d7dc145847e7284a071c23, type: 3}
   type: 9

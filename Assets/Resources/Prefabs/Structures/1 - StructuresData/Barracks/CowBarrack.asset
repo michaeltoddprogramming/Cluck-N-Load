@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: CowBarrack
   m_EditorClassIdentifier: 
   structureName: Cow Barrack
-  description: Cows are tanky, high-health units equipped with miniguns for powerful
-    close-range high damage attacks.
+  description: Trains tanky, high-health units. Mid-range minigun fire with heavy
+    damage.
   prefab: {fileID: 7501336543757764166, guid: db5ee0fcb6d9d3e448435df9d568c448, type: 3}
   icon: {fileID: 21300000, guid: cecbd1f9f4a245840a9ae6eb29a6ac2d, type: 3}
   type: 9

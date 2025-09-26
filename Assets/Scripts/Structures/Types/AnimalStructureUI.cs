@@ -41,11 +41,12 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] private Slider civilianBarSlider;
     [SerializeField] private Image civilianBarFill;
 
-    [Header("Civilian indicator")]
+    [Header("Food indicator")]
     [SerializeField] private Image animalFood;
     [SerializeField] private Sprite sunflowerSeed;
     [SerializeField] private Sprite wheat;
     [SerializeField] private Sprite carrot;
+    [SerializeField] private TextMeshProUGUI foodNeededText;
 
 
 
@@ -137,6 +138,8 @@ public class AnimalStructureUI : BaseStructureUI
 
         // UpdateHealthBar();
         updateStatusBar();
+
+        foodNeededText.text = $"{animalStructure.foodRequired}";
 
         bool isProducing = animalStructure.IsProducing;
         bool productReady = animalStructure.ProductReady;

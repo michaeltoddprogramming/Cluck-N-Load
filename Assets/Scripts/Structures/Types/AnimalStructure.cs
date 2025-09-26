@@ -67,6 +67,8 @@ public class AnimalStructure : Structure
 
     StructureData data;
 
+    public int foodRequired;
+
     protected override void Start()
     {
         base.Start();
@@ -145,7 +147,7 @@ public class AnimalStructure : Structure
     public bool canFeed()
     {
         if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) return false;
-        int foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
+        foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
         if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
         {
             return true;

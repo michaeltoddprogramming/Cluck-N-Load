@@ -19416,7 +19416,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e475f0923ef9666418b9fad09e8accf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingMoney: 2200
+  startingMoney: 1800
   currencyName: 
   resetMoneyOnStart: 1
   moneyText: {fileID: 0}

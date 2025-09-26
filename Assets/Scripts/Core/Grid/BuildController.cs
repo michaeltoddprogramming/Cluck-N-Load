@@ -58,6 +58,8 @@ public class BuildController : MonoBehaviour
     private GameObject currentGhost;
     private GameObject currentBuildTargetPrefab;
     private Structure movingStructure;
+    private bool wasShopOpenBeforeGhost = false;
+    private bool isHidingShopForGhost = false;
     private Vector3 originalPosition;
     private bool personallyHidden = false;
     private Quaternion originalRotation;
@@ -134,6 +136,14 @@ public class BuildController : MonoBehaviour
 
     public void HandleShopClosed()
     {
+        // If we're intentionally hiding the shop for ghost creation, don't disable build mode
+        if (isHidingShopForGhost)
+        {
+            Debug.Log("HandleShopClosed called - shop hidden for ghost, keeping build mode active");
+            isHidingShopForGhost = false;
+            return;
+        }
+        
         Debug.Log("HandleShopClosed called - disabling build mode and hiding grid");
         DisableBuildMode();
         gridController.HideGrid();
@@ -262,8 +272,18 @@ public class BuildController : MonoBehaviour
         gridController.HideGrid();
         if (currentGhost != null)
         {
+            // If we had a shop open before the ghost, restore it when disabling build mode
+            bool shouldRestoreShop = wasShopOpenBeforeGhost;
+            
             Destroy(currentGhost);
             currentGhost = null;
+            
+            if (shouldRestoreShop && ShopUIManager.Instance != null)
+            {
+                ShopUIManager.Instance.OpenShop();
+            }
+            wasShopOpenBeforeGhost = false;
+            isHidingShopForGhost = false;
         }
         if (itemDeleteIcon != null)
             itemDeleteIcon.gameObject.SetActive(false);
@@ -284,6 +304,7 @@ public class BuildController : MonoBehaviour
 
     public bool IsBuildModeActive() => isBuildModeActive;
     public bool IsDeleteModeActive() => isDeleteModeActive;
+    public bool HasActiveGhost() => currentGhost != null;
 
     public void ToggleMoveMode()
     {
@@ -785,6 +806,15 @@ public class BuildController : MonoBehaviour
     {
         if (currentGhost != null) Destroy(currentGhost);
         if (prefab == null) return;
+        
+        // Store whether shop was open before creating ghost
+        if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen())
+        {
+            wasShopOpenBeforeGhost = true;
+            isHidingShopForGhost = true; // Set flag before closing shop
+            ShopUIManager.Instance.CloseShop();
+        }
+        
         currentGhost = Instantiate(prefab);
         currentGhost.name = "BuildGhost";
         ApplyGhostMaterial(currentGhost);
@@ -1273,13 +1303,36 @@ public class BuildController : MonoBehaviour
             graphic.raycastTarget = false;
     }
 
-    public void CancelCurrentBuilding()
+    private void ClearGhost()
     {
         if (currentGhost != null)
         {
             Destroy(currentGhost);
             currentGhost = null;
         }
+        // Reset the shop flags when ghost is cleared
+        wasShopOpenBeforeGhost = false;
+        isHidingShopForGhost = false;
+    }
+
+    public void CancelCurrentBuilding()
+    {
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+            
+            // Restore shop if it was open before creating the ghost
+            if (wasShopOpenBeforeGhost && ShopUIManager.Instance != null)
+            {
+                ShopUIManager.Instance.OpenShop();
+                wasShopOpenBeforeGhost = false;
+            }
+        }
+        // Reset flags
+        wasShopOpenBeforeGhost = false;
+        isHidingShopForGhost = false;
+        
         ClearSynergyVisualization(); // <-- Add this line
         currentBuildTargetPrefab = null;
     }

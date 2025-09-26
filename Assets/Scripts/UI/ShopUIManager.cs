@@ -224,6 +224,14 @@ public class ShopUIManager : MonoBehaviour
             return;
         }
 
+        // Don't allow opening shop if there's an active ghost building
+        BuildController buildController = FindFirstObjectByType<BuildController>();
+        if (buildController != null && buildController.IsBuildModeActive() && buildController.HasActiveGhost())
+        {
+            Debug.Log("Cannot open shop while ghost building is active");
+            return;
+        }
+
         // Check if already open
         if (shopPanel != null && shopPanel.activeSelf)
         {

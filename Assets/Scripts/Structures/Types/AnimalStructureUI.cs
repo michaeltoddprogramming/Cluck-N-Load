@@ -41,6 +41,12 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] private Slider civilianBarSlider;
     [SerializeField] private Image civilianBarFill;
 
+    [Header("Civilian indicator")]
+    [SerializeField] private Image animalFood;
+    [SerializeField] private Sprite sunflowerSeed;
+    [SerializeField] private Sprite wheat;
+    [SerializeField] private Sprite carrot;
+
 
 
 
@@ -93,6 +99,21 @@ public class AnimalStructureUI : BaseStructureUI
             HideAnimalSpecificUI();
             return;
         }
+
+        if (animalStructure.RequiredFood == "Sunflower")
+        {
+            animalFood.sprite = sunflowerSeed;
+        }
+        else if (animalStructure.RequiredFood == "Wheat")
+        {
+            animalFood.sprite = wheat;
+        }
+        else
+        {
+            animalFood.sprite = carrot;
+        }
+
+
         SetupButtonListeners();
         UpdateUI();
     }

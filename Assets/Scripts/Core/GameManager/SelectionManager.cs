@@ -14,6 +14,12 @@ public class SelectionManager : MonoBehaviour
             return; // Let BuildController handle the input
         }
         
+        // Check if any barracks is placing a flag and skip processing
+        if (BarracksStructureUI.IsAnyBarracksPlacingFlag())
+        {
+            return; // Let BarracksStructureUI handle the flag placement input
+        }
+        
         if (Input.GetMouseButtonDown(0))
         {
             bool isOverUI = EventSystem.current.IsPointerOverGameObject();

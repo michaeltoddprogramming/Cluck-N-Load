@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections;
 
 public class BarracksStructureUI : BaseStructureUI
 {
@@ -16,6 +15,9 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Button minusAnimal;
     [SerializeField] private TextMeshProUGUI animalCountText;
     [SerializeField] private TextMeshProUGUI costText;
+
+    [Header("UI Control")]
+    [SerializeField] private CanvasGroup uiCanvasGroup;
 
     private BarracksStructure barracksStructure;
     private bool isBarracksStructure = false;
@@ -59,6 +61,16 @@ public class BarracksStructureUI : BaseStructureUI
         base.Initialize(structure);
         barracksStructure = structure as BarracksStructure;
         isBarracksStructure = barracksStructure != null;
+
+        // Auto-find CanvasGroup if not assigned
+        if (uiCanvasGroup == null)
+        {
+            uiCanvasGroup = GetComponent<CanvasGroup>();
+            if (uiCanvasGroup == null)
+            {
+                Debug.LogWarning($"BarracksStructureUI on {gameObject.name}: No CanvasGroup found. UI hiding during flag placement will not work properly. Please add a CanvasGroup component or assign the uiCanvasGroup field.");
+            }
+        }
 
         if (!isBarracksStructure)
         {
@@ -130,7 +142,12 @@ public class BarracksStructureUI : BaseStructureUI
             lastUIUpdate = Time.time;
         }
 
-        // UpdateHealthBar();
+        // Handle flag placement input
+        if (isPlacingFlag)
+        {
+            HandleFlagPlacementInput();
+            UpdateFlagPlacementIndicator();
+        }
 
         // Additional safeguard for sheep flag button at night
         if (barracksStructure != null && barracksStructure.GetAnimalType() == "Sheep")
@@ -211,8 +228,10 @@ public class BarracksStructureUI : BaseStructureUI
         }
 
         isPlacingFlag = true;
-        updateStatusText("Click on the ground to place flag");
-
+        
+        // Hide UI during flag placement
+        HideUI();
+        
         if (recruitButton != null) recruitButton.interactable = false;
         if (setFlagColorButton != null) setFlagColorButton.interactable = false;
         if (placeFlagButton != null)
@@ -221,104 +240,99 @@ public class BarracksStructureUI : BaseStructureUI
             placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
         }
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(true);
-
-        // Add a small delay to prevent input conflicts
-        StartCoroutine(HandleFlagPlacementWithDelay());
     }
 
-    private IEnumerator HandleFlagPlacementWithDelay()
+    private void HandleFlagPlacementInput()
     {
-        // Wait a frame to prevent immediate input consumption
-        yield return null;
-        yield return StartCoroutine(HandleFlagPlacement());
-    }
-
-    private IEnumerator HandleFlagPlacement()
-    {
-        while (isPlacingFlag && !Input.GetMouseButtonDown(0))
+        // Check for night start cancellation for sheep
+        if (barracksStructure.GetAnimalType() == "Sheep")
         {
-            // Additional check during placement - if night starts, cancel placement
+            NightManager nightManager = NightManager.Instance;
+            if (nightManager != null && !nightManager.IsDay)
+            {
+                Debug.Log("Cancelling flag placement - night started for sheep");
+                CancelFlagPlacement("Night started - sheep flag placement cancelled");
+                return;
+            }
+        }
+
+        // Handle mouse input
+        if (Input.GetMouseButtonDown(0)) // Left click to place flag
+        {
+            Debug.Log("Left mouse button pressed during flag placement");
+            PlaceFlagAtMousePosition();
+        }
+        else if (Input.GetMouseButtonDown(1)) // Right click to cancel
+        {
+            Debug.Log("Right mouse button pressed during flag placement");
+            CancelFlagPlacement("Flag placement cancelled");
+        }
+    }
+
+    private void UpdateFlagPlacementIndicator()
+    {
+        if (flagPlacementIndicator == null) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
+        
+        if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
+        {
+            Vector3 position = hit.point;
+            position.y += 0.1f;
+            flagPlacementIndicator.transform.position = position;
+        }
+    }
+
+    private void PlaceFlagAtMousePosition()
+    {
+        // Make sure we don't place on UI elements
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            return; // Don't place on UI
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
+
+        if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
+        {
+            // Final check before placing the flag for sheep
             if (barracksStructure.GetAnimalType() == "Sheep")
             {
                 NightManager nightManager = NightManager.Instance;
                 if (nightManager != null && !nightManager.IsDay)
                 {
-                    updateStatusText("Night started - sheep flag placement cancelled");
-                    EndFlagPlacement();
-                    yield break;
+                    CancelFlagPlacement("Cannot place sheep flags at night");
+                    return;
                 }
             }
 
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
-            if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
-            {
-                Vector3 position = hit.point;
-                if (flagPlacementIndicator != null)
-                {
-                    position.y += 0.1f;
-                    flagPlacementIndicator.transform.position = position;
-                }
-            }
-            yield return null;
+            barracksStructure.PlaceFlag(hit.point);
+            EndFlagPlacement("Flag placed successfully!");
         }
-
-        if (isPlacingFlag)
-        {
-            // Make sure we don't place on UI elements
-            if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-            {
-                Ray finalRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit finalHit;
-                LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
-
-                if (Physics.Raycast(finalRay, out finalHit, 1000f, groundLayer))
-                {
-                    // Final check before placing the flag
-                    if (barracksStructure.GetAnimalType() == "Sheep")
-                    {
-                        NightManager nightManager = NightManager.Instance;
-                        if (nightManager != null && !nightManager.IsDay)
-                        {
-                            updateStatusText("Cannot place sheep flags at night");
-                            EndFlagPlacement();
-                            yield break;
-                        }
-                    }
-
-                    barracksStructure.PlaceFlag(finalHit.point);
-                    updateStatusText("Flag placed successfully!");
-                }
-                else
-                {
-                    updateStatusText("Cannot place flag here - try clicking on the ground");
-                }
-            }
-            else
-            {
-                updateStatusText("Cannot place flag on UI - click on the ground");
-            }
-        }
-
-        EndFlagPlacement();
     }
 
-    private void EndFlagPlacement()
+    private void CancelFlagPlacement(string message = "Flag placement cancelled")
+    {
+        EndFlagPlacement(message);
+    }
+
+    private void EndFlagPlacement(string message = "")
     {
         isPlacingFlag = false;
-        UpdateUI();
-        if (placeFlagButton != null && placeFlagButton.GetComponentInChildren<TextMeshProUGUI>() != null)
-        {
-            updateStatusText("Click anywhere to place flag");
-            // statusText.text = "Click anywhere to place flag";
-            // placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Place Flag";
-        }
+        
+        // Show UI when ending flag placement
+        ShowUI();
+        
         if (flagPlacementIndicator != null)
         {
             flagPlacementIndicator.SetActive(false);
         }
-
+        
+        UpdateUI();
     }
 
     private void UpdateUI()
@@ -764,5 +778,41 @@ public class BarracksStructureUI : BaseStructureUI
         float fillPercent2 = civilianMax > 0 ? (float)civilianCount / civilianMax : 0f;
         civilianBarSlider.value = fillPercent2;
         civilianText.text = $"{civilianCount}/{civilianMax}";
+    }
+
+    // Static method to check if any barracks is placing a flag
+    public static bool IsAnyBarracksPlacingFlag()
+    {
+        BarracksStructureUI[] allBarracks = FindObjectsOfType<BarracksStructureUI>();
+        foreach (var barracks in allBarracks)
+        {
+            if (barracks.isPlacingFlag)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void HideUI()
+    {
+        // Use CanvasGroup to fade out and disable interaction without stopping Update method
+        if (uiCanvasGroup != null)
+        {
+            LeanTween.alphaCanvas(uiCanvasGroup, 0f, 0.2f).setEase(LeanTweenType.easeOutQuad);
+            uiCanvasGroup.interactable = false; // Disable clicks immediately
+            uiCanvasGroup.blocksRaycasts = false; // Allow clicks to pass through immediately
+        }
+    }
+    
+    private void ShowUI()
+    {
+        // Use CanvasGroup to restore UI visibility and interaction
+        if (uiCanvasGroup != null)
+        {
+            LeanTween.alphaCanvas(uiCanvasGroup, 1f, 0.2f).setEase(LeanTweenType.easeOutQuad);
+            uiCanvasGroup.interactable = true;
+            uiCanvasGroup.blocksRaycasts = true;
+        }
     }
 }

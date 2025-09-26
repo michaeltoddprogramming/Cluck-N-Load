@@ -670,6 +670,7 @@ public class BarracksStructure : Structure
     public int GetMaxCivilians()
     {
         return targetAnimalStructure != null ? targetAnimalStructure.MaxAnimalCount : 0;
+    }
     public override void Select()
     {
         base.Select();

@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UnitName: Chicken
   Prefab: {fileID: 5973305448664574062, guid: 2ae7546f9858ccc4a9d96f2137695a01, type: 3}
-  MovementSpeed: 6
+  MovementSpeed: 10
   Type: 3
-  Health: 100
-  AttackDamage: 10
+  Health: 150
+  AttackDamage: 20
   AttackRange: 5
-  AttackCooldown: 0.7
+  AttackCooldown: 0.2
   Acceleration: 10
   AngularSpeed: 300
   StoppingDistance: 1

@@ -20626,6 +20626,7 @@ MonoBehaviour:
   bear: {fileID: 11400000, guid: 30e48aeed0a514f4ab64f14cb134051e, type: 2}
   boar: {fileID: 11400000, guid: aa8c850b7eca6b2468f489a333cc415a, type: 2}
   _gridDataGenerator: {fileID: 527660422}
+  enableDebugSpawning: 1
 --- !u!1 &1902367435
 GameObject:
   m_ObjectHideFlags: 0

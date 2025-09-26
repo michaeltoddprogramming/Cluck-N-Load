@@ -307,6 +307,13 @@ public class BarracksStructure : Structure
                     }
                     sheepUnits.Add(armyAnimal);
 
+                    // Set radius visibility based on current selection state
+                    SheepUnit sheepUnit = armyAnimal.GetComponent<SheepUnit>();
+                    if (sheepUnit != null)
+                    {
+                        sheepUnit.SetRadiusIndicatorVisibility(IsSelected());
+                    }
+
                     // GameObject sheepFlag = Instantiate(flagPrefab, armyAnimal.transform.position + new Vector3(0, 2, 0), Quaternion.identity, transform);
                     // Renderer sheepFlagRenderer = sheepFlag.GetComponentInChildren<Renderer>();
                     // if (sheepFlagRenderer != null) sheepFlagRenderer.material.color = flagColor;
@@ -663,6 +670,41 @@ public class BarracksStructure : Structure
     public int GetMaxCivilians()
     {
         return targetAnimalStructure != null ? targetAnimalStructure.MaxAnimalCount : 0;
+    public override void Select()
+    {
+        base.Select();
+
+        // Show radius indicators for sheep units when barracks is selected
+        if (targetAnimalType == "Sheep")
+        {
+            SetSheepRadiusVisibility(true);
+        }
+    }
+
+    public override void Deselect()
+    {
+        base.Deselect();
+
+        // Hide radius indicators for sheep units when barracks is deselected
+        if (targetAnimalType == "Sheep")
+        {
+            SetSheepRadiusVisibility(false);
+        }
+    }
+
+    private void SetSheepRadiusVisibility(bool visible)
+    {
+        foreach (GameObject sheepUnit in sheepUnits)
+        {
+            if (sheepUnit != null)
+            {
+                SheepUnit sheep = sheepUnit.GetComponent<SheepUnit>();
+                if (sheep != null)
+                {
+                    sheep.SetRadiusIndicatorVisibility(visible);
+                }
+            }
+        }
     }
 
 

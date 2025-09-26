@@ -11,6 +11,10 @@ public class SpawnUnits : MonoBehaviour
     public EnemyData boar;
     public GridDataGenerator _gridDataGenerator;
 
+    [Header("Debug Options")]
+    [SerializeField] private bool enableDebugSpawning = false;
+    [Tooltip("Ctrl+Shift+Right Mouse Button to spawn random enemy at cursor")]
+
     private int maxSpawnAmount;
     private int minSpawnAmount;
     private int nightlySpawnMultiplier;
@@ -24,6 +28,19 @@ public class SpawnUnits : MonoBehaviour
         minSpawnAmount = wolf.minSpawnAmount;
         nightlySpawnMultiplier = wolf.nightlySpawnMultiplier;
         seasonSpawnMultiplier = wolf.seasonSpawnMultiplier;
+    }
+
+    private void Update()
+    {
+        // Debug spawning with Ctrl+Shift+RMB
+        if (enableDebugSpawning && Input.GetMouseButtonDown(1)) // Right mouse button
+        {
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && 
+                (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+            {
+                SpawnRandomEnemyAtCursor();
+            }
+        }
     }
 
     public void SpawnEnemies(int season)
@@ -312,6 +329,71 @@ public class SpawnUnits : MonoBehaviour
                 CombatManager.Instance.RegisterUnit(enemyUnit);
             }
         }
+    }
+
+    private void SpawnRandomEnemyAtCursor()
+    {
+        // Get mouse position and convert to world position
+        Vector3 mousePosition = Input.mousePosition;
+        Camera camera = Camera.main;
+        
+        if (camera == null)
+        {
+            Debug.LogWarning("No main camera found for debug spawning!");
+            return;
+        }
+
+        // Convert mouse position to world position
+        Ray ray = camera.ScreenPointToRay(mousePosition);
+        RaycastHit hit;
+        
+        Vector3 spawnPosition = Vector3.zero;
+        bool validPosition = false;
+
+        // Try to find a position on the terrain or ground
+        if (Physics.Raycast(ray, out hit))
+        {
+            spawnPosition = hit.point;
+            validPosition = true;
+        }
+        else
+        {
+            // If no terrain hit, project to a plane at y=0
+            Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+            float distance;
+            if (groundPlane.Raycast(ray, out distance))
+            {
+                spawnPosition = ray.GetPoint(distance);
+                validPosition = true;
+            }
+        }
+
+        if (!validPosition)
+        {
+            Debug.LogWarning("Could not determine spawn position from cursor!");
+            return;
+        }
+
+        // Choose random enemy type
+        EnemyData[] enemyTypes = { wolf, racoon, bear, boar };
+        EnemyData randomEnemyData = enemyTypes[Random.Range(0, enemyTypes.Length)];
+
+        if (randomEnemyData == null || randomEnemyData.Prefab == null)
+        {
+            Debug.LogWarning("Selected enemy data or prefab is null!");
+            return;
+        }
+
+        // Spawn the enemy
+        GameObject enemyInstance = Instantiate(randomEnemyData.Prefab, spawnPosition, Quaternion.identity);
+        EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+        
+        if (enemyUnit != null && CombatManager.Instance != null)
+        {
+            CombatManager.Instance.RegisterUnit(enemyUnit);
+        }
+
+        Debug.Log($"Debug spawned {randomEnemyData.name} at position {spawnPosition}");
     }
 
     // private Vector3 GetRandomOutsidePosition()

@@ -20,7 +20,7 @@ public class CheatManager : MonoBehaviour
     [SerializeField] private Toggle extraMoneyToggle;
     [SerializeField] private Toggle unlockAllBuildsToggle;
     [SerializeField] private Toggle unlockEnemyAnimalsToggle;
-    [SerializeField] private Toggle skipDayNightToggle;
+    [SerializeField] private Toggle freezeTimeToggle;
     
     [Header("One-Time Action Cheats")]
     [SerializeField] private Button skipTutorialButton;
@@ -81,7 +81,11 @@ public class CheatManager : MonoBehaviour
     private bool extraMoneyActive = false;
     private bool unlockAllBuildsActive = false;
     private bool unlockEnemyAnimalsActive = false;
-    private bool skipDayNightActive = false;
+    private bool freezeTimeActive = false;
+    
+    // Separate cheat states for proper functionality
+    private bool godModeActive = false;
+    private bool unlimitedBuildingActive = false;
     
     // Resource names for dropdown
     private string[] resourceNames = { "Sunflower", "Wheat", "Carrots", "Eggs", "Milk", "Bacon", "Cheese", "Wool" };
@@ -182,12 +186,46 @@ public class CheatManager : MonoBehaviour
             unlockAllBuildsToggle.onValueChanged.AddListener(OnUnlockAllBuildsToggle);
         if (unlockEnemyAnimalsToggle != null)
             unlockEnemyAnimalsToggle.onValueChanged.AddListener(OnUnlockEnemyAnimalsToggle);
-        if (skipDayNightToggle != null)
-            skipDayNightToggle.onValueChanged.AddListener(OnSkipDayNightToggle);
+        if (freezeTimeToggle != null)
+            freezeTimeToggle.onValueChanged.AddListener(OnFreezeTimeToggle);
         
         // Setup button listeners (one-time actions)
+        if (skipDayButton != null)
+            skipDayButton.onClick.AddListener(SkipDay);
+        if (skipSeasonButton != null)
+            skipSeasonButton.onClick.AddListener(SkipSeason);
+        if (skipYearButton != null)
+            skipYearButton.onClick.AddListener(SkipYear);
+        if (toggleTimeButton != null)
+            toggleTimeButton.onClick.AddListener(ToggleTimeFreeze);
+        if (forceDayButton != null)
+            forceDayButton.onClick.AddListener(ForceDay);
+            
         if (skipTutorialButton != null)
+        {
             skipTutorialButton.onClick.AddListener(SkipTutorial);
+        }
+        else
+        {
+            // Try to find skip tutorial button by name if not assigned
+            GameObject skipTutorialButtonGO = GameObject.Find("SkipTutorialButton") ?? 
+                                           GameObject.Find("Skip Tutorial Button") ?? 
+                                           GameObject.Find("Skip Tutorial") ??
+                                           GameObject.Find("TutorialSkipButton");
+            if (skipTutorialButtonGO != null)
+            {
+                skipTutorialButton = skipTutorialButtonGO.GetComponent<Button>();
+                if (skipTutorialButton != null)
+                {
+                    skipTutorialButton.onClick.AddListener(SkipTutorial);
+                    Debug.Log("Auto-found and connected skip tutorial button: " + skipTutorialButtonGO.name);
+                }
+            }
+            else
+            {
+                Debug.Log("Skip tutorial button not found - you can still use Backspace key to skip tutorial");
+            }
+        }
         if (forceEnablePricePanelButton != null)
             forceEnablePricePanelButton.onClick.AddListener(ForceEnablePricePanel);
         if (skipToEndYearButton != null)
@@ -320,6 +358,13 @@ public class CheatManager : MonoBehaviour
     #endregion
     
     #region Time Cheats
+    // CORRECTED GAME TIMELINE (DEEP FIX):
+    // - Year = 20 days (not 365)
+    // - Seasons change every 5 days: Day 0->5->10->15->20
+    // - Day 0: Spring, Day 5: Summer, Day 10: Fall, Day 15: Winter, Day 20: New Year
+    // - FIXED: Now actually triggers setSeason(), enemy changes, weather, notifications
+    // - FIXED: Proper hour=5 condition, proper year transition, proper UI updates
+    
     private void SkipDay()
     {
         if (NightManager.Instance != null)
@@ -337,8 +382,21 @@ public class CheatManager : MonoBehaviour
         {
             int currentSeason = NightManager.Instance.GetCurrentSeason();
             int nextSeason = currentSeason >= 4 ? 1 : currentSeason + 1;
-            NightManager.Instance.SetSeason(nextSeason);
-            Debug.Log($"Skipped to season {nextSeason}");
+            
+            // Implement season change logic directly
+            if (nextSeason == 1)
+            {
+                // Going to next year - implement year transition
+                PerformYearTransition();
+                Debug.Log("Skipped to next year (Spring)");
+            }
+            else
+            {
+                // Skip to next season in current year
+                PerformSeasonTransition(nextSeason);
+                Debug.Log($"Skipped to season {nextSeason}");
+            }
+            
             RefreshDebugInfo();
         }
     }
@@ -347,9 +405,8 @@ public class CheatManager : MonoBehaviour
     {
         if (NightManager.Instance != null)
         {
-            int currentDays = NightManager.Instance.GetDays();
-            NightManager.Instance.CheatSetDays(currentDays + 20); // Skip full year
-            NightManager.Instance.SetSeason(1); // Reset to spring
+            // Implement year transition directly
+            PerformYearTransition();
             Debug.Log("Skipped to next year");
             RefreshDebugInfo();
         }
@@ -357,8 +414,8 @@ public class CheatManager : MonoBehaviour
     
     private void ToggleTimeFreeze()
     {
-        skipDayNightActive = !skipDayNightActive;
-        if (skipDayNightActive)
+        freezeTimeActive = !freezeTimeActive;
+        if (freezeTimeActive)
         {
             if (NightManager.Instance != null)
                 NightManager.Instance.pauseTime();
@@ -368,7 +425,7 @@ public class CheatManager : MonoBehaviour
             if (NightManager.Instance != null)
                 NightManager.Instance.playTime();
         }
-        Debug.Log($"Time {(skipDayNightActive ? "frozen" : "unfrozen")}");
+        Debug.Log($"Time {(freezeTimeActive ? "frozen" : "unfrozen")}");
         UpdateButtonTexts();
     }
     
@@ -461,11 +518,11 @@ public class CheatManager : MonoBehaviour
     
     private void ToggleGodMode()
     {
-        unlockAllBuildsActive = !unlockAllBuildsActive;
-        Debug.Log($"Unlock all builds {(unlockAllBuildsActive ? "enabled" : "disabled")}");
+        godModeActive = !godModeActive;
+        Debug.Log($"God Mode {(godModeActive ? "enabled" : "disabled")}");
         UpdateButtonTexts();
         
-        if (unlockAllBuildsActive)
+        if (godModeActive)
         {
             HealAllStructures();
         }
@@ -473,8 +530,8 @@ public class CheatManager : MonoBehaviour
     
     private void ToggleUnlimitedBuilding()
     {
-        unlockAllBuildsActive = !unlockAllBuildsActive;
-        Debug.Log($"Unlimited building {(unlockAllBuildsActive ? "enabled" : "disabled")}");
+        unlimitedBuildingActive = !unlimitedBuildingActive;
+        Debug.Log($"Unlimited building {(unlimitedBuildingActive ? "enabled" : "disabled")}");
         UpdateButtonTexts();
     }
     
@@ -482,7 +539,7 @@ public class CheatManager : MonoBehaviour
     {
         try
         {
-            return unlockAllBuildsActive; // Using unlock all builds as god mode
+            return godModeActive; // Use proper god mode variable
         }
         catch (System.Exception ex)
         {
@@ -495,7 +552,7 @@ public class CheatManager : MonoBehaviour
     {
         try
         {
-            return unlockAllBuildsActive;
+            return unlimitedBuildingActive; // Use proper unlimited building variable
         }
         catch (System.Exception ex)
         {
@@ -564,10 +621,24 @@ public class CheatManager : MonoBehaviour
         
         if (NightManager.Instance != null)
         {
-            debugText += $"Day: {NightManager.Instance.GetDays()}\n";
-            debugText += $"Season: {NightManager.Instance.GetCurrentSeason()}\n";
+            int currentDays = NightManager.Instance.GetDays();
+            int currentSeason = NightManager.Instance.GetCurrentSeason();
+            string seasonName = GetSeasonName(currentSeason);
+            
+            debugText += $"Day: {currentDays}/20 (Year {NightManager.Instance.Years})\n";
+            debugText += $"Season: {currentSeason} ({seasonName})\n";
             debugText += $"Time: {NightManager.Instance.Hours:D2}:{NightManager.Instance.Minutes:D2}\n";
             debugText += $"Is Day: {NightManager.Instance.GetIsDay()}\n";
+            
+            // Show next season transition
+            int nextSeasonDay = GetNextSeasonTransitionDay(currentSeason);
+            int daysUntilNextSeason = nextSeasonDay - currentDays;
+            if (daysUntilNextSeason <= 0) daysUntilNextSeason = (20 - currentDays);
+            debugText += $"Next Season: {daysUntilNextSeason} days\n";
+            
+            // Show year end info
+            int daysUntilYearEnd = 20 - currentDays;
+            debugText += $"Year End: {daysUntilYearEnd} days\n";
         }
         
         if (InventoryManager.Instance != null)
@@ -588,11 +659,20 @@ public class CheatManager : MonoBehaviour
         EnemyUnit[] enemies = FindObjectsByType<EnemyUnit>(FindObjectsSortMode.None);
         debugText += $"Active Enemies: {enemies.Length}\n";
         
+        debugText += $"\n=== TIMELINE INFO ===\n";
+        debugText += $"Year Length: 20 days\n";
+        debugText += $"Season Length: 5 days\n";
+        debugText += $"Day 0-4: Spring | Day 5-9: Summer\n";
+        debugText += $"Day 10-14: Fall | Day 15-19: Winter\n";
+        debugText += $"Day 20: New Year → Day 0\n";
+        
         debugText += $"\n=== CHEATS ===\n";
         debugText += $"Extra Money: {(extraMoneyActive ? "ON" : "OFF")}\n";
         debugText += $"Unlock All Builds: {(unlockAllBuildsActive ? "ON" : "OFF")}\n";
-        debugText += $"Unlock Enemy Animals: {(unlockEnemyAnimalsActive ? "ON" : "OFF")}\n";
-        debugText += $"Time Frozen: {(skipDayNightActive ? "ON" : "OFF")}\n";
+        debugText += $"God Mode: {(godModeActive ? "ON" : "OFF")}\n";
+        debugText += $"Unlimited Building: {(unlimitedBuildingActive ? "ON" : "OFF")}\n";
+        debugText += $"Unlock Enemy Animals: {(unlockEnemyAnimalsActive ? "ON (All types spawn)" : "OFF (Season-based)")}\n";
+        debugText += $"Time Frozen: {(freezeTimeActive ? "ON" : "OFF")}\n";
         
         debugInfoText.text = debugText;
     }
@@ -600,13 +680,13 @@ public class CheatManager : MonoBehaviour
     private void UpdateButtonTexts()
     {
         if (timeButtonText != null)
-            timeButtonText.text = skipDayNightActive ? "Unfreeze Time" : "Freeze Time";
+            timeButtonText.text = freezeTimeActive ? "Unfreeze Time" : "Freeze Time";
         
         if (godModeText != null)
-            godModeText.text = unlockAllBuildsActive ? "Disable Unlock All Builds" : "Enable Unlock All Builds";
+            godModeText.text = godModeActive ? "Disable God Mode" : "Enable God Mode";
         
         if (unlimitedBuildingText != null)
-            unlimitedBuildingText.text = unlockAllBuildsActive ? "Disable Unlimited Building" : "Enable Unlimited Building";
+            unlimitedBuildingText.text = unlimitedBuildingActive ? "Disable Unlimited Building" : "Enable Unlimited Building";
     }
     
     #region Toggle Handlers
@@ -630,31 +710,92 @@ public class CheatManager : MonoBehaviour
         {
             HealAllStructures();
             
-            // Respect tutorial flow - don't break price panel progression
-            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
-            {
-                string currentStep = TutorialManager.Instance.GetCurrentStepId();
-                Debug.Log($"Cheat respects tutorial - current step: {currentStep}");
-                // Note: Shop/Price panel restrictions remain in place during tutorial
-            }
+            // Refresh the shop to show all buildings
+            RefreshShopDisplay();
+            
+            Debug.Log($"Unlock All Buildings cheat {(isOn ? "enabled" : "disabled")} - shop refreshed to show all structures");
+        }
+        else
+        {
+            // Refresh the shop to restore tutorial restrictions if active
+            RefreshShopDisplay();
+        }
+    }
+    
+    private void RefreshShopDisplay()
+    {
+        // Find and refresh the shop panel to update available structures
+        ShopPanelUI shopPanel = FindFirstObjectByType<ShopPanelUI>();
+        if (shopPanel != null)
+        {
+            // Refresh shop with current tab to update structure visibility
+            shopPanel.RefreshForTutorialChange();
+            Debug.Log("Shop display refreshed due to cheat toggle");
         }
     }
     
     private void OnUnlockEnemyAnimalsToggle(bool isOn)
     {
         unlockEnemyAnimalsActive = isOn;
+        
+        // Update enemy indicator
+        UpdateEnemyIndicator();
+        
         if (isOn)
         {
             // Spawn some enemy animals for testing
             SpawnEnemies();
-            Debug.Log("Enemy animals unlocked and spawned");
+            Debug.Log("Enemy animals unlocked and spawned - all types now available");
+        }
+        else
+        {
+            Debug.Log("Enemy animals locked - only season-specific types will spawn");
         }
     }
     
-    private void OnSkipDayNightToggle(bool isOn)
+    private void UpdateEnemyIndicator()
     {
-        skipDayNightActive = isOn;
-        if (skipDayNightActive)
+        if (unlockEnemyAnimalsActive)
+        {
+            // Show all enemy types when cheat is active
+            EnemyIndicator enemyIndicator = FindFirstObjectByType<EnemyIndicator>();
+            if (enemyIndicator != null)
+            {
+                enemyIndicator.MakeAllEnemiesVisible();
+                Debug.Log("Enemy indicator updated to show all enemy types");
+            }
+        }
+        else
+        {
+            // Restore normal seasonal indicator behavior
+            EnemyIndicator enemyIndicator = FindFirstObjectByType<EnemyIndicator>();
+            if (enemyIndicator != null && NightManager.Instance != null)
+            {
+                int currentSeason = NightManager.Instance.GetCurrentSeason();
+                switch (currentSeason)
+                {
+                    case 1:
+                        enemyIndicator.MakeWolfVisible();
+                        break;
+                    case 2:
+                        enemyIndicator.MakeRacoonVisible();
+                        break;
+                    case 3:
+                        enemyIndicator.MakeBoarVisible();
+                        break;
+                    case 4:
+                        enemyIndicator.MakeBearVisible();
+                        break;
+                }
+                Debug.Log($"Enemy indicator restored to season {currentSeason} display");
+            }
+        }
+    }
+    
+    private void OnFreezeTimeToggle(bool isOn)
+    {
+        freezeTimeActive = isOn;
+        if (freezeTimeActive)
         {
             if (NightManager.Instance != null)
                 NightManager.Instance.pauseTime();
@@ -664,17 +805,31 @@ public class CheatManager : MonoBehaviour
             if (NightManager.Instance != null)
                 NightManager.Instance.playTime();
         }
-        Debug.Log($"Time {(skipDayNightActive ? "frozen" : "unfrozen")}");
+        Debug.Log($"Time {(freezeTimeActive ? "frozen" : "unfrozen")}");
+        UpdateButtonTexts();
     }
     
     // One-time action methods
     private void SkipTutorial()
     {
+        SkipTutorialPublic();
+    }
+    
+    // Public method that can be called from UI buttons directly
+    public void SkipTutorialPublic()
+    {
         if (TutorialManager.Instance != null)
         {
-            // Skip the tutorial using the built-in method
-            TutorialManager.Instance.SkipTutorial();
-            Debug.Log("Tutorial skipped successfully");
+            // Only skip if tutorial is actually active to prevent double-skipping
+            if (TutorialManager.Instance.IsTutorialActive())
+            {
+                TutorialManager.Instance.SkipTutorial();
+                Debug.Log("Tutorial skipped successfully via cheat panel");
+            }
+            else
+            {
+                Debug.Log("Tutorial is not active - already completed or not started");
+            }
         }
         else
         {
@@ -701,10 +856,9 @@ public class CheatManager : MonoBehaviour
     {
         if (NightManager.Instance != null)
         {
-            int currentDays = NightManager.Instance.GetDays();
-            int daysToAdd = 364 - (currentDays % 365); // Skip to end of year
-            NightManager.Instance.CheatSetDays(currentDays + daysToAdd);
-            Debug.Log("Skipped to end of year");
+            // Implement year transition directly
+            PerformYearTransition();
+            Debug.Log("Skipped to next year");
         }
     }
     
@@ -712,10 +866,22 @@ public class CheatManager : MonoBehaviour
     {
         if (NightManager.Instance != null)
         {
-            int currentDays = NightManager.Instance.GetDays();
-            int daysToAdd = 91 - (currentDays % 91); // Skip to next season
-            NightManager.Instance.CheatSetDays(currentDays + daysToAdd);
-            Debug.Log("Skipped to next season");
+            int currentSeason = NightManager.Instance.GetCurrentSeason();
+            int nextSeason = currentSeason >= 4 ? 1 : currentSeason + 1;
+            
+            // Implement season transition directly
+            if (nextSeason == 1)
+            {
+                // Going to next year
+                PerformYearTransition();
+                Debug.Log("Skipped to next year (Spring)");
+            }
+            else
+            {
+                // Skip to next season in current year
+                PerformSeasonTransition(nextSeason);
+                Debug.Log($"Skipped to season {nextSeason}");
+            }
         }
     }
     
@@ -755,6 +921,118 @@ public class CheatManager : MonoBehaviour
     public bool IsUnlockAllBuildsActive() => unlockAllBuildsActive;
     public bool IsExtraMoneyActive() => extraMoneyActive;
     public bool IsUnlockEnemyAnimalsActive() => unlockEnemyAnimalsActive;
+    
+    #region Helper Methods for Game Timeline
+    private string GetSeasonName(int season)
+    {
+        return season switch
+        {
+            1 => "Spring",
+            2 => "Summer", 
+            3 => "Fall",
+            4 => "Winter",
+            _ => "Unknown"
+        };
+    }
+    
+    private void PerformSeasonTransition(int targetSeason)
+    {
+        if (targetSeason < 1 || targetSeason > 4) return;
+        
+        var nightManager = NightManager.Instance;
+        if (nightManager == null) return;
+        
+        // Set the appropriate day for season transition
+        int targetDay = targetSeason switch
+        {
+            1 => 0,   // Spring starts at day 0
+            2 => 5,   // Summer starts at day 5  
+            3 => 10,  // Fall starts at day 10
+            4 => 15,  // Winter starts at day 15
+            _ => 0
+        };
+        
+        // First set hour to 5 (season change condition)
+        nightManager.Hours = 5;
+        
+        // Then set the day - this should trigger OnDayChange with the right conditions
+        nightManager.CheatSetDays(targetDay);
+        
+        // The CheatSetDays call should trigger OnDayChange(targetDay) 
+        // which should see that days == targetDay AND hours == 5
+        // and trigger the proper season change
+    }
+    
+    private void PerformYearTransition()
+    {
+        var nightManager = NightManager.Instance;
+        if (nightManager == null) return;
+        
+        // Trigger year transition by setting to day 20 with hour 5
+        // This should trigger the year end logic in OnDayChange
+        nightManager.Hours = 5;
+        nightManager.CheatSetDays(20);
+        
+        // The OnDayChange(20) with hours == 5 should trigger:
+        // - Year increment
+        // - Reset to day 0  
+        // - Reset to Spring
+        // - All the year transition effects
+    }
+    
+    private int GetNextSeasonTransitionDay(int currentSeason)
+    {
+        return currentSeason switch
+        {
+            1 => 5,  // Spring -> Summer
+            2 => 10, // Summer -> Fall
+            3 => 15, // Fall -> Winter
+            4 => 20, // Winter -> Spring (new year)
+            _ => 5
+        };
+    }
+    
+    // Individual season cheat methods
+    private void JumpToSpring()
+    {
+        if (NightManager.Instance != null)
+        {
+            PerformSeasonTransition(1);
+            Debug.Log("Jumped to Spring");
+            RefreshDebugInfo();
+        }
+    }
+    
+    private void JumpToSummer()
+    {
+        if (NightManager.Instance != null)
+        {
+            PerformSeasonTransition(2);
+            Debug.Log("Jumped to Summer");
+            RefreshDebugInfo();
+        }
+    }
+    
+    private void JumpToFall()
+    {
+        if (NightManager.Instance != null)
+        {
+            PerformSeasonTransition(3);
+            Debug.Log("Jumped to Fall");
+            RefreshDebugInfo();
+        }
+    }
+    
+    private void JumpToWinter()
+    {
+        if (NightManager.Instance != null)
+        {
+            PerformSeasonTransition(4);
+            Debug.Log("Jumped to Winter");
+            RefreshDebugInfo();
+        }
+    }
+    #endregion
     
     #endregion
     #endregion

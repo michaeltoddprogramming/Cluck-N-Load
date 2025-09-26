@@ -163,7 +163,7 @@ public class PricePanelUI : MonoBehaviour
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         // boostedProducts = AnimalStructure.whichProductsAreBoosted(animals);
         boostedProducts = productionBoosts.GetBoostedProducts();
-        
+
         // Safe debug logging with null and bounds checking
         if (boostedProducts != null)
         {
@@ -173,7 +173,7 @@ public class PricePanelUI : MonoBehaviour
                 Debug.Log($"These are the products boosted: {boostedProducts[0]}, {boostedProducts[1]}, {boostedProducts[2]}, {boostedProducts[3]}, {boostedProducts[4]}");
             }
         }
-        
+
         // boostedCrops = inventoryManager.whichProductsAreBoosted(animals);
         populateCrops();
         populateProduce();
@@ -258,12 +258,12 @@ public class PricePanelUI : MonoBehaviour
             Debug.Log("Price panel access blocked - not at correct tutorial step");
             return;
         }
-        
+
         gameObject.SetActive(true);
         populatePricePanel();
         if (audioClipOpen != null && audioSourceOpen != null)
             audioSourceOpen.PlayOneShot(audioClipOpen);
-        
+
         // Trigger tutorial step for price panel opened
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.PricePanelOpened);
@@ -292,7 +292,7 @@ public class PricePanelUI : MonoBehaviour
         gameObject.SetActive(false);
         if (audioClipClose != null && audioSourceClose != null)
             audioSourceClose.PlayOneShot(audioClipClose);
-        
+
         // Trigger tutorial step for price panel closed
         if (TutorialManager.Instance != null)
             TutorialManager.Instance.Trigger(TutorialTrigger.PricePanelClosed);

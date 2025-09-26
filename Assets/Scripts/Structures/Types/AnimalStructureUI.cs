@@ -14,7 +14,7 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] private TextMeshProUGUI animalAmountText;
     [SerializeField] private TextMeshProUGUI newAnimalAmount;
     [SerializeField] public Image animalIcon1;
-    [SerializeField] public Image animalIcon2;
+    // [SerializeField] public Image animalIcon2;
     [SerializeField] public Sprite cowIcon;
     [SerializeField] public Sprite chickenIcon;
     [SerializeField] public Sprite goatIcon;
@@ -22,6 +22,11 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] public Sprite sheepIcon;
     [SerializeField] public AudioClip clickSound;
     [SerializeField] public TextMeshProUGUI costText;
+
+    [Header("Production Amount")]
+    [SerializeField] public Image animalIcon3;
+    [SerializeField] public TextMeshProUGUI coinPerAnimalText;
+    [SerializeField] public TextMeshProUGUI totalCoinsText;
     private CivilianSpawner civilianSpawner;
 
     private int newAnimalCount;
@@ -88,6 +93,9 @@ public class AnimalStructureUI : BaseStructureUI
 
         animalAmountText.text = $"{animalCount}/{maxAnimalCount}";
         newAnimalAmount.text = $"{newAnimalCount}";
+
+        coinPerAnimalText.text = $"{animalStructure.ProductionSettings.moneyPerProduct}";
+        totalCoinsText.text = $"{animalCount * animalStructure.ProductionSettings.moneyPerProduct}";
         SetAnimalIcons();
 
         feedButton.interactable = canFeed;
@@ -105,19 +113,19 @@ public class AnimalStructureUI : BaseStructureUI
         {
             var buttonImage = feedButton.GetComponent<Image>();
             TextMeshProUGUI feedText = feedButton.GetComponentInChildren<TextMeshProUGUI>();
-            
+
             bool needsFeedAndCantFeed = !canFeed && animalCount > 0 && !isProducing && !productReady &&
-                InventoryManager.Instance != null && 
-                !InventoryManager.Instance.HasItem(animalStructure.RequiredFood, 
+                InventoryManager.Instance != null &&
+                !InventoryManager.Instance.HasItem(animalStructure.RequiredFood,
                     (int)((animalStructure.ProductionSettings.baseFoodRequired * animalCount) * animalStructure.foodMultiplier));
-            
+
             if (buttonImage != null)
             {
                 // Grey out the button when feed needed but can't feed
                 Color greyColor = new Color(0.7f, 0.7f, 0.7f, 1.0f); // Medium grey
                 buttonImage.color = needsFeedAndCantFeed ? greyColor : Color.white;
             }
-            
+
             // Change notification text to yellow when feed needed
             if (feedText != null)
             {
@@ -140,6 +148,7 @@ public class AnimalStructureUI : BaseStructureUI
             _ => null
         };
         if (animalIcon1 != null) animalIcon1.sprite = icon;
+        if (animalIcon3 != null) animalIcon3.sprite = icon;
         // if (animalIcon2 != null) animalIcon2.sprite = icon;
     }
 

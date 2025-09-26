@@ -5,8 +5,22 @@ using TMPro;
 public class ProductionBoosts : MonoBehaviour
 {
     private bool isBoosted = false;
+    [SerializeField] private StructureData chicken;
+    [SerializeField] private StructureData cow;
+    [SerializeField] private StructureData sheep;
+    [SerializeField] private StructureData goat;
+    [SerializeField] private StructureData pig;
     private float[] productsBoosted = new float[5] { 1, 1, 1, 1, 1 };
     private int[] productPrices = new int[5] { 10, 20, 18, 30, 15 };
+
+    void Awake()
+    {
+        productPrices[0] = chicken.moneyPerProduct;
+        productPrices[1] = cow.moneyPerProduct;
+        productPrices[2] = sheep.moneyPerProduct;
+        productPrices[3] = goat.moneyPerProduct;
+        productPrices[4] = pig.moneyPerProduct;
+    }
 
     public void SetBoosted(float[] amounts)
     {

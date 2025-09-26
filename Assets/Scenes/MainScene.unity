@@ -17106,6 +17106,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4fce48d2b52d444eb65cd2926f15067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  chicken: {fileID: 11400000, guid: bd799d5ee3574cb4da135d6e3582cbf2, type: 2}
+  cow: {fileID: 11400000, guid: f4df2d1813bdcfb418114b665550e47b, type: 2}
+  sheep: {fileID: 11400000, guid: 95353d0c2f36ead4fb1913285137617c, type: 2}
+  goat: {fileID: 11400000, guid: e72af392a87a70743a90ccd64cac2a3c, type: 2}
+  pig: {fileID: 11400000, guid: e22b5e98e8c3dd943b5455b568eed84b, type: 2}
 --- !u!82 &1632256049
 AudioSource:
   m_ObjectHideFlags: 0

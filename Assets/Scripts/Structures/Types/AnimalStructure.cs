@@ -98,7 +98,7 @@ public class AnimalStructure : Structure
             isRegisteredWithNightManager = true;
         }
         audioSource = audioSource ?? GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
-        
+
         // Initialize ready indicator
         readyIndicator = GetComponent<ReadyIndicator>();
         if (readyIndicator == null)
@@ -132,11 +132,11 @@ public class AnimalStructure : Structure
             productReady = false;
             productionProgress = 0f;
             lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
-            
+
             // Hide indicator during production
             if (readyIndicator != null)
                 readyIndicator.HideIndicator();
-                
+
             if (TutorialManager.Instance != null && animalCount >= 3) StartCoroutine(DelayedInstantCompleteForTutorial());
         }
     }
@@ -183,26 +183,31 @@ public class AnimalStructure : Structure
 
         if (animalType == AnimalType.Chicken)
         {
+            // productPrice = productionSettings.moneyPerProduct;
             productPrice = productionBoosts.GetProductPrices()[0];
             boostedAmount = productionBoosts.GetBoostedProducts()[0];
         }
         else if (animalType == AnimalType.Cow)
         {
+            // productPrice = productionSettings.moneyPerProduct;
             productPrice = productionBoosts.GetProductPrices()[1];
             boostedAmount = productionBoosts.GetBoostedProducts()[1];
         }
         else if (animalType == AnimalType.Sheep)
         {
+            // productPrice = productionSettings.moneyPerProduct;
             productPrice = productionBoosts.GetProductPrices()[2];
             boostedAmount = productionBoosts.GetBoostedProducts()[2];
         }
         else if (animalType == AnimalType.Goat)
         {
+            // productPrice = productionSettings.moneyPerProduct;
             productPrice = productionBoosts.GetProductPrices()[3];
             boostedAmount = productionBoosts.GetBoostedProducts()[3];
         }
         else if (animalType == AnimalType.Pig)
         {
+            // productPrice = productionSettings.moneyPerProduct;
             productPrice = productionBoosts.GetProductPrices()[4];
             boostedAmount = productionBoosts.GetBoostedProducts()[4];
         }
@@ -218,7 +223,7 @@ public class AnimalStructure : Structure
         productReady = false;
         isProducing = false;
         productionProgress = 0f;
-        
+
         // Hide ready indicator after collection
         if (readyIndicator != null)
             readyIndicator.HideIndicator();
@@ -244,7 +249,7 @@ public class AnimalStructure : Structure
             productReady = true;
             isProducing = false;
             productionProgress = productionSettings.productionTime;
-            
+
             // Show ready indicator when production is complete
             if (readyIndicator != null)
                 readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);

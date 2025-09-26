@@ -89,7 +89,7 @@ public class EnemyUnit : BaseUnit
     private void Start()
     {
         currentTarget = GetNearestAggroTargetOptimized();
-        lastAttackTime = Time.time;
+        // lastAttackTime = Time.time;
     }
 
 
@@ -101,6 +101,16 @@ public class EnemyUnit : BaseUnit
 
     private void Update()
     {
+        if (agent.velocity.sqrMagnitude > 0.1f)
+        {
+            // Moving → set Speed to 1
+            SetFloat("speed", 1f);
+        }
+        else
+        {
+            // Idle → set Speed to 0
+            SetFloat("speed", 0f);
+        }
         lastAttackTime += Time.deltaTime;
         // Debug.Log("------------------------------------------------------------------ target: " + currentTarget);
         if (retreating)
@@ -113,16 +123,6 @@ public class EnemyUnit : BaseUnit
             return;
         }
 
-        if (agent.velocity.sqrMagnitude > 0.1f)
-        {
-            // Moving → set Speed to 1
-            SetFloat("speed", 1f);
-        }
-        else
-        {
-            // Idle → set Speed to 0
-            SetFloat("speed", 0f);
-        }
 
         if (currentTarget == null || IsTargetDead(currentTarget))
         {
@@ -382,41 +382,126 @@ public class EnemyUnit : BaseUnit
 
 
 
+    // private void AttackIfInRange()
+    // {
+    //     if (currentTarget == null || IsTargetDead(currentTarget))
+    //         return;
+
+    //     Collider enemyCollider = GetComponent<Collider>();
+    //     Collider targetCollider = currentTarget.GetComponent<Collider>();
+
+    //     if (enemyCollider == null || targetCollider == null)
+    //         return;
+
+    //     // Edge-to-edge distance
+    //     // Vector3 closestPointEnemy = enemyCollider.ClosestPoint(targetCollider.transform.position);
+    //     // Vector3 closestPointTarget = targetCollider.ClosestPoint(closestPointEnemy);
+    //     // float distanceBetween = Vector3.Distance(closestPointEnemy, closestPointTarget);
+
+    //     // Vector3 closestPointEnemy = enemyCollider.ClosestPoint(targetCollider.transform.position);
+    //     // Vector3 closestPointTarget = targetCollider.ClosestPoint(closestPointEnemy);
+    //     // float distanceBetween = Vector3.Distance(closestPointEnemy, closestPointTarget);
+
+    //     // if (currentTarget.)
+
+
+    //     //works for chickens-----------------------------------------------------
+    //     // Vector3 wolfPoint = enemyCollider.ClosestPoint(currentTarget.transform.position);
+    //     // Vector3 targetPoint = targetCollider.ClosestPoint(wolfPoint);
+    //     // float distanceBetween = Vector3.Distance(transform.position, currentTarget.transform.position);
+    //     // float distanceBetween = Vector3.Distance(wolfPoint, targetPoint);
+
+    //     float distanceBetween;
+
+    //     Collider targetCol = currentTarget.GetComponent<Collider>();
+
+    //     if (targetCol != null)
+    //     {
+    //         // Get the closest point on the target's collider to the wolf's position
+    //         Vector3 closestPoint = targetCol.ClosestPoint(transform.position);
+    //         distanceBetween = Vector3.Distance(transform.position, closestPoint);
+    //     }
+    //     else
+    //     {
+    //         // Fallback if the target has no collider
+    //         distanceBetween = Vector3.Distance(transform.position, currentTarget.transform.position);
+    //     }
+
+    //     Debug.Log($"{name} → {currentTarget.name} | Dist = {distanceBetween:F2}, Stop = {data.StoppingDistance}");
+    //     if (distanceBetween <= data.StoppingDistance &&
+    //         lastAttackTime >= data.AttackCooldown &&
+    //         !IsDead())
+    //     {
+    //         lastAttackTime = 0f;
+    //         SetTrigger("Attack");
+    //         Attack(currentTarget);
+    //     }
+
+
+
+
+
+    //     // Debug logs for verification
+    //     // Debug.Log($"Time: {Time.time}, Last Attack: {lastAttackTime}, Next Allowed: {lastAttackTime + data.AttackCooldown}");
+    //     // Debug.Log($"Distance: {distanceBetween}, Stopping Distance: {data.StoppingDistance}");
+
+    //     // Only attack if within stopping distance and cooldown has passed
+    //     // if (distanceBetween <= data.StoppingDistance && Time.time >= (lastAttackTime + data.AttackCooldown))
+
+
+
+
+
+    //     // Debug.Log($"{name} → {currentTarget.name} | Dist = {distanceBetween:F2}, Stop = {data.StoppingDistance}");
+
+    //     // if (distanceBetween <= data.StoppingDistance && lastAttackTime >= data.AttackCooldown && !IsDead())
+    //     // {
+    //     //     Debug.Log("Attacking now: " + currentTarget.name + " whit this much: " + data.AttackDamage);
+    //     //     lastAttackTime = 0f;
+    //     //     SetTrigger("Attack");
+    //     //     Attack(currentTarget);
+    //     // }
+    // }
+
     private void AttackIfInRange()
     {
-        if (currentTarget == null || IsTargetDead(currentTarget))
-            return;
+        if (currentTarget == null || IsTargetDead(currentTarget)) return;
 
-        Collider enemyCollider = GetComponent<Collider>();
+        // Get target collider
         Collider targetCollider = currentTarget.GetComponent<Collider>();
-
-        if (enemyCollider == null || targetCollider == null)
-            return;
-
-        // Edge-to-edge distance
-        // Vector3 closestPointEnemy = enemyCollider.ClosestPoint(targetCollider.transform.position);
-        // Vector3 closestPointTarget = targetCollider.ClosestPoint(closestPointEnemy);
-        // float distanceBetween = Vector3.Distance(closestPointEnemy, closestPointTarget);
-
-        Vector3 closestPointEnemy = enemyCollider.ClosestPoint(targetCollider.transform.position);
-        Vector3 closestPointTarget = targetCollider.ClosestPoint(closestPointEnemy);
-        float distanceBetween = Vector3.Distance(closestPointEnemy, closestPointTarget);
-
-
-        // Debug logs for verification
-        // Debug.Log($"Time: {Time.time}, Last Attack: {lastAttackTime}, Next Allowed: {lastAttackTime + data.AttackCooldown}");
-        // Debug.Log($"Distance: {distanceBetween}, Stopping Distance: {data.StoppingDistance}");
-
-        // Only attack if within stopping distance and cooldown has passed
-        // if (distanceBetween <= data.StoppingDistance && Time.time >= (lastAttackTime + data.AttackCooldown))
-        if (distanceBetween <= data.StoppingDistance && lastAttackTime >= data.AttackCooldown && !IsDead())
+        if (targetCollider == null)
         {
-            // Debug.Log("Attacking now: " + currentTarget.name + " whit this much: " + data.AttackDamage);
+            // fallback: use center-to-center if no collider on target
+            float fallbackDist = Vector3.Distance(transform.position, currentTarget.transform.position);
+            Debug.LogWarning($"{name}: target {currentTarget.name} has no collider - fallback dist = {fallbackDist:F2}");
+            if (fallbackDist <= 2f && lastAttackTime >= data.AttackCooldown && !IsDead())
+            {
+                lastAttackTime = 0f;
+                // SetTrigger("Attack");
+                Attack(currentTarget);
+            }
+            return;
+        }
+
+        // Closest point on the target to the wolf's position
+        Vector3 closestPointOnTarget = targetCollider.ClosestPoint(transform.position);
+        float distToTargetSurface = Vector3.Distance(transform.position, closestPointOnTarget);
+
+        float attackRange = 2f; // see helper below
+
+        // Debug info (remove or lower verbosity later)
+        Debug.Log($"{name} -> {currentTarget.name} distToSurface={distToTargetSurface:F2} attackRange={attackRange:F2} agent.remaining={agent.remainingDistance:F2} agent.stop={agent.stoppingDistance:F2}");
+
+        // If the wolf has its own collider and you want precise edge-to-edge, you could optionally subtract
+        // the wolf's 'radius'. In most cases using distToTargetSurface <= attackRange is fine.
+        if (distToTargetSurface <= attackRange && lastAttackTime >= data.AttackCooldown && !IsDead())
+        {
             lastAttackTime = 0f;
-            SetTrigger("Attack");
+            // SetTrigger("Attack");
             Attack(currentTarget);
         }
     }
+
 
 
 
@@ -511,6 +596,7 @@ public class EnemyUnit : BaseUnit
         switch (target)
         {
             case ArmyUnit u:
+                SetTrigger("Attack");
                 u.TakeDamage(data.AttackDamage);
                 PlaySound(data.AttackSound, 'a');
                 // DamageAnimation anim = u.GetComponent<DamageAnimation>();
@@ -519,6 +605,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case CropStructure u:
+                SetTrigger("Attack");
                 PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 DamageAnimation anim = u.GetComponent<DamageAnimation>();
@@ -527,6 +614,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case SiloStructure u:
+                SetTrigger("Attack");
                 PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 anim = u.GetComponent<DamageAnimation>();
@@ -535,6 +623,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case DefenseStructure u:
+                SetTrigger("Attack");
                 u.TakeDamage(data.AttackDamage);
                 PlaySound(data.AttackSound, 'a');
                 anim = u.GetComponent<DamageAnimation>();
@@ -551,6 +640,7 @@ public class EnemyUnit : BaseUnit
             //     // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
             //     break;
             case BarracksStructure u:
+                SetTrigger("Attack");
                 PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 anim = u.GetComponent<DamageAnimation>();
@@ -559,6 +649,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case AnimalStructure u:
+                SetTrigger("Attack");
                 PlaySound(data.AttackSound, 'a');
                 u.TakeDamage(data.AttackDamage);
                 anim = u.GetComponent<DamageAnimation>();
@@ -567,6 +658,7 @@ public class EnemyUnit : BaseUnit
                 // Debug.Log($"Attacking {target.name} with {data.AttackDamage} damage.");
                 break;
             case Structure u: // This will catch your farmhouse
+                SetTrigger("Attack");
                 u.TakeDamage(data.AttackDamage);
                 PlaySound(data.AttackSound, 'a');
                 anim = u.GetComponent<DamageAnimation>();

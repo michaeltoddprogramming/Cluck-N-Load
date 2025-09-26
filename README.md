@@ -16,6 +16,7 @@
 | `2`           | Zoom out                             |
 | `ESC`         | Pause Game                           |
 | `CTRL + Right Mouse Click` (While Shop open)         | Remove places buildings                            |
+| `&darr; &darr; &larr; &rarr; &uarr;`         | Open Cheats panel                            |
 
 
 #### **Mouse Controls**

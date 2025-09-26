@@ -3336,7 +3336,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3724273108228962489, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5126247830968042749, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_text
@@ -4638,7 +4638,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 185.7
+      value: 172.76
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_SizeDelta.y
@@ -4646,7 +4646,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -521.1
+      value: -534
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -4682,7 +4682,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1663842068255869696, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -99
+      value: -104
       objectReference: {fileID: 0}
     - target: {fileID: 2757023806826042254, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_fontSize
@@ -4762,7 +4762,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6645612367116458935, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -99
+      value: -104
       objectReference: {fileID: 0}
     - target: {fileID: 6688483253912211877, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_Pivot.y
@@ -17018,6 +17018,7 @@ MonoBehaviour:
   unlockEnemyAnimalsToggle: {fileID: 805914517}
   skipDayNightToggle: {fileID: 1878789425}
   skipTutorialButton: {fileID: 0}
+  forceEnablePricePanelButton: {fileID: 0}
   skipToEndYearButton: {fileID: 775397147}
   skipNextSeasonButton: {fileID: 176065554}
   productionInstantButton: {fileID: 1259630094}
@@ -18974,7 +18975,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e475f0923ef9666418b9fad09e8accf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingMoney: 7432
+  startingMoney: 2200
   currencyName: 
   resetMoneyOnStart: 1
   moneyText: {fileID: 0}

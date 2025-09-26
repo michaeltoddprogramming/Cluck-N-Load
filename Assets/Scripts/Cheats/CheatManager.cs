@@ -24,6 +24,7 @@ public class CheatManager : MonoBehaviour
     
     [Header("One-Time Action Cheats")]
     [SerializeField] private Button skipTutorialButton;
+    [SerializeField] private Button forceEnablePricePanelButton;
     [SerializeField] private Button skipToEndYearButton;
     [SerializeField] private Button skipNextSeasonButton;
     [SerializeField] private Button productionInstantButton;
@@ -187,6 +188,8 @@ public class CheatManager : MonoBehaviour
         // Setup button listeners (one-time actions)
         if (skipTutorialButton != null)
             skipTutorialButton.onClick.AddListener(SkipTutorial);
+        if (forceEnablePricePanelButton != null)
+            forceEnablePricePanelButton.onClick.AddListener(ForceEnablePricePanel);
         if (skipToEndYearButton != null)
             skipToEndYearButton.onClick.AddListener(SkipToEndYear);
         if (skipNextSeasonButton != null)
@@ -626,6 +629,14 @@ public class CheatManager : MonoBehaviour
         if (isOn)
         {
             HealAllStructures();
+            
+            // Respect tutorial flow - don't break price panel progression
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+            {
+                string currentStep = TutorialManager.Instance.GetCurrentStepId();
+                Debug.Log($"Cheat respects tutorial - current step: {currentStep}");
+                // Note: Shop/Price panel restrictions remain in place during tutorial
+            }
         }
     }
     
@@ -668,6 +679,21 @@ public class CheatManager : MonoBehaviour
         else
         {
             Debug.LogWarning("TutorialManager not found - cannot skip tutorial");
+        }
+    }
+    
+    private void ForceEnablePricePanel()
+    {
+        // Force advance tutorial to price panel step (for testing)
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            // Trigger price panel tutorial step
+            TutorialManager.Instance.Trigger(TutorialTrigger.PricePanelOpened);
+            Debug.Log("Forced tutorial to price panel step");
+        }
+        else
+        {
+            Debug.Log("Tutorial not active - price panel should be available normally");
         }
     }
     

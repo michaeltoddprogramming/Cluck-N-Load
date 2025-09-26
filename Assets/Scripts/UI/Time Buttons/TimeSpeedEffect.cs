@@ -122,7 +122,7 @@ public class TimeSpeedEffect : MonoBehaviour
 
     private void SetAlpha(float alpha)
     {
-        Debug.Log("Alpha set to: " + alpha);
+        // Debug.Log("Alpha set to: " + alpha);
         if (img == null)
         {
             Debug.LogWarning("TimeSpeedEffect: No Image component found!");

@@ -115,7 +115,7 @@ public class AnimalStructure : Structure
 
     private void Update()
     {
-        Debug.Log("this is the amount of civilian animals we have: " + animalCount + "---------------------------------");
+        // Debug.Log("this is the amount of civilian animals we have: " + animalCount + "---------------------------------");
         if (nightManager == null || !isProducing || productReady) return;
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
         float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;

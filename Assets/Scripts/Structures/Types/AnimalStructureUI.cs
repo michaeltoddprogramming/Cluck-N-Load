@@ -37,6 +37,33 @@ public class AnimalStructureUI : BaseStructureUI
     private float lastUIUpdate;
     private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
 
+
+
+
+    // void Start()
+    // {
+    //     // Instantiate health bar if prefab is assigned
+    //     if (healthBarPrefab != null && healthBarInstance == null)
+    //     {
+    //         healthBarInstance = Instantiate(healthBarPrefab, transform);
+
+    //         // Position the health bar above the structure based on its height
+    //         var rect = healthBarInstance.GetComponent<RectTransform>();
+    //         // if (rect != null)
+    //         // {
+    //         // float structureHeight = GetStructureHeight();
+    //         // rect.localPosition = new Vector3(0, structureHeight + 1.5f, 0); // Add 1.5f buffer above structure
+    //         // }
+    //         healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
+    //         healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
+    //         // healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
+    //         healthBarInstance.SetActive(false); // Start hidden
+
+    //         // Set initial visibility based on current health and time of day
+    //         UpdateHealthBar();
+    //     }
+    // }
+
     private void Update()
     {
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
@@ -82,6 +109,9 @@ public class AnimalStructureUI : BaseStructureUI
             HideAnimalSpecificUI();
             return;
         }
+
+        UpdateHealthBar();
+
         bool isProducing = animalStructure.IsProducing;
         bool productReady = animalStructure.ProductReady;
         int animalCount = animalStructure.AnimalCount;
@@ -243,5 +273,16 @@ public class AnimalStructureUI : BaseStructureUI
     //     {
     //         SpawnSingleAnimal();
     //     }
+    // }
+
+    // private void UpdateHealthBar()
+    // {
+    //     if (animalStructure == null || healthBarSlider == null) return;
+
+    //     float healthPercent = (float)animalStructure.GetCurrentHealth() / animalStructure.GetMaxHealth();
+    //     healthBarSlider.value = healthPercent;
+
+    //     if (healthBarFill != null)
+    //         healthBarFill.color = healthPercent > 0.6f ? healthyColor : healthPercent > 0.3f ? midColor : dangerColor;
     // }
 }

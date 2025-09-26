@@ -12,6 +12,13 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     protected Structure structure;
 
+    [Header("Health Bars")]
+    [SerializeField] private Slider healthBarSlider;
+    [SerializeField] private Image healthBarFill;
+    private Color healthyColor = new Color(0.2f, 1f, 0.2f);
+    private Color midColor = new Color(1f, 0.9f, 0.2f);
+    private Color dangerColor = new Color(1f, 0.2f, 0.2f);
+
     public virtual void Initialize(Structure structure)
     {
         Canvas canvas = GetComponent<Canvas>();
@@ -60,5 +67,16 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
         // FIX: Changed from UnityEvent syntax to standard C# event syntax
         if (structure != null)
             structure.OnHealthChanged -= UpdateHealthDisplay;
+    }
+
+    protected void UpdateHealthBar()
+    {
+        if (structure == null || healthBarSlider == null) return;
+
+        float healthPercent = (float)structure.GetCurrentHealth() / structure.GetMaxHealth();
+        healthBarSlider.value = healthPercent;
+
+        if (healthBarFill != null)
+            healthBarFill.color = healthPercent > 0.6f ? healthyColor : healthPercent > 0.3f ? midColor : dangerColor;
     }
 }

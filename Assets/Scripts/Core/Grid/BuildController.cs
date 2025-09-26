@@ -73,6 +73,15 @@ public class BuildController : MonoBehaviour
     private ShopPanelUI shopPanelUI;
     private StructureData currentStructureData;
 
+    // Defence chain build mode state
+    private bool isDefenceChainModeActive = false;
+    private Vector2Int initialDefenceCell;
+    private Vector2Int lastDefenceHoverCell = Vector2Int.one * -1; // Track last hovered cell
+    private List<GameObject> defenceGhostChain = new List<GameObject>();
+    private List<GameObject> ghostPool = new List<GameObject>(); // Pool for reusing ghost objects
+    private bool isDefenceTypeSelected = false;
+    private bool isDefenceChainFinalized = false;
+
     [SerializeField] private GridDataGenerator gridDataGenerator;
 
 
@@ -199,8 +208,15 @@ public class BuildController : MonoBehaviour
             UpdateDeleteIconPosition();
 
         HandleBuildInput();
-        if (!isDeleteModeActive && currentGhost != null && !isMoveModeActive) UpdateGhostPosition();
-        if (isMoveModeActive && currentGhost != null) UpdateGhostPositionForMove();
+        if (isDefenceChainModeActive)
+        {
+            UpdateDefenceGhostChain();
+        }
+        else
+        {
+            if (!isDeleteModeActive && currentGhost != null && !isMoveModeActive) UpdateGhostPosition();
+            if (isMoveModeActive && currentGhost != null) UpdateGhostPositionForMove();
+        }
     }
 
     public void EnableBuildMode()
@@ -226,6 +242,12 @@ public class BuildController : MonoBehaviour
     public void DisableBuildMode()
     {
         ClearSynergyVisualization();
+        
+        // Clean up defense chain mode
+        if (isDefenceChainModeActive)
+        {
+            CancelDefenceChain();
+        }
         
         // IMPORTANT: If a structure is being moved, place it immediately at current position
         if (movingStructure != null)
@@ -413,54 +435,76 @@ public class BuildController : MonoBehaviour
         }
         else
         {
-            if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) CancelCurrentBuilding();
-            else if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            // Handle defense chain mode
+            if (isDefenceChainModeActive)
             {
-                if (isDeleteModeActive)
+                // Left click to finalize chain
+                if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
-                    Debug.Log("Left click detected in delete mode");
-                    if (TryRemoveStructureByRaycast()) 
+                    FinalizeDefenceChain();
+                }
+                // Right click to cancel chain
+                if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                {
+                    CancelDefenceChain();
+                }
+            }
+            else
+            {
+                if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) CancelCurrentBuilding();
+                else if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                {
+                    if (isDeleteModeActive)
                     {
-                        Debug.Log("Structure removed by raycast");
-                        return;
+                        Debug.Log("Left click detected in delete mode");
+                        if (TryRemoveStructureByRaycast()) 
+                        {
+                            Debug.Log("Structure removed by raycast");
+                            return;
+                        }
+                        Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
+                        Debug.Log($"Attempting to remove at grid cell: {hoveredCell}");
+                        RemoveItem(hoveredCell.x, hoveredCell.y);
                     }
-                    Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-                    Debug.Log($"Attempting to remove at grid cell: {hoveredCell}");
-                    RemoveItem(hoveredCell.x, hoveredCell.y);
+                    // Check if this is a defense type that should start chain mode
+                    else if (currentBuildTargetPrefab != null && IsDefenceType(currentStructureData))
+                    {
+                        Vector2Int hoveredCell = GetGridCellUnderCursor(true);
+                        StartDefenceChain(hoveredCell);
+                    }
+                    else if (currentBuildTargetPrefab != null)
+                    {
+                        Vector2Int hoveredCell = GetGridCellUnderCursor(true);
+                        PlaceItem(hoveredCell.x, hoveredCell.y);
+                    }
                 }
-
-                else if (currentBuildTargetPrefab != null)
+                else if (Input.GetKeyDown(rotateKey))
                 {
-                    Vector2Int hoveredCell = GetGridCellUnderCursor(true);
-                    PlaceItem(hoveredCell.x, hoveredCell.y);
+                    currentRotation *= Quaternion.Euler(0, 90, 0);
+                    if (currentGhost != null) currentGhost.transform.rotation = currentRotation;
+                }
+                else if (Input.GetKeyDown(nextItemKey) && buildablePrefabs.Length > 0)
+                {
+                    currentPrefabIndex = (currentPrefabIndex + 1) % buildablePrefabs.Length;
+                    currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
+                    CreateGhost(currentBuildTargetPrefab);
+                }
+                else if (Input.GetKeyDown(previousItemKey) && buildablePrefabs.Length > 0)
+                {
+                    currentPrefabIndex = (currentPrefabIndex - 1 + buildablePrefabs.Length) % buildablePrefabs.Length;
+                    currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
+                    CreateGhost(currentBuildTargetPrefab);
                 }
             }
-            else if (Input.GetKeyDown(rotateKey))
-            {
-                currentRotation *= Quaternion.Euler(0, 90, 0);
-                if (currentGhost != null) currentGhost.transform.rotation = currentRotation;
-            }
-            else if (Input.GetKeyDown(nextItemKey) && buildablePrefabs.Length > 0)
-            {
-                currentPrefabIndex = (currentPrefabIndex + 1) % buildablePrefabs.Length;
-                currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
-                CreateGhost(currentBuildTargetPrefab);
-            }
-            else if (Input.GetKeyDown(previousItemKey) && buildablePrefabs.Length > 0)
-            {
-                currentPrefabIndex = (currentPrefabIndex - 1 + buildablePrefabs.Length) % buildablePrefabs.Length;
-                currentBuildTargetPrefab = buildablePrefabs[currentPrefabIndex];
-                CreateGhost(currentBuildTargetPrefab);
-            }
-        }
 
         // New: Right-click to deselect
-        if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-        {
-            SelectionManager selectionManager = FindFirstObjectByType<SelectionManager>();
-            if (selectionManager != null)
+            if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
-                selectionManager.DeselectCurrent();
+                SelectionManager selectionManager = FindFirstObjectByType<SelectionManager>();
+                if (selectionManager != null)
+                {
+                    selectionManager.DeselectCurrent();
+                }
             }
         }
     }
@@ -494,6 +538,213 @@ public class BuildController : MonoBehaviour
                 hitTransform = hitTransform.parent;
             }
         }
+    }
+
+    // Helper: Is this a defence type structure?
+    private bool IsDefenceType(StructureData data)
+    {
+        if (data == null) return false;
+        // Add your defense structure type checks here
+        // For example, check if the structure name contains "fence", "wall", "turret", etc.
+        return data.structureName.ToLower().Contains("fence") || 
+               data.structureName.ToLower().Contains("wall") ||
+               data.structureName.ToLower().Contains("turret");
+    }
+
+    // Start defence chain mode
+    private void StartDefenceChain(Vector2Int startCell)
+    {
+        Debug.Log($"Starting defense chain at {startCell}");
+        isDefenceChainModeActive = true;
+        initialDefenceCell = startCell;
+        lastDefenceHoverCell = Vector2Int.one * -1;
+        ClearDefenceGhostChain();
+        if (currentGhost != null) currentGhost.SetActive(false);
+    }
+
+    // Cancel defence chain mode
+    private void CancelDefenceChain()
+    {
+        Debug.Log("Canceling defense chain");
+        isDefenceChainModeActive = false;
+        ClearDefenceGhostChain();
+        if (currentGhost != null) currentGhost.SetActive(true);
+    }
+
+    // Finalize defence chain: place real objects
+    private void FinalizeDefenceChain()
+    {
+        if (!isDefenceChainModeActive || defenceGhostChain.Count == 0) return;
+        
+        // Check if player can afford all structures
+        int totalCost = defenceGhostChain.Count * (currentStructureData?.cost ?? 0);
+        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(totalCost))
+        {
+            Debug.Log($"Cannot afford chain of {defenceGhostChain.Count} structures (cost: {totalCost})");
+            return;
+        }
+
+        // Spend money for entire chain
+        if (currentStructureData != null && MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.SpendMoney(totalCost);
+        }
+
+        // Place all structures
+        foreach (GameObject ghost in defenceGhostChain)
+        {
+            Vector2Int gridCoords = gridController.WorldToGridCoords(ghost.transform.position);
+            PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y);
+        }
+
+        // Clean up
+        CancelDefenceChain();
+        if (currentGhost != null) currentGhost.SetActive(true);
+    }
+
+    // Update ghost chain as mouse moves
+    private void UpdateDefenceGhostChain()
+    {
+        Vector2Int hoveredCell = GetGridCellUnderCursor(true);
+        
+        if (hoveredCell != lastDefenceHoverCell && hoveredCell != initialDefenceCell)
+        {
+            lastDefenceHoverCell = hoveredCell;
+            CreateDefenceGhostChain(initialDefenceCell, hoveredCell);
+        }
+    }
+
+    // Create ghost chain between two cells
+    private void CreateDefenceGhostChain(Vector2Int start, Vector2Int end)
+    {
+        ClearDefenceGhostChain();
+        
+        List<Vector2Int> cellsBetween = GetCellsBetween(start, end);
+        
+        foreach (Vector2Int cell in cellsBetween)
+        {
+            if (IsValidPlacementWithoutMoney(cell.x, cell.y))
+            {
+                Vector3 worldPos = gridController.GetCellCenterFromTexture(cell.x, cell.y);
+                GameObject ghost = GetGhostFromPool(worldPos, currentRotation);
+                defenceGhostChain.Add(ghost);
+            }
+        }
+    }
+
+    // Clear all ghost chain objects
+    private void ClearDefenceGhostChain()
+    {
+        foreach (GameObject ghost in defenceGhostChain)
+        {
+            ReturnGhostToPool(ghost);
+        }
+        defenceGhostChain.Clear();
+    }
+    
+    // Get ghost object from pool or create new one
+    private GameObject GetGhostFromPool(Vector3 position, Quaternion rotation)
+    {
+        GameObject ghost;
+        
+        if (ghostPool.Count > 0)
+        {
+            ghost = ghostPool[ghostPool.Count - 1];
+            ghostPool.RemoveAt(ghostPool.Count - 1);
+            ghost.transform.position = position;
+            ghost.transform.rotation = rotation;
+            ghost.SetActive(true);
+        }
+        else
+        {
+            ghost = Instantiate(currentBuildTargetPrefab, position, rotation);
+            ApplyGhostMaterial(ghost);
+        }
+        
+        return ghost;
+    }
+    
+    // Return ghost object to pool
+    private void ReturnGhostToPool(GameObject ghost)
+    {
+        if (ghost != null)
+        {
+            ghost.SetActive(false);
+            ghostPool.Add(ghost);
+        }
+    }
+    
+    // Clear ghost pool when switching build types
+    private void ClearGhostPool()
+    {
+        foreach (GameObject ghost in ghostPool)
+        {
+            if (ghost != null) DestroyImmediate(ghost);
+        }
+        ghostPool.Clear();
+    }
+
+    // Stepped diagonal algorithm - moves in staircase pattern
+    private List<Vector2Int> GetCellsBetween(Vector2Int start, Vector2Int end)
+    {
+        List<Vector2Int> cells = new List<Vector2Int>();
+        cells.Add(start); // Always include start cell
+        
+        int currentX = start.x;
+        int currentY = start.y;
+        
+        int deltaX = end.x - start.x;
+        int deltaY = end.y - start.y;
+        
+        int remainingX = Mathf.Abs(deltaX);
+        int remainingY = Mathf.Abs(deltaY);
+        
+        int stepX = deltaX > 0 ? 1 : -1;
+        int stepY = deltaY > 0 ? 1 : -1;
+        
+        while (currentX != end.x || currentY != end.y)
+        {
+            bool moveX = false;
+            bool moveY = false;
+            
+            if (currentX != end.x && currentY != end.y)
+            {
+                // Choose direction based on remaining distance
+                // This creates a staircase pattern that prioritizes the longer remaining distance
+                
+                if (remainingX >= remainingY)
+                {
+                    moveX = true;
+                }
+                else
+                {
+                    moveY = true;
+                }
+            }
+            else if (currentX != end.x)
+            {
+                moveX = true;
+            }
+            else if (currentY != end.y)
+            {
+                moveY = true;
+            }
+            
+            if (moveX)
+            {
+                currentX += stepX;
+                remainingX--;
+            }
+            if (moveY)
+            {
+                currentY += stepY;
+                remainingY--;
+            }
+            
+            cells.Add(new Vector2Int(currentX, currentY));
+        }
+        
+        return cells;
     }
 
     void PlaceMovedStructure(int x, int y)
@@ -845,6 +1096,13 @@ public class BuildController : MonoBehaviour
     public void SetBuildTarget(StructureData data)
     {
         if (data == null || data.prefab == null) return;
+        
+        // Clear ghost pool when switching build types
+        if (currentBuildTargetPrefab != data.prefab)
+        {
+            ClearGhostPool();
+        }
+        
         currentBuildTargetPrefab = data.prefab;
         currentStructureData = data;
         EnableBuildMode();
@@ -855,6 +1113,13 @@ public class BuildController : MonoBehaviour
     public void SetBuildTarget(GameObject prefab)
     {
         if (prefab == null) return;
+        
+        // Clear ghost pool when switching build types
+        if (currentBuildTargetPrefab != prefab)
+        {
+            ClearGhostPool();
+        }
+        
         currentBuildTargetPrefab = prefab;
         EnableBuildMode();
         CreateGhost(currentBuildTargetPrefab);
@@ -869,15 +1134,104 @@ public class BuildController : MonoBehaviour
         bounds.Expand(-0.1f);
         Vector2Int bottomLeft = gridController.WorldToGridCoords(bounds.min);
         Vector2Int topRight = gridController.WorldToGridCoords(bounds.max);
-        for (int x = bottomLeft.x; x <= topRight.x; x++)
-            for (int y = bottomLeft.y; y <= topRight.y; y++)
+        for (int x = bottomLeft.x; x <= topRight.x; x++){
+            for (int y = bottomLeft.y; y <= topRight.y; y++){
                 if (gridController.IsValidCell(x, y))
                 {
                     Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
                     if (bounds.Contains(new Vector3(cellCenter.x, bounds.center.y, cellCenter.z)))
                         occupiedCells.Add(new Vector2Int(x, y));
                 }
+            }
+            
+        }
         return occupiedCells;
+    }
+
+    // Cached footprint data to avoid expensive instantiate/destroy operations
+    private List<Vector2Int> cachedStructureFootprint = null;
+    private GameObject cachedPrefabReference = null;
+    private Quaternion cachedRotation;
+
+    // Get structure footprint at a specific grid position (optimized for defence chains)
+    private List<Vector2Int> GetStructureFootprintAtPosition(int x, int y)
+    {
+        List<Vector2Int> relativeFootprint = GetCachedStructureFootprint();
+        List<Vector2Int> absoluteFootprint = new List<Vector2Int>();
+        
+        foreach (Vector2Int cell in relativeFootprint)
+        {
+            absoluteFootprint.Add(new Vector2Int(x + cell.x, y + cell.y));
+        }
+        
+        return absoluteFootprint;
+    }
+
+    // Get cached relative footprint to avoid expensive instantiate operations
+    private List<Vector2Int> GetCachedStructureFootprint()
+    {
+        // Check if cache is still valid
+        if (cachedStructureFootprint == null || 
+            cachedPrefabReference != currentBuildTargetPrefab || 
+            cachedRotation != currentRotation)
+        {
+            RecalculateStructureFootprintCache();
+        }
+        
+        return cachedStructureFootprint;
+    }
+
+    // Calculate and cache the structure footprint once per prefab/rotation combo
+    private void RecalculateStructureFootprintCache()
+    {
+        cachedStructureFootprint = new List<Vector2Int>();
+        cachedPrefabReference = currentBuildTargetPrefab;
+        cachedRotation = currentRotation;
+        
+        if (currentBuildTargetPrefab == null)
+        {
+            Debug.LogWarning("Cannot calculate footprint cache - no prefab selected");
+            return;
+        }
+
+        // Temporarily instantiate to get accurate bounds
+        GameObject tempObj = Instantiate(currentBuildTargetPrefab);
+        tempObj.transform.rotation = currentRotation;
+        Renderer renderer = tempObj.GetComponentInChildren<Renderer>();
+        
+        if (renderer != null)
+        {
+            Bounds bounds = renderer.bounds;
+            bounds.Expand(-0.1f);
+            
+            // Calculate relative to origin (0,0)
+            Vector2Int bottomLeft = gridController.WorldToGridCoords(bounds.min);
+            Vector2Int topRight = gridController.WorldToGridCoords(bounds.max);
+            
+            // Store as relative coordinates (offset from structure center)
+            for (int x = bottomLeft.x; x <= topRight.x; x++)
+            {
+                for (int y = bottomLeft.y; y <= topRight.y; y++)
+                {
+                    if (gridController.IsValidCell(x, y))
+                    {
+                        Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
+                        if (bounds.Contains(new Vector3(cellCenter.x, bounds.center.y, cellCenter.z)))
+                        {
+                            cachedStructureFootprint.Add(new Vector2Int(x, y));
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"No renderer found on prefab {currentBuildTargetPrefab.name}");
+            cachedStructureFootprint.Add(Vector2Int.zero); // Default single cell
+        }
+        
+        DestroyImmediate(tempObj);
+        Debug.Log($"Cached footprint for {currentBuildTargetPrefab.name}: {cachedStructureFootprint.Count} cells");
     }
 
         bool IsValidPlacement(int x, int y)
@@ -1004,6 +1358,133 @@ public class BuildController : MonoBehaviour
 
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
+    }
+
+    // Place item without money check (used for defence chains where money is already spent)
+    private void PlaceItemWithoutMoneyCheck(int x, int y)
+    {
+        Debug.Log($"PlaceItemWithoutMoneyCheck at ({x}, {y})");
+        
+        if (!IsValidPlacementWithoutMoney(x, y)) 
+        {
+            Debug.LogWarning($"Invalid placement at ({x}, {y})");
+            return;
+        }
+
+        // Prevent placing more than one farmhouse
+        if (currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
+        {
+            if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsFarmHousePlaced)
+            {
+                Debug.Log("Cannot place more than one Farmhouse!");
+                return;  // Block placement
+            }
+        }
+
+        // New: Check tutorial restrictions
+        if (currentStructureData != null && !IsStructureAllowedInCurrentTutorialStep(currentStructureData))
+        {
+            Debug.Log("Cannot place this structure yet - follow the tutorial!");
+            return;
+        }
+
+        Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
+        GameObject placedItem = Instantiate(currentBuildTargetPrefab, cellCenter, currentRotation);
+        Structure structure = placedItem.GetComponent<Structure>();
+        placedItem.name = $"Item_{x}_{y}";
+
+        // Disable farmhouse in shop after placement
+        if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
+        {
+            ShopUIManager.Instance?.OnFarmHousePlaced();
+        }
+
+        if (dustPoof != null)
+        {
+            Vector3 effectPosition = placedItem.transform.position + (structure != null && structure.GetStructureName() == "Cow Barn" ? new Vector3(0, 4f, 0) : new Vector3(0, 1f, 0));
+            float totalMult = structure != null && structure.GetStructureName() == "Cow Barn" ? 1.5f : 1f;
+            GameObject effect = Instantiate(dustPoof, effectPosition, Quaternion.identity);
+            VisualEffect ps = effect.GetComponent<VisualEffect>();
+            if (ps != null)
+            {
+                ps.SetVector3("posMult", new Vector3(totalMult, totalMult, totalMult));
+                ps.SetFloat("totalMult", totalMult);
+                ps.Play();
+            }
+            Destroy(effect, 3f);
+        }
+        if (structure != null)
+        {
+            structure.SetAllowSelectionAndUI(false);
+            StartCoroutine(EnableSelectionAfterRelease(structure));
+            HandleTutorialTriggers(structure);
+        }
+        List<Vector2Int> footprint = GetStructureFootprint(placedItem);
+        foreach (Vector2Int cell in footprint)
+        {
+            gridController.SetCellOccupied(cell.x, cell.y, true);
+        }
+        AudioManager.Instance?.PlayPlaceSound();
+        gridController.UpdateGridTexture();
+        if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+
+        // Hide the info card immediately after placement to prevent UI conflicts
+        ItemHoverPanel.Instance?.HideImmediate();
+    }
+
+    // Check placement validity without money check
+    private bool IsValidPlacementWithoutMoney(int x, int y)
+    {
+        Debug.Log($"IsValidPlacementWithoutMoney at ({x}, {y})");
+        
+        // Add null checks FIRST
+        if (gridController == null || gridDataGenerator == null) 
+        {
+            Debug.LogError("GridController or GridDataGenerator is null in IsValidPlacementWithoutMoney");
+            return false;
+        }
+        
+        // Check if coordinates are within grid bounds
+        if (x < 0 || x >= gridDataGenerator.GetGridWidth() || 
+            y < 0 || y >= gridDataGenerator.GetGridHeight())
+        {
+            Debug.LogWarning($"Coordinates ({x}, {y}) are outside grid bounds");
+            return false;
+        }
+        
+        // Check ownership first for efficiency
+        if (CheatManager.Instance != null && CheatManager.Instance.IsUnlimitedBuildingActive())
+        {
+            Debug.Log("Unlimited building cheat is active - skipping ownership check");
+            return true;
+        }
+
+        // Check if any cell in the structure footprint is invalid
+        if (currentGhost != null)
+        {
+            List<Vector2Int> footprint = GetStructureFootprint(currentGhost);
+            foreach (Vector2Int cell in footprint)
+            {
+                if (!gridController.IsValidCell(cell.x, cell.y)) return false;
+                
+                GridCell gridCell = gridController.GetCell(cell.x, cell.y);
+                if (gridCell == null) return false;
+                
+                if (gridCell.flags.isOccupied) return false;
+                if (!gridCell.flags.isOwned) return false;
+            }
+        }
+        else
+        {
+            // Fallback for single cell placement
+            GridCell cell = gridController.GetCell(x, y);
+            if (cell == null) return false;
+            
+            if (cell.flags.isOccupied) return false;
+            if (!cell.flags.isOwned) return false;
+        }
+
+        return true;
     }
 
     private bool IsStructureAllowedInCurrentTutorialStep(StructureData data)

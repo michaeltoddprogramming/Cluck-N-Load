@@ -172,6 +172,9 @@ public class SheepUnit : ArmyUnit
             Color color = radiusIndicatorRenderer.color;
             color.a = indicatorAlpha;
             radiusIndicatorRenderer.color = color;
+            
+            // Start with the indicator hidden by default
+            radiusIndicatorObject.SetActive(false);
         }
     }
 
@@ -184,8 +187,30 @@ public class SheepUnit : ArmyUnit
             float diameter = explosionRadius * 2f * indicatorSizeMultiplier;
             radiusIndicatorObject.transform.localScale = Vector3.one * diameter;
             
-            // Update visibility based on showRadiusIndicator
-            radiusIndicatorObject.SetActive(showRadiusIndicator);
+            // Only show if both showRadiusIndicator is true AND it's been set to visible
+            // (The SetRadiusIndicatorVisibility method will be called by the barracks)
+            if (!showRadiusIndicator)
+            {
+                radiusIndicatorObject.SetActive(false);
+            }
+        }
+    }
+
+    public void SetRadiusIndicatorVisibility(bool visible)
+    {
+        if (radiusIndicatorObject != null)
+        {
+            radiusIndicatorObject.SetActive(visible);
+        }
+    }
+
+    public void SetRadiusIndicatorAlpha(float alpha)
+    {
+        if (radiusIndicatorRenderer != null)
+        {
+            Color color = radiusIndicatorRenderer.color;
+            color.a = alpha;
+            radiusIndicatorRenderer.color = color;
         }
     }
 

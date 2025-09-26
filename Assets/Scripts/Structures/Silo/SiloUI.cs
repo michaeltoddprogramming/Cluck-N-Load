@@ -58,20 +58,21 @@
 //             //             if (collectButton != null) collectButton.gameObject.SetActive(false);
 //         }
 //     }
-    
+
 //     void Start()
 //     {
-        
+
 //     }
 
 //     // Update is called once per frame
 //     void Update()
 //     {
-        
+
 //     }
 // }
 
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class SiloUI : BaseStructureUI
@@ -86,6 +87,10 @@ public class SiloUI : BaseStructureUI
     private SiloStructure siloStructure;
     private bool isSiloStructure = false;
     private InventoryManager inventoryManager;
+
+    [Header("Storage indicator")]
+    [SerializeField] private Slider storageBarSlider;
+    [SerializeField] private Image storageBarFill;
 
     public override void Initialize(Structure structure)
     {
@@ -119,6 +124,9 @@ public class SiloUI : BaseStructureUI
         if (!isSiloStructure || inventoryManager == null)
             return;
 
+        // UpdateHealthBar();
+        updateStatusBar();
+
         if (sunflowerAmount != null)
             sunflowerAmount.text = inventoryManager.GetItemCount("Sunflower").ToString();
 
@@ -147,5 +155,16 @@ public class SiloUI : BaseStructureUI
         if (wheatAmount != null) wheatAmount.gameObject.SetActive(false);
         if (carrotAmount != null) carrotAmount.gameObject.SetActive(false);
         if (storageAmount != null) storageAmount.gameObject.SetActive(false);
+    }
+
+    public void updateStatusBar()
+    {
+        if (siloStructure == null || storageBarSlider == null) return;
+
+        int currStorage = inventoryManager.GetCurrentSiloCapacity();
+        int maxStorage = inventoryManager.GetTotalSiloCapacity();
+
+        float fillPercent2 = maxStorage > 0 ? (float)currStorage / maxStorage : 0f;
+        storageBarSlider.value = fillPercent2;
     }
 }

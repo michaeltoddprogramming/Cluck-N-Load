@@ -163,13 +163,13 @@ public class CropStructureUI : BaseStructureUI
     public void harvestCrops()
     {
         if (!isCropStructure || cropStructure == null) return;
-        
+
         // Use the public properties instead of private fields
         int cropAmount = Mathf.RoundToInt(cropStructure.BaseCropHarvestAmount * cropStructure.CropHarvestMultiplier);
         int moneyGained = CalculateMoneyGain(cropStructure.CurrentCropType, cropAmount);
-        
+
         string result = cropStructure.Harvest();
-        
+
         switch (result)
         {
             case "space":
@@ -206,7 +206,7 @@ public class CropStructureUI : BaseStructureUI
             CropStructure.CropType.Carrots => 18,
             _ => 10
         };
-        
+
         return amount * baseValue;
     }
 
@@ -214,6 +214,7 @@ public class CropStructureUI : BaseStructureUI
 
     private void UpdateUI()
     {
+        // UpdateHealthBar();
         statusText.text = "slieduhrfehgfsiuedhfiusehfiuhref";
         setCropImage();
         if (!isCropStructure || cropStructure == null || nightManager == null)

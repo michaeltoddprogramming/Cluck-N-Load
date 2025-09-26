@@ -27,11 +27,15 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
         if (structureNameText != null) structureNameText.text = structure.GetStructureName();
         UpdateHealthDisplay();
+        UpdateHealthBar();
 
         if (description != null) description.text = structure.GetDescription();
 
         if (structure != null)
+        {
             structure.OnHealthChanged += UpdateHealthDisplay;
+            structure.OnHealthChanged += UpdateHealthBar;
+        }
 
         closeButton?.onClick.AddListener(() =>
         {

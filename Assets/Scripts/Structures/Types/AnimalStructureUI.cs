@@ -114,7 +114,7 @@ public class AnimalStructureUI : BaseStructureUI
             return;
         }
 
-        UpdateHealthBar();
+        // UpdateHealthBar();
         updateStatusBar();
 
         bool isProducing = animalStructure.IsProducing;

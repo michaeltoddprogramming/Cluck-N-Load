@@ -130,7 +130,7 @@ public class BarracksStructureUI : BaseStructureUI
             lastUIUpdate = Time.time;
         }
 
-        UpdateHealthBar();
+        // UpdateHealthBar();
 
         // Additional safeguard for sheep flag button at night
         if (barracksStructure != null && barracksStructure.GetAnimalType() == "Sheep")

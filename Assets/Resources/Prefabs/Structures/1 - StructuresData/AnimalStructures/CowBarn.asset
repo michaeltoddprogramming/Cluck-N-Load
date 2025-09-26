@@ -18,7 +18,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 22c616fcc593d794ca9573d5e6610dd6, type: 3}
   type: 8
   cost: 200
-  health: 500
+  health: 700
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
   costPerAnimal: 80
   moneyPerProduct: 100

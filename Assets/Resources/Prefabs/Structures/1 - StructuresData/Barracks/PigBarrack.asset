@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PigBarrack
   m_EditorClassIdentifier: 
   structureName: Pig Barrack
-  description: Pigs are sturdy units equipped with flamethrowers for area damage.
+  description: Trains sturdy units. Mid-range flamethrowers for area damage.
   prefab: {fileID: 5393729371489912459, guid: afa7f5c2e426c15459f0b1d4913e90fb, type: 3}
   icon: {fileID: 21300000, guid: ba92087104e3e24448c32900f2ca15fd, type: 3}
   type: 9

@@ -21,7 +21,8 @@ public partial class TutorialManager
         {
             stepId = "welcome",
             title = "Old Pete's Welcome",
-            instructionText = "Whoa! You scared me! I'm Pete. Let's make this farm legendary.",
+            // instructionText = "Whoa! You scared me! I'm Pete. Let's make this farm legendary.",
+            instructionText = "Whoa! You scared me! I'm Pete. Let's build us a farm!",
             triggerToWaitFor = TutorialTrigger.None
         });
 
@@ -83,7 +84,7 @@ public partial class TutorialManager
         {
             stepId = "day_night_panel",
             title = "Day/Night",
-            instructionText = "See the top middle? That’s the clock. Wolves love the night. Melony didn’t.",
+            instructionText = "See the top middle? That’s the clock. Shows the time of day. Wolves love the night. Melony didn’t.",
             triggerToWaitFor = TutorialTrigger.None,
             uiToHighlight = GameObject.Find("DayNightPanel")
         });
@@ -110,7 +111,7 @@ public partial class TutorialManager
         {
             stepId = "season_bonuses",
             title = "Seasonal Bonuses",
-            instructionText = "Seasons boost different animals. Watch the season icon!",
+            instructionText = "Seasons boost production from different animals. Watch the season icon!",
             triggerToWaitFor = TutorialTrigger.None
         };
         seasonBonusStep.onStepStart = new UnityEvent();
@@ -138,7 +139,7 @@ public partial class TutorialManager
         {
             stepId = "enemy_indicator_tutorial",
             title = "Enemy Indicators",
-            instructionText = "Watch this to know what types of enemies you can possibly expect at night! Every new season brings new threats, so keep an eye on this!",
+            instructionText = "Watch this to know what types of enemies you can possibly expect at night! Every new season brings new threats!",
             triggerToWaitFor = TutorialTrigger.None,
         };
         enemyIndicatorStep.onStepStart = new UnityEvent();
@@ -163,7 +164,7 @@ public partial class TutorialManager
         {
             stepId = "open_build_shop",
             title = "Shop Time",
-            instructionText = "Numbers, clocks... yawn. Click the shop bottom-left. Let’s build!",
+            instructionText = "Click the shop bottom-left to start building your farm",
             triggerToWaitFor = TutorialTrigger.ShopOpened,
             uiToHighlight = shopButton ?? GameObject.Find("ShopButton") ?? GameObject.FindGameObjectWithTag("ShopButton")
         });
@@ -184,7 +185,7 @@ public partial class TutorialManager
         {
             stepId = "build_crop_plot",
             title = "Crop Plot",
-            instructionText = "Let’s grow grub. Build a Crop Plot. Sunflowers, here we come!",
+            instructionText = "Let’s grow grub. Build a Crop Plot.",
             triggerToWaitFor = TutorialTrigger.BuiltCropPlot,
             uiToHighlight = cropPlotButton
         };
@@ -278,7 +279,7 @@ public partial class TutorialManager
         {
             stepId = "build_chicken_coop",
             title = "Chicken Coop",
-            instructionText = "Let’s get clucking! Build a Chicken Coop. Eggs and soldiers await.",
+            instructionText = "Let’s get clucking! Build a Chicken Coop.",
             triggerToWaitFor = TutorialTrigger.BuiltChickenCoop,
             uiToHighlight = shopButton
         };
@@ -354,7 +355,7 @@ public partial class TutorialManager
         {
             stepId = "prepare_defense",
             title = "Farm Defended!",
-            instructionText = "You did it! Eggs, soldiers, and no wolves (hopefully). Night time starts soon make sure that flag is placed or not you'll find out!",
+            instructionText = "You did it! Night time starts soon, so prepare to defend!",
             triggerToWaitFor = TutorialTrigger.None
         };
         finalStep.onStepStart = new UnityEvent();
@@ -403,7 +404,7 @@ public partial class TutorialManager
         {
             stepId = "season_winter",
             title = "Winter!",
-            instructionText = "Winter! Crops slow down. Feed animals extra.",
+            instructionText = "Winter! Crops slow down. Animals need more food.",
             triggerToWaitFor = TutorialTrigger.WinterSeason
         });
 
@@ -419,7 +420,7 @@ public partial class TutorialManager
         {
             stepId = "discover_cow_pen",
             title = "Cow Pen!",
-            instructionText = "Cows produce valuable milk! They eat wheat and make sturdy soldiers - slow but powerful.",
+            instructionText = "Cows make milk. They eat wheat and train into sturdy, slow but powerful soldiers.",
             triggerToWaitFor = TutorialTrigger.BuiltCowPen
         });
 
@@ -427,7 +428,7 @@ public partial class TutorialManager
         {
             stepId = "discover_sheep_pen",
             title = "Sheep Pen!",
-            instructionText = "Sheep produce wool! They eat wheat like cows but their soldiers have natural wool armor - tough defenders!",
+            instructionText = "Sheep make wool. They eat wheat and train into tough defenders with armor and explosives.",
             triggerToWaitFor = TutorialTrigger.BuiltSheepPen
         });
 
@@ -435,7 +436,7 @@ public partial class TutorialManager
         {
             stepId = "discover_goat_pen",
             title = "Goat Pen!",
-            instructionText = "Goats produce cheese! They eat carrots and are agile climbers - their soldiers are fast mountain ninjas!",
+            instructionText = "Goats make cheese. They eat carrots and train into long-range snipers.",
             triggerToWaitFor = TutorialTrigger.BuiltGoatPen
         });
 
@@ -443,7 +444,7 @@ public partial class TutorialManager
         {
             stepId = "discover_pig_pen",
             title = "Pig Pen!",
-            instructionText = "Pigs produce bacon! They eat carrots like goats but their soldiers charge fearlessly and break through enemy lines!",
+            instructionText = "Pigs make bacon. They eat carrots and train into flamethrower soldiers.",
             triggerToWaitFor = TutorialTrigger.BuiltPigPen
         });
 
@@ -451,7 +452,7 @@ public partial class TutorialManager
         {
             stepId = "discover_cow_barracks",
             title = "Cow Barracks!",
-            instructionText = "Train cow soldiers! Heavy hitters with high health - perfect tanks for your army formations.",
+            instructionText = "Train cow soldiers. Slow but strong at mid range, great against groups.",
             triggerToWaitFor = TutorialTrigger.BuiltCowBarracks
         });
 
@@ -459,7 +460,7 @@ public partial class TutorialManager
         {
             stepId = "discover_sheep_barracks",
             title = "Sheep Barracks!",
-            instructionText = "Train sheep soldiers! Natural wool armor makes them excellent defensive units with great survivability.",
+            instructionText = "Train sheep soldiers. Armored and explosive, they deal huge damage up close, if at least 3 enemies are nearby.",
             triggerToWaitFor = TutorialTrigger.BuiltSheepBarracks
         });
 
@@ -467,7 +468,7 @@ public partial class TutorialManager
         {
             stepId = "discover_goat_barracks",
             title = "Goat Barracks!",
-            instructionText = "Train goat soldiers! Fast and agile mountain fighters - perfect for hit-and-run tactics!",
+            instructionText = "Train goat soldiers. Snipers that pick off enemies from long range.",
             triggerToWaitFor = TutorialTrigger.BuiltGoatBarracks
         });
 
@@ -475,7 +476,7 @@ public partial class TutorialManager
         {
             stepId = "discover_pig_barracks",
             title = "Pig Barracks!",
-            instructionText = "Train pig soldiers! Fearless chargers who break enemy formations with devastating rushes!",
+            instructionText = "Train pig soldiers. Flamethrowers that burn groups of enemies at mid range.",
             triggerToWaitFor = TutorialTrigger.BuiltPigBarracks
         });
 

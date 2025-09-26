@@ -35,4 +35,12 @@ public class EnemyIndicator : MonoBehaviour
         raccoon.SetActive(false);
         boar.SetActive(false);
     }
+    
+    public void MakeAllEnemiesVisible()
+    {
+        wolf.SetActive(true);
+        raccoon.SetActive(true);
+        boar.SetActive(true);
+        bear.SetActive(true);
+    }
 }

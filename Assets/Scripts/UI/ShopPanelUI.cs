@@ -689,6 +689,13 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private bool IsStructureAllowedInCurrentTutorialStep(StructureData data)
     {
+        // Check if "Unlock All Buildings" cheat is active
+        if (CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive())
+        {
+            Debug.Log($"Unlock All Buildings cheat active - allowing structure: {data.structureName}");
+            return true; // Cheat overrides all restrictions
+        }
+        
         if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) 
         {
             Debug.Log($"Tutorial not active, allowing all structures");

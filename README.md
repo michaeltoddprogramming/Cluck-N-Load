@@ -16,6 +16,8 @@
 | `2`           | Zoom out                             |
 | `ESC`         | Pause Game                           |
 | `CTRL + Right Mouse Click` (While Shop open)         | Remove places buildings                            |
+| `↓ ↓ ← → ↑`         | Open Cheats panel                            |
+| `BackSpace`         | Skips tutorial                           |
 
 
 #### **Mouse Controls**

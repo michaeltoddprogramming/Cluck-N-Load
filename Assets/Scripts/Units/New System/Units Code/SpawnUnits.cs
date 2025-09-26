@@ -35,6 +35,16 @@ public class SpawnUnits : MonoBehaviour
             return;
         }
 
+        // Check if unlock enemy animals cheat is active
+        bool unlockAllEnemies = CheatManager.Instance != null && CheatManager.Instance.IsUnlockEnemyAnimalsActive();
+        
+        if (unlockAllEnemies)
+        {
+            // Spawn all enemy types when cheat is active
+            SpawnAllEnemyTypes();
+            return;
+        }
+
         // Debug.Log($"Spawning enemies for season {season}************************************************************************************************************************************");
 
         switch (season)
@@ -245,6 +255,63 @@ public class SpawnUnits : MonoBehaviour
                 break;
         }
 
+    }
+    
+    private void SpawnAllEnemyTypes()
+    {
+        Debug.Log("Spawning all enemy types due to unlock cheat");
+        
+        // Spawn wolves
+        int spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Vector3 spawnPosition = GetRandomOutsidePosition();
+            GameObject enemyInstance = Instantiate(wolf.Prefab, spawnPosition, Quaternion.identity);
+            EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+            if (enemyUnit != null)
+            {
+                CombatManager.Instance.RegisterUnit(enemyUnit);
+            }
+        }
+        
+        // Spawn raccoons
+        spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Vector3 spawnPosition = GetRandomOutsidePosition();
+            GameObject enemyInstance = Instantiate(racoon.Prefab, spawnPosition, Quaternion.identity);
+            EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+            if (enemyUnit != null)
+            {
+                CombatManager.Instance.RegisterUnit(enemyUnit);
+            }
+        }
+        
+        // Spawn boars
+        spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Vector3 spawnPosition = GetRandomOutsidePosition();
+            GameObject enemyInstance = Instantiate(boar.Prefab, spawnPosition, Quaternion.identity);
+            EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+            if (enemyUnit != null)
+            {
+                CombatManager.Instance.RegisterUnit(enemyUnit);
+            }
+        }
+        
+        // Spawn bears
+        spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Vector3 spawnPosition = GetRandomOutsidePosition();
+            GameObject enemyInstance = Instantiate(bear.Prefab, spawnPosition, Quaternion.identity);
+            EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
+            if (enemyUnit != null)
+            {
+                CombatManager.Instance.RegisterUnit(enemyUnit);
+            }
+        }
     }
 
     // private Vector3 GetRandomOutsidePosition()

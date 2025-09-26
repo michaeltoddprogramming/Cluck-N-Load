@@ -434,14 +434,61 @@ public partial class TutorialManager : MonoBehaviour
     public void SkipTutorial()
     {
         Debug.Log("SkipTutorial called");
+        
+        // Prevent double execution - only skip if tutorial is actually active
+        if (!IsTutorialActive())
+        {
+            Debug.Log("Tutorial skip ignored - tutorial not active or already completed");
+            return;
+        }
+        
+        // Mark all tutorial steps as completed
+        foreach (var step in steps)
+        {
+            if (!string.IsNullOrEmpty(step.stepId) && !completedStepIds.Contains(step.stepId))
+            {
+                MarkStepComplete(step.stepId);
+            }
+        }
+        
+        // Also mark all discovery steps as completed
+        foreach (var discoveryStep in discoverySteps.Values)
+        {
+            if (!string.IsNullOrEmpty(discoveryStep.stepId) && !completedStepIds.Contains(discoveryStep.stepId))
+            {
+                MarkStepComplete(discoveryStep.stepId);
+            }
+        }
+        
+        // Set tutorial as completed
+        currentStepIndex = steps.Count;
+        waitingForStepToComplete = false;
+        isProcessingStep = false;
+        
+        // Hide tutorial UI
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
 
+        // Clean up any active states
         CleanupAllWorldHighlights();
         CleanupShopHighlights();
+        ClearKeyIndicators();
         
-        EndTutorial();
+        // Stop any ongoing coroutines
+        if (typingCoroutine != null)
+        {
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+        }
+        
+        // Update checklist to show all items as completed
+        UpdateChecklistUI();
+        
+        // Notify all systems that tutorial is complete
+        NotifyUISystemsOfStepChange();
+        
+        Debug.Log($"Tutorial skipped - {completedStepIds.Count} steps marked as completed");
     }
     
     private void DevSkipTutorial()

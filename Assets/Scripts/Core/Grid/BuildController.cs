@@ -978,6 +978,12 @@ public class BuildController : MonoBehaviour
 
     private bool IsStructureAllowedInCurrentTutorialStep(StructureData data)
     {
+        // Check if "Unlock All Buildings" cheat is active
+        if (CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive())
+        {
+            return true; // Cheat overrides all restrictions
+        }
+        
         if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) return true;
 
         string currentStepId = TutorialManager.Instance.GetCurrentStepId();

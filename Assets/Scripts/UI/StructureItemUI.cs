@@ -30,6 +30,14 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
+        // Dynamically update lock state in case cheat is toggled
+        if (data != null)
+        {
+            int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
+            bool unlockAllBuildsActive = CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive();
+            isLockedByDay = !unlockAllBuildsActive && (data.unlockDay > currentDay);
+        }
+        
         if (lockedOverlay != null)
         {
             // Only show overlay if locked by day requirement
@@ -93,7 +101,11 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             descriptionText.text = structure.description;
 
         int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
-        isLockedByDay = structure.unlockDay > currentDay; // Store the day lock state
+        
+        // Check if "Unlock All Buildings" cheat is active
+        bool unlockAllBuildsActive = CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive();
+        
+        isLockedByDay = !unlockAllBuildsActive && (structure.unlockDay > currentDay); // Store the day lock state, but cheat overrides
 
         if (isLockedByDay)
         {

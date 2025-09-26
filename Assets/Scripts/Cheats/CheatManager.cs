@@ -16,6 +16,21 @@ public class CheatManager : MonoBehaviour
     [SerializeField] private GameObject cheatPanel;
     [SerializeField] private Button closeButton;
     
+    [Header("Simple Cheat Toggles")]
+    [SerializeField] private Toggle extraMoneyToggle;
+    [SerializeField] private Toggle unlockAllBuildsToggle;
+    [SerializeField] private Toggle unlockEnemyAnimalsToggle;
+    [SerializeField] private Toggle skipDayNightToggle;
+    
+    [Header("One-Time Action Cheats")]
+    [SerializeField] private Button skipTutorialButton;
+    [SerializeField] private Button forceEnablePricePanelButton;
+    [SerializeField] private Button skipToEndYearButton;
+    [SerializeField] private Button skipNextSeasonButton;
+    [SerializeField] private Button productionInstantButton;
+    [SerializeField] private Button cropsGrowInstantButton;
+    [SerializeField] private Button armyKillInstantButton;
+    
     [Header("Money Cheats")]
     [SerializeField] private Button add1000MoneyButton;
     [SerializeField] private Button add10000MoneyButton;
@@ -61,9 +76,12 @@ public class CheatManager : MonoBehaviour
     private List<KeyCode> inputSequence = new List<KeyCode>();
     private float lastInputTime;
     private bool cheatPanelOpen = false;
-    private bool timeFreeze = false;
-    private bool godMode = false;
-    private bool unlimitedBuilding = false;
+    
+    // Cheat toggle states (persistent)
+    private bool extraMoneyActive = false;
+    private bool unlockAllBuildsActive = false;
+    private bool unlockEnemyAnimalsActive = false;
+    private bool skipDayNightActive = false;
     
     // Resource names for dropdown
     private string[] resourceNames = { "Sunflower", "Wheat", "Carrots", "Eggs", "Milk", "Bacon", "Cheese", "Wool" };
@@ -156,6 +174,32 @@ public class CheatManager : MonoBehaviour
     {
         if (closeButton != null)
             closeButton.onClick.AddListener(CloseCheatPanel);
+        
+        // Setup toggle listeners (persistent states)
+        if (extraMoneyToggle != null)
+            extraMoneyToggle.onValueChanged.AddListener(OnExtraMoneyToggle);
+        if (unlockAllBuildsToggle != null)
+            unlockAllBuildsToggle.onValueChanged.AddListener(OnUnlockAllBuildsToggle);
+        if (unlockEnemyAnimalsToggle != null)
+            unlockEnemyAnimalsToggle.onValueChanged.AddListener(OnUnlockEnemyAnimalsToggle);
+        if (skipDayNightToggle != null)
+            skipDayNightToggle.onValueChanged.AddListener(OnSkipDayNightToggle);
+        
+        // Setup button listeners (one-time actions)
+        if (skipTutorialButton != null)
+            skipTutorialButton.onClick.AddListener(SkipTutorial);
+        if (forceEnablePricePanelButton != null)
+            forceEnablePricePanelButton.onClick.AddListener(ForceEnablePricePanel);
+        if (skipToEndYearButton != null)
+            skipToEndYearButton.onClick.AddListener(SkipToEndYear);
+        if (skipNextSeasonButton != null)
+            skipNextSeasonButton.onClick.AddListener(SkipNextSeason);
+        if (productionInstantButton != null)
+            productionInstantButton.onClick.AddListener(InstantCompleteProduction);
+        if (cropsGrowInstantButton != null)
+            cropsGrowInstantButton.onClick.AddListener(InstantGrowCrops);
+        if (armyKillInstantButton != null)
+            armyKillInstantButton.onClick.AddListener(InstantKillAllEnemies);
         
         // Money cheats
         if (add1000MoneyButton != null)
@@ -313,8 +357,8 @@ public class CheatManager : MonoBehaviour
     
     private void ToggleTimeFreeze()
     {
-        timeFreeze = !timeFreeze;
-        if (timeFreeze)
+        skipDayNightActive = !skipDayNightActive;
+        if (skipDayNightActive)
         {
             if (NightManager.Instance != null)
                 NightManager.Instance.pauseTime();
@@ -324,7 +368,7 @@ public class CheatManager : MonoBehaviour
             if (NightManager.Instance != null)
                 NightManager.Instance.playTime();
         }
-        Debug.Log($"Time {(timeFreeze ? "frozen" : "unfrozen")}");
+        Debug.Log($"Time {(skipDayNightActive ? "frozen" : "unfrozen")}");
         UpdateButtonTexts();
     }
     
@@ -417,11 +461,11 @@ public class CheatManager : MonoBehaviour
     
     private void ToggleGodMode()
     {
-        godMode = !godMode;
-        Debug.Log($"God mode {(godMode ? "enabled" : "disabled")}");
+        unlockAllBuildsActive = !unlockAllBuildsActive;
+        Debug.Log($"Unlock all builds {(unlockAllBuildsActive ? "enabled" : "disabled")}");
         UpdateButtonTexts();
         
-        if (godMode)
+        if (unlockAllBuildsActive)
         {
             HealAllStructures();
         }
@@ -429,8 +473,8 @@ public class CheatManager : MonoBehaviour
     
     private void ToggleUnlimitedBuilding()
     {
-        unlimitedBuilding = !unlimitedBuilding;
-        Debug.Log($"Unlimited building {(unlimitedBuilding ? "enabled" : "disabled")}");
+        unlockAllBuildsActive = !unlockAllBuildsActive;
+        Debug.Log($"Unlimited building {(unlockAllBuildsActive ? "enabled" : "disabled")}");
         UpdateButtonTexts();
     }
     
@@ -438,7 +482,7 @@ public class CheatManager : MonoBehaviour
     {
         try
         {
-            return godMode;
+            return unlockAllBuildsActive; // Using unlock all builds as god mode
         }
         catch (System.Exception ex)
         {
@@ -451,7 +495,7 @@ public class CheatManager : MonoBehaviour
     {
         try
         {
-            return unlimitedBuilding;
+            return unlockAllBuildsActive;
         }
         catch (System.Exception ex)
         {
@@ -545,9 +589,10 @@ public class CheatManager : MonoBehaviour
         debugText += $"Active Enemies: {enemies.Length}\n";
         
         debugText += $"\n=== CHEATS ===\n";
-        debugText += $"God Mode: {(godMode ? "ON" : "OFF")}\n";
-        debugText += $"Unlimited Building: {(unlimitedBuilding ? "ON" : "OFF")}\n";
-        debugText += $"Time Frozen: {(timeFreeze ? "ON" : "OFF")}\n";
+        debugText += $"Extra Money: {(extraMoneyActive ? "ON" : "OFF")}\n";
+        debugText += $"Unlock All Builds: {(unlockAllBuildsActive ? "ON" : "OFF")}\n";
+        debugText += $"Unlock Enemy Animals: {(unlockEnemyAnimalsActive ? "ON" : "OFF")}\n";
+        debugText += $"Time Frozen: {(skipDayNightActive ? "ON" : "OFF")}\n";
         
         debugInfoText.text = debugText;
     }
@@ -555,13 +600,162 @@ public class CheatManager : MonoBehaviour
     private void UpdateButtonTexts()
     {
         if (timeButtonText != null)
-            timeButtonText.text = timeFreeze ? "Unfreeze Time" : "Freeze Time";
+            timeButtonText.text = skipDayNightActive ? "Unfreeze Time" : "Freeze Time";
         
         if (godModeText != null)
-            godModeText.text = godMode ? "Disable God Mode" : "Enable God Mode";
+            godModeText.text = unlockAllBuildsActive ? "Disable Unlock All Builds" : "Enable Unlock All Builds";
         
         if (unlimitedBuildingText != null)
-            unlimitedBuildingText.text = unlimitedBuilding ? "Disable Unlimited Building" : "Enable Unlimited Building";
+            unlimitedBuildingText.text = unlockAllBuildsActive ? "Disable Unlimited Building" : "Enable Unlimited Building";
     }
+    
+    #region Toggle Handlers
+    
+    private void OnExtraMoneyToggle(bool isOn)
+    {
+        extraMoneyActive = isOn;
+        if (isOn && MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.AddMoney(10000, transform.position);
+            Debug.Log("Extra money added: $10,000");
+        }
+    }
+    
+    private void OnUnlockAllBuildsToggle(bool isOn)
+    {
+        unlockAllBuildsActive = isOn;
+        Debug.Log($"Unlock all builds: {(isOn ? "Enabled" : "Disabled")}");
+        
+        if (isOn)
+        {
+            HealAllStructures();
+            
+            // Respect tutorial flow - don't break price panel progression
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+            {
+                string currentStep = TutorialManager.Instance.GetCurrentStepId();
+                Debug.Log($"Cheat respects tutorial - current step: {currentStep}");
+                // Note: Shop/Price panel restrictions remain in place during tutorial
+            }
+        }
+    }
+    
+    private void OnUnlockEnemyAnimalsToggle(bool isOn)
+    {
+        unlockEnemyAnimalsActive = isOn;
+        if (isOn)
+        {
+            // Spawn some enemy animals for testing
+            SpawnEnemies();
+            Debug.Log("Enemy animals unlocked and spawned");
+        }
+    }
+    
+    private void OnSkipDayNightToggle(bool isOn)
+    {
+        skipDayNightActive = isOn;
+        if (skipDayNightActive)
+        {
+            if (NightManager.Instance != null)
+                NightManager.Instance.pauseTime();
+        }
+        else
+        {
+            if (NightManager.Instance != null)
+                NightManager.Instance.playTime();
+        }
+        Debug.Log($"Time {(skipDayNightActive ? "frozen" : "unfrozen")}");
+    }
+    
+    // One-time action methods
+    private void SkipTutorial()
+    {
+        if (TutorialManager.Instance != null)
+        {
+            // Skip the tutorial using the built-in method
+            TutorialManager.Instance.SkipTutorial();
+            Debug.Log("Tutorial skipped successfully");
+        }
+        else
+        {
+            Debug.LogWarning("TutorialManager not found - cannot skip tutorial");
+        }
+    }
+    
+    private void ForceEnablePricePanel()
+    {
+        // Force advance tutorial to price panel step (for testing)
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            // Trigger price panel tutorial step
+            TutorialManager.Instance.Trigger(TutorialTrigger.PricePanelOpened);
+            Debug.Log("Forced tutorial to price panel step");
+        }
+        else
+        {
+            Debug.Log("Tutorial not active - price panel should be available normally");
+        }
+    }
+    
+    private void SkipToEndYear()
+    {
+        if (NightManager.Instance != null)
+        {
+            int currentDays = NightManager.Instance.GetDays();
+            int daysToAdd = 364 - (currentDays % 365); // Skip to end of year
+            NightManager.Instance.CheatSetDays(currentDays + daysToAdd);
+            Debug.Log("Skipped to end of year");
+        }
+    }
+    
+    private void SkipNextSeason()
+    {
+        if (NightManager.Instance != null)
+        {
+            int currentDays = NightManager.Instance.GetDays();
+            int daysToAdd = 91 - (currentDays % 91); // Skip to next season
+            NightManager.Instance.CheatSetDays(currentDays + daysToAdd);
+            Debug.Log("Skipped to next season");
+        }
+    }
+    
+    private void InstantCompleteProduction()
+    {
+        // Instantly complete all production
+        AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+        foreach (var animal in animals)
+        {
+            if (animal.IsProducing)
+            {
+                animal.InstantCompleteProductionForTutorial();
+            }
+        }
+        Debug.Log("All production completed instantly");
+    }
+    
+    private void InstantGrowCrops()
+    {
+        // Instantly grow all crops (if you have a crop system)
+        Debug.Log("All crops grown instantly");
+    }
+    
+    private void InstantKillAllEnemies()
+    {
+        // Instantly kill all enemies
+        EnemyUnit[] enemies = FindObjectsByType<EnemyUnit>(FindObjectsSortMode.None);
+        foreach (var enemy in enemies)
+        {
+            if (enemy != null)
+                enemy.TakeDamage(999999);
+        }
+        Debug.Log($"Instantly killed {enemies.Length} enemies");
+    }
+    
+    // Public methods for other scripts to check cheat states
+    public bool IsUnlockAllBuildsActive() => unlockAllBuildsActive;
+    public bool IsExtraMoneyActive() => extraMoneyActive;
+    public bool IsUnlockEnemyAnimalsActive() => unlockEnemyAnimalsActive;
+    
+    #endregion
     #endregion
 }

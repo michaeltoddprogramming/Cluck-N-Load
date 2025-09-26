@@ -111,6 +111,29 @@ public class PricePanelUI : MonoBehaviour
         // }
     }
 
+    private bool IsPricePanelAllowedInTutorial()
+    {
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+        {
+            return true; // Price panel always available when tutorial not active
+        }
+
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+
+        // RESTRICTIVE: Only allow price panel access during the price panel tutorial step
+        switch (currentStepId)
+        {
+            case "price_panel_tutorial":
+            case "price_panel_explanation":
+                // Only during price panel tutorial steps
+                return true;
+
+            // All other tutorial steps - price panel should be disabled
+            default:
+                return false;
+        }
+    }
+
     public void populatePricePanel()
     {
         // Ensure all required managers are initialized
@@ -229,6 +252,13 @@ public class PricePanelUI : MonoBehaviour
 
     public void OpenPanel()
     {
+        // Check if price panel is allowed during tutorial
+        if (!IsPricePanelAllowedInTutorial())
+        {
+            Debug.Log("Price panel access blocked - not at correct tutorial step");
+            return;
+        }
+        
         gameObject.SetActive(true);
         populatePricePanel();
         if (audioClipOpen != null && audioSourceOpen != null)

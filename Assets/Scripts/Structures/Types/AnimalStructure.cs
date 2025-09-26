@@ -14,8 +14,8 @@ public class AnimalStructure : Structure
     [SerializeField] private bool productReady;
     [SerializeField] private float productionProgress;
     [SerializeField] private AnimalProductionSettings productionSettings;
-    [SerializeField] private int animalCount;
-    [SerializeField] private int maxAnimalCount = 5;
+    [SerializeField] public int animalCount;
+    [SerializeField] public int maxAnimalCount = 5;
 
     [Header("SFX")]
     [SerializeField] private AudioSource audioSource;
@@ -113,6 +113,7 @@ public class AnimalStructure : Structure
 
     private void Update()
     {
+        Debug.Log("this is the amount of civilian animals we have: " + animalCount + "---------------------------------");
         if (nightManager == null || !isProducing || productReady) return;
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
         float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;
@@ -276,7 +277,10 @@ public class AnimalStructure : Structure
     {
         if (amount <= 0) return;
         int actualAmountToAdd = Mathf.Min(amount, maxAnimalCount - animalCount);
+        // int newCount = Mathf.Clamp(animalCount + amount, 0, maxAnimalCount);
+        Debug.Log($"Adding {amount} animals. Before: {animalCount}, After: {animalCount + actualAmountToAdd}");
         if (actualAmountToAdd <= 0) return;
+        // if (newCount == animalCount) return;
         animalCount += actualAmountToAdd;
         OnAnimalCountChanged?.Invoke();
     }

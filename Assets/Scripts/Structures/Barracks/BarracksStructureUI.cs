@@ -23,7 +23,7 @@ public class BarracksStructureUI : BaseStructureUI
     private int newAnimalCount = 0;
     private int animalCount = 0;
     private int maxAnimalCount = 0;
-    
+
     // Public property to check if this barracks is currently placing a flag
     public bool IsPlacingFlag => isPlacingFlag;
 
@@ -34,6 +34,23 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] public Sprite goatIcon;
     [SerializeField] public Sprite pigIcon;
     [SerializeField] public Sprite sheepIcon;
+
+    [Header("Army indicator")]
+    // [SerializeField] public Image animalIcon3;
+    [SerializeField] private Slider armyBarSlider;
+    [SerializeField] private Image armyBarFill;
+
+    [Header("Civilian indicator")]
+    [SerializeField] public Image animalIcon3;
+    [SerializeField] private Slider civilianBarSlider;
+    [SerializeField] private Image civilianBarFill;
+    [SerializeField] private TextMeshProUGUI civilianText;
+
+    [Header("Stats Display")]
+    [SerializeField] public GameObject[] healthAmount;
+    [SerializeField] public GameObject[] damageAmount;
+    [SerializeField] public GameObject[] rangeAmount;
+    [SerializeField] public GameObject[] speedAmount;
 
     // private BarracksStructure barrackStructure;
 
@@ -50,6 +67,8 @@ public class BarracksStructureUI : BaseStructureUI
         }
 
         barracksStructure.OnArmyChanged += UpdateUI;
+
+        setUpStats();
 
         if (recruitButton != null)
         {
@@ -111,6 +130,8 @@ public class BarracksStructureUI : BaseStructureUI
             lastUIUpdate = Time.time;
         }
 
+        UpdateHealthBar();
+
         // Additional safeguard for sheep flag button at night
         if (barracksStructure != null && barracksStructure.GetAnimalType() == "Sheep")
         {
@@ -170,7 +191,7 @@ public class BarracksStructureUI : BaseStructureUI
     private void StartFlagPlacement()
     {
         if (!isBarracksStructure || barracksStructure.ArmyAnimalCount <= 0) return;
-        
+
         // Check if it's sheep and if it's nighttime - prevent flag placement
         if (barracksStructure.GetAnimalType() == "Sheep")
         {
@@ -188,10 +209,10 @@ public class BarracksStructureUI : BaseStructureUI
                 return; // Exit early, don't start flag placement
             }
         }
-        
+
         isPlacingFlag = true;
         updateStatusText("Click on the ground to place flag");
-        
+
         if (recruitButton != null) recruitButton.interactable = false;
         if (setFlagColorButton != null) setFlagColorButton.interactable = false;
         if (placeFlagButton != null)
@@ -200,11 +221,11 @@ public class BarracksStructureUI : BaseStructureUI
             placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
         }
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(true);
-        
+
         // Add a small delay to prevent input conflicts
         StartCoroutine(HandleFlagPlacementWithDelay());
     }
-    
+
     private IEnumerator HandleFlagPlacementWithDelay()
     {
         // Wait a frame to prevent immediate input consumption
@@ -227,7 +248,7 @@ public class BarracksStructureUI : BaseStructureUI
                     yield break;
                 }
             }
-            
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
@@ -251,7 +272,7 @@ public class BarracksStructureUI : BaseStructureUI
                 Ray finalRay = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit finalHit;
                 LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
-                
+
                 if (Physics.Raycast(finalRay, out finalHit, 1000f, groundLayer))
                 {
                     // Final check before placing the flag
@@ -265,7 +286,7 @@ public class BarracksStructureUI : BaseStructureUI
                             yield break;
                         }
                     }
-                    
+
                     barracksStructure.PlaceFlag(finalHit.point);
                     updateStatusText("Flag placed successfully!");
                 }
@@ -279,7 +300,7 @@ public class BarracksStructureUI : BaseStructureUI
                 updateStatusText("Cannot place flag on UI - click on the ground");
             }
         }
-        
+
         EndFlagPlacement();
     }
 
@@ -312,6 +333,32 @@ public class BarracksStructureUI : BaseStructureUI
         bool canRecruit = barracksStructure.CanRecruit(newAnimalCount);
         bool hasArmy = barracksStructure.ArmyAnimalCount > 0;
 
+        updateStatusBars();
+
+        // --- CIVILIAN BAR ---
+        // if (civilianBarSlider != null && civilianText != null)
+        // {
+        //     int civilianCount = barracksStructure.GetAvailableCivilians();   // You need this method in BarracksStructure
+        //     int civilianMax = barracksStructure.GetMaxCivilians(); // Or reuse existing maxAnimalCount if same
+
+        //     // civilianBarSlider.maxValue = civilianMax;
+        //     // civilianBarSlider.value = civilianCount;
+
+        //     civilianText.text = $"{civilianCount}/{civilianMax}";
+
+        //     // Optional: change fill color based on % full
+        //     float fillPercent = (float)civilianCount / Mathf.Max(1, civilianMax);
+        //     civilianBarSlider.value = fillPercent;
+        //     // if (civilianBarFill != null)
+        //     // {
+        //     //     if (fillPercent < 0.33f) civilianBarFill.color = Color.red;
+        //     //     else if (fillPercent < 0.66f) civilianBarFill.color = Color.yellow;
+        //     //     else civilianBarFill.color = Color.green;
+        //     // }
+        // }
+
+
+
         if (statusText != null)
         {
             if (isPlacingFlag)
@@ -335,7 +382,7 @@ public class BarracksStructureUI : BaseStructureUI
         if (armyCountText != null)
         {
             armyCountText.text = $"{barracksStructure.ArmyAnimalCount}/{barracksStructure.MaxArmyAnimals}";
-            armyCountText.color = hasArmy ? Color.green : Color.white;
+            // armyCountText.color = hasArmy ? Color.green : Color.white;
         }
 
         if (recruitButton != null && !isPlacingFlag)
@@ -410,12 +457,12 @@ public class BarracksStructureUI : BaseStructureUI
             NightManager nightManager = NightManager.Instance;
             bool isDay = nightManager != null ? nightManager.IsDay : true;
             Debug.Log($"[Sheep Barracks UI] IsDay: {isDay}, HasArmy: {hasArmy}");  // Debug log to check values
-            
+
             if (placeFlagButton != null)
             {
                 placeFlagButton.interactable = isDay && hasArmy;
                 Debug.Log($"[Sheep Barracks UI] PlaceFlagButton interactable: {placeFlagButton.interactable}");  // Debug log for button state
-                
+
                 if (!isDay && statusText != null)
                 {
                     updateStatusText("Sheep flags can only be placed during the day");
@@ -460,6 +507,30 @@ public class BarracksStructureUI : BaseStructureUI
             else if (barracksStructure.GetAnimalType() == "Sheep")
             {
                 animalIcon1.sprite = sheepIcon;
+            }
+        }
+
+        if (animalIcon3 != null)
+        {
+            if (barracksStructure.GetAnimalType() == "Cow")
+            {
+                animalIcon3.sprite = cowIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                animalIcon3.sprite = chickenIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                animalIcon3.sprite = goatIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                animalIcon3.sprite = pigIcon;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                animalIcon3.sprite = sheepIcon;
             }
         }
 
@@ -556,5 +627,142 @@ public class BarracksStructureUI : BaseStructureUI
             barracksStructure.RecruitAnimals(newAnimalCount);
             newAnimalCount = 0;
         }
+    }
+
+    public void setUpStats()
+    {
+        hideAllStatAmounts();
+        if (barracksStructure.GetAnimalType() == "Chicken")
+        {
+            healthAmount[0].SetActive(true);
+
+            damageAmount[0].SetActive(true);
+
+            rangeAmount[0].SetActive(true);
+
+            speedAmount[0].SetActive(true);
+            speedAmount[1].SetActive(true);
+            speedAmount[2].SetActive(true);
+            speedAmount[3].SetActive(true);
+            speedAmount[4].SetActive(true);
+        }
+        else if (barracksStructure.GetAnimalType() == "Cow")
+        {
+            healthAmount[0].SetActive(true);
+            healthAmount[1].SetActive(true);
+            healthAmount[2].SetActive(true);
+            healthAmount[3].SetActive(true);
+            healthAmount[4].SetActive(true);
+
+            damageAmount[0].SetActive(true);
+            damageAmount[1].SetActive(true);
+            // damageAmount[2].SetActive(true);
+            // damageAmount[3].SetActive(true);
+
+            rangeAmount[0].SetActive(true);
+            rangeAmount[1].SetActive(true);
+            rangeAmount[2].SetActive(true);
+            // rangeAmount[3].SetActive(true);
+
+            speedAmount[0].SetActive(true);
+            speedAmount[1].SetActive(true);
+            // speedAmount[2].SetActive(true);
+        }
+        else if (barracksStructure.GetAnimalType() == "Pig")
+        {
+            healthAmount[0].SetActive(true);
+            healthAmount[1].SetActive(true);
+            healthAmount[2].SetActive(true);
+
+            damageAmount[0].SetActive(true);
+            damageAmount[1].SetActive(true);
+            damageAmount[2].SetActive(true);
+
+            rangeAmount[0].SetActive(true);
+            rangeAmount[1].SetActive(true);
+
+            speedAmount[0].SetActive(true);
+            speedAmount[1].SetActive(true);
+            speedAmount[2].SetActive(true);
+            // speedAmount[3].SetActive(true);
+        }
+        else if (barracksStructure.GetAnimalType() == "Sheep")
+        {
+            healthAmount[0].SetActive(true);
+            healthAmount[1].SetActive(true);
+            healthAmount[2].SetActive(true);
+            healthAmount[3].SetActive(true);
+
+            damageAmount[0].SetActive(true);
+            damageAmount[1].SetActive(true);
+            damageAmount[2].SetActive(true);
+            damageAmount[3].SetActive(true);
+            damageAmount[4].SetActive(true);
+
+            rangeAmount[0].SetActive(true);
+            // rangeAmount[1].SetActive(true);
+
+            speedAmount[0].SetActive(true);
+            // speedAmount[1].SetActive(true);
+        }
+        else if (barracksStructure.GetAnimalType() == "Goat")
+        {
+            healthAmount[0].SetActive(true);
+            healthAmount[1].SetActive(true);
+            healthAmount[2].SetActive(true);
+            healthAmount[3].SetActive(true);
+
+            damageAmount[0].SetActive(true);
+            damageAmount[1].SetActive(true);
+            damageAmount[2].SetActive(true);
+            damageAmount[3].SetActive(true);
+            // damageAmount[4].SetActive(true);
+
+            rangeAmount[0].SetActive(true);
+            rangeAmount[1].SetActive(true);
+            rangeAmount[2].SetActive(true);
+            rangeAmount[3].SetActive(true);
+            rangeAmount[4].SetActive(true);
+
+            speedAmount[0].SetActive(true);
+        }
+    }
+
+    public void hideAllStatAmounts()
+    {
+        for (int k = 0; k < healthAmount.Length; k++)
+        {
+            healthAmount[k].SetActive(false);
+        }
+        for (int k = 0; k < damageAmount.Length; k++)
+        {
+            damageAmount[k].SetActive(false);
+        }
+        for (int k = 0; k < rangeAmount.Length; k++)
+        {
+            rangeAmount[k].SetActive(false);
+        }
+        for (int k = 0; k < speedAmount.Length; k++)
+        {
+            speedAmount[k].SetActive(false);
+        }
+    }
+
+    public void updateStatusBars()
+    {
+        if (barracksStructure == null || armyBarSlider == null || civilianBarSlider == null) return;
+
+        int armyCount = barracksStructure.ArmyAnimalCount;
+        int armyMax = barracksStructure.MaxArmyAnimals;
+
+        float fillPercent = armyMax > 0 ? (float)armyCount / armyMax : 0f;
+        armyBarSlider.value = fillPercent;
+
+        int civilianCount = barracksStructure.GetAvailableCivilians();
+        int civilianMax = barracksStructure.GetMaxCivilians();
+
+        float fillPercent2 = civilianMax > 0 ? (float)civilianCount / civilianMax : 0f;
+        civilianBarSlider.value = fillPercent2;
+        civilianText.text = $"{civilianCount}/{civilianMax}";
     }
 }

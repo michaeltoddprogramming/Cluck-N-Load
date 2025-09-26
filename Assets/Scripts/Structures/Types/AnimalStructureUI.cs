@@ -37,6 +37,10 @@ public class AnimalStructureUI : BaseStructureUI
     private float lastUIUpdate;
     private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
 
+    [Header("Civilian indicator")]
+    [SerializeField] private Slider civilianBarSlider;
+    [SerializeField] private Image civilianBarFill;
+
 
 
 
@@ -111,6 +115,7 @@ public class AnimalStructureUI : BaseStructureUI
         }
 
         UpdateHealthBar();
+        updateStatusBar();
 
         bool isProducing = animalStructure.IsProducing;
         bool productReady = animalStructure.ProductReady;
@@ -265,24 +270,15 @@ public class AnimalStructureUI : BaseStructureUI
         }
     }
 
-    // public void SpawnAnimals(int userPurchaseCount)
-    // {
-    //     int desiredSpawnCount = Mathf.CeilToInt(userPurchaseCount / 2f);
+    public void updateStatusBar()
+    {
+        if (animalStructure == null || civilianBarSlider == null) return;
 
-    //     while (spawnedAnimals.Count < desiredSpawnCount)
-    //     {
-    //         SpawnSingleAnimal();
-    //     }
-    // }
+        int civilianCount = animalStructure.animalCount;
+        int civilianMax = animalStructure.maxAnimalCount;
 
-    // private void UpdateHealthBar()
-    // {
-    //     if (animalStructure == null || healthBarSlider == null) return;
-
-    //     float healthPercent = (float)animalStructure.GetCurrentHealth() / animalStructure.GetMaxHealth();
-    //     healthBarSlider.value = healthPercent;
-
-    //     if (healthBarFill != null)
-    //         healthBarFill.color = healthPercent > 0.6f ? healthyColor : healthPercent > 0.3f ? midColor : dangerColor;
-    // }
+        float fillPercent2 = civilianMax > 0 ? (float)civilianCount / civilianMax : 0f;
+        civilianBarSlider.value = fillPercent2;
+        // civilianText.text = $"{civilianCount}/{civilianMax}";
+    }
 }

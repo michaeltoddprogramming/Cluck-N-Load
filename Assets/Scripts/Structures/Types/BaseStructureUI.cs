@@ -71,7 +71,10 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     protected void UpdateHealthBar()
     {
+        // Debug.Log("it is calleing why not showing===================================");
         if (structure == null || healthBarSlider == null) return;
+
+        // Debug.Log("it is calleing why not showing===================================");
 
         float healthPercent = (float)structure.GetCurrentHealth() / structure.GetMaxHealth();
         healthBarSlider.value = healthPercent;

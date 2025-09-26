@@ -158,11 +158,11 @@ public class BarracksStructure : Structure
     private void InitializeFlag()
     {
         if (flagPrefab == null) return;
-        
+
         // Position flag directly on top of this specific structure
         Vector3 flagPosition = GetTopOfStructure();
         guardPosition = flagPosition;
-        
+
         flag = Instantiate(flagPrefab, guardPosition, Quaternion.identity, transform);
         flagRenderer = flag.GetComponentInChildren<Renderer>();
         if (flagRenderer != null) flagRenderer.material.color = flagColor;
@@ -188,7 +188,7 @@ public class BarracksStructure : Structure
             // Use collider top surface - colliders are usually more precise for positioning
             return new Vector3(transform.position.x, structureCollider.bounds.max.y, transform.position.z);
         }
-        
+
         // Fallback to renderer bounds
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)
@@ -203,7 +203,7 @@ public class BarracksStructure : Structure
             }
             return new Vector3(transform.position.x, highestY, transform.position.z);
         }
-        
+
         // Final fallback to fixed height
         return transform.position + new Vector3(0, 2.5f, 0);
     }
@@ -372,16 +372,16 @@ public class BarracksStructure : Structure
             {
                 // Check if flag should be placed on top of the barracks structure
                 Vector3 flagPosition = position;
-                float distanceToBarracks = Vector3.Distance(new Vector3(position.x, 0, position.z), 
+                float distanceToBarracks = Vector3.Distance(new Vector3(position.x, 0, position.z),
                                                            new Vector3(transform.position.x, 0, transform.position.z));
-                
+
                 // If the flag is being placed very close to the barracks (within 2 units), put it on top of the structure
                 if (distanceToBarracks < 2f)
                 {
                     Vector3 topOfStructure = GetTopOfStructure();
                     flagPosition = new Vector3(transform.position.x, topOfStructure.y, transform.position.z);
                 }
-                
+
                 GameObject sheepFlag = Instantiate(flagPrefab, flagPosition, Quaternion.identity, transform);
                 Renderer sheepFlagRenderer = sheepFlag.GetComponentInChildren<Renderer>();
                 if (sheepFlagRenderer != null) sheepFlagRenderer.material.color = flagColor;
@@ -414,16 +414,16 @@ public class BarracksStructure : Structure
         {
             // Check if flag is being placed on the barracks structure itself
             Vector3 flagPosition = position;
-            float distanceToBarracks = Vector3.Distance(new Vector3(position.x, 0, position.z), 
+            float distanceToBarracks = Vector3.Distance(new Vector3(position.x, 0, position.z),
                                                        new Vector3(transform.position.x, 0, transform.position.z));
-            
+
             // If the flag is being placed very close to the barracks (within 2 units), put it on top of the structure
             if (distanceToBarracks < 2f)
             {
                 Vector3 topOfStructure = GetTopOfStructure();
                 flagPosition = new Vector3(transform.position.x, topOfStructure.y, transform.position.z);
             }
-            
+
             if (flag != null) flag.transform.position = flagPosition;
             else
             {
@@ -653,6 +653,16 @@ public class BarracksStructure : Structure
         {
             RecruitAnimals(1);
         }
+    }
+
+    public int GetAvailableCivilians()
+    {
+        return targetAnimalStructure != null ? targetAnimalStructure.animalCount : 0;
+    }
+
+    public int GetMaxCivilians()
+    {
+        return targetAnimalStructure != null ? targetAnimalStructure.MaxAnimalCount : 0;
     }
 
 

@@ -76,6 +76,11 @@ using System.Collections;
 public class TimeSpeedEffect : MonoBehaviour
 {
     private Image img;
+    [SerializeField] private float pulseDuration = 3f; // seconds for a full fade cycle
+    [SerializeField] private float minAlpha = 0.2f;
+    [SerializeField] private float maxAlpha = 0.6f;
+
+    private Coroutine pulseCoroutine;
     private void Awake()
     {
         img = GetComponent<Image>();
@@ -84,11 +89,6 @@ public class TimeSpeedEffect : MonoBehaviour
             Debug.LogError("TimeSpeedEffect: No Image component found on this GameObject!");
         }
     }
-    [SerializeField] private float pulseDuration = 3f; // seconds for a full fade cycle
-    [SerializeField] private float minAlpha = 0.2f;
-    [SerializeField] private float maxAlpha = 0.6f;
-
-    private Coroutine pulseCoroutine;
 
     public void StartSpeedEffect()
     {
@@ -117,12 +117,14 @@ public class TimeSpeedEffect : MonoBehaviour
             SetAlpha(alpha);
             yield return null;
         }
+        // yield return null;
     }
 
     private void SetAlpha(float alpha)
     {
-        // Debug.Log("Alpha set to: " + alpha);
-        if (img == null) {
+        Debug.Log("Alpha set to: " + alpha);
+        if (img == null)
+        {
             Debug.LogWarning("TimeSpeedEffect: No Image component found!");
             return;
         }

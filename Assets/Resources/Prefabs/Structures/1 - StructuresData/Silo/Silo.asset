@@ -28,7 +28,7 @@ MonoBehaviour:
   wheatBaseHarvestAmount: 10
   carrotsBaseHarvestAmount: 10
   cropSynergyMultiplier: 1.5
-  totalPerSilo: 500
+  totalPerSilo: 100
   unlockDay: 0
   targetAnimalType: 
   armyAnimalPrefabs: []

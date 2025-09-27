@@ -53,14 +53,22 @@ public class DefenseStructure : Structure
     private void RegisterInRegistry()
     {
         myGridPosition = GetGridPosition();
+        Debug.Log($"Attempting to register DefenseStructure at world position {transform.position} -> grid position {myGridPosition}");
+        
         if (myGridPosition != new Vector2Int(-1, -1) && !isRegistered)
         {
             defenseRegistry[myGridPosition] = this;
             isRegistered = true;
             
+            Debug.Log($"Successfully registered DefenseStructure at grid position: {myGridPosition}. Total registered: {defenseRegistry.Count}");
+            
             // Update connectors for this structure and immediate neighbors only
             UpdateConnectors();
             UpdateImmediateNeighbors();
+        }
+        else
+        {
+            Debug.LogError($"Failed to register DefenseStructure. Grid position: {myGridPosition}, Already registered: {isRegistered}");
         }
     }
 
@@ -98,23 +106,35 @@ public class DefenseStructure : Structure
     {
         if (connectorPrefab == null) return;
 
+        Debug.Log($"Updating connectors for DefenseStructure at {myGridPosition}");
+
         // Check each direction for neighbors using O(1) dictionary lookup
         foreach (Vector2Int direction in neighborDirections)
         {
             Vector2Int neighborPos = myGridPosition + direction;
             bool hasNeighbor = defenseRegistry.ContainsKey(neighborPos);
 
+            Debug.Log($"  Checking direction {direction}: neighbor at {neighborPos} = {hasNeighbor}");
+
             if (hasNeighbor && !activeConnectors.ContainsKey(direction))
             {
                 // Create connector in this direction
+                Debug.Log($"    Creating connector in direction {direction}");
                 CreateConnector(direction);
             }
             else if (!hasNeighbor && activeConnectors.ContainsKey(direction))
             {
                 // Remove connector in this direction
+                Debug.Log($"    Removing connector in direction {direction}");
                 DestroyConnector(direction);
             }
+            else if (hasNeighbor && activeConnectors.ContainsKey(direction))
+            {
+                Debug.Log($"    Connector already exists in direction {direction}");
+            }
         }
+        
+        Debug.Log($"  Total active connectors: {activeConnectors.Count}");
     }
 
     // Create a connector in the specified direction
@@ -133,11 +153,24 @@ public class DefenseStructure : Structure
         GameObject connector = Instantiate(connectorPrefab, connectorWorldPos, Quaternion.identity, transform);
         
         // Rotate connector to face the correct direction
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        connector.transform.rotation = Quaternion.AngleAxis(angle - 90f, Vector3.up);
+        // Convert grid direction to world rotation
+        Quaternion rotation = Quaternion.identity;
+        
+        if (direction == Vector2Int.up)         // North (forward in Unity)
+            rotation = Quaternion.Euler(0, 0, 0);
+        else if (direction == Vector2Int.right) // East (right in Unity)  
+            rotation = Quaternion.Euler(0, 90, 0);
+        else if (direction == Vector2Int.down)  // South (backward in Unity)
+            rotation = Quaternion.Euler(0, 180, 0);
+        else if (direction == Vector2Int.left)  // West (left in Unity)
+            rotation = Quaternion.Euler(0, 270, 0);
+
+        connector.transform.rotation = rotation;
 
         // Store connector reference
         activeConnectors[direction] = connector;
+        
+        Debug.Log($"Created connector at {myGridPosition} pointing {direction} with rotation {rotation.eulerAngles}");
     }
 
     // Destroy connector in the specified direction

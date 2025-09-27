@@ -48,8 +48,65 @@ public class DefenseStructure : Structure
         // Wait a frame to ensure transform is properly set
         yield return null;
         
-        // Register this defense structure in the grid-based registry
-        RegisterInRegistry();
+        // Only register if this is not a ghost object
+        if (!IsGhostObject())
+        {
+            // Register this defense structure in the grid-based registry
+            RegisterInRegistry();
+        }
+        else
+        {
+            Debug.Log($"DefenseStructure is ghost object - skipping registration and connectors");
+        }
+    }
+
+    // Check if this is a ghost object (part of building system preview)
+    public bool IsGhostObject()
+    {
+        // Primary check: if this DefenseStructure component is disabled, it's likely a ghost
+        if (!this.enabled)
+        {
+            Debug.Log($"DefenseStructure {gameObject.name} detected as ghost - component disabled");
+            return true;
+        }
+
+        // Check if this object has ghost/preview indicators in its name
+        string name = gameObject.name.ToLower();
+        if (name.Contains("ghost") || 
+            name.Contains("preview") ||
+            name.Contains("(clone)") ||
+            name.Contains("temp") ||
+            name.Contains("placeholder"))
+        {
+            Debug.Log($"DefenseStructure {gameObject.name} detected as ghost by name");
+            return true;
+        }
+
+        // Check if any parent has ghost naming
+        Transform parent = transform.parent;
+        while (parent != null)
+        {
+            string parentName = parent.name.ToLower();
+            if (parentName.Contains("ghost") || 
+                parentName.Contains("preview") ||
+                parentName.Contains("temp") ||
+                parentName.Contains("placeholder"))
+            {
+                Debug.Log($"DefenseStructure {gameObject.name} detected as ghost by parent {parent.name}");
+                return true;
+            }
+            parent = parent.parent;
+        }
+
+        // Additional check: if the object has no collider or is disabled, might be ghost
+        Collider objectCollider = GetComponent<Collider>();
+        if (objectCollider == null || !objectCollider.enabled)
+        {
+            Debug.Log($"DefenseStructure {gameObject.name} detected as ghost - no enabled collider");
+            return true;
+        }
+
+        return false;
     }
 
     protected override void OnDestroy()
@@ -61,15 +118,33 @@ public class DefenseStructure : Structure
 
     private void RegisterInRegistry()
     {
+        // Double-check we're not registering a ghost
+        if (IsGhostObject())
+        {
+            Debug.LogWarning($"Attempted to register ghost object {gameObject.name} - BLOCKED");
+            return;
+        }
+
         myGridPosition = GetGridPosition();
-        Debug.Log($"Attempting to register DefenseStructure at world position {transform.position} -> grid position {myGridPosition}");
+        Debug.Log($"Attempting to register DefenseStructure {gameObject.name} at world position {transform.position} -> grid position {myGridPosition}");
         
         if (myGridPosition != new Vector2Int(-1, -1) && !isRegistered)
         {
+            // Final safety check - make sure no ghost is already at this position
+            if (defenseRegistry.ContainsKey(myGridPosition))
+            {
+                DefenseStructure existing = defenseRegistry[myGridPosition];
+                if (existing != null && existing.IsGhostObject())
+                {
+                    Debug.LogWarning($"Removing ghost object at {myGridPosition} to make room for real structure");
+                    defenseRegistry.Remove(myGridPosition);
+                }
+            }
+
             defenseRegistry[myGridPosition] = this;
             isRegistered = true;
             
-            Debug.Log($"Successfully registered DefenseStructure at grid position: {myGridPosition}. Total registered: {defenseRegistry.Count}");
+            Debug.Log($"Successfully registered DefenseStructure {gameObject.name} at grid position: {myGridPosition}. Total registered: {defenseRegistry.Count}");
             
             // Update connectors for this structure and immediate neighbors only
             UpdateConnectors();
@@ -77,7 +152,7 @@ public class DefenseStructure : Structure
         }
         else
         {
-            Debug.LogError($"Failed to register DefenseStructure. Grid position: {myGridPosition}, Already registered: {isRegistered}");
+            Debug.LogError($"Failed to register DefenseStructure {gameObject.name}. Grid position: {myGridPosition}, Already registered: {isRegistered}");
         }
     }
 
@@ -123,17 +198,26 @@ public class DefenseStructure : Structure
             return;
         }
 
+        // Don't create connectors for ghost objects
+        if (IsGhostObject())
+        {
+            Debug.Log($"DefenseStructure at {myGridPosition} is ghost - skipping connector update");
+            return;
+        }
+
         Debug.Log($"Updating connectors for DefenseStructure at {myGridPosition}");
 
         // Check each direction for neighbors using O(1) dictionary lookup
+        // NOTE: We ignore grid obstacle states and only care about actual DefenseStructure objects in registry
         foreach (Vector2Int direction in neighborDirections)
         {
             Vector2Int neighborPos = myGridPosition + direction;
             
-            // Check if neighbor exists and is valid
+            // Check if neighbor exists and is valid in the DefenseStructure registry
+            // This automatically ignores obstacle states, ghost objects, and non-defense structures
             if (defenseRegistry.TryGetValue(neighborPos, out DefenseStructure neighbor))
             {
-                if (neighbor != null && neighbor.gameObject != null && neighbor != this)
+                if (neighbor != null && neighbor.gameObject != null && neighbor != this && !neighbor.IsGhostObject())
                 {
                     // Create connector if we don't have one in this direction
                     if (!activeConnectors.ContainsKey(direction))
@@ -159,7 +243,7 @@ public class DefenseStructure : Structure
             }
             else
             {
-                Debug.Log($"  No neighbor in direction {direction} at {neighborPos}");
+                Debug.Log($"  No defense structure neighbor in direction {direction} at {neighborPos}");
                 // Remove any connector in that direction if no neighbor exists
                 if (activeConnectors.ContainsKey(direction))
                 {
@@ -280,7 +364,13 @@ public class DefenseStructure : Structure
             if (defense != null)
             {
                 Vector3 worldPos = defense.transform.position;
-                Debug.Log($"  Grid pos {pos} -> World pos {worldPos} (Structure: {defense.name})");
+                bool isGhost = defense.IsGhostObject();
+                Debug.Log($"  Grid pos {pos} -> World pos {worldPos} (Structure: {defense.name}, IsGhost: {isGhost})");
+                
+                if (isGhost)
+                {
+                    Debug.LogError($"    ^^^ GHOST OBJECT FOUND IN REGISTRY - THIS SHOULD NOT HAPPEN!");
+                }
             }
             else
             {
@@ -296,7 +386,7 @@ public class DefenseStructure : Structure
         
         foreach (var kvp in defenseRegistry)
         {
-            if (kvp.Value == null || kvp.Value.gameObject == null)
+            if (kvp.Value == null || kvp.Value.gameObject == null || kvp.Value.IsGhostObject())
             {
                 keysToRemove.Add(kvp.Key);
             }
@@ -304,13 +394,13 @@ public class DefenseStructure : Structure
         
         foreach (var key in keysToRemove)
         {
-            Debug.LogWarning($"Removing stale registry entry at {key}");
+            Debug.LogWarning($"Removing stale/ghost registry entry at {key}");
             defenseRegistry.Remove(key);
         }
         
         if (keysToRemove.Count > 0)
         {
-            Debug.Log($"Cleaned up {keysToRemove.Count} stale registry entries. Remaining: {defenseRegistry.Count}");
+            Debug.Log($"Cleaned up {keysToRemove.Count} stale/ghost registry entries. Remaining: {defenseRegistry.Count}");
         }
     }
 

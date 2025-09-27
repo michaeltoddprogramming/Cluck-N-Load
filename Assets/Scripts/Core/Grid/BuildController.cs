@@ -750,6 +750,15 @@ public class BuildController : MonoBehaviour
         else
         {
             ghost = Instantiate(currentBuildTargetPrefab, position, rotation);
+            
+            // IMPORTANT: Disable DefenseStructure component on ghost chain objects to prevent connector creation
+            DefenseStructure defenseComponent = ghost.GetComponent<DefenseStructure>();
+            if (defenseComponent != null)
+            {
+                defenseComponent.enabled = false;
+                Debug.Log("Disabled DefenseStructure component on ghost chain object");
+            }
+            
             ApplyGhostMaterial(ghost);
         }
         
@@ -1160,6 +1169,15 @@ public class BuildController : MonoBehaviour
         
         currentGhost = Instantiate(prefab);
         currentGhost.name = "BuildGhost";
+        
+        // IMPORTANT: Disable DefenseStructure component on ghost objects to prevent connector creation
+        DefenseStructure defenseComponent = currentGhost.GetComponent<DefenseStructure>();
+        if (defenseComponent != null)
+        {
+            defenseComponent.enabled = false;
+            Debug.Log("Disabled DefenseStructure component on ghost object");
+        }
+        
         ApplyGhostMaterial(currentGhost);
         currentGhost.transform.rotation = currentRotation;
     }

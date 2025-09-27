@@ -184,44 +184,134 @@ public class AnimalStructure : Structure
         int productPrice = 0;
         float boostedAmount = 0f;
 
-        if (animalType == AnimalType.Chicken)
+        // Check if ProductionBoosts is found and properly initialized
+        if (productionBoosts == null)
         {
-            // productPrice = productionSettings.moneyPerProduct;
-            productPrice = productionBoosts.GetProductPrices()[0];
-            boostedAmount = productionBoosts.GetBoostedProducts()[0];
+            Debug.LogError("ProductionBoosts not found in scene! Using fallback values.");
+            productPrice = baseMoneyPerProduct; // Use base price, seasonal bonuses won't work
+            boostedAmount = 1f; // Default multiplier
         }
-        else if (animalType == AnimalType.Cow)
+        else
         {
-            // productPrice = productionSettings.moneyPerProduct;
-            productPrice = productionBoosts.GetProductPrices()[1];
-            boostedAmount = productionBoosts.GetBoostedProducts()[1];
-        }
-        else if (animalType == AnimalType.Sheep)
-        {
-            // productPrice = productionSettings.moneyPerProduct;
-            productPrice = productionBoosts.GetProductPrices()[2];
-            boostedAmount = productionBoosts.GetBoostedProducts()[2];
-        }
-        else if (animalType == AnimalType.Goat)
-        {
-            // productPrice = productionSettings.moneyPerProduct;
-            productPrice = productionBoosts.GetProductPrices()[3];
-            boostedAmount = productionBoosts.GetBoostedProducts()[3];
-        }
-        else if (animalType == AnimalType.Pig)
-        {
-            // productPrice = productionSettings.moneyPerProduct;
-            productPrice = productionBoosts.GetProductPrices()[4];
-            boostedAmount = productionBoosts.GetBoostedProducts()[4];
+            int[] prices = productionBoosts.GetProductPrices();
+            float[] boosts = productionBoosts.GetBoostedProducts();
+            
+            Debug.Log($"ProductionBoosts - Prices array length: {prices?.Length}, Boosts array length: {boosts?.Length}");
+
+            if (animalType == AnimalType.Chicken)
+            {
+                // Use BASE price from ProductionBoosts (not the modified productionSettings price)
+                if (prices != null && prices.Length > 0)
+                    productPrice = prices[0]; // This is the base price from StructureData
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts prices array is empty! Using fallback base price.");
+                    productPrice = baseMoneyPerProduct; // Use base price, not modified price
+                }
+                    
+                if (boosts != null && boosts.Length > 0)
+                    boostedAmount = boosts[0];
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts boosts array is empty! Using default multiplier.");
+                    boostedAmount = 1f;
+                }
+            }
+            else if (animalType == AnimalType.Cow)
+            {
+                // Use BASE price from ProductionBoosts (not the modified productionSettings price)
+                if (prices != null && prices.Length > 1)
+                    productPrice = prices[1]; // This is the base price from StructureData
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts prices array is too short for Cow! Using fallback base price.");
+                    productPrice = baseMoneyPerProduct; // Use base price, not modified price
+                }
+                    
+                if (boosts != null && boosts.Length > 1)
+                    boostedAmount = boosts[1];
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts boosts array is too short for Cow! Using default multiplier.");
+                    boostedAmount = 1f;
+                }
+            }
+            else if (animalType == AnimalType.Sheep)
+            {
+                // Use BASE price from ProductionBoosts (not the modified productionSettings price)
+                if (prices != null && prices.Length > 2)
+                    productPrice = prices[2]; // This is the base price from StructureData
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts prices array is too short for Sheep! Using fallback base price.");
+                    productPrice = baseMoneyPerProduct; // Use base price, not modified price
+                }
+                    
+                if (boosts != null && boosts.Length > 2)
+                    boostedAmount = boosts[2];
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts boosts array is too short for Sheep! Using default multiplier.");
+                    boostedAmount = 1f;
+                }
+            }
+            else if (animalType == AnimalType.Goat)
+            {
+                // Use BASE price from ProductionBoosts (not the modified productionSettings price)
+                if (prices != null && prices.Length > 3)
+                    productPrice = prices[3]; // This is the base price from StructureData
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts prices array is too short for Goat! Using fallback base price.");
+                    productPrice = baseMoneyPerProduct; // Use base price, not modified price
+                }
+                    
+                if (boosts != null && boosts.Length > 3)
+                    boostedAmount = boosts[3];
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts boosts array is too short for Goat! Using default multiplier.");
+                    boostedAmount = 1f;
+                }
+            }
+            else if (animalType == AnimalType.Pig)
+            {
+                // Use BASE price from ProductionBoosts (not the modified productionSettings price)
+                if (prices != null && prices.Length > 4)
+                    productPrice = prices[4]; // This is the base price from StructureData
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts prices array is too short for Pig! Using fallback base price.");
+                    productPrice = baseMoneyPerProduct; // Use base price, not modified price
+                }
+                    
+                if (boosts != null && boosts.Length > 4)
+                    boostedAmount = boosts[4];
+                else
+                {
+                    Debug.LogWarning("ProductionBoosts boosts array is too short for Pig! Using default multiplier.");
+                    boostedAmount = 1f;
+                }
+            }
         }
 
+        // Calculate money using BASE price * seasonal multiplier (no double-bonus bug)
         int totalProducts = (int)(productPrice * boostedAmount);
         int totalMoneyEarned = totalProducts * animalCount;
+
+        // Debug logging to see what's happening with money calculation
+        Debug.Log($"[{animalType}] Collect - BasePrice: {productPrice}, SeasonalMultiplier: {boostedAmount}, AnimalCount: {animalCount}");
+        Debug.Log($"[{animalType}] Collect - TotalProducts: {totalProducts}, TotalMoneyEarned: {totalMoneyEarned}");
+        Debug.Log($"[{animalType}] Collect - ProductionSettings.moneyPerProduct (should be ignored): {productionSettings.moneyPerProduct}");
 
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(totalMoneyEarned, transform.position);
             TutorialManager.Instance?.Trigger(TutorialTrigger.CollectedFirstProducts);
+        }
+        else
+        {
+            Debug.LogError("MoneyManager.Instance is null when trying to collect money!");
         }
         productReady = false;
         isProducing = false;

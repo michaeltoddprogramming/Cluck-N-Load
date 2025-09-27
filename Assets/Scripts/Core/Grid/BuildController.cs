@@ -668,6 +668,14 @@ public class BuildController : MonoBehaviour
 
         Debug.Log($"FinalizeDefenceChain: Successfully placed {placedCount} out of {defenceGhostChain.Count} structures in chain");
 
+        // Update connectors for all defense structures after chain placement
+        if (placedCount > 0)
+        {
+            Debug.Log("FinalizeDefenceChain: Updating connectors for all defense structures in chain");
+            // Direct call - no coroutine needed with the optimized system
+            DefenseStructure.RefreshAllDefenseConnectors();
+        }
+
         // Clean up
         CancelDefenceChain();
         if (currentGhost != null) currentGhost.SetActive(true);

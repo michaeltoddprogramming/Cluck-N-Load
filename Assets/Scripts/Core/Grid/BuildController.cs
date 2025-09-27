@@ -672,13 +672,24 @@ public class BuildController : MonoBehaviour
         if (placedCount > 0)
         {
             Debug.Log("FinalizeDefenceChain: Updating connectors for all defense structures in chain");
-            // Direct call - no coroutine needed with the optimized system
-            DefenseStructure.RefreshAllDefenseConnectors();
+            // Start coroutine to rebuild connectors after a short delay
+            StartCoroutine(DelayedConnectorRebuild());
         }
 
         // Clean up
         CancelDefenceChain();
         if (currentGhost != null) currentGhost.SetActive(true);
+    }
+
+    // Coroutine to rebuild connectors after a delay (ensures all structures are properly registered)
+    private IEnumerator DelayedConnectorRebuild()
+    {
+        // Wait a couple frames to ensure all defense structures are properly registered
+        yield return null;
+        yield return null;
+        
+        Debug.Log("DelayedConnectorRebuild: Rebuilding all defense structure connectors");
+        DefenseStructure.RebuildAllConnectors();
     }
 
     // Update ghost chain as mouse moves
@@ -1209,23 +1220,52 @@ public class BuildController : MonoBehaviour
     private List<Vector2Int> GetStructureFootprint(GameObject obj)
     {
         List<Vector2Int> occupiedCells = new List<Vector2Int>();
+        
+        // Special handling for DefenseStructure - they should only occupy a single cell
+        DefenseStructure defenseStructure = obj.GetComponent<DefenseStructure>();
+        if (defenseStructure != null)
+        {
+            Vector2Int gridPos = gridController.WorldToGridCoords(obj.transform.position);
+            occupiedCells.Add(gridPos);
+            Debug.Log($"GetStructureFootprint for DefenseStructure {obj.name}: single cell at {gridPos}");
+            return occupiedCells;
+        }
+        
+        // Default behavior for other structures
         Renderer renderer = obj.GetComponentInChildren<Renderer>();
-        if (renderer == null) return occupiedCells;
+        if (renderer == null) 
+        {
+            Debug.LogWarning($"No renderer found for object {obj.name}");
+            return occupiedCells;
+        }
+        
         Bounds bounds = renderer.bounds;
         bounds.Expand(-0.1f);
         Vector2Int bottomLeft = gridController.WorldToGridCoords(bounds.min);
         Vector2Int topRight = gridController.WorldToGridCoords(bounds.max);
+        
+        Debug.Log($"GetStructureFootprint for {obj.name}: bounds.min={bounds.min}, bounds.max={bounds.max}");
+        Debug.Log($"  Grid coords: bottomLeft={bottomLeft}, topRight={topRight}");
+        
         for (int x = bottomLeft.x; x <= topRight.x; x++){
             for (int y = bottomLeft.y; y <= topRight.y; y++){
                 if (gridController.IsValidCell(x, y))
                 {
                     Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
                     if (bounds.Contains(new Vector3(cellCenter.x, bounds.center.y, cellCenter.z)))
+                    {
                         occupiedCells.Add(new Vector2Int(x, y));
+                        Debug.Log($"    Adding cell ({x}, {y}) to footprint");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"    Invalid cell ({x}, {y}) skipped");
                 }
             }
             
         }
+        Debug.Log($"  Final footprint size: {occupiedCells.Count} cells");
         return occupiedCells;
     }
 

@@ -127,7 +127,11 @@ public class MoneyManager : MonoBehaviour
     // Update MoneyManager.AddMoney
     public void AddMoney(int amount, Vector3? collectionPosition = null)
     {
+        int previousMoney = _currentMoney;
         _currentMoney += amount;
+        
+        Debug.Log($"MoneyManager.AddMoney: Adding {amount} money. Previous: {previousMoney}, New: {_currentMoney}");
+        
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);

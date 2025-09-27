@@ -59,7 +59,7 @@ public class PauseManager : MonoBehaviour
             nightManager.pauseTime();
             shopManager.disableShop();
             // itemHoverPanel.HideImmediate();
-            ItemHoverPanel.Instance.HideImmediate();
+            // ItemHoverPanel.Instance.HideImmediate(); // Removed to allow hovering while paused
             
             // Close price panel if it's open to prevent overlap with pause menu
             PricePanelUI pricePanel = FindFirstObjectByType<PricePanelUI>();

@@ -8,11 +8,11 @@ public class CameraController : MonoBehaviour
     [Header("Movement Settings")]
     public float normalSpeed = 30f;
     public float fastSpeed = 60f;
-    public float keyboardSpeedMultiplier = 2f;
+    public float keyboardSpeedMultiplier = 3f;
     public float movementTime = 5f;  // Smoothing factor
 
     [Header("Rotation Settings")]
-    public float rotationAmount = 2f;
+    public float rotationAmount = 15f;
     public bool lockRotationDuringMovement = false;  // NEW: Lock rotation during movement
 
     [Header("Zoom Settings")]
@@ -289,20 +289,24 @@ public class CameraController : MonoBehaviour
     void HandleRotation()
     {
 
-        // Keyboard rotation
-        // if (Input.GetKey(KeyCode.Q))
-        // {
-        //     newRotation *= Quaternion.Euler(Vector3.up * rotationAmount);
-        // }
-        // Keyboard rotation
+        // Keyboard rotation - smooth and frame-rate independent
+        float rotationInput = 0f;
+        
         if (Input.GetKey(KeyCode.Q))
         {
-            newRotation *= Quaternion.Euler(Vector3.up * rotationAmount);
+            rotationInput += rotationAmount;
         }
 
         if (Input.GetKey(KeyCode.E))
         {
-            newRotation *= Quaternion.Euler(Vector3.up * -rotationAmount);
+            rotationInput -= rotationAmount;
+        }
+        
+        if (rotationInput != 0f)
+        {
+            Vector3 currentEuler = newRotation.eulerAngles;
+            currentEuler.y += rotationInput * Time.unscaledDeltaTime * 30f; // 30f scales it to reasonable speed
+            newRotation = Quaternion.Euler(currentEuler.x, currentEuler.y, currentEuler.z);
         }
 
         // Middle mouse button rotation

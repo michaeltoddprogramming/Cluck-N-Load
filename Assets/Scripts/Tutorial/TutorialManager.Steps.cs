@@ -603,7 +603,7 @@ public partial class TutorialManager
         }
     }
 
-    private void CleanupShopHighlights()
+    public void CleanupShopHighlights()
     {
         foreach (Outline outline in FindObjectsByType<Outline>(FindObjectsSortMode.None))
         {

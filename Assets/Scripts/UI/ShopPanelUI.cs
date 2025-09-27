@@ -181,7 +181,9 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         Debug.Log($"PopulateShop completed: {itemsAdded} items added to shop for display '{display}'");
         
         // After populating, highlight the tutorial target building if tutorial is active
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        // Only start coroutine if GameObject is active and enabled
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive() && 
+            gameObject != null && gameObject.activeInHierarchy && enabled)
         {
             StartCoroutine(HighlightTutorialTargetBuilding());
         }
@@ -623,6 +625,15 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         Debug.Log("ShopPanelUI.CloseShop called");
         isShopOpen = false;
+
+        // Clear tutorial highlights when shop closes
+        ClearAllBuildingHighlights();
+        
+        // Hide item hover panel when shop closes
+        if (ItemHoverPanel.Instance != null)
+        {
+            ItemHoverPanel.Instance.HideImmediate();
+        }
 
         // Make sure to re-enable controls before closing
         if (cameraController != null)

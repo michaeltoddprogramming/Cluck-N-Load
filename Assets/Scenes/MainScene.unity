@@ -4795,7 +4795,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 172.76
+      value: 147.0478
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_SizeDelta.y
@@ -4803,11 +4803,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -534
+      value: -546.8561
       objectReference: {fileID: 0}
     - target: {fileID: 1502040846966315127, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -45.8
+      value: -45.800003
       objectReference: {fileID: 0}
     - target: {fileID: 1663842068255869696, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchorMax.x
@@ -4831,7 +4831,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1663842068255869696, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 60
+      value: 55.0892
       objectReference: {fileID: 0}
     - target: {fileID: 1663842068255869696, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -4839,7 +4839,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1663842068255869696, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -104
+      value: -99.4
       objectReference: {fileID: 0}
     - target: {fileID: 2757023806826042254, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_fontSize
@@ -4889,6 +4889,10 @@ PrefabInstance:
       propertyPath: m_margin.x
       value: -919.6697
       objectReference: {fileID: 0}
+    - target: {fileID: 6587779568675299298, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6645612367116458935, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0.5
@@ -4911,7 +4915,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6645612367116458935, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 60
+      value: 50.8515
       objectReference: {fileID: 0}
     - target: {fileID: 6645612367116458935, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -4919,7 +4923,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6645612367116458935, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -104
+      value: -101.51881
       objectReference: {fileID: 0}
     - target: {fileID: 6688483253912211877, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_Pivot.y
@@ -4956,6 +4960,10 @@ PrefabInstance:
     - target: {fileID: 6688483253912211877, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6746009229811895696, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6762159470816324862, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_Pivot.x
@@ -5117,6 +5125,10 @@ PrefabInstance:
       propertyPath: explosionEffectPrefab
       value: 
       objectReference: {fileID: 9111320563476075686, guid: d62154e3262f9cd449168f151ad8ffe6, type: 3}
+    - target: {fileID: 7542583888621048622, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7645659292104282126, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_Transition
       value: 2
@@ -14615,9 +14627,9 @@ MonoBehaviour:
   cameraTransform: {fileID: 330585546}
   normalSpeed: 20
   fastSpeed: 40
-  keyboardSpeedMultiplier: 2
+  keyboardSpeedMultiplier: 3
   movementTime: 5
-  rotationAmount: 1
+  rotationAmount: 6
   lockRotationDuringMovement: 0
   zoomAmount: {x: 0, y: -3, z: 3}
   minX: -30

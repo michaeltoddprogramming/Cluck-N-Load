@@ -53,27 +53,40 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             }
         }
 
-        // Grayscale overlay logic (ignore if locked by day)
-        if (!isLockedByDay)
+        // Grayscale overlay logic (apply regardless of day lock status)
+        Transform grayscaleOverlay = transform.Find("grayOverlay");
+        if (grayscaleOverlay != null && nightManager != null)
         {
-            Transform grayscaleOverlay = transform.Find("grayOverlay");
-            if (grayscaleOverlay != null && nightManager != null)
+            if (nightManager.getIsPaused())
             {
-                if (nightManager.getIsPaused())
-                {
-                    grayscaleOverlay.gameObject.SetActive(true);
-                }
-                else
-                {
-                    grayscaleOverlay.gameObject.SetActive(false);
-                }
+                grayscaleOverlay.gameObject.SetActive(true);
+            }
+            else
+            {
+                grayscaleOverlay.gameObject.SetActive(false);
+            }
+        }
+        else if (nightManager != null && !isLockedByDay)
+        {
+            // For unlocked items without grayOverlay, apply pause effect directly to icon
+            bool isPaused = nightManager.getIsPaused();
+            if (isPaused && icon != null)
+            {
+                // Darken the icon when paused
+                icon.color = new Color(0.4f, 0.4f, 0.4f, 0.7f);
+            }
+            else if (!isPaused && icon != null)
+            {
+                // Restore normal color when not paused
+                UpdateAffordability(); // This will set the correct color based on affordability
             }
         }
 
-        // Button interactability only considers day lock and affordability
+        // Button interactability considers day lock, affordability, and pause state
         if (selectButton != null)
         {
-            selectButton.interactable = !isLockedByDay && 
+            bool isPaused = nightManager != null && nightManager.getIsPaused();
+            selectButton.interactable = !isLockedByDay && !isPaused &&
                 (MoneyManager.Instance?.CanAfford(data?.cost ?? 0) ?? false);
         }
     }
@@ -172,7 +185,10 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
                 
         bool canAfford = MoneyManager.Instance.CanAfford(data.cost);
-        selectButton.interactable = canAfford && !isLockedByDay; // Consider day lock too
+        bool isPaused = nightManager != null && nightManager.getIsPaused();
+        
+        // Button interactability considers affordability, day lock, and pause state
+        selectButton.interactable = canAfford && !isLockedByDay && !isPaused;
         
         if (costText != null)
         {
@@ -180,7 +196,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             costText.text = canAfford ? $"{data.cost}" : $"{data.cost} (Cannot Afford!)";
         }
 
-        if (icon != null)
+        // Only update icon color if not paused (pause effects are handled in Update)
+        if (icon != null && !isPaused && !isLockedByDay)
             icon.color = canAfford ? Color.white : new Color(0.7f, 0.7f, 0.7f, 0.8f);
 
         // Notify BuildController to update ghost if affordability changed

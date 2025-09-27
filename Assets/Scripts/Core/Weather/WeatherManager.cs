@@ -8,10 +8,10 @@ public class WeatherManager : MonoBehaviour
     [SerializeField] private GameObject rainPrefab;
     [SerializeField] private GameObject snowPrefab;
     [SerializeField] private AudioClip rainSFX;
+    [SerializeField] private AudioSource rainAudioSource;
 
     private GameObject rainInstance;
     private GameObject snowInstance;
-    private AudioSource rainAudioSource;
     private Coroutine rainFadeCoroutine;
 
     // In Awake(), set up the AudioSource
@@ -20,10 +20,13 @@ public class WeatherManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            rainAudioSource = gameObject.AddComponent<AudioSource>();
-            rainAudioSource.clip = rainSFX;
-            rainAudioSource.loop = true;
-            rainAudioSource.volume = 0f;
+            // Ensure the assigned AudioSource is set up
+            if (rainAudioSource != null)
+            {
+                rainAudioSource.clip = rainSFX;
+                rainAudioSource.loop = true;
+                rainAudioSource.volume = 0f;
+            }
         }
         else
         {

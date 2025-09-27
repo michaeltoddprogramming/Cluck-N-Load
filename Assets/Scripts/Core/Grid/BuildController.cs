@@ -120,13 +120,13 @@ public class BuildController : MonoBehaviour
             shopPanelUI.OnShopOpened.AddListener(HandleShopOpened);
             shopPanelUI.OnShopClosed.AddListener(HandleShopClosed);
         }
-        
+
         // Subscribe to structure destruction events to update synergies
         if (GameEventManager.Instance != null)
         {
             GameEventManager.Instance.OnStructureDestroyed.AddListener(HandleStructureDestroyed);
         }
-        
+
         if (buildablePrefabs.Length > 0) currentBuildTargetPrefab = buildablePrefabs[0];
         if (itemDeleteIcon != null) itemDeleteIcon.GetComponent<Graphic>().raycastTarget = false;
     }
@@ -138,7 +138,7 @@ public class BuildController : MonoBehaviour
             shopPanelUI.OnShopOpened.RemoveListener(HandleShopOpened);
             shopPanelUI.OnShopClosed.RemoveListener(HandleShopClosed);
         }
-        
+
         // Unsubscribe from structure destruction events
         if (GameEventManager.Instance != null)
         {
@@ -150,7 +150,7 @@ public class BuildController : MonoBehaviour
     {
         // Prevent infinite loops
         if (isBuildModeActive) return;
-        
+
         Debug.Log("HandleShopOpened called - showing grid and enabling build mode");
         gridController.ShowGrid();
         EnableBuildMode();
@@ -163,7 +163,7 @@ public class BuildController : MonoBehaviour
         {
             TutorialManager.Instance.CleanupShopHighlights();
         }
-        
+
         // If we're intentionally hiding the shop for ghost creation, don't disable build mode
         if (isHidingShopForGhost)
         {
@@ -171,7 +171,7 @@ public class BuildController : MonoBehaviour
             isHidingShopForGhost = false;
             return;
         }
-        
+
         Debug.Log("HandleShopClosed called - disabling build mode and hiding grid");
         DisableBuildMode();
         gridController.HideGrid();
@@ -192,7 +192,7 @@ public class BuildController : MonoBehaviour
         {
             Debug.Log("Ctrl pressed but build mode is not active. BuildMode: " + isBuildModeActive + ", MoveMode: " + isMoveModeActive);
         }
-        
+
         if (!isBuildModeActive && !isMoveModeActive)
         {
             // Reset delete mode if build mode is not active
@@ -203,7 +203,7 @@ public class BuildController : MonoBehaviour
             }
             return;
         }
-        
+
         if (enableSynergyVisuals && activeSynergyLines.Count > maxSynergyLines)
         {
             while (activeSynergyLines.Count > maxSynergyLines)
@@ -269,22 +269,22 @@ public class BuildController : MonoBehaviour
     public void DisableBuildMode()
     {
         ClearSynergyVisualization();
-        
+
         // Clean up defense chain mode
         if (isDefenceChainModeActive)
         {
             CancelDefenceChain();
         }
-        
+
         // IMPORTANT: If a structure is being moved, place it immediately at current position
         if (movingStructure != null)
         {
             Debug.Log($"DisableBuildMode: Force-placing moving structure {movingStructure.name} at current position due to night transition");
-            
+
             // Get current ghost position (where the structure would be placed)
             Vector3 currentPosition = currentGhost != null ? currentGhost.transform.position : originalPosition;
             Vector2Int gridCoords = gridController.WorldToGridCoords(currentPosition);
-            
+
             // Check if current position is valid, if not use original position as fallback
             if (IsValidPlacement(gridCoords.x, gridCoords.y))
             {
@@ -292,14 +292,14 @@ public class BuildController : MonoBehaviour
                 movingStructure.transform.position = currentPosition;
                 movingStructure.transform.rotation = currentRotation;
                 movingStructure.gameObject.SetActive(true);
-                
+
                 // Update grid occupancy for new position
                 List<Vector2Int> newFootprint = GetStructureFootprint(movingStructure.gameObject);
-                foreach (Vector2Int cell in newFootprint) 
+                foreach (Vector2Int cell in newFootprint)
                 {
                     gridController.SetCellOccupied(cell.x, cell.y, true);
                 }
-                
+
                 movingStructure.RegisterWithGrid();
                 Debug.Log($"Structure placed at new position: {currentPosition}");
             }
@@ -312,10 +312,10 @@ public class BuildController : MonoBehaviour
                 movingStructure.gameObject.SetActive(true);
                 movingStructure.RegisterWithGrid();
             }
-            
+
             movingStructure = null;
         }
-        
+
         isBuildModeActive = false;
         isMoveModeActive = false;
         gridController.HideGrid();
@@ -323,10 +323,10 @@ public class BuildController : MonoBehaviour
         {
             // If we had a shop open before the ghost, restore it when disabling build mode
             bool shouldRestoreShop = wasShopOpenBeforeGhost;
-            
+
             Destroy(currentGhost);
             currentGhost = null;
-            
+
             if (shouldRestoreShop && ShopUIManager.Instance != null)
             {
                 ShopUIManager.Instance.OpenShop();
@@ -485,14 +485,14 @@ public class BuildController : MonoBehaviour
                 {
                     if (isDeleteModeActive)
                     {
-                        Debug.Log("Left click detected in delete mode");
-                        if (TryRemoveStructureByRaycast()) 
+                        // Debug.Log("Left click detected in delete mode");
+                        if (TryRemoveStructureByRaycast())
                         {
-                            Debug.Log("Structure removed by raycast");
+                            // Debug.Log("Structure removed by raycast");
                             return;
                         }
                         Vector2Int hoveredCell = gridController.GetCurrentHoveredCell();
-                        Debug.Log($"Attempting to remove at grid cell: {hoveredCell}");
+                        // Debug.Log($"Attempting to remove at grid cell: {hoveredCell}");
                         RemoveItem(hoveredCell.x, hoveredCell.y);
                     }
                     // Check if this is a defense type that should start chain mode
@@ -526,7 +526,7 @@ public class BuildController : MonoBehaviour
                 }
             }
 
-        // New: Right-click to deselect
+            // New: Right-click to deselect
             if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
                 SelectionManager selectionManager = FindFirstObjectByType<SelectionManager>();
@@ -572,24 +572,24 @@ public class BuildController : MonoBehaviour
     // Helper: Is this a defence type structure?
     private bool IsDefenceType(StructureData data)
     {
-        if (data == null) 
+        if (data == null)
         {
             Debug.Log("IsDefenceType: data is null");
             return false;
         }
-        
+
         string structureName = data.structureName.ToLower();
         Debug.Log($"IsDefenceType: Checking structure '{structureName}'");
-        
+
         // Add your defense structure type checks here
-        bool isDefense = structureName.Contains("fence") || 
+        bool isDefense = structureName.Contains("fence") ||
                         structureName.Contains("wall") ||
                         structureName.Contains("turret") ||
                         structureName.Contains("barrier") ||
                         structureName.Contains("barricade") ||
                         structureName.Contains("defense") ||
                         structureName.Contains("defence");
-                        
+
         Debug.Log($"IsDefenceType: '{structureName}' is defense type: {isDefense}");
         return isDefense;
     }
@@ -598,29 +598,29 @@ public class BuildController : MonoBehaviour
     private void StartDefenceChain(Vector2Int startCell)
     {
         Debug.Log($"StartDefenceChain: Starting defense chain at {startCell}");
-        
+
         // First, place the initial structure immediately
         if (IsValidPlacement(startCell.x, startCell.y))
         {
             Debug.Log($"StartDefenceChain: First cell {startCell} is valid for placement");
-            
+
             if (currentStructureData != null && MoneyManager.Instance != null)
             {
                 Debug.Log($"StartDefenceChain: Structure cost: {currentStructureData.cost}, Available money: {MoneyManager.Instance.GetCurrentMoney()}");
-                
+
                 if (MoneyManager.Instance.SpendMoney(currentStructureData.cost))
                 {
                     Debug.Log($"StartDefenceChain: Successfully spent money for first structure");
                     PlaceItemWithoutMoneyCheck(startCell.x, startCell.y);
                     Debug.Log($"StartDefenceChain: First structure placed at {startCell}");
-                    
+
                     // Now start chain mode for additional structures
                     isDefenceChainModeActive = true;
                     initialDefenceCell = startCell;
                     lastDefenceHoverCell = Vector2Int.one * -1;
                     ClearDefenceGhostChain();
                     if (currentGhost != null) currentGhost.SetActive(false);
-                    
+
                     Debug.Log($"StartDefenceChain: Defense chain mode activated");
                 }
                 else
@@ -651,13 +651,13 @@ public class BuildController : MonoBehaviour
     // Finalize defence chain: place real objects
     private void FinalizeDefenceChain()
     {
-        if (!isDefenceChainModeActive || defenceGhostChain.Count == 0) 
+        if (!isDefenceChainModeActive || defenceGhostChain.Count == 0)
         {
             Debug.Log("Cannot finalize defense chain - no ghost chain or not in chain mode");
             CancelDefenceChain();
             return;
         }
-        
+
         // Check if player can afford all remaining structures
         int totalCost = defenceGhostChain.Count * (currentStructureData?.cost ?? 0);
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(totalCost))
@@ -679,7 +679,7 @@ public class BuildController : MonoBehaviour
         {
             Vector2Int gridCoords = gridController.WorldToGridCoords(ghost.transform.position);
             Debug.Log($"FinalizeDefenceChain: Attempting to place structure {placedCount + 1} at {gridCoords}");
-            
+
             // Check if this position is still valid before placing
             if (IsValidPlacementForChain(gridCoords.x, gridCoords.y))
             {
@@ -714,7 +714,7 @@ public class BuildController : MonoBehaviour
         // Wait a couple frames to ensure all defense structures are properly registered
         yield return null;
         yield return null;
-        
+
         Debug.Log("DelayedConnectorRebuild: Rebuilding all defense structure connectors");
         DefenseStructure.RebuildAllConnectors();
     }
@@ -723,7 +723,7 @@ public class BuildController : MonoBehaviour
     private void UpdateDefenceGhostChain()
     {
         Vector2Int hoveredCell = GetGridCellUnderCursor(true);
-        
+
         if (hoveredCell != lastDefenceHoverCell && hoveredCell != initialDefenceCell)
         {
             lastDefenceHoverCell = hoveredCell;
@@ -735,9 +735,9 @@ public class BuildController : MonoBehaviour
     private void CreateDefenceGhostChain(Vector2Int start, Vector2Int end)
     {
         ClearDefenceGhostChain();
-        
+
         List<Vector2Int> cellsBetween = GetCellsBetween(start, end);
-        
+
         // Skip the first cell (start) since it's already placed
         for (int i = 1; i < cellsBetween.Count; i++)
         {
@@ -760,12 +760,12 @@ public class BuildController : MonoBehaviour
         }
         defenceGhostChain.Clear();
     }
-    
+
     // Get ghost object from pool or create new one
     private GameObject GetGhostFromPool(Vector3 position, Quaternion rotation)
     {
         GameObject ghost;
-        
+
         if (ghostPool.Count > 0)
         {
             ghost = ghostPool[ghostPool.Count - 1];
@@ -777,7 +777,7 @@ public class BuildController : MonoBehaviour
         else
         {
             ghost = Instantiate(currentBuildTargetPrefab, position, rotation);
-            
+
             // IMPORTANT: Disable DefenseStructure component on ghost chain objects to prevent connector creation
             DefenseStructure defenseComponent = ghost.GetComponent<DefenseStructure>();
             if (defenseComponent != null)
@@ -785,13 +785,13 @@ public class BuildController : MonoBehaviour
                 defenseComponent.enabled = false;
                 Debug.Log("Disabled DefenseStructure component on ghost chain object");
             }
-            
+
             ApplyGhostMaterial(ghost);
         }
-        
+
         return ghost;
     }
-    
+
     // Return ghost object to pool
     private void ReturnGhostToPool(GameObject ghost)
     {
@@ -801,7 +801,7 @@ public class BuildController : MonoBehaviour
             ghostPool.Add(ghost);
         }
     }
-    
+
     // Clear ghost pool when switching build types
     private void ClearGhostPool()
     {
@@ -817,29 +817,29 @@ public class BuildController : MonoBehaviour
     {
         List<Vector2Int> cells = new List<Vector2Int>();
         cells.Add(start); // Always include start cell
-        
+
         int currentX = start.x;
         int currentY = start.y;
-        
+
         int deltaX = end.x - start.x;
         int deltaY = end.y - start.y;
-        
+
         int remainingX = Mathf.Abs(deltaX);
         int remainingY = Mathf.Abs(deltaY);
-        
+
         int stepX = deltaX > 0 ? 1 : -1;
         int stepY = deltaY > 0 ? 1 : -1;
-        
+
         while (currentX != end.x || currentY != end.y)
         {
             bool moveX = false;
             bool moveY = false;
-            
+
             if (currentX != end.x && currentY != end.y)
             {
                 // Choose direction based on remaining distance
                 // This creates a staircase pattern that prioritizes the longer remaining distance
-                
+
                 if (remainingX >= remainingY)
                 {
                     moveX = true;
@@ -857,7 +857,7 @@ public class BuildController : MonoBehaviour
             {
                 moveY = true;
             }
-            
+
             if (moveX)
             {
                 currentX += stepX;
@@ -868,10 +868,10 @@ public class BuildController : MonoBehaviour
                 currentY += stepY;
                 remainingY--;
             }
-            
+
             cells.Add(new Vector2Int(currentX, currentY));
         }
-        
+
         return cells;
     }
 
@@ -888,10 +888,10 @@ public class BuildController : MonoBehaviour
         AudioManager.Instance?.PlayPlaceSound();
         gridController.UpdateGridTexture();
         if (gridMonitor != null && newFootprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(newFootprint, GridChangeType.Structural);
-        
+
         // IMPORTANT: Recalculate all synergies after moving a structure
         UpdateAllSynergies();
-        
+
         movingStructure = null;
         isMoveModeActive = false;
         if (currentGhost != null)
@@ -1029,7 +1029,7 @@ public class BuildController : MonoBehaviour
         CreateRangeIndicator(currentGhost.transform.position, 10f, potentialSynergyMaterial, "Crop Synergy Range");
         foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
             if ((currentGhost.transform.position - animal.transform.position).sqrMagnitude <= 225f)
-                CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");;
+                CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal"); ;
         foreach (var crop in FindObjectsByType<CropStructure>(FindObjectsSortMode.None))
             if (crop != null && (currentGhost.transform.position - crop.transform.position).sqrMagnitude <= 100f)
                 CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
@@ -1216,13 +1216,13 @@ public class BuildController : MonoBehaviour
     {
         if (currentGhost != null) Destroy(currentGhost);
         if (prefab == null) return;
-        
+
         // Clear tutorial highlighting when building item is selected
         if (TutorialManager.Instance != null)
         {
             TutorialManager.Instance.CleanupShopHighlights();
         }
-        
+
         // Store whether shop was open before creating ghost
         if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen())
         {
@@ -1230,10 +1230,10 @@ public class BuildController : MonoBehaviour
             isHidingShopForGhost = true; // Set flag before closing shop
             ShopUIManager.Instance.CloseShop();
         }
-        
+
         currentGhost = Instantiate(prefab);
         currentGhost.name = "BuildGhost";
-        
+
         // IMPORTANT: Disable DefenseStructure component on ghost objects to prevent connector creation
         DefenseStructure defenseComponent = currentGhost.GetComponent<DefenseStructure>();
         if (defenseComponent != null)
@@ -1241,7 +1241,7 @@ public class BuildController : MonoBehaviour
             defenseComponent.enabled = false;
             Debug.Log("Disabled DefenseStructure component on ghost object");
         }
-        
+
         ApplyGhostMaterial(currentGhost);
         currentGhost.transform.rotation = currentRotation;
     }
@@ -1270,13 +1270,13 @@ public class BuildController : MonoBehaviour
     public void SetBuildTarget(StructureData data)
     {
         if (data == null || data.prefab == null) return;
-        
+
         // Clear ghost pool when switching build types
         if (currentBuildTargetPrefab != data.prefab)
         {
             ClearGhostPool();
         }
-        
+
         currentBuildTargetPrefab = data.prefab;
         currentStructureData = data;
         EnableBuildMode();
@@ -1287,13 +1287,13 @@ public class BuildController : MonoBehaviour
     public void SetBuildTarget(GameObject prefab)
     {
         if (prefab == null) return;
-        
+
         // Clear ghost pool when switching build types
         if (currentBuildTargetPrefab != prefab)
         {
             ClearGhostPool();
         }
-        
+
         currentBuildTargetPrefab = prefab;
         EnableBuildMode();
         CreateGhost(currentBuildTargetPrefab);
@@ -1302,7 +1302,7 @@ public class BuildController : MonoBehaviour
     private List<Vector2Int> GetStructureFootprint(GameObject obj)
     {
         List<Vector2Int> occupiedCells = new List<Vector2Int>();
-        
+
         // Special handling for DefenseStructure - they should only occupy a single cell
         DefenseStructure defenseStructure = obj.GetComponent<DefenseStructure>();
         if (defenseStructure != null)
@@ -1312,22 +1312,24 @@ public class BuildController : MonoBehaviour
             Debug.Log($"GetStructureFootprint for DefenseStructure {obj.name}: single cell at {gridPos}");
             return occupiedCells;
         }
-        
+
         // Default behavior for other structures
         Renderer renderer = obj.GetComponentInChildren<Renderer>();
-        if (renderer == null) 
+        if (renderer == null)
         {
             Debug.LogWarning($"No renderer found for object {obj.name}");
             return occupiedCells;
         }
-        
+
         Bounds bounds = renderer.bounds;
         bounds.Expand(-0.1f);
         Vector2Int bottomLeft = gridController.WorldToGridCoords(bounds.min);
         Vector2Int topRight = gridController.WorldToGridCoords(bounds.max);
-        
-        for (int x = bottomLeft.x; x <= topRight.x; x++){
-            for (int y = bottomLeft.y; y <= topRight.y; y++){
+
+        for (int x = bottomLeft.x; x <= topRight.x; x++)
+        {
+            for (int y = bottomLeft.y; y <= topRight.y; y++)
+            {
                 if (gridController.IsValidCell(x, y))
                 {
                     Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
@@ -1337,7 +1339,7 @@ public class BuildController : MonoBehaviour
                     }
                 }
             }
-            
+
         }
         return occupiedCells;
     }
@@ -1352,12 +1354,12 @@ public class BuildController : MonoBehaviour
     {
         List<Vector2Int> relativeFootprint = GetCachedStructureFootprint();
         List<Vector2Int> absoluteFootprint = new List<Vector2Int>();
-        
+
         foreach (Vector2Int cell in relativeFootprint)
         {
             absoluteFootprint.Add(new Vector2Int(x + cell.x, y + cell.y));
         }
-        
+
         return absoluteFootprint;
     }
 
@@ -1365,13 +1367,13 @@ public class BuildController : MonoBehaviour
     private List<Vector2Int> GetCachedStructureFootprint()
     {
         // Check if cache is still valid
-        if (cachedStructureFootprint == null || 
-            cachedPrefabReference != currentBuildTargetPrefab || 
+        if (cachedStructureFootprint == null ||
+            cachedPrefabReference != currentBuildTargetPrefab ||
             cachedRotation != currentRotation)
         {
             RecalculateStructureFootprintCache();
         }
-        
+
         return cachedStructureFootprint;
     }
 
@@ -1381,7 +1383,7 @@ public class BuildController : MonoBehaviour
         cachedStructureFootprint = new List<Vector2Int>();
         cachedPrefabReference = currentBuildTargetPrefab;
         cachedRotation = currentRotation;
-        
+
         if (currentBuildTargetPrefab == null)
         {
             Debug.LogWarning("Cannot calculate footprint cache - no prefab selected");
@@ -1392,16 +1394,16 @@ public class BuildController : MonoBehaviour
         GameObject tempObj = Instantiate(currentBuildTargetPrefab);
         tempObj.transform.rotation = currentRotation;
         Renderer renderer = tempObj.GetComponentInChildren<Renderer>();
-        
+
         if (renderer != null)
         {
             Bounds bounds = renderer.bounds;
             bounds.Expand(-0.1f);
-            
+
             // Calculate relative to origin (0,0)
             Vector2Int bottomLeft = gridController.WorldToGridCoords(bounds.min);
             Vector2Int topRight = gridController.WorldToGridCoords(bounds.max);
-            
+
             // Store as relative coordinates (offset from structure center)
             for (int x = bottomLeft.x; x <= topRight.x; x++)
             {
@@ -1423,51 +1425,51 @@ public class BuildController : MonoBehaviour
             Debug.LogWarning($"No renderer found on prefab {currentBuildTargetPrefab.name}");
             cachedStructureFootprint.Add(Vector2Int.zero); // Default single cell
         }
-        
+
         DestroyImmediate(tempObj);
         Debug.Log($"Cached footprint for {currentBuildTargetPrefab.name}: {cachedStructureFootprint.Count} cells");
     }
 
-        bool IsValidPlacement(int x, int y)
+    bool IsValidPlacement(int x, int y)
     {
         // Add null checks FIRST
-        if (gridController == null || gridDataGenerator == null) 
+        if (gridController == null || gridDataGenerator == null)
         {
             Debug.LogError("GridController or GridDataGenerator is null in IsValidPlacement");
             return false;
         }
-        
+
         // STRICT bounds checking - prevent placement outside logical grid
-        if (x < 0 || x >= gridDataGenerator.GetGridWidth() || 
+        if (x < 0 || x >= gridDataGenerator.GetGridWidth() ||
             y < 0 || y >= gridDataGenerator.GetGridHeight())
         {
-            Debug.LogWarning($"Placement blocked: ({x},{y}) is outside logical grid bounds (0,0) to ({gridDataGenerator.GetGridWidth()-1},{gridDataGenerator.GetGridHeight()-1})");
+            Debug.LogWarning($"Placement blocked: ({x},{y}) is outside logical grid bounds (0,0) to ({gridDataGenerator.GetGridWidth() - 1},{gridDataGenerator.GetGridHeight() - 1})");
             return false;
         }
-        
+
         // Unlimited building mode bypasses most restrictions but still respects grid bounds
         if (CheatManager.Instance != null && CheatManager.Instance.IsUnlimitedBuildingActive())
         {
             return gridController.IsValidCell(x, y);
         }
-        
+
         // Get the structure's footprint and check ALL cells
         if (currentGhost != null)
         {
             List<Vector2Int> footprint = GetStructureFootprint(currentGhost);
-            
+
             foreach (Vector2Int cell in footprint)
             {
                 // Check if each cell in footprint is valid
                 if (!gridController.IsValidCell(cell.x, cell.y))
                     return false;
-                    
+
                 GridCell gridCell = gridDataGenerator.GetCell(cell.x, cell.y);
                 if (gridCell == null) return false;
-                
+
                 // Check if any cell in footprint is occupied
                 if (gridCell.flags.isOccupied) return false;
-                
+
                 // Check if any cell in footprint is not owned
                 if (!gridCell.flags.isOwned) return false;
             }
@@ -1477,15 +1479,15 @@ public class BuildController : MonoBehaviour
             // Fallback: check single cell if no ghost exists
             GridCell cell = gridDataGenerator.GetCell(x, y);
             if (cell == null) return false;
-            
+
             if (cell.flags.isOccupied) return false;
             if (!cell.flags.isOwned) return false;
         }
-        
+
         // Check money
-        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost)) 
+        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost))
             return false;
-        
+
         return true;
     }
 
@@ -1555,7 +1557,7 @@ public class BuildController : MonoBehaviour
 
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
-        
+
         // NEW: Reopen shop after placing item, except for walls
         if (wasShopOpenBeforeGhost && structure != null && !structure.GetStructureName().ToLower().Contains("wall"))
         {
@@ -1568,13 +1570,13 @@ public class BuildController : MonoBehaviour
             currentBuildTargetPrefab = null;
             isBuildModeActive = false;
             gridController.HideGrid();
-            
+
             // Now reopen the shop
             if (ShopUIManager.Instance != null)
             {
                 ShopUIManager.Instance.OpenShop();
             }
-            
+
             wasShopOpenBeforeGhost = false;
             isHidingShopForGhost = false;
         }
@@ -1584,9 +1586,9 @@ public class BuildController : MonoBehaviour
     private void PlaceItemWithoutMoneyCheck(int x, int y)
     {
         Debug.Log($"PlaceItemWithoutMoneyCheck at ({x}, {y})");
-        
+
         // Use chain-specific validation instead of the ghost-based one
-        if (!IsValidPlacementForChain(x, y)) 
+        if (!IsValidPlacementForChain(x, y))
         {
             Debug.LogWarning($"PlaceItemWithoutMoneyCheck: Invalid placement at ({x}, {y})");
             return;
@@ -1656,7 +1658,7 @@ public class BuildController : MonoBehaviour
 
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
-        
+
         // NEW: Reopen shop after placing item, except for walls
         if (wasShopOpenBeforeGhost && structure != null && !structure.GetStructureName().ToLower().Contains("wall"))
         {
@@ -1669,13 +1671,13 @@ public class BuildController : MonoBehaviour
             currentBuildTargetPrefab = null;
             isBuildModeActive = false;
             gridController.HideGrid();
-            
+
             // Now reopen the shop
             if (ShopUIManager.Instance != null)
             {
                 ShopUIManager.Instance.OpenShop();
             }
-            
+
             wasShopOpenBeforeGhost = false;
             isHidingShopForGhost = false;
         }
@@ -1685,22 +1687,22 @@ public class BuildController : MonoBehaviour
     private bool IsValidPlacementWithoutMoney(int x, int y)
     {
         Debug.Log($"IsValidPlacementWithoutMoney at ({x}, {y})");
-        
+
         // Add null checks FIRST
-        if (gridController == null || gridDataGenerator == null) 
+        if (gridController == null || gridDataGenerator == null)
         {
             Debug.LogError("GridController or GridDataGenerator is null in IsValidPlacementWithoutMoney");
             return false;
         }
-        
+
         // Check if coordinates are within grid bounds
-        if (x < 0 || x >= gridDataGenerator.GetGridWidth() || 
+        if (x < 0 || x >= gridDataGenerator.GetGridWidth() ||
             y < 0 || y >= gridDataGenerator.GetGridHeight())
         {
             Debug.LogWarning($"Coordinates ({x}, {y}) are outside grid bounds");
             return false;
         }
-        
+
         // Check ownership first for efficiency
         if (CheatManager.Instance != null && CheatManager.Instance.IsUnlimitedBuildingActive())
         {
@@ -1715,10 +1717,10 @@ public class BuildController : MonoBehaviour
             foreach (Vector2Int cell in footprint)
             {
                 if (!gridController.IsValidCell(cell.x, cell.y)) return false;
-                
+
                 GridCell gridCell = gridController.GetCell(cell.x, cell.y);
                 if (gridCell == null) return false;
-                
+
                 if (gridCell.flags.isOccupied) return false;
                 if (!gridCell.flags.isOwned) return false;
             }
@@ -1728,7 +1730,7 @@ public class BuildController : MonoBehaviour
             // Fallback for single cell placement
             GridCell cell = gridController.GetCell(x, y);
             if (cell == null) return false;
-            
+
             if (cell.flags.isOccupied) return false;
             if (!cell.flags.isOwned) return false;
         }
@@ -1740,19 +1742,19 @@ public class BuildController : MonoBehaviour
     private bool IsValidPlacementForChain(int x, int y)
     {
         // Add null checks FIRST
-        if (gridController == null || gridDataGenerator == null) 
+        if (gridController == null || gridDataGenerator == null)
         {
             Debug.LogError("GridController or GridDataGenerator is null in IsValidPlacementForChain");
             return false;
         }
-        
+
         // Check if coordinates are within grid bounds
-        if (x < 0 || x >= gridDataGenerator.GetGridWidth() || 
+        if (x < 0 || x >= gridDataGenerator.GetGridWidth() ||
             y < 0 || y >= gridDataGenerator.GetGridHeight())
         {
             return false;
         }
-        
+
         // Check ownership first for efficiency
         if (CheatManager.Instance != null && CheatManager.Instance.IsUnlimitedBuildingActive())
         {
@@ -1762,7 +1764,7 @@ public class BuildController : MonoBehaviour
         // Check single cell placement (no footprint calculation needed for chain)
         GridCell cell = gridController.GetCell(x, y);
         if (cell == null) return false;
-        
+
         if (cell.flags.isOccupied) return false;
         if (!cell.flags.isOwned) return false;
 
@@ -1776,7 +1778,7 @@ public class BuildController : MonoBehaviour
         {
             return true; // Cheat overrides all restrictions
         }
-        
+
         if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) return true;
 
         string currentStepId = TutorialManager.Instance.GetCurrentStepId();
@@ -1880,31 +1882,31 @@ public class BuildController : MonoBehaviour
     void RemoveItem(int x, int y)
     {
         Debug.Log($"RemoveItem called at ({x}, {y})");
-        
-        if (!gridController.IsValidCell(x, y)) 
+
+        if (!gridController.IsValidCell(x, y))
         {
             Debug.Log($"Invalid cell at ({x}, {y})");
             return;
         }
-        
+
         GridCell cell = gridController.GetCell(x, y);
-        if (cell == null) 
+        if (cell == null)
         {
             Debug.Log($"Cell is null at ({x}, {y})");
             return;
         }
-        
-        if (!cell.flags.isOccupied) 
+
+        if (!cell.flags.isOccupied)
         {
             Debug.Log($"Cell at ({x}, {y}) is not occupied");
             return;
         }
-        
+
         // Try to find the item by name first
         string itemName = $"Item_{x}_{y}";
         GameObject placedItem = GameObject.Find(itemName);
         Debug.Log($"Looking for item with name: {itemName}, found: {placedItem != null}");
-        
+
         // If not found by exact name, try to find any structure that occupies this cell
         if (placedItem == null)
         {
@@ -1921,20 +1923,21 @@ public class BuildController : MonoBehaviour
                 }
             }
         }
-        
+
         if (placedItem != null)
         {
             Structure structure = placedItem.GetComponent<Structure>();
             // Prevent deletion of farmhouse
             if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
             {
+                AudioManager.Instance?.PlayErrorSound();
                 Debug.Log("Cannot delete Farmhouse - it is indestructible!");
                 return;  // Skip deletion
             }
 
             Debug.Log($"Removing structure: {placedItem.name}");
             List<Vector2Int> footprint = GetStructureFootprint(placedItem);
-            
+
             // Get the structure data for money back calculation
             StructureData structureData = structure?.structureData;
             if (structureData != null)
@@ -1947,7 +1950,7 @@ public class BuildController : MonoBehaviour
             {
                 Debug.Log("No structure data found for money back calculation");
             }
-            
+
             Destroy(placedItem);
             AudioManager.Instance?.PlayRemoveSound();
             foreach (Vector2Int pos in footprint) gridController.SetCellOccupied(pos.x, pos.y, false);
@@ -1964,15 +1967,15 @@ public class BuildController : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Debug.Log("Performing raycast for structure removal");
-        
+
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Debug.Log($"Raycast hit: {hit.collider.gameObject.name}");
-            
+
             // Look for a Structure component in the hit object or its parents
             Transform currentTransform = hit.collider.transform;
             Structure structure = null;
-            
+
             while (currentTransform != null)
             {
                 structure = currentTransform.GetComponent<Structure>();
@@ -1983,21 +1986,22 @@ public class BuildController : MonoBehaviour
                 }
                 currentTransform = currentTransform.parent;
             }
-            
+
             if (structure != null)
             {
                 // Prevent deletion of farmhouse
                 if (structure.GetStructureName().ToLower().Contains("farm house"))
                 {
+                    AudioManager.Instance?.PlayErrorSound();
                     Debug.Log("Cannot delete Farmhouse - it is indestructible!");
                     return true;  // Return true to indicate "handled" without deleting
                 }
 
                 Debug.Log($"Attempting to remove structure by raycast: {structure.gameObject.name}");
-                
+
                 // Get the structure's footprint and remove it
                 List<Vector2Int> footprint = GetStructureFootprint(structure.gameObject);
-                
+
                 // Get money back
                 StructureData structureData = structure.structureData;
                 if (structureData != null)
@@ -2006,23 +2010,23 @@ public class BuildController : MonoBehaviour
                     MoneyManager.Instance.AddMoney(moneyBack);
                     Debug.Log($"Added money back after deleting by raycast. cost {structureData.cost} money gained: {moneyBack}");
                 }
-                
+
                 // Remove from grid
-                foreach (Vector2Int pos in footprint) 
+                foreach (Vector2Int pos in footprint)
                 {
                     gridController.SetCellOccupied(pos.x, pos.y, false);
                 }
-                
+
                 // Destroy the structure
                 Destroy(structure.gameObject);
                 AudioManager.Instance?.PlayRemoveSound();
                 gridController.UpdateGridTexture();
-                
-                if (gridMonitor != null && footprint.Count > 0) 
+
+                if (gridMonitor != null && footprint.Count > 0)
                 {
                     gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
                 }
-                
+
                 Debug.Log("Structure successfully removed by raycast");
                 return true;
             }
@@ -2084,7 +2088,7 @@ public class BuildController : MonoBehaviour
         {
             Destroy(currentGhost);
             currentGhost = null;
-            
+
             // Restore shop if it was open before creating the ghost
             if (wasShopOpenBeforeGhost && ShopUIManager.Instance != null)
             {
@@ -2095,7 +2099,7 @@ public class BuildController : MonoBehaviour
         // Reset flags
         wasShopOpenBeforeGhost = false;
         isHidingShopForGhost = false;
-        
+
         ClearSynergyVisualization(); // <-- Add this line
         currentBuildTargetPrefab = null;
     }
@@ -2130,7 +2134,7 @@ public class BuildController : MonoBehaviour
                 Debug.LogWarning("Raycast to grid plane failed - using last hovered cell");
             }
         }
-        
+
         if (gridController.TextureWidth > 0 && gridController.TextureHeight > 0)
         {
             hoveredCell.x = Mathf.Clamp(hoveredCell.x, 0, gridController.TextureWidth - 1);

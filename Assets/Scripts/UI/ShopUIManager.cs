@@ -201,6 +201,15 @@ public class ShopUIManager : MonoBehaviour
             return;
         }
 
+        // Check if there's an active ghost building - if so, cancel it and exit build mode
+        BuildController buildController = FindFirstObjectByType<BuildController>();
+        if (buildController != null && buildController.IsBuildModeActive() && buildController.HasActiveGhost())
+        {
+            Debug.Log("Cancelling current building to open shop");
+            buildController.CancelCurrentBuilding();
+            // After cancelling, we'll open the shop (it should restore automatically via CancelCurrentBuilding)
+            return;
+        }
 
         // Use the actual panel state instead of isVisible flag
         bool shouldOpen = shopPanel != null && !shopPanel.activeSelf;
@@ -221,14 +230,6 @@ public class ShopUIManager : MonoBehaviour
         // Don't allow opening shop if it's disabled (nighttime)
         if (!shopButton.interactable)
         {
-            return;
-        }
-
-        // Don't allow opening shop if there's an active ghost building
-        BuildController buildController = FindFirstObjectByType<BuildController>();
-        if (buildController != null && buildController.IsBuildModeActive() && buildController.HasActiveGhost())
-        {
-            Debug.Log("Cannot open shop while ghost building is active");
             return;
         }
 

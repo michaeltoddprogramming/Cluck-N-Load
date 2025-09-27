@@ -145,6 +145,12 @@ public class BuildController : MonoBehaviour
 
     public void HandleShopClosed()
     {
+        // Clear tutorial highlighting when shop closes
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.CleanupShopHighlights();
+        }
+        
         // If we're intentionally hiding the shop for ghost creation, don't disable build mode
         if (isHidingShopForGhost)
         {
@@ -1159,6 +1165,12 @@ public class BuildController : MonoBehaviour
         if (currentGhost != null) Destroy(currentGhost);
         if (prefab == null) return;
         
+        // Clear tutorial highlighting when building item is selected
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.CleanupShopHighlights();
+        }
+        
         // Store whether shop was open before creating ghost
         if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen())
         {
@@ -1262,9 +1274,6 @@ public class BuildController : MonoBehaviour
         Vector2Int bottomLeft = gridController.WorldToGridCoords(bounds.min);
         Vector2Int topRight = gridController.WorldToGridCoords(bounds.max);
         
-        Debug.Log($"GetStructureFootprint for {obj.name}: bounds.min={bounds.min}, bounds.max={bounds.max}");
-        Debug.Log($"  Grid coords: bottomLeft={bottomLeft}, topRight={topRight}");
-        
         for (int x = bottomLeft.x; x <= topRight.x; x++){
             for (int y = bottomLeft.y; y <= topRight.y; y++){
                 if (gridController.IsValidCell(x, y))
@@ -1273,17 +1282,11 @@ public class BuildController : MonoBehaviour
                     if (bounds.Contains(new Vector3(cellCenter.x, bounds.center.y, cellCenter.z)))
                     {
                         occupiedCells.Add(new Vector2Int(x, y));
-                        Debug.Log($"    Adding cell ({x}, {y}) to footprint");
                     }
-                }
-                else
-                {
-                    Debug.LogWarning($"    Invalid cell ({x}, {y}) skipped");
                 }
             }
             
         }
-        Debug.Log($"  Final footprint size: {occupiedCells.Count} cells");
         return occupiedCells;
     }
 
@@ -1497,6 +1500,29 @@ public class BuildController : MonoBehaviour
 
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
+        
+        // NEW: Reopen shop after placing item, except for walls
+        if (wasShopOpenBeforeGhost && structure != null && !structure.GetStructureName().ToLower().Contains("wall"))
+        {
+            // Clear the ghost and exit build mode first, then reopen shop
+            if (currentGhost != null)
+            {
+                Destroy(currentGhost);
+                currentGhost = null;
+            }
+            currentBuildTargetPrefab = null;
+            isBuildModeActive = false;
+            gridController.HideGrid();
+            
+            // Now reopen the shop
+            if (ShopUIManager.Instance != null)
+            {
+                ShopUIManager.Instance.OpenShop();
+            }
+            
+            wasShopOpenBeforeGhost = false;
+            isHidingShopForGhost = false;
+        }
     }
 
     // Place item without money check (used for defence chains where money is already spent)
@@ -1572,6 +1598,29 @@ public class BuildController : MonoBehaviour
 
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
+        
+        // NEW: Reopen shop after placing item, except for walls
+        if (wasShopOpenBeforeGhost && structure != null && !structure.GetStructureName().ToLower().Contains("wall"))
+        {
+            // Clear the ghost and exit build mode first, then reopen shop
+            if (currentGhost != null)
+            {
+                Destroy(currentGhost);
+                currentGhost = null;
+            }
+            currentBuildTargetPrefab = null;
+            isBuildModeActive = false;
+            gridController.HideGrid();
+            
+            // Now reopen the shop
+            if (ShopUIManager.Instance != null)
+            {
+                ShopUIManager.Instance.OpenShop();
+            }
+            
+            wasShopOpenBeforeGhost = false;
+            isHidingShopForGhost = false;
+        }
     }
 
     // Check placement validity without money check

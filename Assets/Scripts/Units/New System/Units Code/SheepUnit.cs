@@ -30,6 +30,7 @@ public class SheepUnit : ArmyUnit
     [SerializeField] private float indicatorSizeMultiplier = 1.0f;
     private GameObject radiusIndicatorObject;
     private SpriteRenderer radiusIndicatorRenderer;
+    private bool ignoreSounds = false;
 
     private int lastBeepStage = 0;
 
@@ -37,29 +38,29 @@ public class SheepUnit : ArmyUnit
     protected override void Awake()
     {
         base.Awake();
-            // Find SkinnedMeshRenderer in children
-            skinnedMeshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
-            if (skinnedMeshRenderer != null)
+        // Find SkinnedMeshRenderer in children
+        skinnedMeshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
+        if (skinnedMeshRenderer != null)
+        {
+            if (meshStage1 != null)
             {
-                if (meshStage1 != null)
-                {
-                    skinnedMeshRenderer.sharedMesh = meshStage1;
-                    currentMeshStage = 1;
-                }
+                skinnedMeshRenderer.sharedMesh = meshStage1;
+                currentMeshStage = 1;
             }
-            
-            // Initialize radius indicator
-            SetupRadiusIndicator();
+        }
+
+        // Initialize radius indicator
+        SetupRadiusIndicator();
     }
 
     private void Start()
     {
         explosionRadius = data1.AttackRange;
         explosionDamage = data1.AttackDamage;
-        
+
         // Update radius indicator scale based on explosion radius
         UpdateRadiusIndicatorScale();
-        
+
         // Draw SheepUnit explosion range in yellow
         // Gizmos.color = Color.yellow;
         // Gizmos.DrawWireSphere(transform.position, explosionRadius);
@@ -162,17 +163,17 @@ public class SheepUnit : ArmyUnit
             radiusIndicatorObject.transform.SetParent(transform);
             radiusIndicatorObject.transform.localPosition = Vector3.zero;
             radiusIndicatorObject.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // Face up
-            
+
             // Add SpriteRenderer component
             radiusIndicatorRenderer = radiusIndicatorObject.AddComponent<SpriteRenderer>();
             radiusIndicatorRenderer.sprite = radiusIndicatorSprite;
             radiusIndicatorRenderer.sortingOrder = -1; // Render behind other objects
-            
+
             // Set initial alpha
             Color color = radiusIndicatorRenderer.color;
             color.a = indicatorAlpha;
             radiusIndicatorRenderer.color = color;
-            
+
             // Start with the indicator hidden by default
             radiusIndicatorObject.SetActive(false);
         }
@@ -186,7 +187,7 @@ public class SheepUnit : ArmyUnit
             // Assuming the sprite should cover the full radius diameter
             float diameter = explosionRadius * 2f * indicatorSizeMultiplier;
             radiusIndicatorObject.transform.localScale = Vector3.one * diameter;
-            
+
             // Only show if both showRadiusIndicator is true AND it's been set to visible
             // (The SetRadiusIndicatorVisibility method will be called by the barracks)
             if (!showRadiusIndicator)
@@ -228,7 +229,7 @@ public class SheepUnit : ArmyUnit
         if (Application.isPlaying)
         {
             UpdateRadiusIndicatorScale();
-            
+
             if (radiusIndicatorRenderer != null)
             {
                 Color color = radiusIndicatorRenderer.color;
@@ -244,7 +245,7 @@ public class SheepUnit : ArmyUnit
         if (vfx != null)
             vfx.Explode(transform.position);
         PlaySound(data1.AttackSound, 'a');
-        
+
         // Ensure CameraShake is working
         if (CameraShake.Instance != null)
         {
@@ -255,13 +256,13 @@ public class SheepUnit : ArmyUnit
         {
             Debug.LogWarning("CameraShake.Instance is null!");
         }
-        
+
         // Apply knockback BEFORE taking self-damage to ensure it completes
         foreach (var enemy in enemies)
         {
             // Damage the enemy
             enemy.TakeDamage(explosionDamage);
-            
+
             // Apply knockback immediately
             ApplyKnockback(enemy);
         }
@@ -274,9 +275,10 @@ public class SheepUnit : ArmyUnit
     {
         // Wait a tiny bit to ensure knockback is applied
         yield return new WaitForFixedUpdate();
-        
+
         // Damage the sheep AFTER knockback is applied
         int selfDamage = Mathf.CeilToInt(data1.Health * 0.34f);
+        ignoreSounds = true;
         TakeDamage(selfDamage);
     }
 
@@ -286,14 +288,14 @@ public class SheepUnit : ArmyUnit
 
         // Calculate knockback direction (away from sheep)
         Vector3 knockbackDirection = (enemy.transform.position - transform.position).normalized;
-        
+
         // Ensure knockback has some upward force to make it more visible
         knockbackDirection.y = Mathf.Max(knockbackDirection.y, 0.3f);
         knockbackDirection = knockbackDirection.normalized;
 
         // Apply knockback force
         Vector3 knockbackVelocity = knockbackDirection * knockbackForce;
-        
+
         // Try to find Rigidbody on the enemy
         Rigidbody enemyRigidbody = enemy.GetComponent<Rigidbody>();
         if (enemyRigidbody != null)
@@ -317,20 +319,57 @@ public class SheepUnit : ArmyUnit
 
         float timeElapsed = 0f;
         Vector3 velocity = initialVelocity;
-        
+
         while (timeElapsed < knockbackDuration)
         {
             if (enemy == null || !enemy.gameObject.activeInHierarchy) yield break;
-            
+
             // Apply gravity-like deceleration
             velocity.y -= 9.81f * Time.deltaTime;
             velocity *= (1f - Time.deltaTime * 2f); // General deceleration
-            
+
             // Move the enemy
             enemy.transform.position += velocity * Time.deltaTime;
-            
+
             timeElapsed += Time.deltaTime;
             yield return null;
         }
     }
+
+    public void TakeDamage(int damage)
+    {
+        if (currHealth <= 0 || currHealth - damage <= 0)
+        {
+            if (ignoreSounds)
+            {
+                currHealth = 0;
+                UpdateHealthBar();
+                barracks?.OnAnimalDied(this);
+                handleDie();
+            }
+            else
+            {
+                PlaySound(data1.DeathSound, 'd');
+                currHealth = 0;
+                UpdateHealthBar();
+                barracks?.OnAnimalDied(this);
+                handleDie();
+            }
+        }
+        else
+        {
+            if (ignoreSounds)
+            {
+                currHealth -= damage;
+                UpdateHealthBar();
+            }
+            else
+            {
+                PlaySound(data1.HurtSound, 'h');
+                currHealth -= damage;
+                UpdateHealthBar();
+            }
+        }
+    }
+
 }

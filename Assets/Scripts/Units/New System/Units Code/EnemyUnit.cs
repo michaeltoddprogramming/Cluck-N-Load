@@ -592,7 +592,7 @@ public class EnemyUnit : BaseUnit
 
     private void Attack(MonoBehaviour target)
     {
-        Debug.Log("attacking target " + target.name + " with " + data.AttackDamage);
+        // Debug.Log("attacking target " + target.name + " with " + data.AttackDamage);
         switch (target)
         {
             case ArmyUnit u:

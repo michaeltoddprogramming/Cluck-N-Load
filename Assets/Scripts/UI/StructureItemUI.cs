@@ -8,17 +8,17 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public Image icon;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI costText;
-    public TextMeshProUGUI descriptionText; 
+    public TextMeshProUGUI descriptionText;
     public Button selectButton;
     public GameObject lockedOverlay;
     public NightManager nightManager;
 
     private StructureData data;
     private BuildController buildController;
-    
+
     // Public property to access the structure data
     public StructureData Data => data;
-    
+
     // Track if item is locked due to day requirement
     private bool isLockedByDay = false;
 
@@ -37,7 +37,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             bool unlockAllBuildsActive = CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive();
             isLockedByDay = !unlockAllBuildsActive && (data.unlockDay > currentDay);
         }
-        
+
         if (lockedOverlay != null)
         {
             // Only show overlay if locked by day requirement
@@ -114,10 +114,10 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             descriptionText.text = structure.description;
 
         int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
-        
+
         // Check if "Unlock All Buildings" cheat is active
         bool unlockAllBuildsActive = CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive();
-        
+
         isLockedByDay = !unlockAllBuildsActive && (structure.unlockDay > currentDay); // Store the day lock state, but cheat overrides
 
         if (isLockedByDay)
@@ -172,24 +172,24 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (selectButton != null)
             selectButton.onClick.RemoveAllListeners();
-            
+
         if (MoneyManager.Instance != null)
             MoneyManager.Instance.OnMoneyChanged -= OnMoneyChanged;
     }
-    
+
     private void OnMoneyChanged(int newAmount) => UpdateAffordability();
 
     public void UpdateAffordability()
     {
         if (data == null || selectButton == null || MoneyManager.Instance == null)
             return;
-                
+
         bool canAfford = MoneyManager.Instance.CanAfford(data.cost);
         bool isPaused = nightManager != null && nightManager.getIsPaused();
-        
+
         // Button interactability considers affordability, day lock, and pause state
         selectButton.interactable = canAfford && !isLockedByDay && !isPaused;
-        
+
         if (costText != null)
         {
             costText.color = canAfford ? Color.white : Color.red;
@@ -212,10 +212,18 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Show(data);
     }
-    
+
     public void OnPointerExit(PointerEventData eventData)
     {
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
+    }
+
+    public void playErrorSound()
+    {
+        if (isLockedByDay)
+        {
+            AudioManager.Instance.PlayErrorSound();
+        }
     }
 }

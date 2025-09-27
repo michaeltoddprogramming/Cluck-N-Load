@@ -46,7 +46,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 47133482080610939}
-  m_Mesh: {fileID: -342241679597966965, guid: d5e9bcfb424802e4e9f0c39707fc95f1, type: 3}
+  m_Mesh: {fileID: -4452845595072084819, guid: 1d908049f001e854090c66fe2a155e60, type: 3}
 --- !u!23 &4307799073872341416
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -115,6 +115,9 @@ MonoBehaviour:
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
   healthBarPrefab: {fileID: 0}
+  connectorPrefab: {fileID: 8451025749333199282, guid: 1469b386d18fbc443b2c232e038da48d, type: 3}
+  connectorOffset: 0
+  connectorHeight: 0
 --- !u!114 &1067421351204696523
 MonoBehaviour:
   m_ObjectHideFlags: 0

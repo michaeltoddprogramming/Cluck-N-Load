@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6655819889729703658
+--- !u!1 &571157952748499214
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,29 +8,29 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7336814626204370832}
-  - component: {fileID: 7276021620176284598}
-  - component: {fileID: 8738049830658630521}
-  - component: {fileID: 8266531189872242027}
-  - component: {fileID: 6841341356731693371}
-  - component: {fileID: 4418651467081627693}
-  - component: {fileID: 9011766918185444220}
-  - component: {fileID: 3013309714144743935}
-  - component: {fileID: 4137120424360186313}
+  - component: {fileID: 3135612115981669720}
+  - component: {fileID: 6392040084614046286}
+  - component: {fileID: 2105897697338078566}
+  - component: {fileID: 2870922421870132765}
+  - component: {fileID: 944133864734963071}
+  - component: {fileID: 8122421088270356462}
+  - component: {fileID: 6799367649284339747}
+  - component: {fileID: 1007296684767628497}
+  - component: {fileID: 5243839300035793940}
   m_Layer: 0
-  m_Name: Wood_fence_T
+  m_Name: Wood_fence_main
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7336814626204370832
+--- !u!4 &3135612115981669720
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -2.7117918, y: 0.00000047683716, z: 4.4770536}
@@ -39,21 +39,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &7276021620176284598
+--- !u!33 &6392040084614046286
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
-  m_Mesh: {fileID: -8599691115343993184, guid: 3fbf043e15ec5ea4291952b325c40fa1, type: 3}
---- !u!23 &8738049830658630521
+  m_GameObject: {fileID: 571157952748499214}
+  m_Mesh: {fileID: -8599691115343993184, guid: 04896e1e0de23c6468c2fd388b59454a, type: 3}
+--- !u!23 &2105897697338078566
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -92,13 +92,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8266531189872242027
+--- !u!114 &2870922421870132765
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b06f533beb195d74eb0e5131896836ab, type: 3}
@@ -115,54 +115,57 @@ MonoBehaviour:
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
   healthBarPrefab: {fileID: 4122911237217708408, guid: 23bbe51596d340c4387e655f58390f62, type: 3}
---- !u!114 &6841341356731693371
+  connectorPrefab: {fileID: 4415862155760449455, guid: cd47d7cba56f297419dd3afb8a8e9153, type: 3}
+  connectorOffset: 0
+  connectorHeight: 0
+--- !u!114 &944133864734963071
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c38fc64b467ba9c4f85d6232afb72860, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   hitSound: {fileID: 8300000, guid: 87a84578a2a3f7f40bf53bb1569c0483, type: 3}
---- !u!114 &4418651467081627693
+--- !u!114 &8122421088270356462
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a955076890812eb4a8fa0e5a3dceb661, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!208 &9011766918185444220
+--- !u!208 &6799367649284339747
 NavMeshObstacle:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   m_Enabled: 1
   serializedVersion: 3
   m_Shape: 1
-  m_Extents: {x: 1, y: 0.5, z: 0.078}
+  m_Extents: {x: 0.815, y: 0.45100003, z: 0.065000005}
   m_MoveThreshold: 1
   m_Carve: 1
   m_CarveOnlyStationary: 0
-  m_Center: {x: -0.004, y: 0.5, z: 0.002}
+  m_Center: {x: 0, y: 0.46400002, z: -0.002}
   m_TimeToStationary: 0.2
---- !u!82 &3013309714144743935
+--- !u!82 &1007296684767628497
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
@@ -271,13 +274,13 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!65 &4137120424360186313
+--- !u!65 &5243839300035793940
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655819889729703658}
+  m_GameObject: {fileID: 571157952748499214}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -290,5 +293,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 1, z: 0.1563665}
-  m_Center: {x: -0.0036480725, y: 0.5, z: 0.0019832551}
+  m_Size: {x: 1.6300715, y: 0.9191491, z: 0.14060849}
+  m_Center: {x: -0.0036480427, y: 0.45957455, z: 0.0019832551}

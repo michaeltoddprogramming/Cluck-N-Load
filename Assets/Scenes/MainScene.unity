@@ -17267,6 +17267,9 @@ MonoBehaviour:
   totalPerSilo: 100
   totalCapacity: 0
   currCapacity: 0
+  startingAmountSunflower: 3
+  startingAmountWheat: 3
+  startingAmountCarrots: 3
   data: {fileID: 11400000, guid: 0571623192119814f8e98baf366a3d73, type: 2}
 --- !u!82 &1632256042
 AudioSource:

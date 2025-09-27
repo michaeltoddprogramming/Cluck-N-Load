@@ -13,6 +13,9 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] public int totalPerSilo = 100;
     [SerializeField] public int totalCapacity = 0;
     [SerializeField] public int currCapacity = 0;
+    [SerializeField] public int startingAmountSunflower = 0;
+    [SerializeField] public int startingAmountWheat = 0;
+    [SerializeField] public int startingAmountCarrots = 0;
     private List<SiloStructure> silos = new List<SiloStructure>();
 
     // Event that fires whenever inventory changes
@@ -38,9 +41,9 @@ public class InventoryManager : MonoBehaviour
         }
 
         // Initialize inventory with crop types
-        inventory["Sunflower"] = 5;
-        inventory["Wheat"] = 5;
-        inventory["Carrots"] = 5;
+        inventory["Sunflower"] = startingAmountSunflower;
+        inventory["Wheat"] = startingAmountWheat;
+        inventory["Carrots"] = startingAmountCarrots;
     }
 
     // Removed Update() method - capacity is now calculated when silos are added/removed

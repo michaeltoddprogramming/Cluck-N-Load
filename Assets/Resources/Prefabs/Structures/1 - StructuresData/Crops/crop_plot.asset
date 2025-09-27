@@ -24,10 +24,10 @@ MonoBehaviour:
   moneyPerProduct: 50
   baseFoodRequired: 2
   foodSynergyMultiplier: 1
-  sunflowerBaseHarvestAmount: 20
-  wheatBaseHarvestAmount: 30
-  carrotsBaseHarvestAmount: 40
-  cropSynergyMultiplier: 1.2
+  sunflowerBaseHarvestAmount: 8
+  wheatBaseHarvestAmount: 20
+  carrotsBaseHarvestAmount: 20
+  cropSynergyMultiplier: 1.5
   totalPerSilo: 100
   unlockDay: 0
   targetAnimalType: 

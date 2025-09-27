@@ -120,6 +120,13 @@ public class BuildController : MonoBehaviour
             shopPanelUI.OnShopOpened.AddListener(HandleShopOpened);
             shopPanelUI.OnShopClosed.AddListener(HandleShopClosed);
         }
+        
+        // Subscribe to structure destruction events to update synergies
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.OnStructureDestroyed.AddListener(HandleStructureDestroyed);
+        }
+        
         if (buildablePrefabs.Length > 0) currentBuildTargetPrefab = buildablePrefabs[0];
         if (itemDeleteIcon != null) itemDeleteIcon.GetComponent<Graphic>().raycastTarget = false;
     }
@@ -130,6 +137,12 @@ public class BuildController : MonoBehaviour
         {
             shopPanelUI.OnShopOpened.RemoveListener(HandleShopOpened);
             shopPanelUI.OnShopClosed.RemoveListener(HandleShopClosed);
+        }
+        
+        // Unsubscribe from structure destruction events
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.OnStructureDestroyed.RemoveListener(HandleStructureDestroyed);
         }
     }
 
@@ -162,6 +175,14 @@ public class BuildController : MonoBehaviour
         Debug.Log("HandleShopClosed called - disabling build mode and hiding grid");
         DisableBuildMode();
         gridController.HideGrid();
+    }
+
+    public void HandleStructureDestroyed(Structure destroyedStructure)
+    {
+        // When a structure is destroyed, recalculate all synergies
+        // since distances between remaining structures may have changed
+        Debug.Log($"Structure destroyed: {destroyedStructure.name} - updating synergies");
+        UpdateAllSynergies();
     }
 
     void Update()
@@ -867,6 +888,10 @@ public class BuildController : MonoBehaviour
         AudioManager.Instance?.PlayPlaceSound();
         gridController.UpdateGridTexture();
         if (gridMonitor != null && newFootprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(newFootprint, GridChangeType.Structural);
+        
+        // IMPORTANT: Recalculate all synergies after moving a structure
+        UpdateAllSynergies();
+        
         movingStructure = null;
         isMoveModeActive = false;
         if (currentGhost != null)
@@ -875,6 +900,33 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         DisableBuildMode();
+    }
+
+    private void UpdateAllSynergies()
+    {
+        // Update all animal synergies (for silo food efficiency)
+        AnimalStructure[] allAnimals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+        foreach (AnimalStructure animal in allAnimals)
+        {
+            if (animal != null)
+            {
+                animal.updateSiloSynergy();
+            }
+        }
+
+        // Update all crop synergies (for silo harvest bonuses)
+        CropStructure.UpdateAllCropSynergies();
+
+        // Update barracks synergies if needed (they calculate discounts based on nearby animals)
+        BarracksStructure[] allBarracks = FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None);
+        foreach (BarracksStructure barracks in allBarracks)
+        {
+            if (barracks != null)
+            {
+                // Barracks synergy is calculated on-demand when recruiting, so no need to cache
+                // But we could trigger a UI update if the barracks UI is open
+            }
+        }
     }
 
     void CancelMove()
@@ -1498,6 +1550,9 @@ public class BuildController : MonoBehaviour
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
 
+        // IMPORTANT: Recalculate all synergies after placing a new structure
+        UpdateAllSynergies();
+
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
         
@@ -1595,6 +1650,9 @@ public class BuildController : MonoBehaviour
         AudioManager.Instance?.PlayPlaceSound();
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
+
+        // IMPORTANT: Recalculate all synergies after placing a new structure
+        UpdateAllSynergies();
 
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();

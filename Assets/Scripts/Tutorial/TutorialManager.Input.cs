@@ -51,9 +51,11 @@ public partial class TutorialManager
                 break;
                 
             case "melony_zoom":
-                // Detect mouse wheel zoom
+                // Detect mouse wheel zoom OR 1/2 key zoom
                 float scroll = Input.GetAxis("Mouse ScrollWheel");
-                if (Mathf.Abs(scroll) > 0.01f)
+                bool keyZoom = Input.GetKey(KeyCode.Alpha1) || Input.GetKey(KeyCode.Alpha2);
+                
+                if (Mathf.Abs(scroll) > 0.01f || keyZoom)
                 {
                     if (!detectedMelonyActions.Contains("zoom"))
                     {

@@ -49,10 +49,10 @@ public partial class TutorialManager
         {
             stepId = "melony_zoom",
             title = "Find Melony - Zoom!",
-            instructionText = "Use mouse wheel to zoom in/out, then find and click Melony!",
+            instructionText = "Use mouse wheel OR keys 1 and 2 to zoom in/out, then find and click Melony!",
             triggerToWaitFor = TutorialTrigger.MelonyZoomTest,
-            requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.Mouse3, KeyCode.Mouse4 }, // Mouse wheel up/down
-            waitForAllInputs = true
+            requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.Mouse3, KeyCode.Mouse4, KeyCode.Alpha1, KeyCode.Alpha2 }, // Mouse wheel up/down + 1/2 keys
+            waitForAllInputs = false
         };
         melonyZoomStep.onStepStart = new UnityEvent();
         melonyZoomStep.onStepStart.AddListener(() =>

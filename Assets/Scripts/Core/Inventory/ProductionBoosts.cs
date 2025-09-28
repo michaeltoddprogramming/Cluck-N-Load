@@ -108,12 +108,7 @@ public class ProductionBoosts : MonoBehaviour
                 productsBoosted[i] = 1.0f; // Fix it immediately
             }
         }
-        
-        if (hasZeros)
-        {
-            Debug.LogError($"ProductionBoosts array was corrupted with zeros! Fixed to [1,1,1,1,1]. GameObject: {gameObject.name}");
-        }
-
+    
         Debug.Log($"GetBoostedProducts returning: [{productsBoosted[0]}, {productsBoosted[1]}, {productsBoosted[2]}, {productsBoosted[3]}, {productsBoosted[4]}]");
         return productsBoosted;
     }

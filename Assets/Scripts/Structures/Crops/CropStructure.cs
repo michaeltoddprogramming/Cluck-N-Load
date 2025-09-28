@@ -94,7 +94,10 @@ public class CropStructure : Structure
     public string Harvest()
     {
         if (!cropReady) return "ready";
+
+        Debug.Log($"Base amount: {baseCropHarvestAmount}, Multiplier: {cropHarvestMultiplier}");
         int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
+        Debug.Log($"Total crops calculated: {totalCrops}");
         string cropName = currentCropType.ToString();
 
         // Crops give inventory items only - money comes from selling products

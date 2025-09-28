@@ -21,6 +21,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     // Track if item is locked due to day requirement
     private bool isLockedByDay = false;
+    private bool previousLockedState = false;
+    private bool isFirstUpdate = true;
 
     private void Start()
     {
@@ -38,12 +40,12 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             isLockedByDay = !unlockAllBuildsActive && (data.unlockDay > currentDay);
         }
 
-        if (lockedOverlay != null)
+        // Update locked overlay on first frame or when state changes
+        if (lockedOverlay != null && (isFirstUpdate || previousLockedState != isLockedByDay))
         {
-            // Only show overlay if locked by day requirement
             lockedOverlay.SetActive(isLockedByDay);
             // Update the overlay text for day lock
-            if (lockedOverlay.activeInHierarchy && isLockedByDay)
+            if (isLockedByDay)
             {
                 var overlayText = lockedOverlay.GetComponentInChildren<TextMeshProUGUI>();
                 if (overlayText != null)
@@ -51,6 +53,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                     overlayText.text = $"Unlocks on Day {data?.unlockDay ?? 0}";
                 }
             }
+            previousLockedState = isLockedByDay;
+            isFirstUpdate = false;
         }
 
         // Grayscale overlay logic (apply regardless of day lock status)
@@ -119,6 +123,15 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         bool unlockAllBuildsActive = CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive();
 
         isLockedByDay = !unlockAllBuildsActive && (structure.unlockDay > currentDay); // Store the day lock state, but cheat overrides
+        
+        // Set the locked overlay immediately in Setup
+        if (lockedOverlay != null)
+        {
+            lockedOverlay.SetActive(isLockedByDay);
+        }
+        
+        previousLockedState = isLockedByDay; // Initialize the previous state
+        isFirstUpdate = false; // Mark that we've already set the initial state
 
         if (isLockedByDay)
         {

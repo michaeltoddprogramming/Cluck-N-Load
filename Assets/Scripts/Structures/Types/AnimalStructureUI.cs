@@ -48,6 +48,14 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] private Sprite carrot;
     [SerializeField] private TextMeshProUGUI foodNeededText;
 
+    [Header("Production Impact Warning")]
+    [SerializeField] private GameObject productionWarningPanel;
+    [SerializeField] private TextMeshProUGUI warningText;
+    [SerializeField] private Button confirmActionButton;
+    [SerializeField] private Button cancelActionButton;
+    
+    private System.Action pendingAction;
+
 
 
 
@@ -125,7 +133,7 @@ public class AnimalStructureUI : BaseStructureUI
         collectButton?.onClick.AddListener(() => { animalStructure.Collect(); UpdateUI(); });
         addAnimal?.onClick.AddListener(() => { animalChange(0); UpdateUI(); });
         removeAnimal?.onClick.AddListener(() => { animalChange(1); UpdateUI(); });
-        buyAnimal?.onClick.AddListener(() => { BuyAnimals(); UpdateUI(); });
+        buyAnimal?.onClick.AddListener(() => { BuyAnimalsWithWarningCheck(); UpdateUI(); });
     }
 
     private void UpdateUI()
@@ -217,12 +225,26 @@ public class AnimalStructureUI : BaseStructureUI
         {
             if (productReady)
             {
-                statusText.text = "Ready to collect!";
+                string baseText = "Ready to collect!";
+                // Add production impact info if relevant
+                if (animalStructure.HasLostAnimalsFromProduction)
+                {
+                    int lost = animalStructure.OriginalAnimalCountWhenFed - animalCount;
+                    baseText += $"\n⚠️ Production reduced: {lost} animals were recruited during production";
+                }
+                statusText.text = baseText;
                 statusText.color = Color.green;
             }
             else if (isProducing)
             {
-                statusText.text = "Producing...";
+                string baseText = "Producing...";
+                // Add production impact info if relevant
+                if (animalStructure.HasLostAnimalsFromProduction)
+                {
+                    int original = animalStructure.OriginalAnimalCountWhenFed;
+                    baseText += $"\n⚠️ Started with {original}, now have {animalCount}";
+                }
+                statusText.text = baseText;
                 statusText.color = Color.white;
             }
             else if (animalCount <= 0)
@@ -304,5 +326,58 @@ public class AnimalStructureUI : BaseStructureUI
         float fillPercent2 = civilianMax > 0 ? (float)civilianCount / civilianMax : 0f;
         civilianBarSlider.value = fillPercent2;
         // civilianText.text = $"{civilianCount}/{civilianMax}";
+    }
+
+    // Production impact warning system
+    private void ShowProductionWarningPanel(string warningMessage, System.Action onConfirm)
+    {
+        if (productionWarningPanel == null) return;
+        
+        pendingAction = onConfirm;
+        warningText.text = warningMessage;
+        productionWarningPanel.SetActive(true);
+        
+        // Setup button listeners
+        confirmActionButton?.onClick.RemoveAllListeners();
+        cancelActionButton?.onClick.RemoveAllListeners();
+        
+        confirmActionButton?.onClick.AddListener(ConfirmAction);
+        cancelActionButton?.onClick.AddListener(CancelAction);
+    }
+    
+    private void ConfirmAction()
+    {
+        pendingAction?.Invoke();
+        HideProductionWarningPanel();
+    }
+    
+    private void CancelAction()
+    {
+        pendingAction = null;
+        HideProductionWarningPanel();
+    }
+    
+    private void HideProductionWarningPanel()
+    {
+        if (productionWarningPanel != null)
+            productionWarningPanel.SetActive(false);
+    }
+    
+    // Enhanced BuyAnimals with production impact check
+    private void BuyAnimalsWithWarningCheck()
+    {
+        if (newAnimalCount <= 0 || MoneyManager.Instance == null) return;
+        
+        // Check if this action would affect ongoing production
+        string impactInfo = animalStructure.GetProductionImpactInfo();
+        if (animalStructure.HasLostAnimalsFromProduction)
+        {
+            string warningMessage = $"Production Status:\n{impactInfo}\n\nAdding {newAnimalCount} animals will not affect current production output.\n\nProceed?";
+            ShowProductionWarningPanel(warningMessage, () => BuyAnimals());
+        }
+        else
+        {
+            BuyAnimals(); // No warning needed
+        }
     }
 }

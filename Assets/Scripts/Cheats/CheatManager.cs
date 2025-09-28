@@ -887,16 +887,16 @@ public class CheatManager : MonoBehaviour
     
     private void InstantCompleteProduction()
     {
-        // Instantly complete all production
+        // Instantly complete all production (cheat mode)
         AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
         foreach (var animal in animals)
         {
             if (animal.IsProducing)
             {
-                animal.InstantCompleteProductionForTutorial();
+                animal.InstantCompleteProductionCheat();
             }
         }
-        Debug.Log("All production completed instantly");
+        Debug.Log("All production completed instantly (cheat)");
     }
     
     private void InstantGrowCrops()

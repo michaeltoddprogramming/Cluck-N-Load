@@ -428,6 +428,9 @@ public partial class TutorialManager : MonoBehaviour
         waitingForStepToComplete = false;
         isProcessingStep = false; // Reset processing flag
         
+        // Reset any inappropriate instant production states now that tutorial is over
+        AnimalStructure.ResetAllInstantProductionStates();
+        
         NotifyUISystemsOfStepChange();
     }
     
@@ -484,6 +487,9 @@ public partial class TutorialManager : MonoBehaviour
         
         // Update checklist to show all items as completed
         UpdateChecklistUI();
+        
+        // Reset any inappropriate instant production states since tutorial is being skipped
+        AnimalStructure.ResetAllInstantProductionStates();
         
         // Notify all systems that tutorial is complete
         NotifyUISystemsOfStepChange();

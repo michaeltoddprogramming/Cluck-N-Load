@@ -19,12 +19,19 @@ public class BarracksStructureUI : BaseStructureUI
     [Header("UI Control")]
     [SerializeField] private CanvasGroup uiCanvasGroup;
 
+    [Header("Recruitment Warning")]
+    [SerializeField] private GameObject recruitmentWarningPanel;
+    [SerializeField] private TextMeshProUGUI recruitWarningText;
+    [SerializeField] private Button confirmRecruitButton;
+    [SerializeField] private Button cancelRecruitButton;
+
     private BarracksStructure barracksStructure;
     private bool isBarracksStructure = false;
     private bool isPlacingFlag = false;
     private int newAnimalCount = 0;
     private int animalCount = 0;
     private int maxAnimalCount = 0;
+    private System.Action pendingRecruitAction;
 
     // Public property to check if this barracks is currently placing a flag
     public bool IsPlacingFlag => isPlacingFlag;
@@ -87,7 +94,7 @@ public class BarracksStructureUI : BaseStructureUI
             recruitButton.onClick.RemoveAllListeners();
             recruitButton.onClick.AddListener(() =>
             {
-                recruitAnimals();
+                RecruitAnimalsWithWarningCheck();
                 UpdateUI();
             });
         }
@@ -641,6 +648,65 @@ public class BarracksStructureUI : BaseStructureUI
             barracksStructure.RecruitAnimals(newAnimalCount);
             newAnimalCount = 0;
         }
+    }
+
+    // Enhanced recruitment with production impact warning
+    public void RecruitAnimalsWithWarningCheck()
+    {
+        if (newAnimalCount <= 0) return;
+        
+        // Check if recruitment would impact production
+        AnimalStructure targetAnimal = barracksStructure.GetTargetStructure;
+        if (targetAnimal != null && targetAnimal.CanRecruit(newAnimalCount, out string impactWarning))
+        {
+            if (!string.IsNullOrEmpty(impactWarning))
+            {
+                ShowRecruitmentWarningPanel(impactWarning, () => recruitAnimals());
+            }
+            else
+            {
+                recruitAnimals(); // No warning needed
+            }
+        }
+        else
+        {
+            recruitAnimals(); // Fallback to normal recruitment
+        }
+    }
+
+    // Recruitment warning panel system
+    private void ShowRecruitmentWarningPanel(string warningMessage, System.Action onConfirm)
+    {
+        if (recruitmentWarningPanel == null) return;
+        
+        pendingRecruitAction = onConfirm;
+        recruitWarningText.text = warningMessage;
+        recruitmentWarningPanel.SetActive(true);
+        
+        // Setup button listeners
+        confirmRecruitButton?.onClick.RemoveAllListeners();
+        cancelRecruitButton?.onClick.RemoveAllListeners();
+        
+        confirmRecruitButton?.onClick.AddListener(ConfirmRecruitment);
+        cancelRecruitButton?.onClick.AddListener(CancelRecruitment);
+    }
+    
+    private void ConfirmRecruitment()
+    {
+        pendingRecruitAction?.Invoke();
+        HideRecruitmentWarningPanel();
+    }
+    
+    private void CancelRecruitment()
+    {
+        pendingRecruitAction = null;
+        HideRecruitmentWarningPanel();
+    }
+    
+    private void HideRecruitmentWarningPanel()
+    {
+        if (recruitmentWarningPanel != null)
+            recruitmentWarningPanel.SetActive(false);
     }
 
     public void setUpStats()

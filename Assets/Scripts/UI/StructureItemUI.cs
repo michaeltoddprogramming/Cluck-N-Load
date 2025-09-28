@@ -163,6 +163,13 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void SelectStructure()
     {
+        // Check if item is locked by day requirement
+        if (isLockedByDay)
+        {
+            Debug.Log($"Cannot select {data?.structureName} - locked until day {data?.unlockDay}");
+            playErrorSound(); // Play error sound for locked items
+            return;
+        }
 
         if (nightManager != null && nightManager.getIsPaused())
         {

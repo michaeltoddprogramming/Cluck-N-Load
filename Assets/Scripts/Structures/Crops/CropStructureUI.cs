@@ -125,34 +125,11 @@ public class CropStructureUI : BaseStructureUI
         PlaySound(plantSound);
         plantButton.interactable = false;
         closeSelectCropPanel();
-        if (TutorialManager.Instance?.IsTutorialActive() == true) StartCoroutine(DelayedInstantGrowForTutorial(0.5f));
+        // Instant growth is now handled directly by CropStructure, not UI
         // else StartCoroutine(CloseUIAfterDelay(0.2f));
     }
 
-    // In CropStructureUI.cs, modify the DelayedInstantGrowForTutorial method
-    private IEnumerator DelayedInstantGrowForTutorial(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-
-        // Only allow instant grow if tutorial step is not completed
-        if (TutorialManager.Instance != null && !TutorialManager.Instance.GetCompletedStepIds().Contains("plant_first_crop"))
-        {
-            if (cropStructure != null)
-            {
-                cropStructure.ForceHarvestReadyForTutorial();
-                UpdateUI();
-
-                if (statusText != null)
-                {
-                    statusText.color = Color.green;
-                    statusText.text = "Tutorial: Crop ready for harvest!";
-                }
-
-                yield return new WaitForSeconds(0.5f);
-                TutorialManager.Instance.Trigger(TutorialTrigger.PlantedCrop);
-            }
-        }
-    }
+    // Instant growth is now handled directly by CropStructure, not UI
 
     private IEnumerator CloseUIAfterDelay(float delay)
     {

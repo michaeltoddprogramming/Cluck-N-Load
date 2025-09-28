@@ -351,14 +351,18 @@ public partial class TutorialManager : MonoBehaviour
 
     public void Trigger(TutorialTrigger trigger)
     {
+        Debug.Log($"TutorialManager.Trigger called with: {trigger}");
+        
         if (isProcessingStep)
         {
+            Debug.Log($"Tutorial is processing, queueing trigger: {trigger}");
             pendingTriggers.Enqueue(trigger);
             return;
         }
 
         if (trigger != TutorialTrigger.None && IsStepCompletedForTrigger(trigger))
         {
+            Debug.Log($"Trigger {trigger} already completed, ignoring");
             return;
         }
 
@@ -374,21 +378,30 @@ public partial class TutorialManager : MonoBehaviour
             TutorialTrigger.FedFirstAnimals => "feed_chickens",
             TutorialTrigger.PlantedCrop => "plant_first_crop",
             TutorialTrigger.HarvestedCrop => "harvest_first_crops",
+            TutorialTrigger.CollectedFirstProducts => "collect_eggs",
             TutorialTrigger.BuiltSilo => "build_silo",
+            TutorialTrigger.BuiltFirstHayBale => "build_first_hay_bale",
+            TutorialTrigger.Built10HayBales => "build_wall_chain",
             // Add other mappings here
             _ => null
         };
-        return stepId != null && completedStepIds.Contains(stepId);
+        bool isCompleted = stepId != null && completedStepIds.Contains(stepId);
+        Debug.Log($"IsStepCompletedForTrigger: {trigger} -> {stepId}, completed: {isCompleted}");
+        return isCompleted;
     }
 
     private void ProcessTrigger(TutorialTrigger trigger)
     {
+        Debug.Log($"ProcessTrigger: {trigger}, waitingForStepToComplete: {waitingForStepToComplete}, currentStepIndex: {currentStepIndex}");
+        
         if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
             var step = steps[currentStepIndex];
+            Debug.Log($"Current step: {step.stepId}, waiting for trigger: {step.triggerToWaitFor}, received trigger: {trigger}");
 
             if (step.triggerToWaitFor == trigger)
             {
+                Debug.Log($"Trigger match! Completing step: {step.stepId}");
                 waitingForStepToComplete = false;
 
                 if (step.uiToHighlight != null)

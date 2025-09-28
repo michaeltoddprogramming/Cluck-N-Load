@@ -342,6 +342,62 @@ public partial class TutorialManager
         recruitSoldiersStep.onStepStart.AddListener(() => HighlightLastBuiltStructure("ChickenBarracks"));
         steps.Add(recruitSoldiersStep);
 
+        // Wall Building Tutorial - Step 1: Learn hay bale placement via chain cancel
+        // This teaches the chain building mechanic: click to start, right-click to cancel (places 1 wall)
+        // Tutorial trigger fired by CancelDefenceChain() method in BuildController
+        var buildFirstHayBaleStep = new TutorialStep
+        {
+            stepId = "build_first_hay_bale",
+            title = "Wall Building Basics",
+            instructionText = "Select hay bale, CLICK to place first one. Then move mouse and RIGHT-CLICK to cancel (places just that 1 wall).",
+            triggerToWaitFor = TutorialTrigger.BuiltFirstHayBale
+        };
+        buildFirstHayBaleStep.onStepStart = new UnityEvent();
+        buildFirstHayBaleStep.onStepStart.AddListener(() =>
+        {
+            StartCoroutine(WaitForShopToOpen("HayBale"));
+        });
+        steps.Add(buildFirstHayBaleStep);
+
+        // Wall Building Tutorial - Step 2: Build full wall chains
+        // This teaches full chain building: click to start, move mouse, click again to place all
+        // Tutorial trigger fired by FinalizeDefenceChain() method when total hay bales >= 10
+        var buildWallChainStep = new TutorialStep
+        {
+            stepId = "build_wall_chain",
+            title = "Chain Building (9 More)",
+            instructionText = "Great! Build 9 more hay bales. CLICK places first, move mouse to chain, then CLICK again to confirm all!",
+            triggerToWaitFor = TutorialTrigger.Built10HayBales,
+            requiredInputs = new List<KeyCode>(),
+            waitForAllInputs = false
+        };
+        buildWallChainStep.onStepStart = new UnityEvent();
+        buildWallChainStep.onStepStart.AddListener(() =>
+        {
+            // Ensure shop stays open and Defense tab is active
+            if (ShopUIManager.Instance != null && !ShopUIManager.Instance.IsShopOpen())
+            {
+                ShopUIManager.Instance.OpenShop();
+            }
+            StartCoroutine(DelayedHighlightAfterShop("HayBale", 0.2f));
+        });
+        buildWallChainStep.onStepComplete = new UnityEvent();
+        buildWallChainStep.onStepComplete.AddListener(() =>
+        {
+            // Exit build mode after completing wall tutorial
+            BuildController buildController = FindObjectOfType<BuildController>();
+            if (buildController != null)
+            {
+                buildController.ExitBuildMode();
+            }
+            // Close shop after wall tutorial
+            if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen())
+            {
+                ShopUIManager.Instance.CloseShop();
+            }
+        });
+        steps.Add(buildWallChainStep);
+
         var placeFlagStep = new TutorialStep
         {
             stepId = "place_flag",
@@ -529,6 +585,17 @@ public partial class TutorialManager
                 targetTabIndex = 1;
                 tabName = "Army";
                 break;
+            case "wall":
+            case "fence":
+            case "barrier":
+            case "defense":
+            case "defence":
+            case "hay":
+            case "bale":
+            case "haybale":
+                targetTabIndex = 3;
+                tabName = "Defense";
+                break;
         }
         if (targetTabIndex >= 0)
         {
@@ -557,6 +624,18 @@ public partial class TutorialManager
         }
     }
 
+    private IEnumerator DelayedHighlightAfterShop(string buildingName, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (activeShopHighlightCoroutine != null)
+        {
+            StopCoroutine(activeShopHighlightCoroutine);
+            activeShopHighlightCoroutine = null;
+        }
+        CleanupShopHighlights();
+        activeShopHighlightCoroutine = StartCoroutine(GuidedShopHighlight(buildingName));
+    }
+
     private Coroutine activeShopHighlightCoroutine;
     private void UpdateBuildButtonReference(string buildingName)
     {
@@ -576,20 +655,35 @@ public partial class TutorialManager
         string searchName = buildingName.ToLowerInvariant();
         string singularName = searchName.EndsWith("s") ? searchName.Substring(0, searchName.Length - 1) : searchName;
         string pluralName = searchName.EndsWith("s") ? searchName : searchName + "s";
+        
+        // Special handling for hay bale
+        string[] searchTerms = { searchName, singularName, pluralName };
+        if (buildingName.ToLowerInvariant() == "haybale")
+        {
+            searchTerms = new string[] { "hay", "bale", "haybale" };
+        }
+        
         bool found = false;
         foreach (TextMeshProUGUI text in shopPanel.GetComponentsInChildren<TextMeshProUGUI>(true))
         {
             string textContent = text.text.Replace(" ", "").ToLowerInvariant();
-            if (textContent.Contains(searchName) || textContent.Contains(singularName) || textContent.Contains(pluralName))
+            string textContentWithSpaces = text.text.ToLowerInvariant();
+            
+            foreach (string term in searchTerms)
             {
-                Button button = text.GetComponentInParent<Button>();
-                if (button != null)
+                if (textContent.Contains(term) || textContentWithSpaces.Contains(term))
                 {
-                    HighlightUI(button.gameObject, true);
-                    found = true;
-                    break;
+                    Button button = text.GetComponentInParent<Button>();
+                    if (button != null)
+                    {
+                        Debug.Log($"Highlighting item with text: '{text.text}' for search term: '{term}'");
+                        HighlightUI(button.gameObject, true);
+                        found = true;
+                        break;
+                    }
                 }
             }
+            if (found) break;
         }
         if (!found)
         {
@@ -967,6 +1061,8 @@ public partial class TutorialManager
                         suitableCells.Add(cell);
                     break;
 
+
+
                 default:
                     // More constrained default distance, avoid edges
                     if (distance >= 8f && distance <= 15f && IsCellSafeFromObstacles(cell, validCells))
@@ -1066,6 +1162,7 @@ public partial class TutorialManager
                 hasRequiredAction = detectedMelonyActions.Contains("rotate");
                 triggerToFire = TutorialTrigger.MelonyRotateTest;
                 break;
+
         }
 
         if (!allRequiredKeysPressed)

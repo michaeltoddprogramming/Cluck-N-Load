@@ -81,6 +81,8 @@ public class BuildController : MonoBehaviour
     private List<GameObject> ghostPool = new List<GameObject>(); // Pool for reusing ghost objects
     private bool isDefenceTypeSelected = false;
     private bool isDefenceChainFinalized = false;
+    // Track whether the first structure was actually placed when starting a defence chain
+    private bool initialDefencePlaced = false;
 
     [SerializeField] private GridDataGenerator gridDataGenerator;
 
@@ -499,6 +501,8 @@ public class BuildController : MonoBehaviour
                     else if (currentBuildTargetPrefab != null && IsDefenceType(currentStructureData))
                     {
                         Vector2Int hoveredCell = GetGridCellUnderCursor(true);
+                        
+                        // Always use chain building for defense structures (including during tutorial)
                         StartDefenceChain(hoveredCell);
                     }
                     else if (currentBuildTargetPrefab != null)
@@ -588,7 +592,9 @@ public class BuildController : MonoBehaviour
                         structureName.Contains("barrier") ||
                         structureName.Contains("barricade") ||
                         structureName.Contains("defense") ||
-                        structureName.Contains("defence");
+                        structureName.Contains("defence") ||
+                        structureName.Contains("hay") ||
+                        structureName.Contains("bale");
 
         Debug.Log($"IsDefenceType: '{structureName}' is defense type: {isDefense}");
         return isDefense;
@@ -613,6 +619,9 @@ public class BuildController : MonoBehaviour
                     Debug.Log($"StartDefenceChain: Successfully spent money for first structure");
                     PlaceItemWithoutMoneyCheck(startCell.x, startCell.y);
                     Debug.Log($"StartDefenceChain: First structure placed at {startCell}");
+
+                    // Mark that the initial structure was placed so cancel doesn't duplicate
+                    initialDefencePlaced = true;
 
                     // Now start chain mode for additional structures
                     isDefenceChainModeActive = true;
@@ -639,10 +648,49 @@ public class BuildController : MonoBehaviour
         }
     }
 
-    // Cancel defence chain mode
+    // Cancel defence chain mode (but place the first structure)
     private void CancelDefenceChain()
     {
         Debug.Log("Canceling defense chain");
+        
+        // If we already placed the initial structure when starting the chain,
+        // cancel should NOT place an additional structure.
+        if (initialDefencePlaced)
+        {
+            Debug.Log("CancelDefenceChain: Initial defence already placed - not placing extra structure on cancel");
+            // Trigger tutorial for the initial placement when the user explicitly cancels
+            HandleChainTutorialTrigger(1, true);
+            // Reset the flag for future chains
+            initialDefencePlaced = false;
+        }
+        else
+        {
+            // Place the first structure if there's at least one ghost in the chain
+            if (defenceGhostChain.Count > 0 && currentStructureData != null)
+            {
+                GameObject firstGhost = defenceGhostChain[0];
+                Vector2Int gridCoords = gridController.WorldToGridCoords(firstGhost.transform.position);
+                
+                // Check if player can afford one structure
+                int singleCost = currentStructureData.cost;
+                if (MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(singleCost))
+                {
+                    MoneyManager.Instance.SpendMoney(singleCost);
+                    Debug.Log($"Spent {singleCost} for canceled chain (single structure)");
+                    
+                    // Place just the first structure
+                    if (IsValidPlacementForChain(gridCoords.x, gridCoords.y))
+                    {
+                        PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y);
+                        Debug.Log($"CancelDefenceChain: Placed single structure at {gridCoords}");
+                        
+                        // Tutorial trigger for single hay bale placement
+                        HandleChainTutorialTrigger(1, true); // 1 structure, was canceled
+                    }
+                }
+            }
+        }
+
         isDefenceChainModeActive = false;
         ClearDefenceGhostChain();
         if (currentGhost != null) currentGhost.SetActive(true);
@@ -656,6 +704,23 @@ public class BuildController : MonoBehaviour
             Debug.Log("Cannot finalize defense chain - no ghost chain or not in chain mode");
             CancelDefenceChain();
             return;
+        }
+
+        // Tutorial validation for chain length
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+            if (currentStepId == "build_wall_chain")
+            {
+                int currentHayBales = CountHayBales();
+                int willHave = currentHayBales + defenceGhostChain.Count;
+                
+                if (willHave < 10)
+                {
+                    Debug.Log($"Tutorial: Need {10 - currentHayBales} more hay bales total. This chain will give you {willHave}/10.");
+                    // Allow it but provide feedback
+                }
+            }
         }
 
         // Check if player can afford all remaining structures
@@ -694,6 +759,12 @@ public class BuildController : MonoBehaviour
         }
 
         Debug.Log($"FinalizeDefenceChain: Successfully placed {placedCount} out of {defenceGhostChain.Count} structures in chain");
+
+        // Tutorial trigger for chain completion
+        if (placedCount > 0)
+        {
+            HandleChainTutorialTrigger(placedCount, false); // Multiple structures, was completed
+        }
 
         // Update connectors for all defense structures after chain placement
         if (placedCount > 0)
@@ -738,8 +809,11 @@ public class BuildController : MonoBehaviour
 
         List<Vector2Int> cellsBetween = GetCellsBetween(start, end);
 
+        // Check tutorial restrictions for chain length
+        int maxChainLength = GetMaxChainLengthForTutorial();
+        
         // Skip the first cell (start) since it's already placed
-        for (int i = 1; i < cellsBetween.Count; i++)
+        for (int i = 1; i < cellsBetween.Count && i < maxChainLength; i++)
         {
             Vector2Int cell = cellsBetween[i];
             if (IsValidPlacementForChain(cell.x, cell.y))
@@ -1558,8 +1632,8 @@ public class BuildController : MonoBehaviour
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
 
-        // NEW: Reopen shop after placing item, except for walls
-        if (wasShopOpenBeforeGhost && structure != null && !structure.GetStructureName().ToLower().Contains("wall"))
+        // NEW: Reopen shop after placing item, except for defense structures (walls, hay bales, etc.)
+        if (wasShopOpenBeforeGhost && structure != null && !IsDefenceType(currentStructureData))
         {
             // Clear the ghost and exit build mode first, then reopen shop
             if (currentGhost != null)
@@ -1586,6 +1660,12 @@ public class BuildController : MonoBehaviour
     private void PlaceItemWithoutMoneyCheck(int x, int y)
     {
         Debug.Log($"PlaceItemWithoutMoneyCheck at ({x}, {y})");
+        
+        if (currentBuildTargetPrefab == null)
+        {
+            Debug.LogError($"PlaceItemWithoutMoneyCheck: currentBuildTargetPrefab is null! Cannot place structure at ({x}, {y})");
+            return;
+        }
 
         // Use chain-specific validation instead of the ghost-based one
         if (!IsValidPlacementForChain(x, y))
@@ -1659,8 +1739,8 @@ public class BuildController : MonoBehaviour
         // Hide the info card immediately after placement to prevent UI conflicts
         ItemHoverPanel.Instance?.HideImmediate();
 
-        // NEW: Reopen shop after placing item, except for walls
-        if (wasShopOpenBeforeGhost && structure != null && !structure.GetStructureName().ToLower().Contains("wall"))
+        // NEW: Reopen shop after placing item, except for defense structures (walls, hay bales, etc.)
+        if (wasShopOpenBeforeGhost && structure != null && !IsDefenceType(currentStructureData))
         {
             // Clear the ghost and exit build mode first, then reopen shop
             if (currentGhost != null)
@@ -1797,15 +1877,51 @@ public class BuildController : MonoBehaviour
                 return structureName.Contains("chicken coop");
             case "build_chicken_barracks":
                 return structureName.Contains("chicken barrack");
+            case "build_first_wall":
+            case "build_first_hay_bale":
+            case "build_wall_chain":
+                // Allow any defense structure during wall tutorial, plus keep previous buildings available
+                return structureName.Contains("fence") || structureName.Contains("wall") || 
+                       structureName.Contains("barrier") || structureName.Contains("defense") ||
+                       structureName.Contains("defence") || structureName.Contains("hay") ||
+                       structureName.Contains("bale") || structureName.Contains("farm house") ||
+                       structureName.Contains("chicken") || structureName.Contains("crop") ||
+                       structureName.Contains("silo") || structureName.Contains("barracks");
             default:
                 return false;
         }
     }
 
+    private int CountHayBales()
+    {
+        int count = 0;
+        DefenseStructure[] allDefenseStructures = FindObjectsByType<DefenseStructure>(FindObjectsSortMode.None);
+        
+        foreach (DefenseStructure defenseStructure in allDefenseStructures)
+        {
+            if (defenseStructure != null && !defenseStructure.name.Contains("ghost"))
+            {
+                string structureName = defenseStructure.GetStructureName().ToLower();
+                if (structureName.Contains("hay") || structureName.Contains("bale"))
+                {
+                    count++;
+                }
+            }
+        }
+        
+        return count;
+    }
+
     private void HandleTutorialTriggers(Structure structure)
     {
-        if (TutorialManager.Instance == null) return;
+        if (TutorialManager.Instance == null) 
+        {
+            Debug.Log("TutorialManager.Instance is null!");
+            return;
+        }
         string name = structure.GetStructureName().ToLower();
+        Debug.Log($"HandleTutorialTriggers for structure: '{name}', type: {structure.GetType().Name}");
+        Debug.Log($"Current tutorial step: {TutorialManager.Instance.GetCurrentStepIndex()}, Tutorial active: {TutorialManager.Instance.IsTutorialActive()}");
         if (structure is BarracksStructure barracks)
         {
             string targetAnimalType = barracks.TargetAnimalType.ToLower();
@@ -1848,6 +1964,25 @@ public class BuildController : MonoBehaviour
             BarracksStructure.UpdateAllNearbyChickenCoops();
             return;
         }
+        // Check if this is a DefenseStructure (wall/fence)
+        if (structure is DefenseStructure)
+        {
+            // Note: Hay bale tutorial triggers are now handled by HandleChainTutorialTrigger
+            // in CancelDefenceChain and FinalizeDefenceChain methods
+            
+            if (name.Contains("hay") || name.Contains("bale"))
+            {
+                Debug.Log($"Hay bale placed via HandleTutorialTriggers: '{name}' - Chain tutorial logic should handle triggers");
+                // No longer fire tutorial triggers here - chain methods handle this
+            }
+            else
+            {
+                // For other defense structures, just trigger first wall
+                TutorialManager.Instance.Trigger(TutorialTrigger.BuiltFirstWall);
+            }
+            return;
+        }
+        
         TutorialTrigger trigger = name switch
         {
             var n when n.Contains("silo") || n.Contains("storage") => TutorialTrigger.BuiltSilo,
@@ -1861,6 +1996,63 @@ public class BuildController : MonoBehaviour
             TutorialManager.Instance.Trigger(trigger);
         }
         if (name.Contains("farm house") || name.Contains("farmhouse")) isHousePlaced = true;
+    }
+
+    private void HandleChainTutorialTrigger(int placedCount, bool wasCanceled)
+    {
+        if (TutorialManager.Instance == null) return;
+        
+        // Only handle hay bale tutorial triggers
+        if (currentStructureData == null || !currentStructureData.structureName.ToLower().Contains("hay")) return;
+        
+        Debug.Log($"HandleChainTutorialTrigger: placedCount={placedCount}, wasCanceled={wasCanceled}");
+        
+        var completedSteps = TutorialManager.Instance.GetCompletedStepIds();
+        int totalHayBales = CountHayBales();
+        
+        Debug.Log($"Total hay bales after chain operation: {totalHayBales}");
+        
+        // First hay bale trigger (either single placement via cancel, or first chain)
+        if (!completedSteps.Contains("build_first_hay_bale"))
+        {
+            Debug.Log("Triggering BuiltFirstHayBale from chain operation!");
+            TutorialManager.Instance.Trigger(TutorialTrigger.BuiltFirstHayBale);
+        }
+        // Chain building completion (need 10+ total hay bales)
+        else if (totalHayBales >= 10 && !completedSteps.Contains("build_wall_chain"))
+        {
+            Debug.Log($"Tutorial Complete: Built {totalHayBales} hay bales! Triggering Built10HayBales.");
+            TutorialManager.Instance.Trigger(TutorialTrigger.Built10HayBales);
+        }
+        else if (!completedSteps.Contains("build_wall_chain"))
+        {
+            int needed = 10 - totalHayBales;
+            Debug.Log($"Tutorial Progress: {totalHayBales}/10 hay bales built. Need {needed} more to complete wall tutorial.");
+        }
+    }
+
+    private int GetMaxChainLengthForTutorial()
+    {
+        // Check if in tutorial and return appropriate chain length limit
+        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+            return int.MaxValue; // No limit outside tutorial
+
+        string currentStepId = TutorialManager.Instance.GetCurrentStepId();
+        
+        switch (currentStepId)
+        {
+            case "build_first_hay_bale":
+                return 5; // Allow small chain so user can see ghosts and practice canceling
+                
+            case "build_wall_chain":
+                // Allow up to 9 additional structures to reach total of 10
+                int currentHayBales = CountHayBales();
+                int needed = 10 - currentHayBales;
+                return Mathf.Max(1, needed); // At least 1, up to what's needed for 10 total
+                
+            default:
+                return int.MaxValue; // No limit for other tutorial steps
+        }
     }
 
     public void OnStructureBuilt(Structure structure)
@@ -2148,4 +2340,18 @@ public class BuildController : MonoBehaviour
     public void HideDeleteIcon() => itemDeleteIcon.gameObject.SetActive(false);
     public Vector2 DeleteIconOffset { get => cursorOffset; set => cursorOffset = value; }
     public bool IsHousePlaced() => isHousePlaced;
+    
+    // Method to exit build mode (useful for tutorial completion)
+    public void ExitBuildMode()
+    {
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+        }
+        currentBuildTargetPrefab = null;
+        isBuildModeActive = false;
+        gridController.HideGrid();
+        Debug.Log("Exited build mode");
+    }
 }

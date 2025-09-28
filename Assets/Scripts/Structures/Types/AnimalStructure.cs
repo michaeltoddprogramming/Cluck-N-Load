@@ -742,7 +742,14 @@ public class AnimalStructure : Structure
         // this.lastCheckedHour = lastCheckedHour;
         OnAnimalCountChanged?.Invoke();
     }
-
-
-
+    
+    // Helper method to delay tutorial triggers and prevent race conditions
+    private IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.Trigger(trigger);
+        }
+    }
 }

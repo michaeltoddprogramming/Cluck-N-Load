@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class CropStructure : Structure
 {
@@ -111,7 +112,20 @@ public class CropStructure : Structure
         }
 
         if (TutorialManager.Instance != null)
-            TutorialManager.Instance.Trigger(TutorialTrigger.HarvestedCrop);
+        {
+            // For tutorial instant mechanics, trigger immediately. Otherwise add small delay.
+            if (TutorialManager.Instance.IsTutorialActive() && 
+                !TutorialManager.Instance.GetCompletedStepIds().Contains("plant_first_crop"))
+            {
+                // Instant tutorial mechanics - trigger immediately
+                TutorialManager.Instance.Trigger(TutorialTrigger.HarvestedCrop);
+            }
+            else
+            {
+                // Normal harvest - add small delay to ensure animation completes
+                StartCoroutine(DelayedTutorialTrigger(TutorialTrigger.HarvestedCrop, 0.1f));
+            }
+        }
 
         OnCropHarvested?.Invoke(currentCropType, totalCrops);
         currentCropType = CropType.None;
@@ -268,6 +282,10 @@ public class CropStructure : Structure
         isGrowing = false;
         cropReady = true;
         if (currentCropType != CropType.None) UpdateCropVisual(currentCropType, 2);
+        
+        // Show ready indicator when crop is ready for harvest
+        if (readyIndicator != null)
+            readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Harvest);
     }
 
     public void SetCropState(string cropType, bool isGrowing, bool cropReady)
@@ -289,6 +307,16 @@ public class CropStructure : Structure
         {
             cropReady = true;
             UpdateVisuals(3); // Final growth stage
+        }
+    }
+    
+    // Helper method to delay tutorial triggers and prevent race conditions
+    private IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.Trigger(trigger);
         }
     }
 }

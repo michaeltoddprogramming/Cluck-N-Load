@@ -393,6 +393,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case "build_chicken_barracks":
                 return 'A'; // Barracks are in Army tab (tab 1)
                 
+            case "build_first_wall":
+            case "build_first_hay_bale":
+            case "build_wall_chain":
+                return 'S'; // Walls are in Defense tab (tab 3)
+                
             default:
                 return 'C'; // Default to animals tab
         }
@@ -773,6 +778,16 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case "resources_explanation":
                 // No buildings during explanation/action steps - hide shop completely
                 isAllowed = false;
+                break;
+                
+            case "build_first_wall":
+            case "build_first_hay_bale":
+            case "build_wall_chain":
+                // During wall tutorial step, show Defense structures (walls/fences) AND keep previous buildings available
+                isAllowed = data.type == StructureType.Defense ||
+                           data.type == StructureType.Building ||
+                           data.type == StructureType.Animal ||
+                           data.type == StructureType.Barracks;
                 break;
                 
             default:

@@ -89,6 +89,9 @@ public class ShopUIManager : MonoBehaviour
             case "build_silo":
             case "build_chicken_coop":
             case "build_chicken_barracks":
+            case "build_first_wall":
+            case "build_first_hay_bale":
+            case "build_wall_chain":
                 // Only during building steps - shop is allowed
                 return true;
 

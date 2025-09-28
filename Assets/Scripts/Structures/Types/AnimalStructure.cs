@@ -131,6 +131,11 @@ public class AnimalStructure : Structure
     {
         if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) return;
         int foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
+        if (foodRequired <= 0)
+        {
+            foodRequired = 1;
+        }
+
         if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
         {
             InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
@@ -160,6 +165,11 @@ public class AnimalStructure : Structure
     {
         if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) return false;
         foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
+        if (foodRequired <= 0)
+        {
+            foodRequired = 1;
+        }
+
         if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
         {
             return true;

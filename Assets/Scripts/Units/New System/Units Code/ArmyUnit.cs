@@ -10,15 +10,15 @@ public class ArmyUnit : BaseUnit
     [SerializeField] private float recoilForce = 20f;
     private float roamRadius;
     private float roamInterval;
-    private int currHealth;
-    
+    protected int currHealth;
+
     // Add protected getter for current health
     protected int CurrentHealth => currHealth;
 
     private float lastAttackTime = 0f;
     private EnemyUnit currentTarget;
 
-    private BarracksStructure barracks;
+    protected BarracksStructure barracks;
     private Vector3 guardPosition;
     private bool isNightTime;
 
@@ -84,7 +84,7 @@ public class ArmyUnit : BaseUnit
         }
     }
 
-    private void UpdateHealthBar()
+    protected void UpdateHealthBar()
     {
         if (healthBarSlider != null)
         {
@@ -565,7 +565,7 @@ public class ArmyUnit : BaseUnit
         return cachedNearbyEnemies;
     }
 
-    public void TakeDamage(int damage)
+    public virtual void TakeDamage(int damage)
     {
         // Debug.Log("Army unit took damage: " + damage + "siedruhfgiowuehfiuwehfiuwehfiuwehiufhweiurfhiuehrfg");
         if (currHealth <= 0 || currHealth - damage <= 0)
@@ -584,7 +584,7 @@ public class ArmyUnit : BaseUnit
         }
     }
 
-    private void handleDie()
+    protected void handleDie()
     {
         TargetManager.Instance.UnregisterTarget(this);
 

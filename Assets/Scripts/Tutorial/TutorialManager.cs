@@ -351,18 +351,14 @@ public partial class TutorialManager : MonoBehaviour
 
     public void Trigger(TutorialTrigger trigger)
     {
-        Debug.Log($"TutorialManager.Trigger called with: {trigger}");
-        
         if (isProcessingStep)
         {
-            Debug.Log($"Tutorial is processing, queueing trigger: {trigger}");
             pendingTriggers.Enqueue(trigger);
             return;
         }
 
         if (trigger != TutorialTrigger.None && IsStepCompletedForTrigger(trigger))
         {
-            Debug.Log($"Trigger {trigger} already completed, ignoring");
             return;
         }
 
@@ -386,22 +382,17 @@ public partial class TutorialManager : MonoBehaviour
             _ => null
         };
         bool isCompleted = stepId != null && completedStepIds.Contains(stepId);
-        Debug.Log($"IsStepCompletedForTrigger: {trigger} -> {stepId}, completed: {isCompleted}");
         return isCompleted;
     }
 
     private void ProcessTrigger(TutorialTrigger trigger)
     {
-        Debug.Log($"ProcessTrigger: {trigger}, waitingForStepToComplete: {waitingForStepToComplete}, currentStepIndex: {currentStepIndex}");
-        
         if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
             var step = steps[currentStepIndex];
-            Debug.Log($"Current step: {step.stepId}, waiting for trigger: {step.triggerToWaitFor}, received trigger: {trigger}");
 
             if (step.triggerToWaitFor == trigger)
             {
-                Debug.Log($"Trigger match! Completing step: {step.stepId}");
                 waitingForStepToComplete = false;
 
                 if (step.uiToHighlight != null)
@@ -449,12 +440,9 @@ public partial class TutorialManager : MonoBehaviour
     
     public void SkipTutorial()
     {
-        Debug.Log("SkipTutorial called");
-        
         // Prevent double execution - only skip if tutorial is actually active
         if (!IsTutorialActive())
         {
-            Debug.Log("Tutorial skip ignored - tutorial not active or already completed");
             return;
         }
         
@@ -506,13 +494,10 @@ public partial class TutorialManager : MonoBehaviour
         
         // Notify all systems that tutorial is complete
         NotifyUISystemsOfStepChange();
-        
-        Debug.Log($"Tutorial skipped - {completedStepIds.Count} steps marked as completed");
     }
     
     private void DevSkipTutorial()
     {
-        Debug.Log("DevSkipTutorial called - skipping tutorial in developer mode");
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);

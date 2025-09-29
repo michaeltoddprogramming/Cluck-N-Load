@@ -953,8 +953,6 @@ public partial class TutorialManager
 
         // Add a distinctive effect to make her easier to spot
         AddMelonyEffects();
-
-        Debug.Log($"Spawned Melony for task: {task} at grid-based position: {spawnPosition}");
     }
 
     private Vector3 GetMelonySpawnPositionForTask(string task)

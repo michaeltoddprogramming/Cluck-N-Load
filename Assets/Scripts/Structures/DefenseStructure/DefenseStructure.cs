@@ -39,8 +39,6 @@ public class DefenseStructure : Structure
         
         // Delay registration to ensure proper positioning
         StartCoroutine(DelayedRegistration());
-        
-        Debug.Log($"DefenseStructure started, will register after delay");
     }
 
     private System.Collections.IEnumerator DelayedRegistration()
@@ -126,7 +124,6 @@ public class DefenseStructure : Structure
         }
 
         myGridPosition = GetGridPosition();
-        Debug.Log($"Attempting to register DefenseStructure {gameObject.name} at world position {transform.position} -> grid position {myGridPosition}");
         
         if (myGridPosition != new Vector2Int(-1, -1) && !isRegistered)
         {
@@ -143,8 +140,6 @@ public class DefenseStructure : Structure
 
             defenseRegistry[myGridPosition] = this;
             isRegistered = true;
-            
-            Debug.Log($"Successfully registered DefenseStructure {gameObject.name} at grid position: {myGridPosition}. Total registered: {defenseRegistry.Count}");
             
             // Update connectors for this structure and immediate neighbors only
             UpdateConnectors();
@@ -194,7 +189,6 @@ public class DefenseStructure : Structure
     {
         if (connectorPrefab == null) 
         {
-            Debug.LogWarning($"ConnectorPrefab is null for DefenseStructure at {myGridPosition}");
             return;
         }
 
@@ -204,8 +198,6 @@ public class DefenseStructure : Structure
             Debug.Log($"DefenseStructure at {myGridPosition} is ghost - skipping connector update");
             return;
         }
-
-        Debug.Log($"Updating connectors for DefenseStructure at {myGridPosition}");
 
         // Check each direction for neighbors using O(1) dictionary lookup
         // NOTE: We ignore grid obstacle states and only care about actual DefenseStructure objects in registry
@@ -222,12 +214,7 @@ public class DefenseStructure : Structure
                     // Create connector if we don't have one in this direction
                     if (!activeConnectors.ContainsKey(direction))
                     {
-                        Debug.Log($"  Creating connector from {myGridPosition} to {neighborPos} in direction {direction}");
                         CreateConnector(direction);
-                    }
-                    else
-                    {
-                        Debug.Log($"  Connector already exists in direction {direction}");
                     }
                 }
                 else
@@ -243,20 +230,12 @@ public class DefenseStructure : Structure
             }
             else
             {
-                Debug.Log($"  No defense structure neighbor in direction {direction} at {neighborPos}");
                 // Remove any connector in that direction if no neighbor exists
                 if (activeConnectors.ContainsKey(direction))
                 {
-                    Debug.Log($"    Removing connector in direction {direction} - no neighbor");
                     DestroyConnector(direction);
                 }
             }
-        }
-        
-        Debug.Log($"  Final active connectors: {activeConnectors.Count}");
-        foreach (var kvp in activeConnectors)
-        {
-            Debug.Log($"    Active connector: {kvp.Key} -> {kvp.Value?.name ?? "NULL"}");
         }
     }
 
@@ -292,8 +271,6 @@ public class DefenseStructure : Structure
 
         // Store connector reference
         activeConnectors[direction] = connector;
-        
-        Debug.Log($"Created connector at {myGridPosition} pointing {direction} with rotation {rotation.eulerAngles}");
     }
 
     // Destroy connector in the specified direction
@@ -343,7 +320,6 @@ public class DefenseStructure : Structure
             Debug.LogWarning($"DefenseStructure at world pos {transform.position} mapped to grid pos {gridPos}, but cell center is {cellCenter} (distance: {distance:F2})");
         }
         
-        Debug.Log($"DefenseStructure '{name}' at world {transform.position} -> grid {gridPos} (cell center: {cellCenter})");
         return gridPos;
     }
 
@@ -429,14 +405,11 @@ public class DefenseStructure : Structure
                 kvp.Value.UpdateConnectors();
             }
         }
-        
-        Debug.Log($"Finished rebuilding connectors for {defenseRegistry.Count} structures");
     }
 
     // Static method to refresh all defense structure connectors (only when needed)
     public static void RefreshAllDefenseConnectors()
     {
-        Debug.Log($"RefreshAllDefenseConnectors called for {defenseRegistry.Count} structures");
         
         // Use the rebuild method to ensure clean state
         RebuildAllConnectors();

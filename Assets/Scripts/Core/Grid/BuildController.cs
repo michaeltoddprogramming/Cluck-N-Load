@@ -303,7 +303,6 @@ public class BuildController : MonoBehaviour
                 }
 
                 movingStructure.RegisterWithGrid();
-                Debug.Log($"Structure placed at new position: {currentPosition}");
             }
             else
             {
@@ -578,12 +577,10 @@ public class BuildController : MonoBehaviour
     {
         if (data == null)
         {
-            Debug.Log("IsDefenceType: data is null");
             return false;
         }
 
         string structureName = data.structureName.ToLower();
-        Debug.Log($"IsDefenceType: Checking structure '{structureName}'");
 
         // Add your defense structure type checks here
         bool isDefense = structureName.Contains("fence") ||
@@ -596,15 +593,12 @@ public class BuildController : MonoBehaviour
                         structureName.Contains("hay") ||
                         structureName.Contains("bale");
 
-        Debug.Log($"IsDefenceType: '{structureName}' is defense type: {isDefense}");
         return isDefense;
     }
 
     // Start defence chain mode
     private void StartDefenceChain(Vector2Int startCell)
     {
-        Debug.Log($"StartDefenceChain: Starting defense chain at {startCell}");
-
         // First, place the initial structure immediately
         if (IsValidPlacement(startCell.x, startCell.y))
         {
@@ -1383,7 +1377,6 @@ public class BuildController : MonoBehaviour
         {
             Vector2Int gridPos = gridController.WorldToGridCoords(obj.transform.position);
             occupiedCells.Add(gridPos);
-            Debug.Log($"GetStructureFootprint for DefenseStructure {obj.name}: single cell at {gridPos}");
             return occupiedCells;
         }
 

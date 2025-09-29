@@ -32,13 +32,16 @@ public class ItemHoverPanel : MonoBehaviour
         // Hide name text entirely since it's redundant with the icon
         if (nameText != null)
         {
-            nameText.gameObject.SetActive(false);
+            Debug.Log("here are the name: " + data.name);
+            nameText.text = data.name;
+            // nameText.gameObject.SetActive(false);
         }
 
         // Set description if available
         if (descriptionText != null)
         {
             descriptionText.text = data.description;
+            Debug.Log("here are the description: " + data.description);
         }
 
         // Make stats more concise for the small box
@@ -86,6 +89,7 @@ public class ItemHoverPanel : MonoBehaviour
         if (statsText != null)
         {
             statsText.text = stats;
+            Debug.Log("here are the stats: " + stats);
         }
 
         // Shorter, more concise tips
@@ -100,6 +104,8 @@ public class ItemHoverPanel : MonoBehaviour
                 tips = "<color=#FFD700>Near silos for efficiency</color>";
             else if (data.type == StructureType.Barracks)
                 tips = "<color=#FFD700>Far from animals for discounts</color>";
+
+            Debug.Log("here are the tips: " + tips);
 
             tipsText.text = tips;
         }

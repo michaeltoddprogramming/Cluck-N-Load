@@ -58,21 +58,27 @@ public class CropStructure : Structure
         if (currentCropType == CropType.Carrots)
         {
             baseCropHarvestAmount = data.carrotsBaseHarvestAmount;
+            Debug.Log($"database carrot {data.carrotsBaseHarvestAmount}");
+            Debug.Log($"Base carrot harvest amount set to {baseCropHarvestAmount}");
         }
         else if (currentCropType == CropType.Sunflower)
         {
             baseCropHarvestAmount = data.sunflowerBaseHarvestAmount;
+            Debug.Log($"database sunflower {data.sunflowerBaseHarvestAmount}");
+            Debug.Log($"Base sunflower harvest amount set to {baseCropHarvestAmount}");
         }
         else
         {
             baseCropHarvestAmount = data.wheatBaseHarvestAmount;
+            Debug.Log($"database wheat {data.wheatBaseHarvestAmount}");
+            Debug.Log($"Base wheat harvest amount set to {baseCropHarvestAmount}");
         }
 
         cropHarvestMultiplierIncrease = data.cropSynergyMultiplier;
 
         UpdateSiloSynergy();
         nightManager = nightManager ?? NightManager.Instance ?? FindFirstObjectByType<NightManager>();
-        
+
         // Initialize ready indicator
         readyIndicator = GetComponent<ReadyIndicator>();
         if (readyIndicator == null)
@@ -83,13 +89,36 @@ public class CropStructure : Structure
     {
         if (cropType == CropType.None || isGrowing || cropReady) return;
         currentCropType = cropType;
+        updateCropAmounts();
         isGrowing = true;
-        
+
         // Hide indicator during growing
         if (readyIndicator != null)
             readyIndicator.HideIndicator();
-            
+
         UpdateCropVisual(cropType, 0);
+    }
+
+    public void updateCropAmounts()
+    {
+        if (currentCropType == CropType.Carrots)
+        {
+            baseCropHarvestAmount = data.carrotsBaseHarvestAmount;
+            Debug.Log($"database carrot {data.carrotsBaseHarvestAmount}");
+            Debug.Log($"Base carrot harvest amount set to {baseCropHarvestAmount}");
+        }
+        else if (currentCropType == CropType.Sunflower)
+        {
+            baseCropHarvestAmount = data.sunflowerBaseHarvestAmount;
+            Debug.Log($"database sunflower {data.sunflowerBaseHarvestAmount}");
+            Debug.Log($"Base sunflower harvest amount set to {baseCropHarvestAmount}");
+        }
+        else
+        {
+            baseCropHarvestAmount = data.wheatBaseHarvestAmount;
+            Debug.Log($"database wheat {data.wheatBaseHarvestAmount}");
+            Debug.Log($"Base wheat harvest amount set to {baseCropHarvestAmount}");
+        }
     }
 
     public string Harvest()
@@ -114,7 +143,7 @@ public class CropStructure : Structure
         if (TutorialManager.Instance != null)
         {
             // For tutorial instant mechanics, trigger immediately. Otherwise add small delay.
-            if (TutorialManager.Instance.IsTutorialActive() && 
+            if (TutorialManager.Instance.IsTutorialActive() &&
                 !TutorialManager.Instance.GetCompletedStepIds().Contains("plant_first_crop"))
             {
                 // Instant tutorial mechanics - trigger immediately
@@ -131,11 +160,11 @@ public class CropStructure : Structure
         currentCropType = CropType.None;
         cropReady = false;
         isGrowing = false;
-        
+
         // Hide indicator after harvest
         if (readyIndicator != null)
             readyIndicator.HideIndicator();
-            
+
         DestroyCrop();
         return "yes";
     }
@@ -195,7 +224,7 @@ public class CropStructure : Structure
         {
             cropReady = true;
             isGrowing = false;
-            
+
             // Show ready indicator when crop is ready for harvest
             if (readyIndicator != null)
                 readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Harvest);
@@ -282,7 +311,7 @@ public class CropStructure : Structure
         isGrowing = false;
         cropReady = true;
         if (currentCropType != CropType.None) UpdateCropVisual(currentCropType, 2);
-        
+
         // Show ready indicator when crop is ready for harvest
         if (readyIndicator != null)
             readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Harvest);
@@ -309,7 +338,7 @@ public class CropStructure : Structure
             UpdateVisuals(3); // Final growth stage
         }
     }
-    
+
     // Helper method to delay tutorial triggers and prevent race conditions
     private IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, float delay)
     {

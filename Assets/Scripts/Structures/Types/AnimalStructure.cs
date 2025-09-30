@@ -362,6 +362,7 @@ public class AnimalStructure : Structure
     public void BuyAnimals(int amount)
     {
         if (nightManager == null || !nightManager.IsDay || animalCount >= maxAnimalCount) return;
+        if (nightManager.getIsPaused()) return;
         int animalsToBuy = Mathf.Min(amount, maxAnimalCount - animalCount);
         int totalCost = animalsToBuy * productionSettings.costPerAnimal;
         if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(totalCost))

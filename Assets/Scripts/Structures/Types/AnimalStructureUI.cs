@@ -33,6 +33,7 @@ public class AnimalStructureUI : BaseStructureUI
     private AnimalStructure animalStructure;
     private bool isAnimalStructure;
     private NightManager nightManager;
+    private bool lastPauseState = false; // Track pause state changes
 
     private float lastUIUpdate;
     private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
@@ -85,6 +86,20 @@ public class AnimalStructureUI : BaseStructureUI
 
     private void Update()
     {
+        // Check for pause state changes and update UI immediately
+        if (nightManager != null)
+        {
+            bool currentPauseState = nightManager.getIsPaused();
+            if (currentPauseState != lastPauseState)
+            {
+                lastPauseState = currentPauseState;
+                Debug.Log($"[AnimalStructureUI] Pause state changed to: {currentPauseState}");
+                UpdateUI(); // Update immediately when pause state changes
+                return;
+            }
+        }
+        
+        // Regular UI updates
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
         {
             UpdateUI();
@@ -153,10 +168,12 @@ public class AnimalStructureUI : BaseStructureUI
         bool productReady = animalStructure.ProductReady;
         int animalCount = animalStructure.AnimalCount;
         int maxAnimalCount = animalStructure.MaxAnimalCount;
-        bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed();
-        bool canCollect = productReady && nightManager.IsDay;
+        bool isPaused = nightManager.getIsPaused();
+        Debug.Log($"[AnimalStructureUI] UpdateUI called - isPaused: {isPaused}");
+        bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
+        bool canCollect = productReady && nightManager.IsDay && !isPaused;
         // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")
-        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isProducing;  // Added !isProducing check
+        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isProducing && !isPaused;  // Added !isProducing and !isPaused checks
 
         animalAmountText.text = $"{animalCount}/{maxAnimalCount}";
         newAnimalAmount.text = $"{newAnimalCount}";
@@ -172,7 +189,7 @@ public class AnimalStructureUI : BaseStructureUI
             buyAnimal.interactable = newAnimalCount > 0 && canBuy;  // Use updated canBuy
 
         addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && canBuy && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal);
-        removeAnimal.interactable = newAnimalCount > 0;
+        removeAnimal.interactable = newAnimalCount > 0 && !isPaused;
 
         costText.text = (newAnimalCount * animalStructure.ProductionSettings.costPerAnimal).ToString();
 
@@ -295,6 +312,8 @@ public class AnimalStructureUI : BaseStructureUI
             animalStructure.OnAnimalCountChanged -= UpdateUI;
             animalStructure.StopBackgroundNoise();
         }
+
+        
         base.OnDestroy();
     }
 

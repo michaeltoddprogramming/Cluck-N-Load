@@ -276,6 +276,7 @@ public class BarracksStructure : Structure
     public void RecruitAnimals(int amount)
     {
         if (!CanRecruitWithLogging(amount) || !MoneyManager.Instance.SpendMoney(amount * recruitmentCostPerAnimal)) return;
+        if (nightManager != null && nightManager.getIsPaused()) return;
 
         UpdateRecruitmentCostByDistance();
 

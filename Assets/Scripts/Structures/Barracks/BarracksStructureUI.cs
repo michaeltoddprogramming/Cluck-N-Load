@@ -32,6 +32,7 @@ public class BarracksStructureUI : BaseStructureUI
     private int animalCount = 0;
     private int maxAnimalCount = 0;
     private System.Action pendingRecruitAction;
+    private bool lastPauseState = false; // Track pause state changes
 
     // Public property to check if this barracks is currently placing a flag
     public bool IsPlacingFlag => isPlacingFlag;
@@ -143,6 +144,19 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void Update()
     {
+        // Check for pause state changes and update UI immediately
+        NightManager nightManager = NightManager.Instance;
+        if (nightManager != null)
+        {
+            bool currentPauseState = nightManager.getIsPaused();
+            if (currentPauseState != lastPauseState)
+            {
+                lastPauseState = currentPauseState;
+                Debug.Log($"[BarracksStructureUI] Pause state changed to: {currentPauseState}");
+                UpdateUI(); // Update immediately when pause state changes
+            }
+        }
+        
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
         {
             UpdateUI();
@@ -159,7 +173,6 @@ public class BarracksStructureUI : BaseStructureUI
         // Additional safeguard for sheep flag button at night
         if (barracksStructure != null && barracksStructure.GetAnimalType() == "Sheep")
         {
-            NightManager nightManager = NightManager.Instance;
             if (nightManager != null && !nightManager.IsDay && placeFlagButton != null)
             {
                 placeFlagButton.interactable = false;
@@ -353,6 +366,10 @@ public class BarracksStructureUI : BaseStructureUI
 
         bool canRecruit = barracksStructure.CanRecruit(newAnimalCount);
         bool hasArmy = barracksStructure.ArmyAnimalCount > 0;
+        
+        // Check if game is paused
+        NightManager nightManager = NightManager.Instance;
+        bool isPaused = nightManager != null && nightManager.getIsPaused();
 
         updateStatusBars();
 
@@ -408,7 +425,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (recruitButton != null && !isPlacingFlag)
         {
-            recruitButton.interactable = canRecruit;
+            recruitButton.interactable = canRecruit && !isPaused;
             // TextMeshProUGUI buttonText = recruitButton.GetComponentInChildren<TextMeshProUGUI>();
             if (costText != null)
             {
@@ -419,7 +436,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (placeFlagButton != null && !isPlacingFlag)
         {
-            placeFlagButton.interactable = hasArmy;
+            placeFlagButton.interactable = hasArmy && !isPaused;
             ColorBlock colors = placeFlagButton.colors;
             colors.normalColor = hasArmy ? new Color(0.8f, 1f, 0.8f) : Color.grey;
             placeFlagButton.colors = colors;
@@ -437,7 +454,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (addAnimal != null)
         {
-            if ((newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1))
+            if ((newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1) && !isPaused)
             {
                 addAnimal.interactable = true;
             }
@@ -449,7 +466,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (minusAnimal != null)
         {
-            if (newAnimalCount > 0)
+            if (newAnimalCount > 0 && !isPaused)
             {
                 minusAnimal.interactable = true;
             }
@@ -461,7 +478,7 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (recruitButton != null)
         {
-            if (minusAnimal != null && (minusAnimal.interactable == false || !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice())))
+            if (minusAnimal != null && (minusAnimal.interactable == false || !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()) || isPaused))
             {
                 recruitButton.interactable = false;
             }
@@ -475,16 +492,19 @@ public class BarracksStructureUI : BaseStructureUI
         // Add day/night check for sheep flag placement
         if (barracksStructure.GetAnimalType() == "Sheep")
         {
-            NightManager nightManager = NightManager.Instance;
             bool isDay = nightManager != null ? nightManager.IsDay : true;
             Debug.Log($"[Sheep Barracks UI] IsDay: {isDay}, HasArmy: {hasArmy}");  // Debug log to check values
 
             if (placeFlagButton != null)
             {
-                placeFlagButton.interactable = isDay && hasArmy;
+                placeFlagButton.interactable = isDay && hasArmy && !isPaused;
                 Debug.Log($"[Sheep Barracks UI] PlaceFlagButton interactable: {placeFlagButton.interactable}");  // Debug log for button state
 
-                if (!isDay && statusText != null)
+                if (isPaused && statusText != null)
+                {
+                    updateStatusText("Cannot place flags while game is paused");
+                }
+                else if (!isDay && statusText != null)
                 {
                     updateStatusText("Sheep flags can only be placed during the day");
                 }
@@ -503,7 +523,7 @@ public class BarracksStructureUI : BaseStructureUI
             // For non-sheep animals, flags can be placed anytime (existing behavior)
             if (placeFlagButton != null)
             {
-                placeFlagButton.interactable = hasArmy;
+                placeFlagButton.interactable = hasArmy && !isPaused;
             }
         }
 
@@ -615,6 +635,7 @@ public class BarracksStructureUI : BaseStructureUI
             barracksStructure.OnArmyChanged -= UpdateUI;
             barracksStructure.stopBackgroundSound();
         }
+
 
         // Call base OnDestroy
         base.OnDestroy();

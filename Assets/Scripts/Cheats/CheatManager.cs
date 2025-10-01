@@ -619,10 +619,20 @@ public class CheatManager : MonoBehaviour
     
     private void SpawnEnemies()
     {
-        if (CombatManager.Instance != null)
+        if (CombatManager.Instance != null && CombatManager.Instance.spawnUnits != null)
         {
-            CombatManager.Instance.StartCombat();
-            Debug.Log("Force spawned enemies");
+            // Only spawn enemies if it's actually night - don't force combat mode
+            if (NightManager.Instance != null && !NightManager.Instance.GetIsDay())
+            {
+                // Get current season and spawn appropriate enemies
+                int currentSeason = NightManager.Instance.GetCurrentSeason();
+                CombatManager.Instance.spawnUnits.SpawnEnemies(currentSeason);
+                Debug.Log("Force spawned enemies for current night");
+            }
+            else
+            {
+                Debug.LogWarning("Cannot spawn enemies during day time! Wait for night.");
+            }
         }
     }
     

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Linq;
+// Force recompile - COMPILATION FORCED!
 
 public class NightManager : MonoBehaviour
 {
@@ -117,6 +118,11 @@ public class NightManager : MonoBehaviour
         get => years;
         set => years = value;
     }
+    public bool YearsChanged
+    {
+        get => yearsChanged;
+        set => yearsChanged = value;
+    }
     private float tempSecond;
     private bool yearsChanged = false;
 
@@ -222,7 +228,8 @@ public class NightManager : MonoBehaviour
         if (currentSeason == 0) setSeason(1);
         else setSeason(currentSeason);
 
-        combatManager.SetSeason(currentSeason);
+        // NOTE: setSeason already calls combatManager.SetSeason, so no need for duplicate call
+        // combatManager.SetSeason(currentSeason);
         // chooseAnimalProductForSeason();
     }
 
@@ -251,7 +258,6 @@ public class NightManager : MonoBehaviour
 
     public void pauseTime()
     {
-        AudioManager.Instance.PauseGameAudio();
         timeIndicator.exchangeTimeIcon("pause");
         timeSpeedEffect.StopSpeedEffect();
         isPaused = true;
@@ -267,11 +273,6 @@ public class NightManager : MonoBehaviour
 
     public void playTime()
     {
-        if (isPaused == true)
-        {
-            AudioManager.Instance.ResumeGameAudio();
-        }
-
         timeIndicator.exchangeTimeIcon("play");
         timeSpeedEffect.StopSpeedEffect();
         isPaused = false;
@@ -292,11 +293,6 @@ public class NightManager : MonoBehaviour
 
     public void fastForwardTime()
     {
-        if (isPaused == true)
-        {
-            AudioManager.Instance.ResumeGameAudio();
-        }
-
         timeIndicator.exchangeTimeIcon("fast");
         timeSpeedEffect.StartSpeedEffect();
         if (isPaused)
@@ -624,30 +620,35 @@ public class NightManager : MonoBehaviour
 
     private void OnDayChange(int value)
     {
+        Debug.Log($"OnDayChange called: value={value}, hours={hours}");
 
         if (value == 0)
         {
+            Debug.Log("Day 0 - setting Spring season");
             setSeason(1);
-            enemyIndicator.MakeWolfVisible();
 
         }
         else if (value == 5 && hours == 5)
         {
+            Debug.Log("Day 5, hour 5 - setting Summer season");
             setSeason(2);
-            enemyIndicator.MakeRacoonVisible();
         }
         else if (value == 10 && hours == 5)
         {
+            Debug.Log("Day 10, hour 5 - setting Fall season");
             setSeason(3);
-            enemyIndicator.MakeBoarVisible();
         }
         else if (value == 15 && hours == 5)
         {
+            Debug.Log("Day 15, hour 5 - setting Winter season");
             setSeason(4);
-            enemyIndicator.MakeBearVisible();
         }
         else if (value == 20 && hours == 5)
         {
+            print("CRITICAL: Year transition triggered at Day 20, Hour 5");
+            UnityEngine.Debug.LogError($"YEAR TRANSITION: Day 20, hour 5 detected! About to increment year from {years} to {years + 1}");
+            Debug.Log("Day 20, hour 5 - triggering year transition");
+            Debug.Log($"Before year transition: years={years}, days={days}, hours={hours}");
             // StartNotification("Night starting soon!!", 5f);
 
             if (yearAudioSource != null)
@@ -659,16 +660,17 @@ public class NightManager : MonoBehaviour
             days = 0;
             hours = 7;
             minutes = 0;
-            yearsChanged = true;
+            YearsChanged = true;
 
+            Debug.Log($"After year transition: years={years}, yearsChanged={YearsChanged} - setting Spring season");
             setSeason(1);
-            enemyIndicator.MakeWolfVisible();
 
             StartDay(0); // force reset to day state
             // setSeason(1); // reset season if needed
         }
         else if (value == 21)
         {
+            Debug.Log("Day 21 - triggering year transition (fallback)");
             years++;
             days = 0;
             hours = 7;
@@ -676,10 +678,67 @@ public class NightManager : MonoBehaviour
 
             StartDay(0); // force reset to day state
             setSeason(1); // reset season if needed
-            enemyIndicator.MakeWolfVisible();
         }
 
         UpdateDayCountUI();
+    }
+
+    public void UpdateEnemyIndicatorForSeason(int season)
+    {
+        // Debug logging to track what's happening
+        Debug.Log($"UpdateEnemyIndicatorForSeason called: season={season}, years={years}");
+        Debug.Log($"Enemy indicator instance: {enemyIndicator}");
+        
+        // Check if unlock enemy animals cheat is active
+        if (CheatManager.Instance != null && CheatManager.Instance.IsUnlockEnemyAnimalsActive())
+        {
+            Debug.Log("Cheat active - showing all enemies");
+            if (enemyIndicator != null) enemyIndicator.MakeAllEnemiesVisible();
+            return;
+        }
+        
+        // After completing the first year (year 2+), all enemy types should be available
+        if (years >= 2)
+        {
+            print($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
+            Debug.LogError($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
+            if (enemyIndicator != null) 
+            {
+                enemyIndicator.MakeAllEnemiesVisible();
+                print("Called MakeAllEnemiesVisible()");
+                Debug.LogError("Called MakeAllEnemiesVisible()");
+            }
+            else
+            {
+                Debug.LogError("Enemy indicator is null!");
+            }
+            return;
+        }
+        
+        // First year only: Normal seasonal behavior
+        Debug.Log($"First year seasonal behavior - showing only season {season} enemy");
+        if (enemyIndicator != null)
+        {
+            switch (season)
+            {
+                case 1:
+                    enemyIndicator.MakeWolfVisible();
+                    break;
+                case 2:
+                    enemyIndicator.MakeRacoonVisible();
+                    break;
+                case 3:
+                    enemyIndicator.MakeBoarVisible();
+                    break;
+                case 4:
+                    enemyIndicator.MakeBearVisible();
+                    break;
+            }
+        }
+        else
+        {
+            Debug.LogError("Enemy indicator is null!");
+        }
     }
 
     private void UpdateDayCountUI()
@@ -705,12 +764,19 @@ public class NightManager : MonoBehaviour
 
     private void setSeason(int season)
     {
+        // COMPILATION DEFINITELY FORCED NOW!
+        print($"CRITICAL DEBUG: setSeason called with season={season}, years={years}");
+        UnityEngine.Debug.LogError($"ENEMY INDICATOR DEBUG: setSeason called with season={season}, years={years}");
+        Debug.Log("===== setSeason method called =====");
+        Debug.Log($"setSeason called: season={season}, years={years}, yearsChanged={YearsChanged}");
+        Debug.Log($"EnemyIndicator instance check: {enemyIndicator}");
+        Debug.Log($"About to call UpdateEnemyIndicatorForSeason with season={season}");
         currentSeason = season;
         string text;
         switch (season)
         {
             case 1:
-                if (yearsChanged)
+                if (YearsChanged)
                 {
                     text = $"Year {Years} done!!\nSpring!!!!";
                     seasonIcon.sprite = spring;
@@ -726,7 +792,7 @@ public class NightManager : MonoBehaviour
                 }
                 break;
             case 2:
-                yearsChanged = false;
+                YearsChanged = false;
                 text = "Summer!!";
                 seasonIcon.sprite = summer;
                 if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
@@ -772,6 +838,10 @@ public class NightManager : MonoBehaviour
         }
 
         combatManager.SetSeason(season);
+
+        // Update enemy indicator for the new season
+        Debug.Log($"About to call UpdateEnemyIndicatorForSeason with season={season}, enemyIndicator={enemyIndicator}");
+        UpdateEnemyIndicatorForSeason(season);
 
         // Use Pete for season notifications instead of basic text
         if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
@@ -916,7 +986,7 @@ public class NightManager : MonoBehaviour
         float increasePercent = 1.5f; // 50% increase
         float sameProductIncreasePercent = 2f; // 100% increase
 
-        float[] boostedProducts = new float[5];
+        float[] boostedProducts = new float[5] { 1f, 1f, 1f, 1f, 1f }; // Initialize with default multipliers instead of zeros
 
         // Reset all animal production to base before applying bonuses
         foreach (AnimalStructure animalStructure in animalStructures)
@@ -1213,7 +1283,7 @@ public class NightManager : MonoBehaviour
     {
         return season switch
         {
-            1 => yearsChanged ?
+            1 => YearsChanged ?
                 $"Howdy! Year {Years} is in the books! Welcome to Spring!\n\nEverything's blooming - perfect time for chickens and basic farming. Spring brings renewed energy to your animals!" :
                 "Spring's here! Time for fresh starts and happy chickens. Your animals are feeling energetic - great season for egg production!",
             2 => "Summer heat is upon us! Your crops grow faster, but watch out - wolves get extra cranky in this weather. Stock up on defenses!",
@@ -1352,7 +1422,10 @@ public class NightManager : MonoBehaviour
     {
         if (season < 1 || season > 4) return;
 
-        currentSeason = season;
+        Debug.Log($"Public SetSeason called: season={season} - calling private setSeason method");
+        
+        // Call the private setSeason method to ensure all season logic is executed
+        setSeason(season);
 
         // Trigger season change events
         if (GameEventManager.Instance != null)
@@ -1368,6 +1441,18 @@ public class NightManager : MonoBehaviour
     public int GetCurrentSeason()
     {
         return currentSeason;
+    }
+
+    public string GetSeason()
+    {
+        switch (currentSeason)
+        {
+            case 1: return "Spring";
+            case 2: return "Summer";
+            case 3: return "Fall";
+            case 4: return "Winter";
+            default: return "Spring";
+        }
     }
 
     public void CheatSetDays(int newDays)
@@ -1392,32 +1477,43 @@ public class NightManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Clean up any remaining coroutines on destroy
+        // FIXED COMPILATION FORCED - Clean up any remaining coroutines on destroy
         if (seasonNotificationCoroutine != null)
         {
             StopCoroutine(seasonNotificationCoroutine);
+            seasonNotificationCoroutine = null;
         }
         if (productionNotificationCoroutine != null)
         {
             StopCoroutine(productionNotificationCoroutine);
+            productionNotificationCoroutine = null;
         }
-        foreach (Coroutine cor in skyboxCoroutines)
+        
+        // Safely stop skybox coroutines
+        if (skyboxCoroutines != null)
         {
-            StopCoroutine(cor);
+            foreach (Coroutine cor in skyboxCoroutines)
+            {
+                if (cor != null)
+                {
+                    StopCoroutine(cor);
+                }
+            }
+            skyboxCoroutines.Clear();
         }
+        
+        // Safely stop lighting coroutines
         foreach (Coroutine cor in lightingCoroutines)
         {
-            StopCoroutine(cor);
+            if (cor != null)
+            {
+                StopCoroutine(cor);
+            }
         }
     }
 
     public bool getIsPaused()
     {
         return isPaused;
-    }
-
-    public string GetSeason()
-    {
-        return GetSeasonName(currentSeason);
     }
 }

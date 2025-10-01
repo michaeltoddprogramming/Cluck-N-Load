@@ -7,7 +7,7 @@ public class EnemyIndicator : MonoBehaviour
     [SerializeField] private GameObject boar;
     [SerializeField] private GameObject bear;
 
-    public void MakeWolfVisible()
+     public void MakeWolfVisible()
     {
         wolf.SetActive(true);
         raccoon.SetActive(false);
@@ -38,9 +38,11 @@ public class EnemyIndicator : MonoBehaviour
     
     public void MakeAllEnemiesVisible()
     {
+        Debug.Log("EnemyIndicator.MakeAllEnemiesVisible() called - setting all enemies active");
         wolf.SetActive(true);
         raccoon.SetActive(true);
         boar.SetActive(true);
         bear.SetActive(true);
+        Debug.Log($"Enemy states: wolf={wolf.activeSelf}, raccoon={raccoon.activeSelf}, boar={boar.activeSelf}, bear={bear.activeSelf}");
     }
 }

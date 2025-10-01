@@ -55,9 +55,18 @@ public class SpawnUnits : MonoBehaviour
         // Check if unlock enemy animals cheat is active
         bool unlockAllEnemies = CheatManager.Instance != null && CheatManager.Instance.IsUnlockEnemyAnimalsActive();
         
-        if (unlockAllEnemies)
+        // Also check if we're in year 2+ (after completing first year)
+        bool postFirstYear = false;
+        if (NightManager.Instance != null)
         {
-            // Spawn all enemy types when cheat is active
+            // For now, just check if we're in year 2 or higher to unlock all enemies
+            postFirstYear = NightManager.Instance.Years >= 2;
+        }
+        
+        if (unlockAllEnemies || postFirstYear)
+        {
+            // Spawn all enemy types when cheat is active OR after first year completion
+            Debug.Log($"Spawning all enemy types - cheat: {unlockAllEnemies}, postFirstYear: {postFirstYear}");
             SpawnAllEnemyTypes();
             return;
         }

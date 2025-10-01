@@ -16,8 +16,12 @@ namespace FGUIStarter
         protected override void Awake()
         {
             base.Awake();
-            textRect = GetComponentInChildren<TextMeshProUGUI>().rectTransform;
-            originalTextPos = textRect.anchoredPosition;
+            var textComponent = GetComponentInChildren<TextMeshProUGUI>();
+            if (textComponent != null)
+            {
+                textRect = textComponent.rectTransform;
+                originalTextPos = textRect.anchoredPosition;
+            }
         }
 
         public override void OnPointerDown(PointerEventData eventData)

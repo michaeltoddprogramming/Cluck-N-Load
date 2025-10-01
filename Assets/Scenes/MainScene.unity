@@ -27875,7 +27875,7 @@ MonoBehaviour:
   color: {r: 0.6666667, g: 0.73333335, b: 0.8666667, a: 0}
   morningToDayGradient:
     serializedVersion: 2
-    key0: {r: 0.7735849, g: 0.34963915, b: 0.21529014, a: 1}
+    key0: {r: 0.5568628, g: 0.28627452, b: 0.2, a: 1}
     key1: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
@@ -27906,7 +27906,7 @@ MonoBehaviour:
   DayToAfternoonGradient:
     serializedVersion: 2
     key0: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-    key1: {r: 0.7764706, g: 0.3529412, b: 0.21568628, a: 1}
+    key1: {r: 0.5568628, g: 0.28627452, b: 0.2, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -27935,7 +27935,7 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   AfternoonToNightGradient:
     serializedVersion: 2
-    key0: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
+    key0: {r: 0.5568628, g: 0.28627452, b: 0.2, a: 1}
     key1: {r: 0.19607843, g: 0.27450982, b: 0.39215687, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
@@ -27966,7 +27966,7 @@ MonoBehaviour:
   nightToMorningGradient:
     serializedVersion: 2
     key0: {r: 0.19607843, g: 0.27450982, b: 0.39215687, a: 1}
-    key1: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
+    key1: {r: 0.5566038, g: 0.28346863, b: 0.19691172, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}

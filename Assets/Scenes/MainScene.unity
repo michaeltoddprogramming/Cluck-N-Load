@@ -15039,7 +15039,7 @@ MonoBehaviour:
   maxX: 30
   minZ: -30
   maxZ: 30
-  minZoom: 5
+  minZoom: 20
   maxZoom: 120
   fixedPitch: -1
   cursor: {fileID: 1632256037}

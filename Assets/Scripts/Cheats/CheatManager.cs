@@ -249,19 +249,9 @@ public class CheatManager : MonoBehaviour
         if (setCustomMoneyButton != null)
             setCustomMoneyButton.onClick.AddListener(SetCustomMoney);
         
-        // Time cheats
-        if (skipDayButton != null)
-            skipDayButton.onClick.AddListener(SkipDay);
-        if (skipSeasonButton != null)
-            skipSeasonButton.onClick.AddListener(SkipSeason);
-        if (skipYearButton != null)
-            skipYearButton.onClick.AddListener(SkipYear);
-        if (toggleTimeButton != null)
-            toggleTimeButton.onClick.AddListener(ToggleTimeFreeze);
+        // Time cheats (remaining ones - skipDay, skipSeason, skipYear, toggleTime, forceDay already set up above)
         if (forceNightButton != null)
             forceNightButton.onClick.AddListener(ForceNight);
-        if (forceDayButton != null)
-            forceDayButton.onClick.AddListener(ForceDay);
         
         // Resource cheats
         if (maxResourcesButton != null)
@@ -369,9 +359,57 @@ public class CheatManager : MonoBehaviour
     {
         if (NightManager.Instance != null)
         {
+            // Get current state
             int currentDays = NightManager.Instance.GetDays();
-            NightManager.Instance.CheatSetDays(currentDays + 1);
-            Debug.Log("Skipped to next day");
+            
+            // Calculate next day
+            int newDay = currentDays + 1;
+            
+            Debug.Log($"SkipDay: Current day {currentDays} -> Next day {newDay}");
+            
+            // Handle year overflow (day 20 -> day 0 of next year)
+            if (newDay >= 20)
+            {
+                // For day 20+, set to day 20 with hour 5 to trigger year transition
+                NightManager.Instance.Hours = 5;
+                NightManager.Instance.Minutes = 0;
+                NightManager.Instance.CheatSetDays(20);
+                
+                Debug.Log($"Year transition triggered: Day {currentDays} -> Day 20 (hour 5)");
+                RefreshDebugInfo();
+                return;
+            }
+            
+            // Check if this new day is a season change day (5, 10, 15)
+            bool isSeasonChangeDay = (newDay == 5 || newDay == 10 || newDay == 15);
+            
+            if (isSeasonChangeDay)
+            {
+                // For season change days, set hour to 5 to trigger season transition
+                NightManager.Instance.Hours = 5;
+                NightManager.Instance.Minutes = 0;
+                NightManager.Instance.CheatSetDays(newDay);
+                
+                string seasonName = newDay switch
+                {
+                    5 => "Summer",
+                    10 => "Fall", 
+                    15 => "Winter",
+                    _ => "Unknown"
+                };
+                Debug.Log($"Skipped to day {newDay} (hour 5) - Season change to {seasonName}");
+            }
+            else
+            {
+                // For regular days, set to morning (hour 7)
+                NightManager.Instance.Hours = 7;
+                NightManager.Instance.Minutes = 0;
+                NightManager.Instance.CheatSetDays(newDay);
+                NightManager.Instance.CheatForceDay();
+                
+                Debug.Log($"Skipped to day {newDay} (morning)");
+            }
+            
             RefreshDebugInfo();
         }
     }

@@ -163,9 +163,25 @@ public partial class TutorialManager
 
             if (isCompleted)
             {
-                checkmark.transform.localScale = Vector3.zero;
-                LeanTween.scale(checkmark.gameObject, Vector3.one, 0.4f).setEase(LeanTweenType.easeOutBack).setDelay(0.1f);
-                LeanTween.rotateAroundLocal(checkmark.gameObject, Vector3.forward, 360f, 0.4f).setEase(LeanTweenType.easeOutCirc).setDelay(0.1f);
+                // Skip animations during tutorial skip to prevent LeanTween overflow
+                if (completedStepIds.Count > 10) // If we're completing many steps at once, skip animations
+                {
+                    checkmark.transform.localScale = Vector3.one;
+                }
+                else
+                {
+                    try
+                    {
+                        checkmark.transform.localScale = Vector3.zero;
+                        LeanTween.scale(checkmark.gameObject, Vector3.one, 0.4f).setEase(LeanTweenType.easeOutBack).setDelay(0.1f);
+                        LeanTween.rotateAroundLocal(checkmark.gameObject, Vector3.forward, 360f, 0.4f).setEase(LeanTweenType.easeOutCirc).setDelay(0.1f);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"LeanTween animation failed: {e.Message}. Setting scale directly.");
+                        checkmark.transform.localScale = Vector3.one;
+                    }
+                }
             }
         }
 

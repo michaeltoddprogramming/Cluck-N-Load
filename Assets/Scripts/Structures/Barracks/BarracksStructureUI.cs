@@ -193,6 +193,40 @@ public class BarracksStructureUI : BaseStructureUI
             addAnimal.onClick.RemoveAllListeners();
             addAnimal.onClick.AddListener(() =>
             {
+                // Check if action is allowed before proceeding
+                if ((newAnimalCount + animalCount) >= maxAnimalCount)
+                {
+                    // Play error sound for max capacity reached
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayErrorSound();
+                    }
+                    updateStatusText("Maximum army capacity reached!");
+                    return;
+                }
+                
+                if (!MoneyManager.Instance.CanAfford((newAnimalCount + 1) * barracksStructure.GetAnimalRecruitPrice()))
+                {
+                    // Play insufficient funds sound
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayInsufficientFundsSound();
+                    }
+                    updateStatusText("Cannot afford more animals!");
+                    return;
+                }
+                
+                if (!barracksStructure.CanRecruit(newAnimalCount + 1))
+                {
+                    // Play error sound for recruitment limitations
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayErrorSound();
+                    }
+                    updateStatusText("Cannot recruit more animals!");
+                    return;
+                }
+                
                 // animalStructure.Feed();
                 animalChange(0);
                 UpdateUI();
@@ -206,6 +240,17 @@ public class BarracksStructureUI : BaseStructureUI
             minusAnimal.onClick.RemoveAllListeners();
             minusAnimal.onClick.AddListener(() =>
             {
+                // Check if action is allowed before proceeding
+                if (newAnimalCount <= 0)
+                {
+                    // Play error sound for no animals to remove
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayErrorSound();
+                    }
+                    return;
+                }
+                
                 // animalStructure.Feed();
                 animalChange(1);
                 UpdateUI();
@@ -239,6 +284,11 @@ public class BarracksStructureUI : BaseStructureUI
             if (nightManager != null && !nightManager.IsDay)
             {
                 updateStatusText("Sheep flags can only be placed during the day");
+                // Play error sound
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayErrorSound();
+                }
                 // Optional: Add visual feedback, e.g., flash the button red
                 if (placeFlagButton != null)
                 {
@@ -277,6 +327,11 @@ public class BarracksStructureUI : BaseStructureUI
             if (nightManager != null && !nightManager.IsDay)
             {
                 Debug.Log("Cancelling flag placement - night started for sheep");
+                // Play error sound for night cancellation
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayErrorSound();
+                }
                 CancelFlagPlacement("Night started - sheep flag placement cancelled");
                 return;
             }
@@ -329,6 +384,11 @@ public class BarracksStructureUI : BaseStructureUI
         // Make sure we don't place on UI elements
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
+            // Play error sound for trying to place on UI
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
             return; // Don't place on UI
         }
 
@@ -344,6 +404,11 @@ public class BarracksStructureUI : BaseStructureUI
                 NightManager nightManager = NightManager.Instance;
                 if (nightManager != null && !nightManager.IsDay)
                 {
+                    // Play error sound for attempted night placement
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayErrorSound();
+                    }
                     CancelFlagPlacement("Cannot place sheep flags at night");
                     return;
                 }
@@ -351,6 +416,14 @@ public class BarracksStructureUI : BaseStructureUI
 
             barracksStructure.PlaceFlag(hit.point);
             EndFlagPlacement("Flag placed successfully!");
+        }
+        else
+        {
+            // Play error sound for invalid placement location
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
         }
     }
 
@@ -509,6 +582,11 @@ public class BarracksStructureUI : BaseStructureUI
         if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()))
         {
             updateStatusText($"Cannot afford {maxAnimalCount} many animals!");
+            // Play error sound for insufficient funds
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
         }
 
         // Add day/night check for sheep flag placement
@@ -525,6 +603,11 @@ public class BarracksStructureUI : BaseStructureUI
                 if (isPaused && statusText != null)
                 {
                     updateStatusText("Cannot place flags while game is paused");
+                    // Play error sound for paused game action
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayErrorSound();
+                    }
                 }
                 else if (!isDay && statusText != null)
                 {
@@ -698,7 +781,27 @@ public class BarracksStructureUI : BaseStructureUI
     // Enhanced recruitment with production impact warning
     public void RecruitAnimalsWithWarningCheck()
     {
-        if (newAnimalCount <= 0) return;
+        if (newAnimalCount <= 0) 
+        {
+            // Play error sound for no animals to recruit
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
+            return;
+        }
+        
+        // Check if we can afford the recruitment
+        if (!MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()))
+        {
+            // Play insufficient funds sound
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
+            updateStatusText("Cannot afford recruitment!");
+            return;
+        }
         
         // Check if recruitment would impact production
         AnimalStructure targetAnimal = barracksStructure.GetTargetStructure;
@@ -715,7 +818,12 @@ public class BarracksStructureUI : BaseStructureUI
         }
         else
         {
-            recruitAnimals(); // Fallback to normal recruitment
+            // Play error sound for recruitment failure
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
+            updateStatusText("Cannot recruit animals at this time!");
         }
     }
 
@@ -903,6 +1011,76 @@ public class BarracksStructureUI : BaseStructureUI
             }
         }
         return false;
+    }
+
+    // Building/Upgrade error sound methods
+    private void PlayInsufficientFundsForBuildingSound()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayInsufficientFundsSound();
+        }
+    }
+    
+    private void PlayBuildingErrorSound()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayErrorSound();
+        }
+    }
+    
+    // Method to handle any building-related insufficient funds errors
+    public void HandleBuildingInsufficientFunds(string buildingAction, int cost)
+    {
+        PlayInsufficientFundsForBuildingSound();
+        updateStatusText($"Cannot afford {buildingAction}! Cost: {cost}");
+    }
+    
+    // Method to handle general building errors
+    public void HandleBuildingError(string errorMessage)
+    {
+        PlayBuildingErrorSound();
+        updateStatusText(errorMessage);
+    }
+    
+    // Method to check and handle barracks upgrade costs (for future upgrades)
+    public bool TryUpgradeBarracks(int upgradeCost)
+    {
+        if (MoneyManager.Instance == null) return false;
+        
+        if (!MoneyManager.Instance.CanAfford(upgradeCost))
+        {
+            HandleBuildingInsufficientFunds("barracks upgrade", upgradeCost);
+            return false;
+        }
+        
+        if (MoneyManager.Instance.SpendMoney(upgradeCost))
+        {
+            updateStatusText("Barracks upgraded successfully!");
+            return true;
+        }
+        else
+        {
+            HandleBuildingError("Failed to upgrade barracks!");
+            return false;
+        }
+    }
+    
+    // Method to check and handle building additional structures costs
+    public bool TryBuildAdditionalStructure(string structureName, int buildCost)
+    {
+        if (MoneyManager.Instance == null) return false;
+        
+        if (!MoneyManager.Instance.CanAfford(buildCost))
+        {
+            HandleBuildingInsufficientFunds($"building {structureName}", buildCost);
+            return false;
+        }
+        
+        // Note: Actual building logic would be handled elsewhere
+        // This just handles the cost checking and error sounds
+        return true;
     }
 
     // Flag ghost management methods

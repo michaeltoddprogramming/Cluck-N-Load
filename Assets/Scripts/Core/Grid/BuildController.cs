@@ -629,6 +629,11 @@ public class BuildController : MonoBehaviour
                 else
                 {
                     Debug.Log("StartDefenceChain: Failed to spend money for first structure");
+                    // Play insufficient funds sound for defence chain
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayInsufficientFundsSound();
+                    }
                 }
             }
             else
@@ -722,6 +727,11 @@ public class BuildController : MonoBehaviour
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(totalCost))
         {
             Debug.Log($"Cannot afford chain of {defenceGhostChain.Count} structures (cost: {totalCost})");
+            // Play insufficient funds sound for defence chain
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
             return;
         }
 
@@ -1560,7 +1570,18 @@ public class BuildController : MonoBehaviour
 
     void PlaceItem(int x, int y)
     {
-        if (!IsValidPlacement(x, y) || (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))) return;
+        if (!IsValidPlacement(x, y)) return;
+        
+        // Check if we can afford the structure
+        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
+        {
+            // Play insufficient funds sound when can't afford building
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
+            return;
+        }
 
         // Prevent placing more than one farmhouse
         if (currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))

@@ -174,6 +174,19 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (nightManager != null && nightManager.getIsPaused())
         {
             Debug.Log("Cannot select structure while game is paused.");
+            playErrorSound(); // Play error sound when trying to select during pause
+            return;
+        }
+
+        // Check if player can afford the structure
+        if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(data?.cost ?? 0))
+        {
+            Debug.Log($"Cannot select {data?.structureName} - insufficient funds (cost: {data?.cost})");
+            // Play insufficient funds sound
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
             return;
         }
 
@@ -241,7 +254,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void playErrorSound()
     {
-        if (isLockedByDay)
+        if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayErrorSound();
         }

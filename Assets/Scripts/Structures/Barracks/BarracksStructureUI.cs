@@ -619,11 +619,7 @@ public class BarracksStructureUI : BaseStructureUI
         if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()))
         {
             updateStatusText($"Cannot afford {maxAnimalCount} many animals!");
-            // Play error sound for insufficient funds
-            if (AudioManager.Instance != null)
-            {
-                AudioManager.Instance.PlayInsufficientFundsSound();
-            }
+            // Don't play error sound here - this is just UI state update, not user action
         }
 
         // Add day/night check for sheep flag placement
@@ -640,11 +636,7 @@ public class BarracksStructureUI : BaseStructureUI
                 if (isPaused && statusText != null)
                 {
                     updateStatusText("Cannot place flags while game is paused");
-                    // Play error sound for paused game action
-                    if (AudioManager.Instance != null)
-                    {
-                        AudioManager.Instance.PlayErrorSound();
-                    }
+                    // Don't play error sound here - this is just UI state update, not user action
                 }
                 else if (!isDay && statusText != null)
                 {

@@ -2,10 +2,8 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class ItemHoverPanel : MonoBehaviour
+public class SiloHover : MonoBehaviour
 {
-    public static ItemHoverPanel Instance { get; private set; }
-
     private StructureData database;
 
     [SerializeField] private RectTransform panelRect;
@@ -14,17 +12,16 @@ public class ItemHoverPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private TextMeshProUGUI tipsText;
 
-    [Header("All panels")]
-    [SerializeField] private AnimalHover animalHover;
-    [SerializeField] private BarrackHover barrackHover;
-    [SerializeField] private SiloHover siloHover;
-    [SerializeField] private CropHover cropHover;
+    [Header("Health and cost")]
+    [SerializeField] private TextMeshProUGUI costText;
+    [SerializeField] private TextMeshProUGUI heathText;
 
-
+    [Header("Stats Display")]
+    [SerializeField] private TextMeshProUGUI totalAmount;
 
     private void Awake()
     {
-        Instance = this;
+        // Instance = this;
         HideImmediate();
     }
 
@@ -36,38 +33,41 @@ public class ItemHoverPanel : MonoBehaviour
             return;
         }
 
-        database = data;
+        database = data;              
 
         LeanTween.cancel(gameObject);
 
-        if (data.type == StructureType.Animal)
+        if (nameText != null)
         {
-            animalHover.Show(data);
+            // Debug.Log("here are the name: " + data.name);
+            nameText.text = database.structureName;
         }
-        else if(data.type == StructureType.Barracks)
+
+        // Set description if available
+        if (descriptionText != null)
         {
-            barrackHover.Show(data);
+            descriptionText.text = database.description;
+            // Debug.Log("here are the description: " + database.description);
         }
-        else if(data.type == StructureType.Silo)
-        {
-            siloHover.Show(data);
-        }
-        else if(data.type == StructureType.CropPlot)
-        {
-            cropHover.Show(data);
-        }
+
+        costText.text = database.cost.ToString();
+        heathText.text = database.health.ToString();
+
+
+        totalAmount.text = database.totalPerSilo.ToString();
+        
 
         // Shorter, more concise tips
         if (tipsText != null)
         {
             string tips = "";
-            if (data.type == StructureType.Silo)
+            if (database.type == StructureType.Silo)
                 tips = "<color=#FFD700>Near crops & animals for synergy</color>";
-            else if (data.type == StructureType.CropPlot)
+            else if (database.type == StructureType.CropPlot)
                 tips = "<color=#FFD700>Near silos for yield bonus</color>";
-            else if (data.type == StructureType.Animal)
+            else if (database.type == StructureType.Animal)
                 tips = "<color=#FFD700>Near silos for efficiency</color>";
-            else if (data.type == StructureType.Barracks)
+            else if (database.type == StructureType.Barracks)
                 tips = "<color=#FFD700>Far from animals for discounts</color>";
 
             Debug.Log("here are the tips: " + tips);
@@ -86,24 +86,6 @@ public class ItemHoverPanel : MonoBehaviour
 
     public void Hide()
     {
-        if (database.type == StructureType.Animal)
-        {
-            animalHover.Hide();
-        }
-        else if(database.type == StructureType.Barracks)
-        {
-            barrackHover.Hide();
-        }
-        else if(database.type == StructureType.Silo)
-        {
-            siloHover.Hide();
-        }
-        else if(database.type == StructureType.CropPlot)
-        {
-            cropHover.Hide();
-        }
-
-
         LeanTween.cancel(gameObject);
         LeanTween.scale(panelRect, Vector3.one * 0.8f, 0.15f).setEase(LeanTweenType.easeInBack).setIgnoreTimeScale(true);
         LeanTween.alphaCanvas(canvasGroup, 0f, 0.15f).setEase(LeanTweenType.easeInQuad).setIgnoreTimeScale(true)
@@ -117,27 +99,6 @@ public class ItemHoverPanel : MonoBehaviour
 
     public void HideImmediate()
     {
-        if(database != null)
-        {
-            if (database.type == StructureType.Animal)
-            {
-                animalHover.HideImmediate();
-            }
-            else if(database.type == StructureType.Barracks)
-            {
-                barrackHover.HideImmediate();
-            }
-            else if(database.type == StructureType.Silo)
-            {
-                siloHover.HideImmediate();
-            }
-            else if(database.type == StructureType.CropPlot)
-            {
-                cropHover.HideImmediate();
-            }
-        }
-
-
         LeanTween.cancel(gameObject);
         canvasGroup.alpha = 0;
         gameObject.SetActive(false);

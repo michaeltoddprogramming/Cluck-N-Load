@@ -11,6 +11,8 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Button setFlagColorButton;
     [SerializeField] private int recruitAmount = 1;
     [SerializeField] private GameObject flagPlacementIndicator;
+    [SerializeField] private GameObject flagGhostPrefab; // Ghost prefab for flag placement preview
+    [SerializeField] private Material flagGhostMaterial; // Optional: Material to apply to ghost flag
     [SerializeField] private Button addAnimal;
     [SerializeField] private Button minusAnimal;
     [SerializeField] private TextMeshProUGUI animalCountText;
@@ -28,6 +30,7 @@ public class BarracksStructureUI : BaseStructureUI
     private BarracksStructure barracksStructure;
     private bool isBarracksStructure = false;
     private bool isPlacingFlag = false;
+    private GameObject currentFlagGhost; // Current ghost flag instance during placement
     private int newAnimalCount = 0;
     private int animalCount = 0;
     private int maxAnimalCount = 0;
@@ -260,6 +263,9 @@ public class BarracksStructureUI : BaseStructureUI
             placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
         }
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(true);
+        
+        // Create flag ghost for preview
+        CreateFlagGhost();
     }
 
     private void HandleFlagPlacementInput()
@@ -291,17 +297,30 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void UpdateFlagPlacementIndicator()
     {
-        if (flagPlacementIndicator == null) return;
-
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
         
         if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
         {
-            Vector3 position = hit.point;
-            position.y += 0.1f;
-            flagPlacementIndicator.transform.position = position;
+            // Update flag placement indicator if it exists
+            if (flagPlacementIndicator != null)
+            {
+                Vector3 position = hit.point;
+                position.y += 0.1f;
+                flagPlacementIndicator.transform.position = position;
+            }
+            
+            // Update flag ghost position
+            UpdateFlagGhostPosition(hit.point);
+        }
+        else
+        {
+            // Hide ghost when raycast doesn't hit anything
+            if (currentFlagGhost != null && currentFlagGhost.activeSelf)
+            {
+                currentFlagGhost.SetActive(false);
+            }
         }
     }
 
@@ -351,6 +370,9 @@ public class BarracksStructureUI : BaseStructureUI
         {
             flagPlacementIndicator.SetActive(false);
         }
+        
+        // Destroy flag ghost
+        DestroyFlagGhost();
         
         UpdateUI();
     }
@@ -673,6 +695,8 @@ public class BarracksStructureUI : BaseStructureUI
             barracksStructure.stopBackgroundSound();
         }
 
+        // Clean up flag ghost if it exists
+        DestroyFlagGhost();
 
         // Call base OnDestroy
         base.OnDestroy();
@@ -916,6 +940,100 @@ public class BarracksStructureUI : BaseStructureUI
             }
         }
         return false;
+    }
+
+    // Flag ghost management methods
+    private void CreateFlagGhost()
+    {
+        // Clean up any existing ghost first
+        DestroyFlagGhost();
+        
+        // Create ghost if prefab is assigned
+        if (flagGhostPrefab != null)
+        {
+            currentFlagGhost = Instantiate(flagGhostPrefab);
+            
+            // Apply ghost material if specified
+            if (flagGhostMaterial != null)
+            {
+                Renderer[] renderers = currentFlagGhost.GetComponentsInChildren<Renderer>();
+                foreach (Renderer renderer in renderers)
+                {
+                    Material[] materials = renderer.materials;
+                    for (int i = 0; i < materials.Length; i++)
+                    {
+                        materials[i] = flagGhostMaterial;
+                    }
+                    renderer.materials = materials;
+                }
+            }
+            else
+            {
+                // If no ghost material specified, make it semi-transparent
+                Renderer[] renderers = currentFlagGhost.GetComponentsInChildren<Renderer>();
+                foreach (Renderer renderer in renderers)
+                {
+                    Material[] materials = renderer.materials;
+                    for (int i = 0; i < materials.Length; i++)
+                    {
+                        Material mat = new Material(materials[i]);
+                        Color color = mat.color;
+                        color.a = 0.5f; // Make it semi-transparent
+                        mat.color = color;
+                        
+                        // Try to enable transparency if the shader supports it
+                        if (mat.HasProperty("_Mode"))
+                        {
+                            mat.SetFloat("_Mode", 3); // Transparent mode
+                            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                            mat.SetInt("_ZWrite", 0);
+                            mat.DisableKeyword("_ALPHATEST_ON");
+                            mat.EnableKeyword("_ALPHABLEND_ON");
+                            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                            mat.renderQueue = 3000;
+                        }
+                        
+                        materials[i] = mat;
+                    }
+                    renderer.materials = materials;
+                }
+            }
+            
+            // Disable colliders on ghost
+            Collider[] colliders = currentFlagGhost.GetComponentsInChildren<Collider>();
+            foreach (Collider collider in colliders)
+            {
+                collider.enabled = false;
+            }
+            
+            // Start with ghost hidden until we have a valid position
+            currentFlagGhost.SetActive(false);
+        }
+    }
+    
+    private void UpdateFlagGhostPosition(Vector3 worldPosition)
+    {
+        if (currentFlagGhost != null)
+        {
+            // Activate ghost if not already active
+            if (!currentFlagGhost.activeSelf)
+            {
+                currentFlagGhost.SetActive(true);
+            }
+            
+            // Position the ghost at the world position
+            currentFlagGhost.transform.position = worldPosition;
+        }
+    }
+    
+    private void DestroyFlagGhost()
+    {
+        if (currentFlagGhost != null)
+        {
+            Destroy(currentFlagGhost);
+            currentFlagGhost = null;
+        }
     }
 
     private void HideUI()

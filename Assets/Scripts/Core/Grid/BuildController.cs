@@ -16,6 +16,7 @@ public class BuildController : MonoBehaviour
 
     [Header("Build Settings")]
     [SerializeField] private Material ghostMaterial;
+    [SerializeField] private Material ghostErrorMaterial; // Red material for unaffordable ghost chain links
     [SerializeField] private GameObject[] buildablePrefabs;
 
     [Header("Input Settings")]
@@ -27,6 +28,7 @@ public class BuildController : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private RectTransform itemDeleteIcon;
+    [SerializeField] private ChainCostDisplay chainCostDisplay;
     [SerializeField] public GameObject dustPoof;
     [SerializeField] private CanvasGroup buildControlsPanelGroup;
 
@@ -816,6 +818,13 @@ public class BuildController : MonoBehaviour
         // Check tutorial restrictions for chain length
         int maxChainLength = GetMaxChainLengthForTutorial();
         
+        // Calculate budget limit
+        int currentMoney = MoneyManager.Instance != null ? MoneyManager.Instance.GetCurrentMoney() : 0;
+        int structureCost = currentStructureData != null ? currentStructureData.cost : 0;
+        int affordableCount = structureCost > 0 ? currentMoney / structureCost : cellsBetween.Count;
+        
+        int validGhostCount = 0;
+        
         // Skip the first cell (start) since it's already placed
         for (int i = 1; i < cellsBetween.Count && i < maxChainLength; i++)
         {
@@ -824,8 +833,30 @@ public class BuildController : MonoBehaviour
             {
                 Vector3 worldPos = gridController.GetCellCenterFromTexture(cell.x, cell.y);
                 GameObject ghost = GetGhostFromPool(worldPos, currentRotation);
+                
+                // Determine if this ghost is affordable
+                bool isAffordable = validGhostCount < affordableCount;
+                
+                // Apply appropriate material based on affordability
+                if (isAffordable)
+                {
+                    ApplyGhostMaterial(ghost);
+                }
+                else
+                {
+                    ApplyGhostErrorMaterial(ghost);
+                }
+                
                 defenceGhostChain.Add(ghost);
+                validGhostCount++;
             }
+        }
+        
+        // Update cost display if there are any ghosts in chain
+        if (validGhostCount > 0)
+        {
+            int totalCost = validGhostCount * structureCost;
+            UpdateChainCostDisplay(totalCost, affordableCount, validGhostCount);
         }
     }
 
@@ -837,6 +868,12 @@ public class BuildController : MonoBehaviour
             ReturnGhostToPool(ghost);
         }
         defenceGhostChain.Clear();
+        
+        // Hide the cost display when clearing chain
+        if (chainCostDisplay != null)
+        {
+            chainCostDisplay.HideCostDisplay();
+        }
     }
 
     // Get ghost object from pool or create new one
@@ -1343,6 +1380,28 @@ public class BuildController : MonoBehaviour
         }
         foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
             renderer.material = new Material(ghostMaterial);
+    }
+
+    void ApplyGhostErrorMaterial(GameObject obj)
+    {
+        if (ghostErrorMaterial == null)
+        {
+            // Create red error material if not assigned
+            ghostErrorMaterial = new Material(Shader.Find("Standard"))
+            {
+                color = new Color(1, 0, 0, 0.5f) // Red and semi-transparent
+            };
+            ghostErrorMaterial.SetFloat("_Mode", 3);
+            ghostErrorMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            ghostErrorMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            ghostErrorMaterial.SetInt("_ZWrite", 0);
+            ghostErrorMaterial.DisableKeyword("_ALPHATEST_ON");
+            ghostErrorMaterial.EnableKeyword("_ALPHABLEND_ON");
+            ghostErrorMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            ghostErrorMaterial.renderQueue = 3000;
+        }
+        foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
+            renderer.material = new Material(ghostErrorMaterial);
     }
 
     public void SetBuildTarget(StructureData data)
@@ -2274,6 +2333,16 @@ public class BuildController : MonoBehaviour
         itemDeleteIcon.position = new Vector2(mousePosition.x + cursorOffset.x, mousePosition.y + cursorOffset.y);
         foreach (Graphic graphic in itemDeleteIcon.GetComponentsInChildren<Graphic>())
             graphic.raycastTarget = false;
+    }
+
+    private void UpdateChainCostDisplay(int totalCost, int affordableCount, int totalCount)
+    {
+        if (chainCostDisplay != null)
+        {
+            Vector2 mousePosition = Input.mousePosition;
+            chainCostDisplay.UpdatePosition(mousePosition, cursorOffset);
+            chainCostDisplay.ShowCostDisplay(totalCost, affordableCount, totalCount);
+        }
     }
 
     private void ClearGhost()

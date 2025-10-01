@@ -1,16 +1,42 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class ItemHoverPanel : MonoBehaviour
 {
     public static ItemHoverPanel Instance { get; private set; }
 
+    private StructureData database;
+
     [SerializeField] private RectTransform panelRect;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private TextMeshProUGUI nameText;
-    [SerializeField] private TextMeshProUGUI statsText;
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private TextMeshProUGUI tipsText;
+
+    [Header("All stats")]
+    [SerializeField] private Image[] animalIcons;
+    [SerializeField] private Sprite[] animalsSprites;
+    [SerializeField] private Sprite[] foodSprites;
+    [SerializeField] private Sprite[] productionSprites;
+
+    [Header("Health and cost")]
+    [SerializeField] private TextMeshProUGUI costText;
+    [SerializeField] private TextMeshProUGUI heathText;
+
+    [Header("Unit cost")]
+    [SerializeField] private TextMeshProUGUI unitCostText;
+
+    [Header("Feed info")]
+    [SerializeField] private Image[] foodIcons;
+    [SerializeField] private TextMeshProUGUI feedAmountText;
+
+    [Header("Production info")]
+    [SerializeField] private Image productIcon;
+    [SerializeField] private TextMeshProUGUI produceAmountText;
+
+    [Header("Capacity info")]
+    [SerializeField] private TextMeshProUGUI capacityText;
 
 
     private void Awake()
@@ -27,14 +53,16 @@ public class ItemHoverPanel : MonoBehaviour
             return;
         }
 
+        database = data;
+
         LeanTween.cancel(gameObject);
 
-        // Hide name text entirely since it's redundant with the icon
+        setupAnimalIcons();
+
         if (nameText != null)
         {
-            Debug.Log("here are the name: " + data.name);
-            nameText.text = data.name;
-            // nameText.gameObject.SetActive(false);
+            // Debug.Log("here are the name: " + data.name);
+            nameText.text = data.structureName;
         }
 
         // Set description if available
@@ -44,53 +72,70 @@ public class ItemHoverPanel : MonoBehaviour
             Debug.Log("here are the description: " + data.description);
         }
 
-        // Make stats more concise for the small box
-        string stats = $"${data.cost} • HP: {data.health}";
+        costText.text = data.cost.ToString();
+        heathText.text = data.health.ToString();
+
+        if (data.type == StructureType.Animal)
+        {
+            unitCostText.text = data.costPerAnimal.ToString();
+
+            FoodIcons();
+
+            feedAmountText.text = data.baseFoodRequired.ToString();
+
+            productionIcon();
+            produceAmountText.text = data.moneyPerProduct.ToString();
+
+            capacityText.text = "10";
+        }
+        // else if (data.type)
+
+
 
         // Compact stats for different structure types
-        if (data.type == StructureType.Silo)
-        {
-            int perSilo = 0;
-            if (InventoryManager.Instance != null)
-            {
-                perSilo = InventoryManager.Instance.totalPerSilo;
-            }
-            stats += $" • Cap: {perSilo}";
-        }
-        else if (data.type == StructureType.CropPlot)
-        {
-            stats += " • Grows Crops";
-        }
-        else if (data.type == StructureType.Animal)
-        {
-            if (data.prefab != null)
-            {
-                var animalStructure = data.prefab.GetComponent<AnimalStructure>();
-                if (animalStructure != null)
-                {
-                    stats += $" • Max: {animalStructure.MaxAnimalCount} • ${animalStructure.baseMoneyPerProduct}/prod";
-                }
-            }
-        }
-        else if (data.type == StructureType.Barracks)
-        {
-            ArmyType armyType;
-            if (System.Enum.TryParse(data.targetAnimalType, out armyType))
-            {
-                ArmyData armyData = Resources.Load<ArmyData>($"Prefabs/Units/All new stuff/Army/{armyType}");
-                if (armyData != null)
-                {
-                    stats += $" • DMG: {armyData.AttackDamage} • SPD: {armyData.MovementSpeed}";
-                }
-            }
-        }
+        //     if (data.type == StructureType.Silo)
+        //     {
+        //         int perSilo = 0;
+        //         if (InventoryManager.Instance != null)
+        //         {
+        //             perSilo = InventoryManager.Instance.totalPerSilo;
+        //         }
+        //         stats += $" • Cap: {perSilo}";
+        //     }
+        //     else if (data.type == StructureType.CropPlot)
+        //     {
+        //         stats += " • Grows Crops";
+        //     }
+        //     else if (data.type == StructureType.Animal)
+        //     {
+        //         if (data.prefab != null)
+        //         {
+        //             var animalStructure = data.prefab.GetComponent<AnimalStructure>();
+        //             if (animalStructure != null)
+        //             {
+        //                 stats += $" • Max: {animalStructure.MaxAnimalCount} • ${animalStructure.baseMoneyPerProduct}/prod";
+        //             }
+        //         }
+        //     }
+        //     else if (data.type == StructureType.Barracks)
+        //     {
+        //         ArmyType armyType;
+        //         if (System.Enum.TryParse(data.targetAnimalType, out armyType))
+        //         {
+        //             ArmyData armyData = Resources.Load<ArmyData>($"Prefabs/Units/All new stuff/Army/{armyType}");
+        //             if (armyData != null)
+        //             {
+        //                 stats += $" • DMG: {armyData.AttackDamage} • SPD: {armyData.MovementSpeed}";
+        //             }
+        //         }
+        //     }
 
-        // Set stats text if available
-        if (statsText != null)
-        {
-            statsText.text = stats;
-            Debug.Log("here are the stats: " + stats);
-        }
+        // // Set stats text if available
+        // if (statsText != null)
+        // {
+        //     statsText.text = stats;
+        //     Debug.Log("here are the stats: " + stats);
+        // }
 
         // Shorter, more concise tips
         if (tipsText != null)
@@ -117,6 +162,85 @@ public class ItemHoverPanel : MonoBehaviour
         canvasGroup.alpha = 0f;
         LeanTween.scale(panelRect, Vector3.one, 0.18f).setEase(LeanTweenType.easeOutBack).setIgnoreTimeScale(true);
         LeanTween.alphaCanvas(canvasGroup, 1f, 0.18f).setEase(LeanTweenType.easeOutQuad).setIgnoreTimeScale(true);
+    }
+
+    private void setupAnimalIcons()
+    {
+        foreach (var icon in animalIcons)
+        {
+            if (database.structureName == "Chicken Coop")
+            {
+                icon.sprite = animalsSprites[0];
+            }
+            else if (database.structureName == "Cow Barn")
+            {
+                icon.sprite = animalsSprites[1];
+            }
+            else if (database.structureName == "Goat Pen")
+            {
+                icon.sprite = animalsSprites[2];
+            }
+            else if (database.structureName == "Pig Sty")
+            {
+                icon.sprite = animalsSprites[3];
+            }
+            else
+            {
+                icon.sprite = animalsSprites[4];
+            }
+        }
+    }
+
+    private void FoodIcons()
+    {
+        foreach (var icon in foodIcons)
+        {
+            if (database.structureName == "Chicken Coop")
+            {
+                icon.sprite = foodSprites[0];
+            }
+            else if (database.structureName == "Cow Barn")
+            {
+                icon.sprite = foodSprites[1];
+            }
+            else if (database.structureName == "Goat Pen")
+            {
+                icon.sprite = foodSprites[2];
+            }
+            else if (database.structureName == "Pig Sty")
+            {
+                icon.sprite = foodSprites[2];
+            }
+            else
+            {
+                icon.sprite = foodSprites[1];
+            }
+        }
+    }
+
+    private void productionIcon()
+    {
+        Debug.Log("here is the name: " + database.name);
+        if (database.structureName == "Chicken Coop")
+        {
+            productIcon.sprite = productionSprites[0];
+        }
+        else if (database.structureName == "Cow Barn")
+        {
+            productIcon.sprite = productionSprites[1];
+        }
+        else if (database.structureName == "Goat Pen")
+        {
+            productIcon.sprite = productionSprites[2];
+        }
+        else if (database.structureName == "Pig Sty")
+        {
+            productIcon.sprite = productionSprites[3];
+        }
+        else
+        {
+            productIcon.sprite = productionSprites[4];
+        }
     }
 
     public void Hide()

@@ -118,6 +118,10 @@ public partial class TutorialManager
 
     private IEnumerator TypeTextWithMumble(string text)
     {
+        // IMMEDIATELY process colors BEFORE any typing starts
+        // This ensures users never see raw color tags
+        string processedText = ProcessTextForColors(text);
+        
         // Aggressively ensure rich text support is enabled
         if (dialogueText != null)
         {
@@ -126,15 +130,13 @@ public partial class TutorialManager
             dialogueText.SetAllDirty();
             dialogueText.ForceMeshUpdate();
             
-            // Wait a frame to let the changes take effect
+            // Wait multiple frames to ensure everything is set up
+            yield return null;
             yield return null;
         }
         
-        // Process the text to ensure highlighting works
-        string processedText = ProcessTextForColors(text);
-        
-        // Debug the text that will be typed to verify rich text tags
-        Debug.Log($"Tutorial dialogue text (richText={dialogueText?.richText}, parseCtrl={dialogueText?.parseCtrlCharacters}): {processedText}");
+        // Parse the text to separate visible characters from rich text tags
+        var textSegments = ParseRichText(processedText);
         
         dialogueText.text = "";
         if (mumbleAudioSource != null && mumbleClips != null && mumbleClips.Length > 0)
@@ -148,9 +150,12 @@ public partial class TutorialManager
         }
 
         float nextCharTime = 0f;
-        int charIndex = 0;
+        int segmentIndex = 0;
+        int charIndexInSegment = 0;
+        var displayedText = new System.Text.StringBuilder();
         bool wasMumblePlaying = false;
-        while (charIndex < processedText.Length)
+
+        while (segmentIndex < textSegments.Count)
         {
             // If the game is paused, wait until unpaused before continuing
             if (Time.timeScale == 0f)
@@ -171,19 +176,42 @@ public partial class TutorialManager
                     mumbleAudioSource.UnPause();
             }
 
-            nextCharTime += Time.unscaledDeltaTime;
-            while (nextCharTime >= typeSpeed && charIndex < processedText.Length)
+            var currentSegment = textSegments[segmentIndex];
+
+            if (currentSegment.isTag)
             {
-                dialogueText.text += processedText[charIndex];
-                charIndex++;
-                nextCharTime -= typeSpeed;
-                
-                // Force update the text rendering every few characters to ensure colors appear
-                if (charIndex % 5 == 0)
+                // Add the entire tag at once (tags are invisible)
+                displayedText.Append(currentSegment.text);
+                dialogueText.text = displayedText.ToString();
+                segmentIndex++;
+                charIndexInSegment = 0;
+            }
+            else
+            {
+                // Type visible characters one by one
+                nextCharTime += Time.unscaledDeltaTime;
+                while (nextCharTime >= typeSpeed && charIndexInSegment < currentSegment.text.Length)
                 {
-                    dialogueText.ForceMeshUpdate();
+                    displayedText.Append(currentSegment.text[charIndexInSegment]);
+                    dialogueText.text = displayedText.ToString();
+                    charIndexInSegment++;
+                    nextCharTime -= typeSpeed;
+                    
+                    // Force update the text rendering periodically
+                    if (charIndexInSegment % 3 == 0)
+                    {
+                        dialogueText.ForceMeshUpdate();
+                    }
+                }
+
+                // Move to next segment when current segment is complete
+                if (charIndexInSegment >= currentSegment.text.Length)
+                {
+                    segmentIndex++;
+                    charIndexInSegment = 0;
                 }
             }
+            
             yield return null;
         }
 
@@ -272,23 +300,84 @@ public partial class TutorialManager
 
     private string ProcessTextForColors(string text)
     {
-        // Always try to use colors first - we want that video game feel!
+        // Convert named colors to more logical and readable hex colors
         string processedText = text;
         
-        // Convert our color tags to hex colors that are more reliable in TextMeshPro
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=yellow>(.*?)</color>", "<color=#FFFF00>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=green>(.*?)</color>", "<color=#00FF00>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=cyan>(.*?)</color>", "<color=#00FFFF>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=magenta>(.*?)</color>", "<color=#FF00FF>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=red>(.*?)</color>", "<color=#FF0000>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=blue>(.*?)</color>", "<color=#0000FF>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=orange>(.*?)</color>", "<color=#FFA500>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=white>(.*?)</color>", "<color=#FFFFFF>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=brown>(.*?)</color>", "<color=#8B4513>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=gold>(.*?)</color>", "<color=#FFD700>$1</color>");
-        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=pink>(.*?)</color>", "<color=#FFC0CB>$1</color>");
+        // Logical color scheme:
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=yellow>(.*?)</color>", "<color=#FFD700>$1</color>");    // Gold for important actions/clicks
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=green>(.*?)</color>", "<color=#32CD32>$1</color>");     // Lime green for farm/nature things
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=cyan>(.*?)</color>", "<color=#87CEEB>$1</color>");      // Sky blue (more readable) for UI/controls
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=magenta>(.*?)</color>", "<color=#FF69B4>$1</color>");   // Hot pink for Melony (character)
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=red>(.*?)</color>", "<color=#FF4444>$1</color>");       // Bright red for warnings/danger
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=blue>(.*?)</color>", "<color=#4169E1>$1</color>");      // Royal blue for time/night
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=orange>(.*?)</color>", "<color=#FF8C00>$1</color>");    // Dark orange for animals
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=white>(.*?)</color>", "<color=#F0F0F0>$1</color>");     // Off-white for visibility
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=brown>(.*?)</color>", "<color=#D2691E>$1</color>");     // Chocolate brown for buildings
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=gold>(.*?)</color>", "<color=#FFD700>$1</color>");      // Gold for money/rewards
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=pink>(.*?)</color>", "<color=#FFB6C1>$1</color>");      // Light pink for pigs
         
-        Debug.Log($"Color processing: '{text}' -> '{processedText}'");
         return processedText;
+    }
+
+    /// <summary>
+    /// Represents a segment of text that can be either visible text or a rich text tag
+    /// </summary>
+    private struct TextSegment
+    {
+        public string text;
+        public bool isTag;
+        public bool isVisible;
+    }
+
+    /// <summary>
+    /// Parses rich text into segments, separating visible characters from formatting tags
+    /// </summary>
+    private System.Collections.Generic.List<TextSegment> ParseRichText(string richText)
+    {
+        var segments = new System.Collections.Generic.List<TextSegment>();
+        int currentIndex = 0;
+        var currentText = new System.Text.StringBuilder();
+
+        while (currentIndex < richText.Length)
+        {
+            if (richText[currentIndex] == '<')
+            {
+                // Save any accumulated visible text
+                if (currentText.Length > 0)
+                {
+                    segments.Add(new TextSegment { text = currentText.ToString(), isTag = false, isVisible = true });
+                    currentText.Clear();
+                }
+
+                // Find the end of the tag
+                int tagEnd = richText.IndexOf('>', currentIndex);
+                if (tagEnd != -1)
+                {
+                    string tag = richText.Substring(currentIndex, tagEnd - currentIndex + 1);
+                    segments.Add(new TextSegment { text = tag, isTag = true, isVisible = false });
+                    currentIndex = tagEnd + 1;
+                }
+                else
+                {
+                    // No closing bracket found, treat as regular character
+                    currentText.Append(richText[currentIndex]);
+                    currentIndex++;
+                }
+            }
+            else
+            {
+                // Regular character
+                currentText.Append(richText[currentIndex]);
+                currentIndex++;
+            }
+        }
+
+        // Add any remaining text
+        if (currentText.Length > 0)
+        {
+            segments.Add(new TextSegment { text = currentText.ToString(), isTag = false, isVisible = true });
+        }
+
+        return segments;
     }
 }

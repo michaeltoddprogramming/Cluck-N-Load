@@ -189,19 +189,27 @@ public partial class TutorialManager
         float spacing = 120f;
         return key switch
         {
-            KeyCode.Mouse0 => new Vector2(spacing * 3, spacing),
-            KeyCode.Mouse1 => new Vector2(spacing * 4, spacing),
-            KeyCode.Mouse2 => new Vector2(spacing * 2.5f, 0),
-            KeyCode.Mouse3 => new Vector2(spacing * 2, -spacing),
-            KeyCode.Mouse4 => new Vector2(spacing * 3, -spacing),
-            KeyCode.Alpha1 => new Vector2(-spacing * 0.5f, spacing * 2),
-            KeyCode.Alpha2 => new Vector2(spacing * 0.5f, spacing * 2),
-            KeyCode.W => new Vector2(0, spacing),
-            KeyCode.A => new Vector2(-spacing, 0),
-            KeyCode.S => new Vector2(0, 0),
-            KeyCode.D => new Vector2(spacing, 0),
-            KeyCode.Q => new Vector2(-spacing, spacing),
-            KeyCode.E => new Vector2(spacing, spacing),
+            // Mouse buttons - moved to the left (reduced X values)
+            KeyCode.Mouse0 => new Vector2(spacing * 1.5f, spacing),      // Left mouse (was 3, now 1.5)
+            KeyCode.Mouse1 => new Vector2(spacing * 2.5f, spacing),      // Right mouse (was 4, now 2.5)
+            KeyCode.Mouse2 => new Vector2(spacing * 1f, 0),              // Middle mouse (was 2.5, now 1)
+            KeyCode.Mouse3 => new Vector2(spacing * 0.5f, -spacing),     // Mouse wheel up (was 2, now 0.5)
+            KeyCode.Mouse4 => new Vector2(spacing * 1.5f, -spacing),     // Mouse wheel down (was 3, now 1.5)
+            
+            // Number keys - moved down (reduced Y values)
+            KeyCode.Alpha1 => new Vector2(-spacing * 0.5f, spacing * 1f),  // (was spacing * 2, now 1)
+            KeyCode.Alpha2 => new Vector2(spacing * 0.5f, spacing * 1f),   // (was spacing * 2, now 1)
+            
+            // WASD keys - moved down (reduced Y values)
+            KeyCode.W => new Vector2(0, 0),                              // (was spacing, now 0)
+            KeyCode.A => new Vector2(-spacing, -spacing),                // (was 0, now -spacing)
+            KeyCode.S => new Vector2(0, -spacing),                       // (was 0, now -spacing)
+            KeyCode.D => new Vector2(spacing, -spacing),                 // (was 0, now -spacing)
+            
+            // Q and E keys - moved down (reduced Y values)
+            KeyCode.Q => new Vector2(-spacing, 0),                       // (was spacing, now 0)
+            KeyCode.E => new Vector2(spacing, 0),                        // (was spacing, now 0)
+            
             _ => Vector2.zero
         };
     }

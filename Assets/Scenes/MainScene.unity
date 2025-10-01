@@ -2358,7 +2358,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &160839297
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6103,7 +6103,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3724273108228962489, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4875622262517869169, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_text
@@ -21156,7 +21156,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1209920242
 RectTransform:
   m_ObjectHideFlags: 0
@@ -27301,7 +27301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1596882543
 RectTransform:
   m_ObjectHideFlags: 0
@@ -27875,7 +27875,7 @@ MonoBehaviour:
   color: {r: 0.6666667, g: 0.73333335, b: 0.8666667, a: 0}
   morningToDayGradient:
     serializedVersion: 2
-    key0: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
+    key0: {r: 0.7735849, g: 0.34963915, b: 0.21529014, a: 1}
     key1: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
@@ -27906,7 +27906,7 @@ MonoBehaviour:
   DayToAfternoonGradient:
     serializedVersion: 2
     key0: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-    key1: {r: 0.99215686, g: 0.43529412, b: 0.25882354, a: 1}
+    key1: {r: 0.7764706, g: 0.3529412, b: 0.21568628, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -33984,7 +33984,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1909469140
 RectTransform:
   m_ObjectHideFlags: 0

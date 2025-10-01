@@ -7,41 +7,71 @@ public class ShopTabController : MonoBehaviour
     public float normalWidth = 100f;
     public float selectedWidth = 150f;
 
+    // void Start()
+    // {
+    //     foreach (Image img in imageButtons)
+    //     {
+    //         // Skip null images (for removed tabs)
+    //         if (img == null) continue;
+    //         RectTransform rt = img.GetComponent<RectTransform>();
+    //         // rt.pivot = new Vector2(1f, 0.5f); // pivot right, grow left
+    //         // rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
+
+    //         Vector2 originalPivot = rt.pivot;
+    //         Vector2 originalPosition = rt.anchoredPosition;
+
+    //         // Change pivot to right
+    //         rt.pivot = new Vector2(1f, 0.5f);
+
+    //         // Offset position to cancel the visual shift caused by pivot change
+    //         Vector2 pivotDelta = rt.pivot - originalPivot;
+    //         Vector2 size = rt.rect.size;
+    //         Vector2 positionOffset = new Vector2(pivotDelta.x * size.x, pivotDelta.y * size.y);
+    //         rt.anchoredPosition = originalPosition + positionOffset;
+
+    //         // Set the initial width
+    //         rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
+
+    //         // Capture this image for the listener
+    //         Image captured = img;
+
+    //         Button btn = img.GetComponent<Button>();
+    //         if (btn != null)
+    //         {
+    //             btn.onClick.AddListener(() => OnTabClicked(captured));
+    //         }
+    //     }
+    // }
+
     void Start()
+{
+    for (int i = 0; i < imageButtons.Length; i++)
     {
-        foreach (Image img in imageButtons)
-        {
-            // Skip null images (for removed tabs)
-            if (img == null) continue;
-            RectTransform rt = img.GetComponent<RectTransform>();
-            // rt.pivot = new Vector2(1f, 0.5f); // pivot right, grow left
-            // rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
+        Image img = imageButtons[i];
+        if (img == null) continue;
 
-            Vector2 originalPivot = rt.pivot;
-            Vector2 originalPosition = rt.anchoredPosition;
+        RectTransform rt = img.GetComponent<RectTransform>();
+        Vector2 originalPivot = rt.pivot;
+        Vector2 originalPosition = rt.anchoredPosition;
 
-            // Change pivot to right
-            rt.pivot = new Vector2(1f, 0.5f);
+        rt.pivot = new Vector2(1f, 0.5f);
 
-            // Offset position to cancel the visual shift caused by pivot change
-            Vector2 pivotDelta = rt.pivot - originalPivot;
-            Vector2 size = rt.rect.size;
-            Vector2 positionOffset = new Vector2(pivotDelta.x * size.x, pivotDelta.y * size.y);
-            rt.anchoredPosition = originalPosition + positionOffset;
+        Vector2 pivotDelta = rt.pivot - originalPivot;
+        Vector2 size = rt.rect.size;
+        Vector2 positionOffset = new Vector2(pivotDelta.x * size.x, pivotDelta.y * size.y);
+        rt.anchoredPosition = originalPosition + positionOffset;
 
-            // Set the initial width
-            rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
+        // Set width: first tab expanded, others normal
+        float width = (i == 0) ? selectedWidth : normalWidth;
+        rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);
 
-            // Capture this image for the listener
-            Image captured = img;
-
-            Button btn = img.GetComponent<Button>();
-            if (btn != null)
-            {
-                btn.onClick.AddListener(() => OnTabClicked(captured));
-            }
-        }
+        Image captured = img;
+        Button btn = img.GetComponent<Button>();
+        if (btn != null)
+            btn.onClick.AddListener(() => OnTabClicked(captured));
     }
+}
+
 
     void OnTabClicked(Image clickedImage)
     {

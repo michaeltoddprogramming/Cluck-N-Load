@@ -31,7 +31,7 @@ public partial class TutorialManager
         {
             stepId = "melony_movement",
             title = "Find Melony - Movement!",
-            instructionText = "<color=magenta>Melony's</color> hiding! Use all <color=cyan>movement keys</color> below, then find and <color=yellow>click</color> her!",
+            instructionText = "<color=magenta>Melony's</color> hiding! Use all <color=cyan>movement keys</color> above, then find and <color=yellow>click</color> her!",
             triggerToWaitFor = TutorialTrigger.MelonyMovementTest,
             requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.Q, KeyCode.E },
             waitForAllInputs = true
@@ -552,22 +552,6 @@ public partial class TutorialManager
             title = "Pig Barracks!",
             instructionText = "<color=cyan>Train</color> <color=pink>pig soldiers</color>. <color=red>Flamethrowers</color> that <color=orange>burn groups</color> of enemies at <color=yellow>mid range</color>. <color=cyan><b>Synergy:</b></color> <color=pink>Civilian pigs</color> → <color=red>Flamethrower soldiers</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltPigBarracks
-        });
-
-        RegisterDiscoveryStep(new TutorialStep
-        {
-            stepId = "discover_price_panel",
-            title = "Price Panel Discovery!",
-            instructionText = "<color=gold>Market prices</color> revealed! <color=orange>Smart farming</color> means knowing when to <color=green>sell</color>!",
-            triggerToWaitFor = TutorialTrigger.PricePanelOpened
-        });
-
-        RegisterDiscoveryStep(new TutorialStep
-        {
-            stepId = "discover_price_panel_usage",
-            title = "Market Master!",
-            instructionText = "You've learned to read the <color=gold>markets</color>! <color=cyan>Knowledge</color> is <color=red>power</color> and <color=green>profit</color>!",
-            triggerToWaitFor = TutorialTrigger.PricePanelClosed
         });
     }
 

@@ -63,22 +63,22 @@ public class ItemHoverPanel : MonoBehaviour
         }
 
         // Shorter, more concise tips
-        if (tipsText != null)
-        {
-            string tips = "";
-            if (data.type == StructureType.Silo)
-                tips = "<color=#FFD700>Near crops & animals for synergy</color>";
-            else if (data.type == StructureType.CropPlot)
-                tips = "<color=#FFD700>Near silos for yield bonus</color>";
-            else if (data.type == StructureType.Animal)
-                tips = "<color=#FFD700>Near silos for efficiency</color>";
-            else if (data.type == StructureType.Barracks)
-                tips = "<color=#FFD700>Far from animals for discounts</color>";
+        // if (tipsText != null)
+        // {
+        //     string tips = "";
+        //     if (data.type == StructureType.Silo)
+        //         tips = "<color=#FFD700>Near crops & animals for synergy</color>";
+        //     else if (data.type == StructureType.CropPlot)
+        //         tips = "<color=#FFD700>Near silos for yield bonus</color>";
+        //     else if (data.type == StructureType.Animal)
+        //         tips = "<color=#FFD700>Near silos for efficiency</color>";
+        //     else if (data.type == StructureType.Barracks)
+        //         tips = "<color=#FFD700>Far from animals for discounts</color>";
 
-            Debug.Log("here are the tips: " + tips);
+        //     Debug.Log("here are the tips: " + tips);
 
-            tipsText.text = tips;
-        }
+        //     tipsText.text = tips;
+        // }
 
         gameObject.SetActive(true);
         canvasGroup.interactable = true;

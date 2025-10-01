@@ -53,19 +53,14 @@ public class BaseHover : MonoBehaviour
         // Shorter, more concise tips
         if (tipsText != null)
         {
-            string tips = "";
-            if (database.type == StructureType.Silo)
-                tips = "<color=#FFD700>Near crops & animals for synergy</color>";
-            else if (database.type == StructureType.CropPlot)
-                tips = "<color=#FFD700>Near silos for yield bonus</color>";
-            else if (database.type == StructureType.Animal)
-                tips = "<color=#FFD700>Near silos for efficiency</color>";
-            else if (database.type == StructureType.Barracks)
-                tips = "<color=#FFD700>Far from animals for discounts</color>";
-
-            Debug.Log("here are the tips: " + tips);
-
-            tipsText.text = tips;
+            if(data.type == StructureType.Decoration)
+            {
+                tipsText.text = "<color=#FFD700>Protect your Farmhouse at all costs! If it’s destroyed, your farm is lost.</color>";
+            }
+            else
+            {
+                tipsText.text = "<color=#FFD700>Build Walls to channel enemies to kill zones.</color>";
+            }
         }
 
         gameObject.SetActive(true);

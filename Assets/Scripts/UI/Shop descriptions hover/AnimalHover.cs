@@ -83,71 +83,11 @@ public class AnimalHover : MonoBehaviour
         produceAmountText.text = database.moneyPerProduct.ToString();
 
         capacityText.text = "10";
-        // else if (data.type)
-
-
-
-        // Compact stats for different structure types
-        //     if (data.type == StructureType.Silo)
-        //     {
-        //         int perSilo = 0;
-        //         if (InventoryManager.Instance != null)
-        //         {
-        //             perSilo = InventoryManager.Instance.totalPerSilo;
-        //         }
-        //         stats += $" • Cap: {perSilo}";
-        //     }
-        //     else if (data.type == StructureType.CropPlot)
-        //     {
-        //         stats += " • Grows Crops";
-        //     }
-        //     else if (data.type == StructureType.Animal)
-        //     {
-        //         if (data.prefab != null)
-        //         {
-        //             var animalStructure = data.prefab.GetComponent<AnimalStructure>();
-        //             if (animalStructure != null)
-        //             {
-        //                 stats += $" • Max: {animalStructure.MaxAnimalCount} • ${animalStructure.baseMoneyPerProduct}/prod";
-        //             }
-        //         }
-        //     }
-        //     else if (data.type == StructureType.Barracks)
-        //     {
-        //         ArmyType armyType;
-        //         if (System.Enum.TryParse(data.targetAnimalType, out armyType))
-        //         {
-        //             ArmyData armyData = Resources.Load<ArmyData>($"Prefabs/Units/All new stuff/Army/{armyType}");
-        //             if (armyData != null)
-        //             {
-        //                 stats += $" • DMG: {armyData.AttackDamage} • SPD: {armyData.MovementSpeed}";
-        //             }
-        //         }
-        //     }
-
-        // // Set stats text if available
-        // if (statsText != null)
-        // {
-        //     statsText.text = stats;
-        //     Debug.Log("here are the stats: " + stats);
-        // }
 
         // Shorter, more concise tips
         if (tipsText != null)
         {
-            string tips = "";
-            if (database.type == StructureType.Silo)
-                tips = "<color=#FFD700>Near crops & animals for synergy</color>";
-            else if (database.type == StructureType.CropPlot)
-                tips = "<color=#FFD700>Near silos for yield bonus</color>";
-            else if (database.type == StructureType.Animal)
-                tips = "<color=#FFD700>Near silos for efficiency</color>";
-            else if (database.type == StructureType.Barracks)
-                tips = "<color=#FFD700>Far from animals for discounts</color>";
-
-            Debug.Log("here are the tips: " + tips);
-
-            tipsText.text = tips;
+            tipsText.text = "<color=#FFD700>Placing this near a Silo reduces the amount of feed each animal needs.</color>";
         }
 
         gameObject.SetActive(true);

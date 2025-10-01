@@ -60,19 +60,7 @@ public class SiloHover : MonoBehaviour
         // Shorter, more concise tips
         if (tipsText != null)
         {
-            string tips = "";
-            if (database.type == StructureType.Silo)
-                tips = "<color=#FFD700>Near crops & animals for synergy</color>";
-            else if (database.type == StructureType.CropPlot)
-                tips = "<color=#FFD700>Near silos for yield bonus</color>";
-            else if (database.type == StructureType.Animal)
-                tips = "<color=#FFD700>Near silos for efficiency</color>";
-            else if (database.type == StructureType.Barracks)
-                tips = "<color=#FFD700>Far from animals for discounts</color>";
-
-            Debug.Log("here are the tips: " + tips);
-
-            tipsText.text = tips;
+            tipsText.text = "<color=#FFD700>Silos near crops improve your harvest. Close to Animal Pens, they cut down on how much feed the animals need.</color>";
         }
 
         gameObject.SetActive(true);

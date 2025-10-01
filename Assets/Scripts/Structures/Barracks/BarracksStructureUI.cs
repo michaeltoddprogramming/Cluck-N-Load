@@ -454,7 +454,24 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (addAnimal != null)
         {
-            if ((newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1) && !isPaused)
+            // ADD button should disable when clicking it would make the TOTAL SELECTED exceed 3
+            bool tutorialAddRestriction = false;
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+            {
+                if (!TutorialManager.Instance.GetCompletedStepIds().Contains("recruit_soldiers"))
+                {
+                    int currentArmyCount = barracksStructure.ArmyAnimalCount;
+                    // Disable ADD button when total selected would exceed what we can recruit (3 - current owned)
+                    int maxCanRecruit = 3 - currentArmyCount;
+                    if (newAnimalCount >= maxCanRecruit)
+                    {
+                        tutorialAddRestriction = true;
+                        Debug.Log($"Tutorial: Add restricted - can only recruit {maxCanRecruit} more animals. Currently selected: {newAnimalCount}");
+                    }
+                }
+            }
+            
+            if ((newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1) && !isPaused && !tutorialAddRestriction)
             {
                 addAnimal.interactable = true;
             }
@@ -478,7 +495,27 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (recruitButton != null)
         {
-            if (minusAnimal != null && (minusAnimal.interactable == false || !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()) || isPaused))
+            // Tutorial logic: disable RECRUIT button only when we already OWN 3 army animals
+            bool tutorialRecruitRestriction = false;
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+            {
+                if (!TutorialManager.Instance.GetCompletedStepIds().Contains("recruit_soldiers"))
+                {
+                    int currentArmyCount = barracksStructure.ArmyAnimalCount;
+                    // During recruit_soldiers tutorial step, disable RECRUIT button only when we already OWN 3 animals
+                    if (currentArmyCount >= 3)
+                    {
+                        tutorialRecruitRestriction = true;
+                        Debug.Log($"Tutorial: Recruit restricted - already own 3 army animals. Current owned: {currentArmyCount}");
+                    }
+                }
+            }
+            
+            if (newAnimalCount > 0 && MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()) && !isPaused && !tutorialRecruitRestriction)
+            {
+                recruitButton.interactable = true;
+            }
+            else
             {
                 recruitButton.interactable = false;
             }

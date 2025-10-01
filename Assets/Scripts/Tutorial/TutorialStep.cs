@@ -22,7 +22,7 @@ public enum TutorialTrigger
     BuiltFarmHouse, BuiltCropPlot, PlantedCrop, HarvestedCrop, BuiltSilo,
     BuiltChickenCoop, BuiltCowPen, BuiltSheepPen, BuiltGoatPen, BuiltPigPen,
     BuiltChickenBarracks, BuiltCowBarracks, BuiltSheepBarracks, BuiltGoatBarracks, BuiltPigBarracks,
-    BoughtFirstAnimals, FedFirstAnimals, CollectedFirstProducts, RecruitedFirstSoldiers, BuiltFirstWall, BuiltFirstHayBale, Built10HayBales, PlacedFirstFlag,
+    BoughtFirstAnimals, Bought5CivilianAnimals, FedFirstAnimals, CollectedFirstProducts, RecruitedFirstSoldiers, Recruited3ArmyAnimals, BuiltFirstWall, BuiltFirstHayBale, Built10HayBales, PlacedFirstFlag,
     InputDetected, SpringSeason, SummerSeason, FallSeason, WinterSeason, AnimalProductionBoosted, PricePanelOpened, PricePanelClosed,
     MelonyFound, MelonyMovementTest, MelonyZoomTest, MelonyRotateTest
 }

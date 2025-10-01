@@ -1930,7 +1930,8 @@ public class BuildController : MonoBehaviour
             // Only trigger if the step isn't already completed (prevents reset on movement)
             if (barracksType != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{targetAnimalType}_barracks"))
             {
-                TutorialManager.Instance.Trigger(barracksType);
+                Debug.Log($"Triggering barracks tutorial step: build_{targetAnimalType}_barracks");
+                StartCoroutine(DelayedTutorialTrigger(barracksType, $"build_{targetAnimalType}_barracks", 0.1f));
             }
             // Trigger re-search for all barracks when a new barracks is built
             BarracksStructure.UpdateAllNearbyChickenCoops();
@@ -1951,7 +1952,8 @@ public class BuildController : MonoBehaviour
             };
             if (animalTrigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{animalType}_coop"))
             {
-                TutorialManager.Instance.Trigger(animalTrigger);
+                Debug.Log($"Triggering animal structure tutorial step: build_{animalType}_coop");
+                StartCoroutine(DelayedTutorialTrigger(animalTrigger, $"build_{animalType}_coop", 0.1f));
             }
             // Trigger re-search for all barracks when a new animal structure is built
             BarracksStructure.UpdateAllNearbyChickenCoops();
@@ -1983,12 +1985,45 @@ public class BuildController : MonoBehaviour
             var n when n.Contains("crop") || n.Contains("plot") => TutorialTrigger.BuiltCropPlot,
             _ => TutorialTrigger.None
         };
-        // Only trigger if the step isn't already completed (prevents reset on movement)
-        if (trigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{name.Replace(" ", "").ToLower()}"))
+        
+        // Map triggers to their correct step IDs
+        string stepId = trigger switch
         {
-            TutorialManager.Instance.Trigger(trigger);
+            TutorialTrigger.BuiltSilo => "build_silo",
+            TutorialTrigger.BuiltFarmHouse => "build_farmhouse", 
+            TutorialTrigger.BuiltCropPlot => "build_crop_plot",
+            _ => null
+        };
+        
+        // Only trigger if the step isn't already completed (prevents reset on movement)
+        if (trigger != TutorialTrigger.None && stepId != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
+        {
+            Debug.Log($"Triggering tutorial step: {stepId} for structure: {name}");
+            // Use a small delay to ensure proper processing when building quickly
+            StartCoroutine(DelayedTutorialTrigger(trigger, stepId, 0.1f));
+        }
+        else if (trigger != TutorialTrigger.None && stepId != null)
+        {
+            Debug.Log($"Tutorial step {stepId} already completed for structure: {name}");
         }
         if (name.Contains("farm house") || name.Contains("farmhouse")) isHousePlaced = true;
+    }
+
+    // Coroutine to handle delayed tutorial triggers when building quickly
+    private System.Collections.IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, string stepId, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Double-check that the step hasn't been completed while we were waiting
+        if (TutorialManager.Instance != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
+        {
+            Debug.Log($"Firing delayed tutorial trigger: {stepId}");
+            TutorialManager.Instance.Trigger(trigger);
+        }
+        else
+        {
+            Debug.Log($"Delayed tutorial trigger cancelled - step {stepId} already completed");
+        }
     }
 
     private void HandleChainTutorialTrigger(int placedCount, bool wasCanceled)

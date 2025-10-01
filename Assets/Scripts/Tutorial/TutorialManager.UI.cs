@@ -118,6 +118,24 @@ public partial class TutorialManager
 
     private IEnumerator TypeTextWithMumble(string text)
     {
+        // Aggressively ensure rich text support is enabled
+        if (dialogueText != null)
+        {
+            dialogueText.richText = true;
+            dialogueText.parseCtrlCharacters = true; // This is important for rich text
+            dialogueText.SetAllDirty();
+            dialogueText.ForceMeshUpdate();
+            
+            // Wait a frame to let the changes take effect
+            yield return null;
+        }
+        
+        // Process the text to ensure highlighting works
+        string processedText = ProcessTextForColors(text);
+        
+        // Debug the text that will be typed to verify rich text tags
+        Debug.Log($"Tutorial dialogue text (richText={dialogueText?.richText}, parseCtrl={dialogueText?.parseCtrlCharacters}): {processedText}");
+        
         dialogueText.text = "";
         if (mumbleAudioSource != null && mumbleClips != null && mumbleClips.Length > 0)
         {
@@ -132,7 +150,7 @@ public partial class TutorialManager
         float nextCharTime = 0f;
         int charIndex = 0;
         bool wasMumblePlaying = false;
-        while (charIndex < text.Length)
+        while (charIndex < processedText.Length)
         {
             // If the game is paused, wait until unpaused before continuing
             if (Time.timeScale == 0f)
@@ -154,11 +172,17 @@ public partial class TutorialManager
             }
 
             nextCharTime += Time.unscaledDeltaTime;
-            while (nextCharTime >= typeSpeed && charIndex < text.Length)
+            while (nextCharTime >= typeSpeed && charIndex < processedText.Length)
             {
-                dialogueText.text += text[charIndex];
+                dialogueText.text += processedText[charIndex];
                 charIndex++;
                 nextCharTime -= typeSpeed;
+                
+                // Force update the text rendering every few characters to ensure colors appear
+                if (charIndex % 5 == 0)
+                {
+                    dialogueText.ForceMeshUpdate();
+                }
             }
             yield return null;
         }
@@ -195,6 +219,22 @@ public partial class TutorialManager
 
         LeanTween.cancel(target);
         ShowArrowPointing(target, enable);
+        HighlightButtonDirectly(target, enable);
+    }
+
+    // New method for highlighting buttons without arrows (for animal/barracks UI)
+    public void HighlightUIWithoutArrow(GameObject target, bool enable)
+    {
+        if (target == null)
+            return;
+
+        LeanTween.cancel(target);
+        // Skip ShowArrowPointing - only highlight the button directly
+        HighlightButtonDirectly(target, enable);
+    }
+
+    private void HighlightButtonDirectly(GameObject target, bool enable)
+    {
         Outline outline = target.GetComponent<Outline>() ?? (enable ? target.AddComponent<Outline>() : null);
         if (outline != null)
         {
@@ -228,5 +268,27 @@ public partial class TutorialManager
                     target.transform.localScale = Vector3.one;
             }
         }
+    }
+
+    private string ProcessTextForColors(string text)
+    {
+        // Always try to use colors first - we want that video game feel!
+        string processedText = text;
+        
+        // Convert our color tags to hex colors that are more reliable in TextMeshPro
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=yellow>(.*?)</color>", "<color=#FFFF00>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=green>(.*?)</color>", "<color=#00FF00>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=cyan>(.*?)</color>", "<color=#00FFFF>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=magenta>(.*?)</color>", "<color=#FF00FF>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=red>(.*?)</color>", "<color=#FF0000>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=blue>(.*?)</color>", "<color=#0000FF>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=orange>(.*?)</color>", "<color=#FFA500>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=white>(.*?)</color>", "<color=#FFFFFF>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=brown>(.*?)</color>", "<color=#8B4513>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=gold>(.*?)</color>", "<color=#FFD700>$1</color>");
+        processedText = System.Text.RegularExpressions.Regex.Replace(processedText, @"<color=pink>(.*?)</color>", "<color=#FFC0CB>$1</color>");
+        
+        Debug.Log($"Color processing: '{text}' -> '{processedText}'");
+        return processedText;
     }
 }

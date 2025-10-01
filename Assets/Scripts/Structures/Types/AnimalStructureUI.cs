@@ -185,10 +185,41 @@ public class AnimalStructureUI : BaseStructureUI
         feedButton.interactable = canFeed;
         collectButton.interactable = canCollect;
 
-        if (buyAnimal != null)
-            buyAnimal.interactable = newAnimalCount > 0 && canBuy;  // Use updated canBuy
+        // Tutorial logic: disable buy button only when we already OWN the exact amount
+        bool tutorialBuyRestriction = false;
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("buy_chickens"))
+            {
+                // During buy_chickens tutorial step, disable BUY button only when we already OWN 5 animals
+                if (animalCount >= 5)
+                {
+                    tutorialBuyRestriction = true;
+                    Debug.Log($"Tutorial: Buy restricted - already own 5 animals. Current owned: {animalCount}");
+                }
+            }
+        }
 
-        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && canBuy && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal);
+        if (buyAnimal != null)
+            buyAnimal.interactable = newAnimalCount > 0 && canBuy && !tutorialBuyRestriction;
+
+        // ADD button should disable when clicking it would make the TOTAL SELECTED exceed 5
+        bool tutorialAddRestriction = false;
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("buy_chickens"))
+            {
+                // Disable ADD button when total selected would exceed what we can buy (5 - current owned)
+                int maxCanBuy = 5 - animalCount;
+                if (newAnimalCount >= maxCanBuy)
+                {
+                    tutorialAddRestriction = true;
+                    Debug.Log($"Tutorial: Add restricted - can only buy {maxCanBuy} more animals. Currently selected: {newAnimalCount}");
+                }
+            }
+        }
+
+        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && canBuy && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal) && !tutorialAddRestriction;
         removeAnimal.interactable = newAnimalCount > 0 && !isPaused;
 
         costText.text = (newAnimalCount * animalStructure.ProductionSettings.costPerAnimal).ToString();

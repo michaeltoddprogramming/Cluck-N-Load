@@ -293,6 +293,16 @@ public partial class TutorialManager : MonoBehaviour
                 StopCoroutine(typingCoroutine);
 
             typingCoroutine = StartCoroutine(TypeTextWithMumble(step.instructionText));
+            
+            // Aggressively ensure rich text support is enabled for title text
+            if (titleText != null)
+            {
+                titleText.richText = true;
+                titleText.parseCtrlCharacters = true; // This is important for rich text
+                titleText.SetAllDirty();
+                titleText.ForceMeshUpdate();
+            }
+            
             titleText.text = step.title;
             UpdateCharacterPortrait(step);
 

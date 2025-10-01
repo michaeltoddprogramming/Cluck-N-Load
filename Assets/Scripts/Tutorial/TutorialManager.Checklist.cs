@@ -12,8 +12,9 @@ public partial class TutorialManager
 
     private readonly Dictionary<string, string[]> categories = new Dictionary<string, string[]>
     {
-        { "Farm Basics", new[] { "welcome", "melony_movement", "melony_zoom", "melony_rotate", "day_night_panel", "money_explanation", "time_controls", "season_bonuses" } },
+        { "Farm Basics", new[] { "welcome", "melony_movement", "melony_zoom", "melony_rotate", "day_night_panel", "money_explanation", "time_controls", "season_bonuses", "enemy_indicator_tutorial" } },
         { "Building", new[] { "open_build_shop", "build_farmhouse", "build_crop_plot", "build_silo" } },
+        { "Markets & Strategy", new[] { "price_panel_tutorial", "price_panel_explanation", "synergy_explanation" } },
         { "Farming", new[] { "plant_first_crop", "harvest_first_crops" } },
         { "Animals", new[] { "build_chicken_coop", "build_chicken_barracks", "buy_chickens", "feed_chickens", "collect_eggs" } },
         { "Defense", new[] { "recruit_soldiers", "build_first_hay_bale", "build_wall_chain", "place_flag", "prepare_defense" } },

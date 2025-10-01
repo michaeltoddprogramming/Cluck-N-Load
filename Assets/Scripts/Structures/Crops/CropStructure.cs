@@ -97,6 +97,36 @@ public class CropStructure : Structure
             readyIndicator.HideIndicator();
 
         UpdateCropVisual(cropType, 0);
+        
+        // Check for instant growth BEFORE triggering (so step isn't completed yet)
+        bool shouldInstantGrow = false;
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            // Check if we haven't completed the plant step yet
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("plant_first_crop"))
+            {
+                shouldInstantGrow = true;
+            }
+        }
+        
+        // Trigger tutorial event
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.Trigger(TutorialTrigger.PlantedCrop);
+        }
+        
+        // Apply instant growth if needed
+        if (shouldInstantGrow)
+        {
+            // Instantly grow the crop for tutorial
+            cropReady = true;
+            isGrowing = false;
+            UpdateCropVisual(cropType, 2); // Show fully grown crop
+            
+            // Show ready indicator
+            if (readyIndicator != null)
+                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
+        }
     }
 
     public void updateCropAmounts()

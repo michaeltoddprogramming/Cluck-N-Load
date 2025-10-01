@@ -362,12 +362,29 @@ public class AnimalStructure : Structure
     public void BuyAnimals(int amount)
     {
         if (nightManager == null || !nightManager.IsDay || animalCount >= maxAnimalCount) return;
+        if (nightManager.getIsPaused()) return;
+        
+        // Tutorial restriction: prevent buying more than 5 animals during buy_chickens step
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("buy_chickens"))
+            {
+                // Only allow buying if we won't exceed 5 animals
+                if (animalCount + amount > 5)
+                {
+                    Debug.Log("Tutorial: Cannot buy more than 5 animals total. You need exactly 5!");
+                    return;
+                }
+            }
+        }
+        
         int animalsToBuy = Mathf.Min(amount, maxAnimalCount - animalCount);
         int totalCost = animalsToBuy * productionSettings.costPerAnimal;
         if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(totalCost))
         {
             AddAnimals(animalsToBuy);
             if (TutorialManager.Instance != null && animalCount >= 3) TutorialManager.Instance.Trigger(TutorialTrigger.BoughtFirstAnimals);
+            if (TutorialManager.Instance != null && animalCount == 5) TutorialManager.Instance.Trigger(TutorialTrigger.Bought5CivilianAnimals);
         }
     }
 

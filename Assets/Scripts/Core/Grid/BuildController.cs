@@ -16,6 +16,7 @@ public class BuildController : MonoBehaviour
 
     [Header("Build Settings")]
     [SerializeField] private Material ghostMaterial;
+    [SerializeField] private Material ghostErrorMaterial; // Red material for unaffordable ghost chain links
     [SerializeField] private GameObject[] buildablePrefabs;
 
     [Header("Input Settings")]
@@ -27,6 +28,7 @@ public class BuildController : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private RectTransform itemDeleteIcon;
+    [SerializeField] private ChainCostDisplay chainCostDisplay;
     [SerializeField] public GameObject dustPoof;
     [SerializeField] private CanvasGroup buildControlsPanelGroup;
 
@@ -629,6 +631,11 @@ public class BuildController : MonoBehaviour
                 else
                 {
                     Debug.Log("StartDefenceChain: Failed to spend money for first structure");
+                    // Play insufficient funds sound for defence chain
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayInsufficientFundsSound();
+                    }
                 }
             }
             else
@@ -722,6 +729,11 @@ public class BuildController : MonoBehaviour
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(totalCost))
         {
             Debug.Log($"Cannot afford chain of {defenceGhostChain.Count} structures (cost: {totalCost})");
+            // Play insufficient funds sound for defence chain
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
             return;
         }
 
@@ -806,6 +818,13 @@ public class BuildController : MonoBehaviour
         // Check tutorial restrictions for chain length
         int maxChainLength = GetMaxChainLengthForTutorial();
         
+        // Calculate budget limit
+        int currentMoney = MoneyManager.Instance != null ? MoneyManager.Instance.GetCurrentMoney() : 0;
+        int structureCost = currentStructureData != null ? currentStructureData.cost : 0;
+        int affordableCount = structureCost > 0 ? currentMoney / structureCost : cellsBetween.Count;
+        
+        int validGhostCount = 0;
+        
         // Skip the first cell (start) since it's already placed
         for (int i = 1; i < cellsBetween.Count && i < maxChainLength; i++)
         {
@@ -814,8 +833,30 @@ public class BuildController : MonoBehaviour
             {
                 Vector3 worldPos = gridController.GetCellCenterFromTexture(cell.x, cell.y);
                 GameObject ghost = GetGhostFromPool(worldPos, currentRotation);
+                
+                // Determine if this ghost is affordable
+                bool isAffordable = validGhostCount < affordableCount;
+                
+                // Apply appropriate material based on affordability
+                if (isAffordable)
+                {
+                    ApplyGhostMaterial(ghost);
+                }
+                else
+                {
+                    ApplyGhostErrorMaterial(ghost);
+                }
+                
                 defenceGhostChain.Add(ghost);
+                validGhostCount++;
             }
+        }
+        
+        // Update cost display if there are any ghosts in chain
+        if (validGhostCount > 0)
+        {
+            int totalCost = validGhostCount * structureCost;
+            UpdateChainCostDisplay(totalCost, affordableCount, validGhostCount);
         }
     }
 
@@ -827,6 +868,12 @@ public class BuildController : MonoBehaviour
             ReturnGhostToPool(ghost);
         }
         defenceGhostChain.Clear();
+        
+        // Hide the cost display when clearing chain
+        if (chainCostDisplay != null)
+        {
+            chainCostDisplay.HideCostDisplay();
+        }
     }
 
     // Get ghost object from pool or create new one
@@ -1335,6 +1382,28 @@ public class BuildController : MonoBehaviour
             renderer.material = new Material(ghostMaterial);
     }
 
+    void ApplyGhostErrorMaterial(GameObject obj)
+    {
+        if (ghostErrorMaterial == null)
+        {
+            // Create red error material if not assigned
+            ghostErrorMaterial = new Material(Shader.Find("Standard"))
+            {
+                color = new Color(1, 0, 0, 0.5f) // Red and semi-transparent
+            };
+            ghostErrorMaterial.SetFloat("_Mode", 3);
+            ghostErrorMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            ghostErrorMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            ghostErrorMaterial.SetInt("_ZWrite", 0);
+            ghostErrorMaterial.DisableKeyword("_ALPHATEST_ON");
+            ghostErrorMaterial.EnableKeyword("_ALPHABLEND_ON");
+            ghostErrorMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            ghostErrorMaterial.renderQueue = 3000;
+        }
+        foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
+            renderer.material = new Material(ghostErrorMaterial);
+    }
+
     public void SetBuildTarget(StructureData data)
     {
         if (data == null || data.prefab == null) return;
@@ -1560,7 +1629,18 @@ public class BuildController : MonoBehaviour
 
     void PlaceItem(int x, int y)
     {
-        if (!IsValidPlacement(x, y) || (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))) return;
+        if (!IsValidPlacement(x, y)) return;
+        
+        // Check if we can afford the structure
+        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.SpendMoney(currentStructureData.cost))
+        {
+            // Play insufficient funds sound when can't afford building
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
+            return;
+        }
 
         // Prevent placing more than one farmhouse
         if (currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
@@ -1930,7 +2010,8 @@ public class BuildController : MonoBehaviour
             // Only trigger if the step isn't already completed (prevents reset on movement)
             if (barracksType != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{targetAnimalType}_barracks"))
             {
-                TutorialManager.Instance.Trigger(barracksType);
+                Debug.Log($"Triggering barracks tutorial step: build_{targetAnimalType}_barracks");
+                StartCoroutine(DelayedTutorialTrigger(barracksType, $"build_{targetAnimalType}_barracks", 0.1f));
             }
             // Trigger re-search for all barracks when a new barracks is built
             BarracksStructure.UpdateAllNearbyChickenCoops();
@@ -1951,7 +2032,8 @@ public class BuildController : MonoBehaviour
             };
             if (animalTrigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{animalType}_coop"))
             {
-                TutorialManager.Instance.Trigger(animalTrigger);
+                Debug.Log($"Triggering animal structure tutorial step: build_{animalType}_coop");
+                StartCoroutine(DelayedTutorialTrigger(animalTrigger, $"build_{animalType}_coop", 0.1f));
             }
             // Trigger re-search for all barracks when a new animal structure is built
             BarracksStructure.UpdateAllNearbyChickenCoops();
@@ -1983,12 +2065,45 @@ public class BuildController : MonoBehaviour
             var n when n.Contains("crop") || n.Contains("plot") => TutorialTrigger.BuiltCropPlot,
             _ => TutorialTrigger.None
         };
-        // Only trigger if the step isn't already completed (prevents reset on movement)
-        if (trigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{name.Replace(" ", "").ToLower()}"))
+        
+        // Map triggers to their correct step IDs
+        string stepId = trigger switch
         {
-            TutorialManager.Instance.Trigger(trigger);
+            TutorialTrigger.BuiltSilo => "build_silo",
+            TutorialTrigger.BuiltFarmHouse => "build_farmhouse", 
+            TutorialTrigger.BuiltCropPlot => "build_crop_plot",
+            _ => null
+        };
+        
+        // Only trigger if the step isn't already completed (prevents reset on movement)
+        if (trigger != TutorialTrigger.None && stepId != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
+        {
+            Debug.Log($"Triggering tutorial step: {stepId} for structure: {name}");
+            // Use a small delay to ensure proper processing when building quickly
+            StartCoroutine(DelayedTutorialTrigger(trigger, stepId, 0.1f));
+        }
+        else if (trigger != TutorialTrigger.None && stepId != null)
+        {
+            Debug.Log($"Tutorial step {stepId} already completed for structure: {name}");
         }
         if (name.Contains("farm house") || name.Contains("farmhouse")) isHousePlaced = true;
+    }
+
+    // Coroutine to handle delayed tutorial triggers when building quickly
+    private System.Collections.IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, string stepId, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Double-check that the step hasn't been completed while we were waiting
+        if (TutorialManager.Instance != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
+        {
+            Debug.Log($"Firing delayed tutorial trigger: {stepId}");
+            TutorialManager.Instance.Trigger(trigger);
+        }
+        else
+        {
+            Debug.Log($"Delayed tutorial trigger cancelled - step {stepId} already completed");
+        }
     }
 
     private void HandleChainTutorialTrigger(int placedCount, bool wasCanceled)
@@ -2253,6 +2368,16 @@ public class BuildController : MonoBehaviour
         itemDeleteIcon.position = new Vector2(mousePosition.x + cursorOffset.x, mousePosition.y + cursorOffset.y);
         foreach (Graphic graphic in itemDeleteIcon.GetComponentsInChildren<Graphic>())
             graphic.raycastTarget = false;
+    }
+
+    private void UpdateChainCostDisplay(int totalCost, int affordableCount, int totalCount)
+    {
+        if (chainCostDisplay != null)
+        {
+            Vector2 mousePosition = Input.mousePosition;
+            chainCostDisplay.UpdatePosition(mousePosition, cursorOffset);
+            chainCostDisplay.ShowCostDisplay(totalCost, affordableCount, totalCount);
+        }
     }
 
     private void ClearGhost()

@@ -11,7 +11,7 @@ public class StructureUIManager : MonoBehaviour
 
     [SerializeField] private Transform uiParent;
     [SerializeField] private GameObject defaultStructureUI;
-    [SerializeField] private float uiOffset = 0.5f;
+    [SerializeField] private float uiOffset = 4.0f;  // Increased to 4.0f to ensure UI panels are well above all structures
     [SerializeField] private Vector2 screenOffset = new Vector2(0, 20f);
 
     [Header("UI SFX")]
@@ -259,7 +259,9 @@ public class StructureUIManager : MonoBehaviour
             structureHeight = renderer.bounds.size.y;
         }
 
-        Vector3 worldPos = structure.transform.position + Vector3.up * (structureHeight + uiOffset);
+        // Add extra height for larger structures to ensure UI doesn't interfere
+        float adaptiveOffset = uiOffset + (structureHeight * 0.3f); // Add 30% of structure height as additional offset
+        Vector3 worldPos = structure.transform.position + Vector3.up * (structureHeight + adaptiveOffset);
         Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 
         screenPos.x = Mathf.Clamp(screenPos.x, 0, Screen.width);

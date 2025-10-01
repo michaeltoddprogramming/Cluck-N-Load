@@ -276,6 +276,21 @@ public class BarracksStructure : Structure
     public void RecruitAnimals(int amount)
     {
         if (!CanRecruitWithLogging(amount) || !MoneyManager.Instance.SpendMoney(amount * recruitmentCostPerAnimal)) return;
+        if (nightManager != null && nightManager.getIsPaused()) return;
+
+        // Tutorial restriction: prevent recruiting more than 3 army animals during recruit_soldiers step
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("recruit_soldiers"))
+            {
+                // Only allow recruiting if we won't exceed 3 army animals
+                if (armyAnimals.Count + amount > 3)
+                {
+                    Debug.Log("Tutorial: Cannot recruit more than 3 army animals total. You need exactly 3!");
+                    return;
+                }
+            }
+        }
 
         UpdateRecruitmentCostByDistance();
 
@@ -366,6 +381,7 @@ public class BarracksStructure : Structure
         // UpdateRecruitmentCostByDistance();
         playRecruitSound();
         if (armyAnimals.Count >= 1) TutorialManager.Instance?.Trigger(TutorialTrigger.RecruitedFirstSoldiers);
+        if (armyAnimals.Count == 3) TutorialManager.Instance?.Trigger(TutorialTrigger.Recruited3ArmyAnimals);
     }
 
     public void PlaceFlag(Vector3 position)

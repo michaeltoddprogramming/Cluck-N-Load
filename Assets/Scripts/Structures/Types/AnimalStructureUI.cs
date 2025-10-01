@@ -33,6 +33,7 @@ public class AnimalStructureUI : BaseStructureUI
     private AnimalStructure animalStructure;
     private bool isAnimalStructure;
     private NightManager nightManager;
+    private bool lastPauseState = false; // Track pause state changes
 
     private float lastUIUpdate;
     private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
@@ -85,6 +86,20 @@ public class AnimalStructureUI : BaseStructureUI
 
     private void Update()
     {
+        // Check for pause state changes and update UI immediately
+        if (nightManager != null)
+        {
+            bool currentPauseState = nightManager.getIsPaused();
+            if (currentPauseState != lastPauseState)
+            {
+                lastPauseState = currentPauseState;
+                Debug.Log($"[AnimalStructureUI] Pause state changed to: {currentPauseState}");
+                UpdateUI(); // Update immediately when pause state changes
+                return;
+            }
+        }
+        
+        // Regular UI updates
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
         {
             UpdateUI();
@@ -153,10 +168,12 @@ public class AnimalStructureUI : BaseStructureUI
         bool productReady = animalStructure.ProductReady;
         int animalCount = animalStructure.AnimalCount;
         int maxAnimalCount = animalStructure.MaxAnimalCount;
-        bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed();
-        bool canCollect = productReady && nightManager.IsDay;
+        bool isPaused = nightManager.getIsPaused();
+        Debug.Log($"[AnimalStructureUI] UpdateUI called - isPaused: {isPaused}");
+        bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
+        bool canCollect = productReady && nightManager.IsDay && !isPaused;
         // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")
-        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isProducing;  // Added !isProducing check
+        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isProducing && !isPaused;  // Added !isProducing and !isPaused checks
 
         animalAmountText.text = $"{animalCount}/{maxAnimalCount}";
         newAnimalAmount.text = $"{newAnimalCount}";
@@ -168,11 +185,42 @@ public class AnimalStructureUI : BaseStructureUI
         feedButton.interactable = canFeed;
         collectButton.interactable = canCollect;
 
-        if (buyAnimal != null)
-            buyAnimal.interactable = newAnimalCount > 0 && canBuy;  // Use updated canBuy
+        // Tutorial logic: disable buy button only when we already OWN the exact amount
+        bool tutorialBuyRestriction = false;
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("buy_chickens"))
+            {
+                // During buy_chickens tutorial step, disable BUY button only when we already OWN 5 animals
+                if (animalCount >= 5)
+                {
+                    tutorialBuyRestriction = true;
+                    Debug.Log($"Tutorial: Buy restricted - already own 5 animals. Current owned: {animalCount}");
+                }
+            }
+        }
 
-        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && canBuy && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal);
-        removeAnimal.interactable = newAnimalCount > 0;
+        if (buyAnimal != null)
+            buyAnimal.interactable = newAnimalCount > 0 && canBuy && !tutorialBuyRestriction;
+
+        // ADD button should disable when clicking it would make the TOTAL SELECTED exceed 5
+        bool tutorialAddRestriction = false;
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("buy_chickens"))
+            {
+                // Disable ADD button when total selected would exceed what we can buy (5 - current owned)
+                int maxCanBuy = 5 - animalCount;
+                if (newAnimalCount >= maxCanBuy)
+                {
+                    tutorialAddRestriction = true;
+                    Debug.Log($"Tutorial: Add restricted - can only buy {maxCanBuy} more animals. Currently selected: {newAnimalCount}");
+                }
+            }
+        }
+
+        addAnimal.interactable = (newAnimalCount + animalCount) < maxAnimalCount && canBuy && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal) && !tutorialAddRestriction;
+        removeAnimal.interactable = newAnimalCount > 0 && !isPaused;
 
         costText.text = (newAnimalCount * animalStructure.ProductionSettings.costPerAnimal).ToString();
 
@@ -295,6 +343,8 @@ public class AnimalStructureUI : BaseStructureUI
             animalStructure.OnAnimalCountChanged -= UpdateUI;
             animalStructure.StopBackgroundNoise();
         }
+
+        
         base.OnDestroy();
     }
 

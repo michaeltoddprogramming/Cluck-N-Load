@@ -12,8 +12,9 @@ public partial class TutorialManager
 
     private readonly Dictionary<string, string[]> categories = new Dictionary<string, string[]>
     {
-        { "Farm Basics", new[] { "welcome", "melony_movement", "melony_zoom", "melony_rotate", "day_night_panel", "money_explanation", "time_controls", "season_bonuses" } },
+        { "Farm Basics", new[] { "welcome", "melony_movement", "melony_zoom", "melony_rotate", "day_night_panel", "money_explanation", "time_controls", "season_bonuses", "enemy_indicator_tutorial" } },
         { "Building", new[] { "open_build_shop", "build_farmhouse", "build_crop_plot", "build_silo" } },
+        { "Markets & Strategy", new[] { "price_panel_tutorial", "price_panel_explanation", "synergy_explanation" } },
         { "Farming", new[] { "plant_first_crop", "harvest_first_crops" } },
         { "Animals", new[] { "build_chicken_coop", "build_chicken_barracks", "buy_chickens", "feed_chickens", "collect_eggs" } },
         { "Defense", new[] { "recruit_soldiers", "build_first_hay_bale", "build_wall_chain", "place_flag", "prepare_defense" } },
@@ -163,9 +164,25 @@ public partial class TutorialManager
 
             if (isCompleted)
             {
-                checkmark.transform.localScale = Vector3.zero;
-                LeanTween.scale(checkmark.gameObject, Vector3.one, 0.4f).setEase(LeanTweenType.easeOutBack).setDelay(0.1f);
-                LeanTween.rotateAroundLocal(checkmark.gameObject, Vector3.forward, 360f, 0.4f).setEase(LeanTweenType.easeOutCirc).setDelay(0.1f);
+                // Skip animations during tutorial skip to prevent LeanTween overflow
+                if (completedStepIds.Count > 10) // If we're completing many steps at once, skip animations
+                {
+                    checkmark.transform.localScale = Vector3.one;
+                }
+                else
+                {
+                    try
+                    {
+                        checkmark.transform.localScale = Vector3.zero;
+                        LeanTween.scale(checkmark.gameObject, Vector3.one, 0.4f).setEase(LeanTweenType.easeOutBack).setDelay(0.1f);
+                        LeanTween.rotateAroundLocal(checkmark.gameObject, Vector3.forward, 360f, 0.4f).setEase(LeanTweenType.easeOutCirc).setDelay(0.1f);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"LeanTween animation failed: {e.Message}. Setting scale directly.");
+                        checkmark.transform.localScale = Vector3.one;
+                    }
+                }
             }
         }
 

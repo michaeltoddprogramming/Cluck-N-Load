@@ -293,6 +293,16 @@ public partial class TutorialManager : MonoBehaviour
                 StopCoroutine(typingCoroutine);
 
             typingCoroutine = StartCoroutine(TypeTextWithMumble(step.instructionText));
+            
+            // Aggressively ensure rich text support is enabled for title text
+            if (titleText != null)
+            {
+                titleText.richText = true;
+                titleText.parseCtrlCharacters = true; // This is important for rich text
+                titleText.SetAllDirty();
+                titleText.ForceMeshUpdate();
+            }
+            
             titleText.text = step.title;
             UpdateCharacterPortrait(step);
 
@@ -443,26 +453,39 @@ public partial class TutorialManager : MonoBehaviour
         // Prevent double execution - only skip if tutorial is actually active
         if (!IsTutorialActive())
         {
+            Debug.Log("SkipTutorial called but tutorial is not active");
             return;
         }
         
-        // Mark all tutorial steps as completed
+        Debug.Log($"SkipTutorial: Starting skip process. Current step: {currentStepIndex}/{steps.Count}");
+        
+        // Mark all tutorial steps as completed WITHOUT triggering UI updates for each one
+        int completedCount = 0;
         foreach (var step in steps)
         {
             if (!string.IsNullOrEmpty(step.stepId) && !completedStepIds.Contains(step.stepId))
             {
-                MarkStepComplete(step.stepId);
+                // Add to completed list directly without calling MarkStepComplete to avoid animation spam
+                completedStepIds.Add(step.stepId);
+                completedCount++;
             }
         }
         
+        Debug.Log($"SkipTutorial: Marked {completedCount} main steps as complete");
+        
         // Also mark all discovery steps as completed
+        int discoveryCompletedCount = 0;
         foreach (var discoveryStep in discoverySteps.Values)
         {
             if (!string.IsNullOrEmpty(discoveryStep.stepId) && !completedStepIds.Contains(discoveryStep.stepId))
             {
-                MarkStepComplete(discoveryStep.stepId);
+                // Add to completed list directly without calling MarkStepComplete to avoid animation spam
+                completedStepIds.Add(discoveryStep.stepId);
+                discoveryCompletedCount++;
             }
         }
+        
+        Debug.Log($"SkipTutorial: Marked {discoveryCompletedCount} discovery steps as complete");
         
         // Set tutorial as completed
         currentStepIndex = steps.Count;
@@ -486,14 +509,25 @@ public partial class TutorialManager : MonoBehaviour
             typingCoroutine = null;
         }
         
-        // Update checklist to show all items as completed
-        UpdateChecklistUI();
+        // Update checklist to show all items as completed (do this ONCE at the end)
+        try
+        {
+            UpdateChecklistUI();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error updating checklist UI during skip: {e.Message}");
+        }
         
         // Reset any inappropriate instant production states since tutorial is being skipped
         AnimalStructure.ResetAllInstantProductionStates();
         
         // Notify all systems that tutorial is complete
         NotifyUISystemsOfStepChange();
+        
+        // Finalize tutorial completion
+        Debug.Log($"SkipTutorial: Calling EndTutorial. Final state: {currentStepIndex}/{steps.Count}, IsActive: {IsTutorialActive()}");
+        EndTutorial();
     }
     
     private void DevSkipTutorial()

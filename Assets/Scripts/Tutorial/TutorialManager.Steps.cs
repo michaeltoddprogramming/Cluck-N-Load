@@ -22,7 +22,7 @@ public partial class TutorialManager
             stepId = "welcome",
             title = "Old Pete's Welcome",
             // instructionText = "Whoa! You scared me! I'm Pete. Let's make this farm legendary.",
-            instructionText = "Whoa! You scared me! I'm Pete. Let's build us a farm!",
+            instructionText = "Whoa! You scared me! I'm <color=yellow>Pete</color>. Let's build us a <color=green>farm</color>!",
             triggerToWaitFor = TutorialTrigger.None
         });
 
@@ -31,7 +31,7 @@ public partial class TutorialManager
         {
             stepId = "melony_movement",
             title = "Find Melony - Movement!",
-            instructionText = "Melony's hiding! Use all movement keys below, then find and click her!",
+            instructionText = "<color=magenta>Melony's</color> hiding! Use all <color=cyan>movement keys</color> below, then find and <color=yellow>click</color> her!",
             triggerToWaitFor = TutorialTrigger.MelonyMovementTest,
             requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.Q, KeyCode.E },
             waitForAllInputs = true
@@ -49,7 +49,7 @@ public partial class TutorialManager
         {
             stepId = "melony_zoom",
             title = "Find Melony - Zoom!",
-            instructionText = "Use mouse wheel OR keys 1 and 2 to zoom in/out, then find and click Melony!",
+            instructionText = "Use <color=cyan>mouse wheel</color> OR keys <color=cyan>1 and 2</color> to zoom in/out, then find and <color=yellow>click</color> <color=magenta>Melony</color>!",
             triggerToWaitFor = TutorialTrigger.MelonyZoomTest,
             requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.Mouse3, KeyCode.Mouse4, KeyCode.Alpha1, KeyCode.Alpha2 }, // Mouse wheel up/down + 1/2 keys
             waitForAllInputs = false
@@ -67,7 +67,7 @@ public partial class TutorialManager
         {
             stepId = "melony_rotate",
             title = "Find Melony - Rotate!",
-            instructionText = "Hold middle mouse + move to rotate camera, then find Melony!",
+            instructionText = "Hold <color=cyan>middle mouse + move</color> to rotate camera, then find <color=magenta>Melony</color>!",
             triggerToWaitFor = TutorialTrigger.MelonyRotateTest,
             requiredInputs = new System.Collections.Generic.List<KeyCode> { KeyCode.Mouse2 }, // Middle mouse button
             waitForAllInputs = true
@@ -102,7 +102,7 @@ public partial class TutorialManager
         {
             stepId = "time_controls",
             title = "Time Controls",
-            instructionText = "Pause, play, fast-forward. Control time itself!",
+            instructionText = "<color=cyan>Pause</color>, <color=green>play</color>, <color=yellow>fast-forward</color>. <color=orange>Control time itself!</color>",
             triggerToWaitFor = TutorialTrigger.TimeControlsUsed,
             uiToHighlight = GameObject.Find("PAUSE BG")
         });
@@ -111,7 +111,7 @@ public partial class TutorialManager
         {
             stepId = "season_bonuses",
             title = "Seasonal Bonuses",
-            instructionText = "Seasons boost production from different animals. Watch the season icon!",
+            instructionText = "<color=green>Seasons</color> boost <color=yellow>production</color> from different <color=orange>animals</color>. Watch the <color=cyan>season icon</color>! <color=cyan><b>Synergy Tip:</b></color> Match <color=orange>animals</color> to their <color=green>bonus seasons</color> for <color=gold>maximum profit</color>!",
             triggerToWaitFor = TutorialTrigger.None
         };
         seasonBonusStep.onStepStart = new UnityEvent();
@@ -139,7 +139,7 @@ public partial class TutorialManager
         {
             stepId = "enemy_indicator_tutorial",
             title = "Enemy Indicators",
-            instructionText = "Watch this to know what types of enemies you can possibly expect at night! Every new season brings new threats!",
+            instructionText = "Watch this to know what types of <color=red>enemies</color> you can possibly expect at <color=blue>night</color>! Every new <color=green>season</color> brings <color=orange>new threats</color>!",
             triggerToWaitFor = TutorialTrigger.None,
         };
         enemyIndicatorStep.onStepStart = new UnityEvent();
@@ -164,7 +164,7 @@ public partial class TutorialManager
         {
             stepId = "open_build_shop",
             title = "Shop Time",
-            instructionText = "Click the shop bottom-left to start building your farm",
+            instructionText = "<color=yellow>Click</color> the <color=cyan>shop</color> <color=yellow>bottom-left</color> to start building your <color=green>farm</color>",
             triggerToWaitFor = TutorialTrigger.ShopOpened,
             uiToHighlight = shopButton ?? GameObject.Find("ShopButton") ?? GameObject.FindGameObjectWithTag("ShopButton")
         });
@@ -173,7 +173,7 @@ public partial class TutorialManager
         {
             stepId = "build_farmhouse",
             title = "Build Farmhouse",
-            instructionText = "Build your Farmhouse first! WARNING: If destroyed, you lose! Protect it!",
+            instructionText = "Build your <color=green>Farmhouse</color> first! <color=red><b>WARNING:</b></color> If destroyed, you <color=red>lose</color>! <color=orange>Protect it!</color>",
             triggerToWaitFor = TutorialTrigger.BuiltFarmHouse,
             uiToHighlight = farmhouseButton
         };
@@ -197,7 +197,7 @@ public partial class TutorialManager
         {
             stepId = "build_silo",
             title = "Build Silo",
-            instructionText = "Build a Silo to store harvested crops.",
+            instructionText = "Build a <color=brown>Silo</color> to <color=cyan>store</color> harvested <color=green>crops</color>.",
             triggerToWaitFor = TutorialTrigger.BuiltSilo,
             uiToHighlight = siloButton
         };
@@ -209,7 +209,7 @@ public partial class TutorialManager
         {
             stepId = "price_panel_tutorial",
             title = "Check Market Prices",
-            instructionText = "Smart farmers check prices! Click the price panel to see what your crops and animals are worth!",
+            instructionText = "<color=orange>Smart farmers</color> check <color=gold>prices</color>! <color=yellow>Click</color> the <color=cyan>price panel</color> to see what your <color=green>crops</color> and <color=orange>animals</color> are worth!",
             triggerToWaitFor = TutorialTrigger.PricePanelOpened
         };
         pricePanelStep.onStepStart = new UnityEvent();
@@ -249,15 +249,23 @@ public partial class TutorialManager
         {
             stepId = "price_panel_explanation",
             title = "Market Intelligence",
-            instructionText = "See the numbers? Left shows your inventory, right shows current prices! Green % means seasonal bonus. Close when done!",
+            instructionText = "See the numbers? <color=cyan>Left</color> shows your <color=yellow>inventory</color>, <color=cyan>right</color> shows <color=gold>current prices</color>! <color=green>Green %</color> means <color=orange>seasonal bonus</color>. Close when done!",
             triggerToWaitFor = TutorialTrigger.PricePanelClosed
+        });
+
+        steps.Add(new TutorialStep
+        {
+            stepId = "synergy_explanation",
+            title = "Farm Synergies!",
+            instructionText = "<color=cyan><b>Key Synergies:</b></color> <color=green>Different crops</color> feed <color=orange>different animals</color>! <color=yellow>Sunflowers</color>→<color=orange>Chickens</color>, <color=yellow>Wheat</color>→<color=white>Cows/Sheep</color>, <color=orange>Carrots</color>→<color=white>Goats/Pigs</color>. <color=green>Seasons</color> boost specific <color=orange>animals</color>!",
+            triggerToWaitFor = TutorialTrigger.None
         });
 
         var plantCropStep = new TutorialStep
         {
             stepId = "plant_first_crop",
             title = "Plant Crops",
-            instructionText = "Click your Crop Plot. Plant sunflowers - free animal food means more profit!",
+            instructionText = "<color=yellow>Click</color> your <color=green>Crop Plot</color>. Plant <color=yellow>sunflowers</color> - <color=cyan>free animal food</color> means <color=gold>more profit</color>! <color=cyan><b>Synergy:</b></color> <color=yellow>Sunflowers</color> → <color=orange>Chickens</color> → <color=gold>Coins</color>!",
             triggerToWaitFor = TutorialTrigger.PlantedCrop
         };
         plantCropStep.onStepStart = new UnityEvent();
@@ -268,7 +276,7 @@ public partial class TutorialManager
         {
             stepId = "harvest_first_crops",
             title = "Harvest!",
-            instructionText = "Sunflowers are ready! (I sped up the growth) Click Harvest. Free chicken food = bigger profits!",
+            instructionText = "<color=yellow>Sunflowers</color> are <color=green>ready</color>! (I sped up the growth) <color=yellow>Click Harvest</color>. <color=cyan>Free chicken food</color> = <color=gold>bigger profits</color>!",
             triggerToWaitFor = TutorialTrigger.HarvestedCrop
         };
         harvestCropStep.onStepStart = new UnityEvent();
@@ -294,7 +302,7 @@ public partial class TutorialManager
         {
             stepId = "build_chicken_barracks",
             title = "Chicken Barracks",
-            instructionText = "Train your chickens! Build Barracks for your feathered fighters.",
+            instructionText = "<color=cyan>Train</color> your <color=orange>chickens</color>! Build <color=red>Barracks</color> for your <color=yellow>feathered fighters</color>. <color=cyan><b>Synergy:</b></color> <color=orange>Civilian chickens</color> become <color=red>soldier chickens</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltChickenBarracks
         };
         chickenBarracksStep.onStepStart = new UnityEvent();
@@ -308,18 +316,22 @@ public partial class TutorialManager
         {
             stepId = "buy_chickens",
             title = "Buy Chickens",
-            instructionText = "Get 3 chickens. Click your Coop, buy, and let the egg party begin!",
-            triggerToWaitFor = TutorialTrigger.BoughtFirstAnimals
+            instructionText = "Buy exactly <color=yellow><b>5 chickens</b></color> (<color=red>no more, no less</color>). <color=yellow>Click</color> your <color=orange>Coop</color>, click <color=cyan>Buy Animals</color> until you have <color=yellow><b>5</b></color>!",
+            triggerToWaitFor = TutorialTrigger.Bought5CivilianAnimals
         };
         buyChickensStep.onStepStart = new UnityEvent();
-        buyChickensStep.onStepStart.AddListener(() => HighlightLastBuiltStructure("ChickenCoop"));
+        buyChickensStep.onStepStart.AddListener(() =>
+        {
+            HighlightLastBuiltStructure("ChickenCoop");
+            HighlightBuyAnimalsButton();
+        });
         steps.Add(buyChickensStep);
 
         steps.Add(new TutorialStep
         {
             stepId = "feed_chickens",
             title = "Feed Chickens",
-            instructionText = "Feed chickens to make eggs! Well-fed animals = ready to produce. Click Feed.",
+            instructionText = "<color=cyan>Feed</color> <color=orange>chickens</color> to make <color=yellow>eggs</color>! <color=green>Well-fed animals</color> = <color=cyan>ready to produce</color>. <color=yellow>Click Feed</color>.",
             triggerToWaitFor = TutorialTrigger.FedFirstAnimals
         });
 
@@ -327,7 +339,7 @@ public partial class TutorialManager
         {
             stepId = "collect_eggs",
             title = "Collect Eggs",
-            instructionText = "Eggs ready! Click Collect - eggs automatically sell for coins! This is how you make money.",
+            instructionText = "<color=yellow>Eggs ready</color>! <color=yellow>Click Collect</color> - eggs <color=cyan>automatically sell</color> for <color=gold>coins</color>! This is how you <color=green>make money</color>.",
             triggerToWaitFor = TutorialTrigger.CollectedFirstProducts
         });
 
@@ -335,11 +347,15 @@ public partial class TutorialManager
         {
             stepId = "recruit_soldiers",
             title = "Chicken Soldiers",
-            instructionText = "Time for battle! Recruit chickens in the Barracks.",
-            triggerToWaitFor = TutorialTrigger.RecruitedFirstSoldiers
+            instructionText = "<color=cyan>Recruit</color> exactly <color=red><b>3 army chickens</b></color> (<color=red>no more, no less</color>). <color=yellow>Click</color> your <color=red>Barracks</color>, click <color=cyan>Recruit</color> until you have <color=red><b>3 soldiers</b></color>! <color=cyan><b>Synergy:</b></color> Uses your <color=orange>civilian animals</color> as <color=red>recruits</color>!",
+            triggerToWaitFor = TutorialTrigger.Recruited3ArmyAnimals
         };
         recruitSoldiersStep.onStepStart = new UnityEvent();
-        recruitSoldiersStep.onStepStart.AddListener(() => HighlightLastBuiltStructure("ChickenBarracks"));
+        recruitSoldiersStep.onStepStart.AddListener(() =>
+        {
+            HighlightLastBuiltStructure("ChickenBarracks");
+            HighlightRecruitButton();
+        });
         steps.Add(recruitSoldiersStep);
 
         // Wall Building Tutorial - Step 1: Learn hay bale placement via chain cancel
@@ -349,7 +365,7 @@ public partial class TutorialManager
         {
             stepId = "build_first_hay_bale",
             title = "Wall Building Basics",
-            instructionText = "Select hay bale, CLICK to place first one. Then move mouse and RIGHT-CLICK to cancel (places just that 1 wall).",
+            instructionText = "Select <color=yellow>hay bale</color>, <color=cyan><b>CLICK</b></color> to place first one. Then move mouse and <color=orange><b>RIGHT-CLICK</b></color> to cancel (places just that <color=yellow>1 wall</color>).",
             triggerToWaitFor = TutorialTrigger.BuiltFirstHayBale
         };
         buildFirstHayBaleStep.onStepStart = new UnityEvent();
@@ -366,7 +382,7 @@ public partial class TutorialManager
         {
             stepId = "build_wall_chain",
             title = "Chain Building (9 More)",
-            instructionText = "Great! Build 9 more hay bales. CLICK places first, move mouse to chain, then CLICK again to confirm all!",
+            instructionText = "<color=green>Great!</color> Build <color=yellow><b>9 more</b></color> hay bales. <color=cyan><b>CLICK</b></color> places first, <color=orange>move mouse</color> to chain, then <color=cyan><b>CLICK again</b></color> to confirm all!",
             triggerToWaitFor = TutorialTrigger.Built10HayBales,
             requiredInputs = new List<KeyCode>(),
             waitForAllInputs = false
@@ -402,7 +418,7 @@ public partial class TutorialManager
         {
             stepId = "place_flag",
             title = "Place Flag",
-            instructionText = "Set a rally point! Click Place Flag, then pick a spot.",
+            instructionText = "Set a <color=cyan>rally point</color>! <color=yellow>Click</color> <color=red>Place Flag</color>, then <color=orange>pick a spot</color>.",
             triggerToWaitFor = TutorialTrigger.PlacedFirstFlag
         };
         placeFlagStep.onStepStart = new UnityEvent();
@@ -413,7 +429,7 @@ public partial class TutorialManager
         {
             stepId = "prepare_defense",
             title = "Farm Defended!",
-            instructionText = "You did it! Night time starts soon, so prepare to defend!",
+            instructionText = "<color=green><b>You did it!</b></color> <color=blue>Night time</color> starts soon, so <color=orange>prepare to defend</color>! <color=cyan><b>Remember the synergies:</b></color> <color=green>Crops</color>→<color=orange>Animals</color>→<color=gold>Money</color> & <color=orange>Animals</color>→<color=red>Soldiers</color>→<color=blue>Defense</color>!",
             triggerToWaitFor = TutorialTrigger.None
         };
         finalStep.onStepStart = new UnityEvent();
@@ -438,7 +454,7 @@ public partial class TutorialManager
         {
             stepId = "season_spring",
             title = "Spring!",
-            instructionText = "Spring! Plant stuff. Animals are happy.",
+            instructionText = "<color=green><b>Spring!</b></color> <color=yellow>Plant stuff</color>. <color=orange>Animals</color> are <color=green>happy</color>.",
             triggerToWaitFor = TutorialTrigger.SpringSeason
         });
 
@@ -446,7 +462,7 @@ public partial class TutorialManager
         {
             stepId = "season_summer",
             title = "Summer!",
-            instructionText = "Summer! Crops grow fast. Wolves get cranky.",
+            instructionText = "<color=yellow><b>Summer!</b></color> <color=green>Crops</color> grow <color=cyan>fast</color>. <color=red>Wolves</color> get <color=orange>cranky</color>.",
             triggerToWaitFor = TutorialTrigger.SummerSeason
         });
 
@@ -454,7 +470,7 @@ public partial class TutorialManager
         {
             stepId = "season_fall",
             title = "Fall!",
-            instructionText = "Fall! Harvest time. Animals eat more.",
+            instructionText = "<color=orange><b>Fall!</b></color> <color=yellow>Harvest time</color>. <color=orange>Animals</color> eat <color=red>more</color>.",
             triggerToWaitFor = TutorialTrigger.FallSeason
         });
 
@@ -462,7 +478,7 @@ public partial class TutorialManager
         {
             stepId = "season_winter",
             title = "Winter!",
-            instructionText = "Winter! Crops slow down. Animals need more food.",
+            instructionText = "<color=cyan><b>Winter!</b></color> <color=green>Crops</color> <color=blue>slow down</color>. <color=orange>Animals</color> need <color=red>more food</color>.",
             triggerToWaitFor = TutorialTrigger.WinterSeason
         });
 
@@ -470,7 +486,7 @@ public partial class TutorialManager
         {
             stepId = "animal_production_boost",
             title = "Production Boost!",
-            instructionText = "Bonus time! Some animals produce more. Check the icons.",
+            instructionText = "<color=green><b>Bonus time!</b></color> Some <color=orange>animals</color> produce <color=yellow>more</color>. Check the <color=cyan>icons</color>.",
             triggerToWaitFor = TutorialTrigger.AnimalProductionBoosted
         });
 
@@ -478,7 +494,7 @@ public partial class TutorialManager
         {
             stepId = "discover_cow_pen",
             title = "Cow Pen!",
-            instructionText = "Cows make milk. They eat wheat and train into sturdy, slow but powerful soldiers.",
+            instructionText = "<color=white>Cows</color> make <color=cyan>milk</color>. They eat <color=yellow>wheat</color> and train into <color=orange>sturdy</color>, <color=blue>slow</color> but <color=red>powerful soldiers</color>. <color=cyan><b>Synergy:</b></color> <color=yellow>Wheat crops</color> → <color=white>Cow food</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltCowPen
         });
 
@@ -486,7 +502,7 @@ public partial class TutorialManager
         {
             stepId = "discover_sheep_pen",
             title = "Sheep Pen!",
-            instructionText = "Sheep make wool. They eat wheat and train into tough defenders with armor and explosives.",
+            instructionText = "<color=white>Sheep</color> make <color=magenta>wool</color>. They eat <color=yellow>wheat</color> and train into <color=green>tough defenders</color> with <color=cyan>armor</color> and <color=red>explosives</color>. <color=cyan><b>Synergy:</b></color> <color=yellow>Wheat crops</color> → <color=white>Sheep food</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltSheepPen
         });
 
@@ -494,7 +510,7 @@ public partial class TutorialManager
         {
             stepId = "discover_goat_pen",
             title = "Goat Pen!",
-            instructionText = "Goats make cheese. They eat carrots and train into long-range snipers.",
+            instructionText = "<color=white>Goats</color> make <color=yellow>cheese</color>. They eat <color=orange>carrots</color> and train into <color=cyan>long-range snipers</color>. <color=cyan><b>Synergy:</b></color> <color=orange>Carrot crops</color> → <color=white>Goat food</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltGoatPen
         });
 
@@ -502,7 +518,7 @@ public partial class TutorialManager
         {
             stepId = "discover_pig_pen",
             title = "Pig Pen!",
-            instructionText = "Pigs make bacon. They eat carrots and train into flamethrower soldiers.",
+            instructionText = "<color=pink>Pigs</color> make <color=red>bacon</color>. They eat <color=orange>carrots</color> and train into <color=red>flamethrower soldiers</color>. <color=cyan><b>Synergy:</b></color> <color=orange>Carrot crops</color> → <color=pink>Pig food</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltPigPen
         });
 
@@ -510,7 +526,7 @@ public partial class TutorialManager
         {
             stepId = "discover_cow_barracks",
             title = "Cow Barracks!",
-            instructionText = "Train cow soldiers. Slow but strong at mid range, great against groups.",
+            instructionText = "<color=cyan>Train</color> <color=white>cow soldiers</color>. <color=blue>Slow</color> but <color=red>strong</color> at <color=orange>mid range</color>, great against <color=yellow>groups</color>. <color=cyan><b>Synergy:</b></color> <color=white>Civilian cows</color> → <color=red>Tank soldiers</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltCowBarracks
         });
 
@@ -518,7 +534,7 @@ public partial class TutorialManager
         {
             stepId = "discover_sheep_barracks",
             title = "Sheep Barracks!",
-            instructionText = "Train sheep soldiers. Armored and explosive, they deal huge damage up close, if at least 3 enemies are nearby.",
+            instructionText = "<color=cyan>Train</color> <color=white>sheep soldiers</color>. <color=green>Armored</color> and <color=red>explosive</color>, they deal <color=orange>huge damage</color> up close, if at least <color=yellow>3 enemies</color> are nearby. <color=cyan><b>Synergy:</b></color> <color=white>Civilian sheep</color> → <color=red>Bomber soldiers</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltSheepBarracks
         });
 
@@ -526,7 +542,7 @@ public partial class TutorialManager
         {
             stepId = "discover_goat_barracks",
             title = "Goat Barracks!",
-            instructionText = "Train goat soldiers. Snipers that pick off enemies from long range.",
+            instructionText = "<color=cyan>Train</color> <color=white>goat soldiers</color>. <color=green>Snipers</color> that pick off enemies from <color=blue>long range</color>. <color=cyan><b>Synergy:</b></color> <color=white>Civilian goats</color> → <color=red>Sniper soldiers</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltGoatBarracks
         });
 
@@ -534,7 +550,7 @@ public partial class TutorialManager
         {
             stepId = "discover_pig_barracks",
             title = "Pig Barracks!",
-            instructionText = "Train pig soldiers. Flamethrowers that burn groups of enemies at mid range.",
+            instructionText = "<color=cyan>Train</color> <color=pink>pig soldiers</color>. <color=red>Flamethrowers</color> that <color=orange>burn groups</color> of enemies at <color=yellow>mid range</color>. <color=cyan><b>Synergy:</b></color> <color=pink>Civilian pigs</color> → <color=red>Flamethrower soldiers</color>!",
             triggerToWaitFor = TutorialTrigger.BuiltPigBarracks
         });
 
@@ -542,7 +558,7 @@ public partial class TutorialManager
         {
             stepId = "discover_price_panel",
             title = "Price Panel Discovery!",
-            instructionText = "Market prices revealed! Smart farming means knowing when to sell!",
+            instructionText = "<color=gold>Market prices</color> revealed! <color=orange>Smart farming</color> means knowing when to <color=green>sell</color>!",
             triggerToWaitFor = TutorialTrigger.PricePanelOpened
         });
 
@@ -550,7 +566,7 @@ public partial class TutorialManager
         {
             stepId = "discover_price_panel_usage",
             title = "Market Master!",
-            instructionText = "You've learned to read the markets! Knowledge is power and profit!",
+            instructionText = "You've learned to read the <color=gold>markets</color>! <color=cyan>Knowledge</color> is <color=red>power</color> and <color=green>profit</color>!",
             triggerToWaitFor = TutorialTrigger.PricePanelClosed
         });
     }
@@ -793,9 +809,17 @@ public partial class TutorialManager
         if (highlightIndicator == null && enable)
         {
             if (highlightPrefab == null)
+            {
+                Debug.LogWarning("Tutorial highlightPrefab is null! 3D structure highlights won't work. Please assign a highlight prefab in the TutorialManager.");
                 return;
+            }
             GameObject highlight = Instantiate(highlightPrefab, structure.transform);
-            highlight.transform.localPosition = new Vector3(0, 3.5f, 0);
+            
+            // Calculate proper height based on structure bounds to avoid arrow going inside
+            float structureHeight = GetStructureHeight(structure);
+            float arrowHeight = Mathf.Max(structureHeight + 2.0f, 4.0f); // At least 2 units above structure, minimum 4 units
+            highlight.transform.localPosition = new Vector3(0, arrowHeight, 0);
+            
             highlight.name = "TutorialHighlight";
             activeWorldHighlights.Add(highlight);
             Renderer arrowRenderer = highlight.GetComponentInChildren<Renderer>();
@@ -852,6 +876,28 @@ public partial class TutorialManager
         }
     }
 
+    private float GetStructureHeight(GameObject structure)
+    {
+        if (structure == null) return 1f;
+        
+        // Try to get the renderer bounds to calculate actual height
+        Renderer renderer = structure.GetComponentInChildren<Renderer>();
+        if (renderer != null)
+        {
+            return renderer.bounds.size.y;
+        }
+        
+        // Fallback: try to get collider bounds
+        Collider collider = structure.GetComponentInChildren<Collider>();
+        if (collider != null)
+        {
+            return collider.bounds.size.y;
+        }
+        
+        // Default fallback height
+        return 2f;
+    }
+
     private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
     private void HighlightPlaceFlagButton()
     {
@@ -863,6 +909,94 @@ public partial class TutorialManager
                     HighlightUI(btn.gameObject, true);
                     return;
                 }
+    }
+
+    private void HighlightBuyAnimalsButton()
+    {
+        StartCoroutine(MonitorAndHighlightBuyButton());
+    }
+
+    private IEnumerator MonitorAndHighlightBuyButton()
+    {
+        // Keep checking until we find the Buy button (structure UI might not be open yet)
+        float timeout = 10f;
+        float elapsed = 0f;
+        
+        while (elapsed < timeout)
+        {
+            // Find all active buttons - don't require interactable since tutorial restrictions may disable them
+            Button[] allButtons = FindObjectsByType<Button>(FindObjectsSortMode.None);
+            foreach (Button btn in allButtons)
+            {
+                if (btn.gameObject.activeInHierarchy)
+                {
+                    TextMeshProUGUI btnText = btn.GetComponentInChildren<TextMeshProUGUI>();
+                    // Check for buyAnimal button specifically (this is the serialized field name)
+                    if (btn.name.Contains("buyAnimal") || btn.name.ToLower().Contains("buy"))
+                    {
+                        Debug.Log($"Highlighting Buy button by name: {btn.name}");
+                        HighlightUIWithoutArrow(btn.gameObject, true);
+                        yield break;
+                    }
+                    // Also check by text content
+                    else if (btnText != null && btnText.text.ToLower().Contains("buy"))
+                    {
+                        Debug.Log($"Highlighting Buy button: {btn.name} with text: '{btnText.text}'");
+                        HighlightUIWithoutArrow(btn.gameObject, true);
+                        yield break;
+                    }
+                }
+            }
+            
+            elapsed += 0.2f;
+            yield return new WaitForSeconds(0.2f);
+        }
+        
+        Debug.LogWarning("Could not find Buy Animals button to highlight after timeout");
+    }
+
+    private void HighlightRecruitButton()
+    {
+        StartCoroutine(MonitorAndHighlightRecruitButton());
+    }
+
+    private IEnumerator MonitorAndHighlightRecruitButton()
+    {
+        // Keep checking until we find the Recruit button (structure UI might not be open yet)
+        float timeout = 10f;
+        float elapsed = 0f;
+        
+        while (elapsed < timeout)
+        {
+            // Find all active buttons - don't require interactable since tutorial restrictions may disable them
+            Button[] allButtons = FindObjectsByType<Button>(FindObjectsSortMode.None);
+            foreach (Button btn in allButtons)
+            {
+                if (btn.gameObject.activeInHierarchy)
+                {
+                    TextMeshProUGUI btnText = btn.GetComponentInChildren<TextMeshProUGUI>();
+                    // Check for recruitButton specifically (this is the serialized field name)
+                    if (btn.name.Contains("recruitButton") || btn.name.ToLower().Contains("recruit"))
+                    {
+                        Debug.Log($"Highlighting Recruit button by name: {btn.name}");
+                        HighlightUIWithoutArrow(btn.gameObject, true);
+                        yield break;
+                    }
+                    // Also check by text content (exclude "Confirm" buttons)
+                    else if (btnText != null && btnText.text.ToLower().Contains("recruit") && !btnText.text.Contains("Confirm"))
+                    {
+                        Debug.Log($"Highlighting Recruit button: {btn.name} with text: '{btnText.text}'");
+                        HighlightUIWithoutArrow(btn.gameObject, true);
+                        yield break;
+                    }
+                }
+            }
+            
+            elapsed += 0.2f;
+            yield return new WaitForSeconds(0.2f);
+        }
+        
+        Debug.LogWarning("Could not find Recruit button to highlight after timeout");
     }
 
     private void CleanupAllWorldHighlights()
@@ -1166,14 +1300,14 @@ public partial class TutorialManager
         if (!allRequiredKeysPressed)
         {
             Debug.Log($"Player found Melony but hasn't used all required keys yet! Missing: {missingKeys}. Practice the controls first!");
-            ShowMelonyFeedback($"Use all keys first! Missing: {missingKeys.Replace("Mouse", "Mouse ")}");
+            ShowMelonyFeedback($"<color=orange>Use all keys first!</color> Missing: <color=cyan>{missingKeys.Replace("Mouse", "Mouse ")}</color>");
             return; // Don't complete the step until they've used all required controls
         }
 
         if (!hasRequiredAction)
         {
             Debug.Log($"Player found Melony but hasn't used {currentMelonyTask} controls yet! Try using the controls first.");
-            ShowMelonyFeedback($"Practice {currentMelonyTask} first!");
+            ShowMelonyFeedback($"<color=cyan>Practice</color> <color=yellow>{currentMelonyTask}</color> <color=orange>first!</color>");
             return; // Don't complete the step until they've used the required controls
         }
 

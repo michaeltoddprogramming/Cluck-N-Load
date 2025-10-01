@@ -766,7 +766,7 @@ public class NightManager : MonoBehaviour
     {
         // COMPILATION DEFINITELY FORCED NOW!
         print($"CRITICAL DEBUG: setSeason called with season={season}, years={years}");
-        UnityEngine.Debug.LogError($"ENEMY INDICATOR DEBUG: setSeason called with season={season}, years={years}");
+        // UnityEngine.Debug.LogError($"ENEMY INDICATOR DEBUG: setSeason called with season={season}, years={years}");
         Debug.Log("===== setSeason method called =====");
         Debug.Log($"setSeason called: season={season}, years={years}, yearsChanged={YearsChanged}");
         Debug.Log($"EnemyIndicator instance check: {enemyIndicator}");

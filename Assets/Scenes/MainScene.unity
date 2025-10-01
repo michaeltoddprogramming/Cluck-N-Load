@@ -13118,6 +13118,7 @@ MonoBehaviour:
   moneySpendSound: {fileID: 775492645}
   errorSound: {fileID: 775492647}
   volume: 0.4
+  buildingSelectSound: {fileID: 8300000, guid: c9c9d89b94e3f4546a87b96547f22e53, type: 3}
   playSound: {fileID: 8300000, guid: ef18212c4563cf641a915c7176cba4d7, type: 3}
   pauseSound: {fileID: 8300000, guid: ef18212c4563cf641a915c7176cba4d7, type: 3}
   fastForwardSound: {fileID: 8300000, guid: ef18212c4563cf641a915c7176cba4d7, type: 3}

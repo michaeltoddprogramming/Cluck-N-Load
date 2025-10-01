@@ -18,19 +18,19 @@ public class ShopTabController : MonoBehaviour
             // rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
 
             Vector2 originalPivot = rt.pivot;
-Vector2 originalPosition = rt.anchoredPosition;
+            Vector2 originalPosition = rt.anchoredPosition;
 
-// Change pivot to right
-rt.pivot = new Vector2(1f, 0.5f);
+            // Change pivot to right
+            rt.pivot = new Vector2(1f, 0.5f);
 
-// Offset position to cancel the visual shift caused by pivot change
-Vector2 pivotDelta = rt.pivot - originalPivot;
-Vector2 size = rt.rect.size;
-Vector2 positionOffset = new Vector2(pivotDelta.x * size.x, pivotDelta.y * size.y);
-rt.anchoredPosition = originalPosition + positionOffset;
+            // Offset position to cancel the visual shift caused by pivot change
+            Vector2 pivotDelta = rt.pivot - originalPivot;
+            Vector2 size = rt.rect.size;
+            Vector2 positionOffset = new Vector2(pivotDelta.x * size.x, pivotDelta.y * size.y);
+            rt.anchoredPosition = originalPosition + positionOffset;
 
-// Set the initial width
-rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
+            // Set the initial width
+            rt.sizeDelta = new Vector2(normalWidth, rt.sizeDelta.y);
 
             // Capture this image for the listener
             Image captured = img;

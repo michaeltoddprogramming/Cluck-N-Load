@@ -258,6 +258,7 @@ public class NightManager : MonoBehaviour
 
     public void pauseTime()
     {
+        AudioManager.Instance.PauseGameAudio();
         timeIndicator.exchangeTimeIcon("pause");
         timeSpeedEffect.StopSpeedEffect();
         isPaused = true;
@@ -273,6 +274,11 @@ public class NightManager : MonoBehaviour
 
     public void playTime()
     {
+        if (isPaused == true)
+        {
+            AudioManager.Instance.ResumeGameAudio();
+        }
+
         timeIndicator.exchangeTimeIcon("play");
         timeSpeedEffect.StopSpeedEffect();
         isPaused = false;
@@ -293,6 +299,11 @@ public class NightManager : MonoBehaviour
 
     public void fastForwardTime()
     {
+        if (isPaused == true)
+        {
+            AudioManager.Instance.ResumeGameAudio();
+        }
+        
         timeIndicator.exchangeTimeIcon("fast");
         timeSpeedEffect.StartSpeedEffect();
         if (isPaused)

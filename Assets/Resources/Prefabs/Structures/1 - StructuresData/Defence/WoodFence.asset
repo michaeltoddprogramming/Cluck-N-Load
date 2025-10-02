@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: WoodFence
   m_EditorClassIdentifier: 
   structureName: Wooden Fence
-  description: A moderately strong barrier made of wood. Use it to shape enemy paths
-    and provide temporary protection.
+  description: A moderately strong barrier made of wood.
   prefab: {fileID: 571157952748499214, guid: d4c88388e59bf0d458f1f1053b83204d, type: 3}
   icon: {fileID: 21300000, guid: 9be045d29dfc39243b66e955a1ce58d5, type: 3}
   type: 3
@@ -25,10 +24,12 @@ MonoBehaviour:
   moneyPerProduct: 50
   baseFoodRequired: 2
   foodSynergyMultiplier: 1
+  siloSynergyRange: 15
   sunflowerBaseHarvestAmount: 10
   wheatBaseHarvestAmount: 10
   carrotsBaseHarvestAmount: 10
   cropSynergyMultiplier: 1.5
+  cropSiloSynergyRange: 15
   totalPerSilo: 100
   unlockDay: 5
   targetAnimalType: 
@@ -38,3 +39,5 @@ MonoBehaviour:
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
   protectionRadius: 5
+  synergyMinDist: 20
+  synergyMaxDist: 30

@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: HayBale
   m_EditorClassIdentifier: 
   structureName: Hay Bale
-  description: Hay bale with low health that acts as a temporary wall. Use it to
-    funnel enemies into kill zones and control the battlefield.
+  description: Hay bale with low health that acts as a temporary wall.
   prefab: {fileID: 1052537911471977704, guid: a2d803876da35f248b80d81b1a05943f, type: 3}
   icon: {fileID: 21300000, guid: 8c5c0a109d21a4b4ba0c09885fca4856, type: 3}
   type: 3
@@ -25,10 +24,12 @@ MonoBehaviour:
   moneyPerProduct: 50
   baseFoodRequired: 2
   foodSynergyMultiplier: 1
+  siloSynergyRange: 15
   sunflowerBaseHarvestAmount: 10
   wheatBaseHarvestAmount: 10
   carrotsBaseHarvestAmount: 10
   cropSynergyMultiplier: 1.5
+  cropSiloSynergyRange: 15
   totalPerSilo: 100
   unlockDay: 0
   targetAnimalType: 
@@ -38,3 +39,5 @@ MonoBehaviour:
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
   protectionRadius: 5
+  synergyMinDist: 20
+  synergyMaxDist: 30

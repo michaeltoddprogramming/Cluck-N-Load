@@ -1,5 +1,5 @@
 using UnityEngine;
-
+//random comment, lol
 public class DamageAnimation : MonoBehaviour
 {
     public AudioClip hitSound;

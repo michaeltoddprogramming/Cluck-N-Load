@@ -48,6 +48,17 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] public Sprite pigIcon;
     [SerializeField] public Sprite sheepIcon;
 
+    [Header("Sheep Flag Management")]
+    [SerializeField] private Button manageSheepFlagsButton;
+    [SerializeField] private GameObject sheepFlagManagementPanel;
+    [SerializeField] private Transform sheepFlagListParent;
+    [SerializeField] private GameObject sheepFlagItemPrefab;
+    [SerializeField] private Button closeSheepFlagPanelButton;
+    
+    private bool isManagingSheepFlags = false;
+    private int selectedSheepFlagIndex = -1;
+    private bool isMovingSheepFlag = false;
+
     [Header("Army indicator")]
     // [SerializeField] public Image animalIcon3;
     [SerializeField] private Slider armyBarSlider;
@@ -90,6 +101,10 @@ public class BarracksStructureUI : BaseStructureUI
         }
 
         barracksStructure.OnArmyChanged += UpdateUI;
+        barracksStructure.OnArmyChanged += () => {
+            Debug.Log("[SHEEP FLAG] Army changed - refreshing sheep flag panel");
+            RefreshSheepFlagListIfOpen();
+        }; // Auto-update sheep flag panel
 
         setUpStats();
 
@@ -125,6 +140,19 @@ public class BarracksStructureUI : BaseStructureUI
                 barracksStructure.SetFlagColor(newColor);
                 UpdateUI();
             });
+        }
+
+        // Setup sheep flag management buttons
+        if (manageSheepFlagsButton != null)
+        {
+            manageSheepFlagsButton.onClick.RemoveAllListeners();
+            manageSheepFlagsButton.onClick.AddListener(OpenSheepFlagManagement);
+        }
+
+        if (closeSheepFlagPanelButton != null)
+        {
+            closeSheepFlagPanelButton.onClick.RemoveAllListeners();
+            closeSheepFlagPanelButton.onClick.AddListener(CloseSheepFlagManagement);
         }
 
         if (flagPlacementIndicator != null)
@@ -163,11 +191,28 @@ public class BarracksStructureUI : BaseStructureUI
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
         {
             UpdateUI();
+            
+            // Refresh sheep flag panel more frequently if it's open
+            if (isManagingSheepFlags && sheepFlagManagementPanel != null && sheepFlagManagementPanel.activeInHierarchy)
+            {
+                RefreshSheepFlagList();
+            }
+            
             lastUIUpdate = Time.time;
         }
 
-        // Handle flag placement input
-        if (isPlacingFlag)
+        // Handle sheep flag movement input first (takes priority)
+        if (isMovingSheepFlag)
+        {
+            if (Time.frameCount % 60 == 0) // Log every 60 frames to avoid spam
+            {
+                Debug.Log($"[SHEEP FLAG] Update - Moving sheep flag {selectedSheepFlagIndex}, isPlacingFlag: {isPlacingFlag}");
+            }
+            HandleSheepFlagMovementInput();
+            UpdateSheepFlagMovementIndicator();
+        }
+        // Handle regular flag placement input only if not moving sheep flags
+        else if (isPlacingFlag)
         {
             HandleFlagPlacementInput();
             UpdateFlagPlacementIndicator();
@@ -289,12 +334,10 @@ public class BarracksStructureUI : BaseStructureUI
                 {
                     AudioManager.Instance.PlayErrorSound();
                 }
-                // Optional: Add visual feedback, e.g., flash the button red
+                // Optional: Add audio feedback
                 if (placeFlagButton != null)
                 {
-                    var buttonImage = placeFlagButton.GetComponent<Image>();
-                    if (buttonImage != null) buttonImage.color = Color.red;
-                    LeanTween.color(buttonImage.rectTransform, Color.white, 1f);  // Reset after 1 second
+                    placeFlagButton.interactable = false;
                 }
                 return; // Exit early, don't start flag placement
             }
@@ -310,7 +353,11 @@ public class BarracksStructureUI : BaseStructureUI
         if (placeFlagButton != null)
         {
             placeFlagButton.interactable = false;
-            placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
+            var buttonText = placeFlagButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (buttonText != null)
+            {
+                // buttonText.text = "Placing...";
+            }
         }
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(true);
         
@@ -320,6 +367,12 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void HandleFlagPlacementInput()
     {
+        // If we're moving a sheep flag, don't handle regular flag placement
+        if (isMovingSheepFlag)
+        {
+            return;
+        }
+
         // Check for night start cancellation for sheep
         if (barracksStructure.GetAnimalType() == "Sheep")
         {
@@ -381,6 +434,13 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void PlaceFlagAtMousePosition()
     {
+        // If we're moving a sheep flag, handle it separately
+        if (isMovingSheepFlag)
+        {
+            MoveSheepFlagToMousePosition();
+            return;
+        }
+
         // Make sure we don't place on UI elements
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
@@ -434,6 +494,12 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void EndFlagPlacement(string message = "")
     {
+        // Don't end flag placement if we're moving a sheep flag
+        if (isMovingSheepFlag)
+        {
+            return;
+        }
+
         isPlacingFlag = false;
         
         // Show UI when ending flag placement
@@ -494,7 +560,12 @@ public class BarracksStructureUI : BaseStructureUI
 
         if (statusText != null)
         {
-            if (isPlacingFlag)
+            if (isMovingSheepFlag)
+            {
+                // Don't override the sheep flag movement status text
+                // Keep the existing message
+            }
+            else if (isPlacingFlag)
             {
                 statusText.text = "Click anywhere to place flag";
             }
@@ -532,19 +603,11 @@ public class BarracksStructureUI : BaseStructureUI
         if (placeFlagButton != null && !isPlacingFlag)
         {
             placeFlagButton.interactable = hasArmy && !isPaused;
-            ColorBlock colors = placeFlagButton.colors;
-            colors.normalColor = hasArmy ? new Color(0.8f, 1f, 0.8f) : Color.grey;
-            placeFlagButton.colors = colors;
         }
 
         if (setFlagColorButton != null && !isPlacingFlag)
         {
             setFlagColorButton.interactable = true;
-            Image buttonImage = setFlagColorButton.GetComponent<Image>();
-            if (buttonImage != null)
-            {
-                buttonImage.color = Color.Lerp(barracksStructure.GetFlagColor, Color.white, 0.7f);
-            }
         }
 
         if (addAnimal != null)
@@ -619,11 +682,7 @@ public class BarracksStructureUI : BaseStructureUI
         if (MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()))
         {
             updateStatusText($"Cannot afford {maxAnimalCount} many animals!");
-            // Play error sound for insufficient funds
-            if (AudioManager.Instance != null)
-            {
-                AudioManager.Instance.PlayInsufficientFundsSound();
-            }
+            // Don't play error sound here - this is just UI state update, not user action
         }
 
         // Add day/night check for sheep flag placement
@@ -634,17 +693,21 @@ public class BarracksStructureUI : BaseStructureUI
 
             if (placeFlagButton != null)
             {
-                placeFlagButton.interactable = isDay && hasArmy && !isPaused;
-                Debug.Log($"[Sheep Barracks UI] PlaceFlagButton interactable: {placeFlagButton.interactable}");  // Debug log for button state
+                bool canPlaceFlags = isDay && hasArmy;
+                
+                // For sheep, also check if more flags can be placed
+                if (barracksStructure.GetAnimalType() == "Sheep" && canPlaceFlags)
+                {
+                    canPlaceFlags = barracksStructure.CanPlaceMoreSheepFlags();
+                }
+                
+                placeFlagButton.interactable = canPlaceFlags && !isPaused;
+                Debug.Log($"[Sheep Barracks UI] PlaceFlagButton interactable: {placeFlagButton.interactable} (canPlaceFlags: {canPlaceFlags}, isPaused: {isPaused})");  // Debug log for button state
 
                 if (isPaused && statusText != null)
                 {
                     updateStatusText("Cannot place flags while game is paused");
-                    // Play error sound for paused game action
-                    if (AudioManager.Instance != null)
-                    {
-                        AudioManager.Instance.PlayErrorSound();
-                    }
+                    // Don't play error sound here - this is just UI state update, not user action
                 }
                 else if (!isDay && statusText != null)
                 {
@@ -656,7 +719,22 @@ public class BarracksStructureUI : BaseStructureUI
                 }
                 else if (isDay && hasArmy && statusText != null)
                 {
-                    updateStatusText("Ready to place sheep flags");
+                    // Check if all sheep have individual flags
+                    int sheepCount = barracksStructure.GetMaxSheepFlags();
+                    int flagCount = barracksStructure.GetSheepFlagCount();
+                    
+                    if (flagCount >= sheepCount && sheepCount > 0)
+                    {
+                        updateStatusText($"All {sheepCount} sheep have individual flags placed!");
+                    }
+                    else if (flagCount > 0)
+                    {
+                        updateStatusText($"Ready to place sheep flags ({flagCount}/{sheepCount} placed)");
+                    }
+                    else
+                    {
+                        updateStatusText("Ready to place sheep flags");
+                    }
                 }
             }
         }
@@ -740,10 +818,46 @@ public class BarracksStructureUI : BaseStructureUI
         //         animalIcon2.sprite = sheepIcon;
         //     }
         // }
+
+        // Update sheep flag management button visibility and state
+        if (manageSheepFlagsButton != null)
+        {
+            bool isSheepBarracks = barracksStructure.GetAnimalType() == "Sheep";
+            manageSheepFlagsButton.gameObject.SetActive(isSheepBarracks);
+            
+            if (isSheepBarracks)
+            {
+                bool hasFlags = barracksStructure.GetSheepFlagCount() > 0;
+                manageSheepFlagsButton.interactable = hasFlags && !isPaused;
+                
+                // Update button text to show flag count
+                TextMeshProUGUI buttonText = manageSheepFlagsButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (buttonText != null)
+                {
+                    int flagCount = barracksStructure.GetSheepFlagCount();
+                    int maxFlags = barracksStructure.GetMaxSheepFlags();
+                    buttonText.text = $"MANAGE FLAGS\\n({flagCount}/{maxFlags})";
+                }
+            }
+        }
+
+        // Hide sheep flag management panel if not a sheep barracks
+        if (sheepFlagManagementPanel != null && barracksStructure.GetAnimalType() != "Sheep")
+        {
+            sheepFlagManagementPanel.SetActive(false);
+            isManagingSheepFlags = false;
+        }
     }
 
     private void updateStatusText(string message)
     {
+        // Don't override status text if we're moving a sheep flag
+        if (isMovingSheepFlag)
+        {
+            Debug.Log($"[SHEEP FLAG] Ignoring status text update '{message}' during sheep flag movement");
+            return;
+        }
+        
         // Update status text
         if (statusText != null)
         {
@@ -767,6 +881,8 @@ public class BarracksStructureUI : BaseStructureUI
         if (placeFlagButton != null) placeFlagButton.gameObject.SetActive(false);
         if (setFlagColorButton != null) setFlagColorButton.gameObject.SetActive(false);
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(false);
+        if (manageSheepFlagsButton != null) manageSheepFlagsButton.gameObject.SetActive(false);
+        if (sheepFlagManagementPanel != null) sheepFlagManagementPanel.SetActive(false);
 
     }
 
@@ -1233,6 +1349,627 @@ public class BarracksStructureUI : BaseStructureUI
             LeanTween.alphaCanvas(uiCanvasGroup, 1f, 0.2f).setEase(LeanTweenType.easeOutQuad);
             uiCanvasGroup.interactable = true;
             uiCanvasGroup.blocksRaycasts = true;
+        }
+    }
+
+    // ===== SHEEP FLAG MANAGEMENT METHODS =====
+    
+    private string GetCustomSheepName(int index)
+    {
+        string[] sheepNames = { "Larry", "Garry", "Barry", "Jarry", "Harry" };
+        if (index >= 0 && index < sheepNames.Length)
+        {
+            return sheepNames[index];
+        }
+        // Fallback for more than 5 sheep
+        return $"Sheep {index + 1}";
+    }
+    
+    private void OpenSheepFlagManagement()
+    {
+        if (barracksStructure == null || barracksStructure.GetAnimalType() != "Sheep")
+            return;
+
+        try
+        {
+            isManagingSheepFlags = true;
+            
+            if (sheepFlagManagementPanel != null)
+            {
+                sheepFlagManagementPanel.SetActive(true);
+                Debug.Log("[SHEEP FLAG] Panel opened - forcing immediate refresh");
+                
+                // Force immediate refresh
+                RefreshSheepFlagList();
+                
+                // Also wait a frame and refresh again to be extra sure
+                StartCoroutine(DelayedRefreshSheepFlagList());
+            }
+            else
+            {
+                Debug.LogWarning("Sheep Flag Management Panel is not assigned in the inspector");
+                updateStatusText("Sheep flag management panel not configured");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error opening sheep flag management: {e.Message}");
+            isManagingSheepFlags = false;
+        }
+    }
+
+    private System.Collections.IEnumerator DelayedRefreshSheepFlagList()
+    {
+        yield return null; // Wait one frame
+        
+        // Ensure the list parent has proper layout components for scrolling
+        if (sheepFlagListParent != null)
+        {
+            // Hide scrollbars if they exist
+            ScrollRect scrollRect = sheepFlagListParent.GetComponentInParent<ScrollRect>();
+            if (scrollRect != null)
+            {
+                // Hide vertical scrollbar
+                if (scrollRect.verticalScrollbar != null)
+                {
+                    scrollRect.verticalScrollbar.gameObject.SetActive(false);
+                }
+                
+                // Hide horizontal scrollbar
+                if (scrollRect.horizontalScrollbar != null)
+                {
+                    scrollRect.horizontalScrollbar.gameObject.SetActive(false);
+                }
+                
+                // Keep scrolling enabled but hide scrollbars
+                scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+                scrollRect.horizontalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+                
+                Debug.Log("[SHEEP FLAG] Hidden scrollbars while keeping scroll functionality");
+            }
+            
+            // Add VerticalLayoutGroup if it doesn't exist
+            VerticalLayoutGroup layoutGroup = sheepFlagListParent.GetComponent<VerticalLayoutGroup>();
+            if (layoutGroup == null)
+            {
+                layoutGroup = sheepFlagListParent.gameObject.AddComponent<VerticalLayoutGroup>();
+                layoutGroup.childControlHeight = false;
+                layoutGroup.childControlWidth = true;
+                layoutGroup.childForceExpandHeight = false;
+                layoutGroup.childForceExpandWidth = true;
+                layoutGroup.spacing = 0f; // No spacing between items
+                layoutGroup.padding = new RectOffset(0, 0, 0, 0); // No padding
+                Debug.Log("[SHEEP FLAG] Added VerticalLayoutGroup to prevent overflow");
+            }
+            else
+            {
+                // Update existing layout group with no spacing
+                layoutGroup.spacing = 0f;
+                layoutGroup.padding = new RectOffset(0, 0, 0, 0);
+            }
+            
+            // Add ContentSizeFitter if it doesn't exist
+            ContentSizeFitter contentSizeFitter = sheepFlagListParent.GetComponent<ContentSizeFitter>();
+            if (contentSizeFitter == null)
+            {
+                contentSizeFitter = sheepFlagListParent.gameObject.AddComponent<ContentSizeFitter>();
+                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                Debug.Log("[SHEEP FLAG] Added ContentSizeFitter to manage content size");
+            }
+        }
+        
+        RefreshSheepFlagList();
+    }
+
+    private void CloseSheepFlagManagement()
+    {
+        isManagingSheepFlags = false;
+        isMovingSheepFlag = false;
+        selectedSheepFlagIndex = -1;
+        
+        if (sheepFlagManagementPanel != null)
+        {
+            sheepFlagManagementPanel.SetActive(false);
+        }
+    }
+
+    private void RefreshSheepFlagListIfOpen()
+    {
+        // Only refresh if the panel is currently open
+        if (isManagingSheepFlags && sheepFlagManagementPanel != null && sheepFlagManagementPanel.activeInHierarchy)
+        {
+            Debug.Log("[SHEEP FLAG] Auto-refreshing sheep flag panel");
+            RefreshSheepFlagList();
+        }
+        else if (isManagingSheepFlags)
+        {
+            Debug.Log($"[SHEEP FLAG] Panel should be open but isn't - isManagingSheepFlags: {isManagingSheepFlags}, panel active: {sheepFlagManagementPanel?.activeInHierarchy}");
+        }
+    }
+    
+    private void RefreshSheepFlagList()
+    {
+        if (sheepFlagListParent == null || barracksStructure == null)
+            return;
+
+        // Clear existing list items safely
+        for (int i = sheepFlagListParent.childCount - 1; i >= 0; i--)
+        {
+            Transform child = sheepFlagListParent.GetChild(i);
+            if (child != null)
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+
+        // Get sheep flag info
+        var flagInfoList = barracksStructure.GetSheepFlagInfo();
+        
+        // Create list items for each sheep flag
+        for (int i = 0; i < flagInfoList.Count; i++)
+        {
+            CreateSheepFlagListItem(flagInfoList[i], i);
+        }
+
+        // Show message if no flags placed yet
+        if (flagInfoList.Count == 0)
+        {
+            // No message shown when no flags exist - panel will be empty
+        }
+        else
+        {
+            // Adjust content size after creating all items
+            StartCoroutine(AdjustContentSizeAfterFrame());
+        }
+    }
+    
+    private System.Collections.IEnumerator AdjustContentSizeAfterFrame()
+    {
+        yield return null; // Wait one frame for all items to be created
+        
+        if (sheepFlagListParent != null)
+        {
+            RectTransform parentRect = sheepFlagListParent.GetComponent<RectTransform>();
+            if (parentRect != null)
+            {
+                // Calculate total height needed
+                float totalHeight = 0f;
+                float itemHeight = 55f; // Default item height + spacing
+                int itemCount = sheepFlagListParent.childCount;
+                
+                // Try to get actual height from first item
+                if (itemCount > 0)
+                {
+                    RectTransform firstItemRect = sheepFlagListParent.GetChild(0).GetComponent<RectTransform>();
+                    if (firstItemRect != null && firstItemRect.sizeDelta.y > 0)
+                    {
+                        itemHeight = firstItemRect.sizeDelta.y + 5f; // Add spacing
+                    }
+                }
+                
+                totalHeight = itemCount * itemHeight;
+                
+                // Set the content size to fit all items
+                parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, totalHeight);
+                
+                Debug.Log($"[SHEEP FLAG] Adjusted content size: {itemCount} items, height: {totalHeight}");
+            }
+        }
+    }
+
+    private void CreateNoFlagsMessage()
+    {
+        if (sheepFlagListParent == null) return;
+
+        try
+        {
+            GameObject noFlagsMessage = new GameObject("NoFlagsMessage");
+            noFlagsMessage.transform.SetParent(sheepFlagListParent, false);
+            
+            RectTransform rectTransform = noFlagsMessage.AddComponent<RectTransform>();
+            rectTransform.sizeDelta = new Vector2(200, 60);
+            
+            TextMeshProUGUI textComponent = noFlagsMessage.AddComponent<TextMeshProUGUI>();
+            textComponent.text = "No individual sheep flags placed yet.\nUse 'Place Flag' to create individual positions for each sheep.";
+            textComponent.fontSize = 14;
+            textComponent.color = Color.gray;
+            textComponent.alignment = TextAlignmentOptions.Center;
+            
+            // Set proper anchoring
+            rectTransform.anchorMin = new Vector2(0, 1);
+            rectTransform.anchorMax = new Vector2(1, 1);
+            rectTransform.anchoredPosition = new Vector2(0, -30);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error creating no flags message: {e.Message}");
+        }
+    }
+
+    private void CreateSheepFlagListItem(SheepFlagInfo flagInfo, int index)
+    {
+        if (sheepFlagListParent == null) return;
+
+        try
+        {
+            GameObject listItem;
+            
+            if (sheepFlagItemPrefab != null)
+            {
+                listItem = Instantiate(sheepFlagItemPrefab, sheepFlagListParent, false);
+                
+                // The VerticalLayoutGroup will handle positioning, so we just need to ensure proper size
+                RectTransform rectTransform = listItem.GetComponent<RectTransform>();
+                if (rectTransform == null)
+                {
+                    rectTransform = listItem.AddComponent<RectTransform>();
+                }
+                
+                // Ensure it has a proper height if not set (VerticalLayoutGroup will position it)
+                if (rectTransform.sizeDelta.y <= 0)
+                {
+                    rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, 50f);
+                }
+                
+                Debug.Log($"[SHEEP FLAG] Created prefab item {index} with size {rectTransform.sizeDelta}");
+                
+                // Find and setup components in the prefab
+                // Look for text component to display sheep name
+                TextMeshProUGUI[] texts = listItem.GetComponentsInChildren<TextMeshProUGUI>();
+                if (texts.Length > 0)
+                {
+                    texts[0].text = GetCustomSheepName(index); // Use custom sheep names
+                }
+                
+                // Find and setup buttons in the prefab
+                Button[] buttons = listItem.GetComponentsInChildren<Button>();
+                
+                // Setup Move button (look for button with "Move" in name or first button)
+                Button moveButton = null;
+                Button deleteButton = null;
+                
+                foreach (Button btn in buttons)
+                {
+                    if (btn.name.ToLower().Contains("move"))
+                    {
+                        moveButton = btn;
+                    }
+                    else if (btn.name.ToLower().Contains("delete") || btn.name.ToLower().Contains("remove"))
+                    {
+                        deleteButton = btn;
+                    }
+                }
+                
+                // If we couldn't find named buttons, use first two buttons
+                if (moveButton == null && buttons.Length > 0) moveButton = buttons[0];
+                if (deleteButton == null && buttons.Length > 1) deleteButton = buttons[1];
+                
+                // Connect button functionality
+                if (moveButton != null)
+                {
+                    moveButton.onClick.RemoveAllListeners();
+                    moveButton.onClick.AddListener(() => StartMovingSheepFlag(index));
+                    Debug.Log($"[SHEEP FLAG] Connected move button for item {index}");
+                }
+                
+                if (deleteButton != null)
+                {
+                    deleteButton.onClick.RemoveAllListeners();
+                    deleteButton.onClick.AddListener(() => DeleteSheepFlag(index));
+                    Debug.Log($"[SHEEP FLAG] Connected delete button for item {index}");
+                }
+            }
+            else
+            {
+                // Create a simple list item if no prefab is provided (fallback)
+                listItem = new GameObject($"SheepFlag_{index}");
+                listItem.transform.SetParent(sheepFlagListParent, false);
+                
+                // Add components for basic functionality
+                RectTransform rectTransform = listItem.AddComponent<RectTransform>();
+                rectTransform.sizeDelta = new Vector2(0, 40); // Use full width
+                rectTransform.anchorMin = new Vector2(0, 1);
+                rectTransform.anchorMax = new Vector2(1, 1);
+                rectTransform.anchoredPosition = new Vector2(0, -index * 45 - 22);
+                rectTransform.pivot = new Vector2(0.5f, 1f);
+                
+                Image background = listItem.AddComponent<Image>();
+                background.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+                
+                // Add sheep name text
+                GameObject textObj = new GameObject("Text");
+                textObj.transform.SetParent(listItem.transform, false);
+                TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
+                text.text = GetCustomSheepName(index);
+                text.fontSize = 12;
+                text.color = Color.white;
+                text.alignment = TextAlignmentOptions.Left;
+                
+                RectTransform textRect = textObj.GetComponent<RectTransform>();
+                textRect.anchorMin = new Vector2(0, 0);
+                textRect.anchorMax = new Vector2(0.6f, 1);
+                textRect.offsetMin = new Vector2(5, 0);
+                textRect.offsetMax = new Vector2(-5, 0);
+                
+                // Add move button
+                CreateListItemButton(listItem, "Move", new Vector2(0.6f, 0), new Vector2(0.8f, 1), 
+                    () => StartMovingSheepFlag(index), Color.cyan);
+                
+                // Add delete button  
+                CreateListItemButton(listItem, "Remove", new Vector2(0.8f, 0), new Vector2(1f, 1), 
+                    () => DeleteSheepFlag(index), Color.red);
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error creating sheep flag list item {index}: {e.Message}");
+        }
+    }
+
+    private void CreateListItemButton(GameObject parent, string buttonText, Vector2 anchorMin, Vector2 anchorMax, 
+        System.Action onClickAction, Color textColor)
+    {
+        GameObject buttonObj = new GameObject($"{buttonText}Button");
+        buttonObj.transform.SetParent(parent.transform, false);
+        
+        RectTransform buttonRect = buttonObj.AddComponent<RectTransform>();
+        buttonRect.anchorMin = anchorMin;
+        buttonRect.anchorMax = anchorMax;
+        buttonRect.offsetMin = new Vector2(2, 2);
+        buttonRect.offsetMax = new Vector2(-2, -2);
+        
+        Image buttonImage = buttonObj.AddComponent<Image>();
+        buttonImage.color = new Color(0.3f, 0.3f, 0.3f, 0.9f);
+        
+        Button button = buttonObj.AddComponent<Button>();
+        button.targetGraphic = buttonImage;
+        button.onClick.AddListener(() => onClickAction?.Invoke());
+        
+        GameObject textObj = new GameObject("Text");
+        textObj.transform.SetParent(buttonObj.transform, false);
+        
+        TextMeshProUGUI buttonTextComponent = textObj.AddComponent<TextMeshProUGUI>();
+        buttonTextComponent.text = buttonText;
+        buttonTextComponent.fontSize = 10;
+        buttonTextComponent.color = textColor;
+        buttonTextComponent.alignment = TextAlignmentOptions.Center;
+        
+        RectTransform textRect = textObj.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+    }
+
+    private void SelectSheepFlag(int flagIndex)
+    {
+        selectedSheepFlagIndex = flagIndex;
+        Debug.Log($"Selected sheep flag {flagIndex}");
+        
+        // Highlight the selected flag in the list (visual feedback)
+        RefreshSheepFlagList();
+    }
+
+    private void StartMovingSheepFlag(int flagIndex)
+    {
+        Debug.Log($"[SHEEP FLAG] StartMovingSheepFlag called for index {flagIndex}");
+        
+        if (barracksStructure.GetAnimalType() != "Sheep")
+        {
+            Debug.LogWarning("[SHEEP FLAG] Not a sheep barracks, aborting");
+            return;
+        }
+
+        // Check if it's daytime
+        NightManager nightManager = NightManager.Instance;
+        if (nightManager != null && !nightManager.IsDay)
+        {
+            Debug.LogWarning("[SHEEP FLAG] Cannot move sheep flags at night");
+            updateStatusText("Cannot move sheep flags at night");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
+            return;
+        }
+
+        Debug.Log($"[SHEEP FLAG] Setting up movement for sheep {flagIndex}");
+        selectedSheepFlagIndex = flagIndex;
+        isMovingSheepFlag = true;
+        isPlacingFlag = true; // Set this so Update() handles the input properly
+        
+        Debug.Log($"[SHEEP FLAG] State set - isMovingSheepFlag: {isMovingSheepFlag}, isPlacingFlag: {isPlacingFlag}");
+        
+        // Just hide the management panel without resetting state
+        if (sheepFlagManagementPanel != null)
+        {
+            sheepFlagManagementPanel.SetActive(false);
+        }
+        
+        // Show flag ghost for the specific sheep flag being moved
+        CreateFlagGhost();
+        
+        // Set persistent status message that won't be overridden
+        if (statusText != null)
+        {
+            statusText.text = $"Moving {GetCustomSheepName(flagIndex)} flag - Click to place, Right-click to cancel";
+            statusText.color = Color.cyan;
+            Debug.Log($"[SHEEP FLAG] Status text set to: {statusText.text}");
+        }
+        else
+        {
+            Debug.LogError("[SHEEP FLAG] statusText is null!");
+        }
+    }
+
+    private void HandleSheepFlagMovementInput()
+    {
+        if (selectedSheepFlagIndex < 0)
+        {
+            Debug.LogWarning("[SHEEP FLAG] HandleSheepFlagMovementInput - Invalid flag index, ending movement");
+            isMovingSheepFlag = false;
+            isPlacingFlag = false;
+            return;
+        }
+
+        // Handle mouse input for moving the flag
+        if (Input.GetMouseButtonDown(0)) // Left click to place
+        {
+            Debug.Log($"[SHEEP FLAG] Left click detected - Moving sheep flag {selectedSheepFlagIndex}");
+            MoveSheepFlagToMousePosition();
+        }
+        else if (Input.GetMouseButtonDown(1)) // Right click to cancel
+        {
+            Debug.Log($"[SHEEP FLAG] Right click detected - Cancelling sheep flag {selectedSheepFlagIndex} movement");
+            CancelSheepFlagMovement();
+        }
+    }
+
+    private void MoveSheepFlagToMousePosition()
+    {
+        Debug.Log($"[SHEEP FLAG] MoveSheepFlagToMousePosition called for flag {selectedSheepFlagIndex}");
+        
+        // Make sure we don't place on UI elements
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            Debug.Log("[SHEEP FLAG] Clicked on UI element, ignoring");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
+            return;
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
+
+        if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
+        {
+            Debug.Log($"[SHEEP FLAG] Raycast hit at position {hit.point}, calling MoveSheepFlag");
+            bool success = barracksStructure.MoveSheepFlag(selectedSheepFlagIndex, hit.point);
+            
+            Debug.Log($"[SHEEP FLAG] MoveSheepFlag result: {success}");
+            
+            if (success)
+            {
+                if (statusText != null)
+                {
+                    statusText.text = $"{GetCustomSheepName(selectedSheepFlagIndex)} flag moved successfully!";
+                    statusText.color = Color.green;
+                }
+                // Play the flag placement sound
+                if (barracksStructure != null)
+                {
+                    // Trigger the flag placement sounds from BarracksStructure
+                    var flagPlaceSound = barracksStructure.GetComponent<AudioSource>();
+                    if (flagPlaceSound != null)
+                    {
+                        flagPlaceSound.Play();
+                    }
+                }
+                
+                // Refresh the flag list immediately after moving
+                RefreshSheepFlagListIfOpen();
+            }
+            else
+            {
+                if (statusText != null)
+                {
+                    statusText.text = "Failed to move sheep flag";
+                    statusText.color = Color.red;
+                }
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayErrorSound();
+                }
+            }
+            
+            EndSheepFlagMovement();
+        }
+        else
+        {
+            Debug.Log("[SHEEP FLAG] Raycast missed ground");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
+        }
+    }
+
+    private void CancelSheepFlagMovement()
+    {
+        Debug.Log("Sheep flag movement cancelled by user");
+        if (statusText != null)
+        {
+            statusText.text = "Sheep flag movement cancelled";
+            statusText.color = Color.yellow;
+        }
+        EndSheepFlagMovement();
+    }
+
+    private void EndSheepFlagMovement()
+    {
+        Debug.Log($"[SHEEP FLAG] EndSheepFlagMovement called - cleaning up state");
+        Debug.Log($"[SHEEP FLAG] Previous state - isMovingSheepFlag: {isMovingSheepFlag}, isPlacingFlag: {isPlacingFlag}, selectedSheepFlagIndex: {selectedSheepFlagIndex}");
+        
+        isMovingSheepFlag = false;
+        isPlacingFlag = false; // Clear the placement flag
+        selectedSheepFlagIndex = -1;
+        
+        Debug.Log($"[SHEEP FLAG] State reset - isMovingSheepFlag: {isMovingSheepFlag}, isPlacingFlag: {isPlacingFlag}, selectedSheepFlagIndex: {selectedSheepFlagIndex}");
+        
+        // Clean up flag ghost
+        DestroyFlagGhost();
+        
+        // Reopen the management panel properly
+        if (sheepFlagManagementPanel != null)
+        {
+            Debug.Log("[SHEEP FLAG] Reopening sheep flag management panel");
+            sheepFlagManagementPanel.SetActive(true);
+            RefreshSheepFlagList(); // Always refresh when reopening
+        }
+        
+        // Reset status text (will be overridden by normal UI updates since isMovingSheepFlag is now false)
+        Debug.Log("[SHEEP FLAG] Movement ended, allowing normal UI updates");
+    }
+
+    private void UpdateSheepFlagMovementIndicator()
+    {
+        if (currentFlagGhost == null) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        LayerMask groundLayer = LayerMask.GetMask("Ground", "Default");
+
+        if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
+        {
+            currentFlagGhost.transform.position = hit.point;
+            currentFlagGhost.SetActive(true);
+        }
+        else
+        {
+            currentFlagGhost.SetActive(false);
+        }
+    }
+
+    private void DeleteSheepFlag(int flagIndex)
+    {
+        bool success = barracksStructure.RemoveSheepFlag(flagIndex);
+        
+        if (success)
+        {
+            updateStatusText($"{GetCustomSheepName(flagIndex)} flag removed (sheep returns to main position)");
+            RefreshSheepFlagList(); // Immediate refresh after deletion
+        }
+        else
+        {
+            updateStatusText("Failed to remove sheep flag");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
         }
     }
 }

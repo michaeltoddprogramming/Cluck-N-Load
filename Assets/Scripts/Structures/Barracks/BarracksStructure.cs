@@ -67,6 +67,9 @@ public class BarracksStructure : Structure
         nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         nightManager?.RegisterBarracksStructure(this);
 
+        synergyMaxDist = structureData.synergyMaxDist;
+        synergyMinDist = structureData.synergyMinDist;
+
         InitializeFlag();
         // Delay initial search to allow other structures to initialize
         StartCoroutine(DelayedInitialSearch(1f));  // Wait 1 second before first search
@@ -635,26 +638,58 @@ public class BarracksStructure : Structure
         }
     }
 
+    // private void UpdateRecruitmentCostByDistance()
+    // {
+    //     int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //     if (targetAnimalStructure == null)
+    //     {
+    //         recruitmentCostPerAnimal = baseCost;
+    //         return;
+    //     }
+    //     GridController gridController = FindFirstObjectByType<GridController>();
+    //     if (gridController == null)
+    //     {
+    //         recruitmentCostPerAnimal = baseCost;
+    //         return;
+    //     }
+    //     Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+    //     Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+    //     int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+    //     int minCost = (int)(baseCost * synergyDiscount);
+    //     recruitmentCostPerAnimal = gridDist <= synergyMinDist ? baseCost : minCost;
+    // }
+
     private void UpdateRecruitmentCostByDistance()
+{
+    int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    if (targetAnimalStructure == null)
     {
-        int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
-        if (targetAnimalStructure == null)
-        {
-            recruitmentCostPerAnimal = baseCost;
-            return;
-        }
-        GridController gridController = FindFirstObjectByType<GridController>();
-        if (gridController == null)
-        {
-            recruitmentCostPerAnimal = baseCost;
-            return;
-        }
-        Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
-        Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
-        int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
-        int minCost = (int)(baseCost * synergyDiscount);
-        recruitmentCostPerAnimal = gridDist <= synergyMinDist ? baseCost : minCost;
+        recruitmentCostPerAnimal = baseCost;
+        return;
     }
+
+    GridController gridController = FindFirstObjectByType<GridController>();
+    if (gridController == null)
+    {
+        recruitmentCostPerAnimal = baseCost;
+        return;
+    }
+
+    Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+    Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+    int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+
+    // Apply discount only if distance is within min and max
+    if (gridDist >= synergyMinDist && gridDist <= synergyMaxDist)
+    {
+        recruitmentCostPerAnimal = (int)(baseCost * synergyDiscount);
+    }
+    else
+    {
+        recruitmentCostPerAnimal = baseCost;
+    }
+}
+
 
     public int GetMaxAnimalCount() => maxArmyAnimals;
     public int GetAnimalCount() => ArmyAnimalCount;
@@ -724,5 +759,179 @@ public class BarracksStructure : Structure
         }
     }
 
+    // ===== SHEEP FLAG INDIVIDUAL MANAGEMENT =====
+    /// <summary>
+    /// Gets information about all sheep flags for UI display
+    /// </summary>
+    public List<SheepFlagInfo> GetSheepFlagInfo()
+    {
+        var flagInfoList = new List<SheepFlagInfo>();
+        
+        for (int i = 0; i < sheepFlags.Count && i < sheepUnits.Count; i++)
+        {
+            if (sheepFlags[i] != null && sheepUnits[i] != null)
+            {
+                flagInfoList.Add(new SheepFlagInfo
+                {
+                    flagIndex = i,
+                    flagObject = sheepFlags[i],
+                    sheepUnit = sheepUnits[i],
+                    flagPosition = sheepFlags[i].transform.position,
+                    sheepName = $"Sheep {i + 1}"
+                });
+            }
+        }
+        
+        return flagInfoList;
+    }
 
+    /// <summary>
+    /// Moves a specific sheep flag to a new position
+    /// </summary>
+    public bool MoveSheepFlag(int flagIndex, Vector3 newPosition)
+    {
+        Debug.Log($"[SHEEP FLAG] MoveSheepFlag called - flagIndex: {flagIndex}, newPosition: {newPosition}");
+        Debug.Log($"[SHEEP FLAG] sheepFlags.Count: {sheepFlags.Count}, sheepUnits.Count: {sheepUnits.Count}");
+        
+        if (flagIndex < 0 || flagIndex >= sheepFlags.Count || sheepFlags[flagIndex] == null)
+        {
+            Debug.LogWarning($"[SHEEP FLAG] Invalid sheep flag index: {flagIndex}, sheepFlags.Count: {sheepFlags.Count}");
+            return false;
+        }
+
+        // Check if it's daytime for sheep (same restrictions as placement)
+        if (targetAnimalType == "Sheep")
+        {
+            NightManager nightManager = NightManager.Instance;
+            if (nightManager != null && !nightManager.IsDay)
+            {
+                Debug.LogWarning("[SHEEP FLAG] Cannot move sheep flags at night");
+                return false;
+            }
+        }
+        
+        Debug.Log($"[SHEEP FLAG] All checks passed, moving flag {flagIndex} to {newPosition}");
+
+        // Move the flag
+        Vector3 flagPosition = newPosition;
+        float distanceToBarracks = Vector3.Distance(new Vector3(newPosition.x, 0, newPosition.z),
+                                                   new Vector3(transform.position.x, 0, transform.position.z));
+
+        // If moving very close to barracks, place on top
+        if (distanceToBarracks < 2f)
+        {
+            Vector3 topOfStructure = GetTopOfStructure();
+            flagPosition = new Vector3(transform.position.x, topOfStructure.y, transform.position.z);
+            Debug.Log($"[SHEEP FLAG] Flag {flagIndex} placed on top of structure at {flagPosition}");
+        }
+        else
+        {
+            Debug.Log($"[SHEEP FLAG] Flag {flagIndex} placed at ground position {flagPosition}");
+        }
+
+        Vector3 oldPosition = sheepFlags[flagIndex].transform.position;
+        sheepFlags[flagIndex].transform.position = flagPosition;
+        Debug.Log($"[SHEEP FLAG] Flag {flagIndex} moved from {oldPosition} to {flagPosition}");
+
+        // Update the corresponding sheep's guard position
+        if (flagIndex < sheepUnits.Count && sheepUnits[flagIndex] != null)
+        {
+            Debug.Log($"[SHEEP FLAG] Updating guard position for sheep unit {flagIndex}");
+            ArmyUnit unit = sheepUnits[flagIndex].GetComponent<ArmyUnit>();
+            if (unit != null)
+            {
+                unit.SetGuardPosition(flagPosition, protectionRadius);
+                Debug.Log($"[SHEEP FLAG] Guard position set for unit {flagIndex} at {flagPosition}");
+                if (isNightTime)
+                {
+                    unit.MoveToFlag();
+                    Debug.Log($"[SHEEP FLAG] Moving unit {flagIndex} to flag (night time)");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[SHEEP FLAG] No ArmyUnit component found for sheep {flagIndex}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[SHEEP FLAG] No corresponding sheep unit for flag {flagIndex}");
+        }
+
+        Debug.Log($"[SHEEP FLAG] MoveSheepFlag completed successfully for flag {flagIndex}");
+        return true;
+    }
+
+    /// <summary>
+    /// Removes a specific sheep flag but keeps the sheep (sheep returns to main flag)
+    /// </summary>
+    public bool RemoveSheepFlag(int flagIndex)
+    {
+        if (flagIndex < 0 || flagIndex >= sheepFlags.Count)
+        {
+            return false;
+        }
+
+        // Remove the flag
+        if (sheepFlags[flagIndex] != null)
+        {
+            Destroy(sheepFlags[flagIndex]);
+        }
+        sheepFlags.RemoveAt(flagIndex);
+
+        // Move the sheep back to the main barracks flag position instead of deleting it
+        if (flagIndex < sheepUnits.Count && sheepUnits[flagIndex] != null)
+        {
+            ArmyUnit unit = sheepUnits[flagIndex].GetComponent<ArmyUnit>();
+            if (unit != null)
+            {
+                // Set sheep to use the main barracks flag position
+                unit.SetGuardPosition(guardPosition, protectionRadius);
+                if (isNightTime)
+                {
+                    unit.MoveToFlag();
+                }
+            }
+        }
+
+        OnArmyChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>
+    /// Gets the number of placed sheep flags
+    /// </summary>
+    public int GetSheepFlagCount()
+    {
+        return sheepFlags.Count;
+    }
+
+    /// <summary>
+    /// Gets the maximum number of sheep flags that can be placed
+    /// </summary>
+    public int GetMaxSheepFlags()
+    {
+        return sheepUnits.Count;
+    }
+
+    /// <summary>
+    /// Checks if more sheep flags can be placed
+    /// </summary>
+    public bool CanPlaceMoreSheepFlags()
+    {
+        return targetAnimalType == "Sheep" && sheepFlags.Count < sheepUnits.Count;
+    }
+}
+
+/// <summary>
+/// Data structure for sheep flag information
+/// </summary>
+[System.Serializable]
+public struct SheepFlagInfo
+{
+    public int flagIndex;
+    public GameObject flagObject;
+    public GameObject sheepUnit;
+    public Vector3 flagPosition;
+    public string sheepName;
 }

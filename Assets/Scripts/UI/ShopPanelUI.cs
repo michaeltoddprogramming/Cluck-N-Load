@@ -174,7 +174,16 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 continue;
             }
 
-            itemUI.Setup(data);
+            Debug.Log($"[ShopPanelUI] About to call Setup() for {data.structureName}");
+            try
+            {
+                itemUI.Setup(data);
+                Debug.Log($"[ShopPanelUI] Setup() completed successfully for {data.structureName}");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[ShopPanelUI] Exception calling Setup() for {data.structureName}: {e.Message}\n{e.StackTrace}");
+            }
             itemsAdded++;
         }
 

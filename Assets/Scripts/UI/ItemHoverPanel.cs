@@ -91,25 +91,28 @@ public class ItemHoverPanel : MonoBehaviour
 
     public void Hide()
     {
-        if (database.type == StructureType.Animal)
+        if(database != null)
         {
-            animalHover.Hide();
-        }
-        else if(database.type == StructureType.Barracks)
-        {
-            barrackHover.Hide();
-        }
-        else if(database.type == StructureType.Silo)
-        {
-            siloHover.Hide();
-        }
-        else if(database.type == StructureType.CropPlot)
-        {
-            cropHover.Hide();
-        }
-        else
-        {
-            baseHover.Hide();
+            if (database.type == StructureType.Animal)
+            {
+                animalHover.Hide();
+            }
+            else if(database.type == StructureType.Barracks)
+            {
+                barrackHover.Hide();
+            }
+            else if(database.type == StructureType.Silo)
+            {
+                siloHover.Hide();
+            }
+            else if(database.type == StructureType.CropPlot)
+            {
+                cropHover.Hide();
+            }
+            else
+            {
+                baseHover.Hide();
+            }
         }
 
 

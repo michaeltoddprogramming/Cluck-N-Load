@@ -25,10 +25,12 @@ MonoBehaviour:
   moneyPerProduct: 50
   baseFoodRequired: 2
   foodSynergyMultiplier: 1
+  siloSynergyRange: 15
   sunflowerBaseHarvestAmount: 10
   wheatBaseHarvestAmount: 10
   carrotsBaseHarvestAmount: 10
   cropSynergyMultiplier: 1.5
+  cropSiloSynergyRange: 15
   totalPerSilo: 100
   unlockDay: 10
   targetAnimalType: Cow
@@ -39,3 +41,5 @@ MonoBehaviour:
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 50
   protectionRadius: 5
+  synergyMinDist: 20
+  synergyMaxDist: 40

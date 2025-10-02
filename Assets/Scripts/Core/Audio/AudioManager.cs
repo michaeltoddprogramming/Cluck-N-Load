@@ -12,6 +12,9 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource errorSound;
     [SerializeField] private float volume = 1.0f;
 
+    [Header("UI Sounds")]
+    [SerializeField] private AudioClip buildingSelectSound;
+
     [Header("Time Control Sounds")]
     [SerializeField] private AudioClip playSound;
     [SerializeField] private AudioClip pauseSound;
@@ -78,8 +81,17 @@ public class AudioManager : MonoBehaviour
             audioSource.PlayOneShot(insufficientFundsSound, volume);
         }
     }
+    public void PlaySelectSound()
+    {
+        if (buildingSelectSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(buildingSelectSound, volume);
+        }
+    }
+
     public void PlayErrorSound()
     {
+        Debug.Log("[AudioManager] PlayErrorSound called from: " + System.Environment.StackTrace);
         if (errorSound != null)
         {
             errorSound.Play();

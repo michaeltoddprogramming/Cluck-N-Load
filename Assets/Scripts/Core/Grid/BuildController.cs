@@ -1138,64 +1138,173 @@ public class BuildController : MonoBehaviour
         }
     }
 
+    // private void ShowSiloSynergyPreview()
+    // {
+    //     Debug.Log("here is the distance for the crop synergy: " + currentStructureData.cropSiloSynergyRange + " the current structure is: " + currentStructureData.structureName);
+    //     // Debug.Log("here is the distance for animal synergy: " + currentStructureData.cropSiloSynergyRange);
+    //     CreateRangeIndicator(currentGhost.transform.position, currentStructureData.siloSynergyRange, potentialSynergyMaterial, "Animal Synergy Range");
+    //     CreateRangeIndicator(currentGhost.transform.position, currentStructureData.cropSiloSynergyRange, potentialSynergyMaterial, "Crop Synergy Range");
+    //     // CreateRangeIndicator(currentGhost.transform.position, 15f, potentialSynergyMaterial, "Animal Synergy Range");
+    //     // CreateRangeIndicator(currentGhost.transform.position, 10f, potentialSynergyMaterial, "Crop Synergy Range");
+    //     foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
+    //         // if ((currentGhost.transform.position - animal.transform.position).sqrMagnitude <= 225f)
+    //         if ((currentGhost.transform.position - animal.transform.position).sqrMagnitude <= currentStructureData.siloSynergyRange * currentStructureData.siloSynergyRange)
+    //             CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal"); ;
+    //     foreach (var crop in FindObjectsByType<CropStructure>(FindObjectsSortMode.None))
+    //         // if (crop != null && (currentGhost.transform.position - crop.transform.position).sqrMagnitude <= 100f)
+    //         if (crop != null && (currentGhost.transform.position - crop.transform.position).sqrMagnitude <= currentStructureData.cropSiloSynergyRange * currentStructureData.cropSiloSynergyRange)
+    //             CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
+    // }
+
+    // private void ShowAnimalSynergyPreview()
+    // {
+    //     foreach (var silo in FindObjectsByType<SiloStructure>(FindObjectsSortMode.None))
+    //     {
+    //         float range = silo.structureData.siloSynergyRange;
+    //         if ((currentGhost.transform.position - silo.transform.position).sqrMagnitude <= range * range)
+    //             CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Animal");
+    //     }
+    //     AnimalStructure animalStructure = currentGhost.GetComponent<AnimalStructure>();
+    //     if (animalStructure != null)
+    //         foreach (var barrack in FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None))
+    //             if (barrack.TargetAnimalType == animalStructure.GetAnimalType.ToString())
+    //             {
+    //                 float sqrDistance = (currentGhost.transform.position - barrack.transform.position).sqrMagnitude;
+    //                 if (sqrDistance <= barrack.synergyMaxDist * barrack.synergyMaxDist)
+    //                 {
+    //                     float distance = Mathf.Sqrt(sqrDistance);
+    //                     Color lineColor = distance <= barrack.synergyMinDist ? Color.red : Color.green;
+    //                     CreateSynergyLine(currentGhost.transform.position, barrack.transform.position, lineColor, $"Barracks-{animalStructure.GetAnimalType}");
+    //                 }
+    //             }
+    // }
+
+    // private void ShowBarracksSynergyPreview()
+    // {
+    //     BarracksStructure barracksStructure = currentGhost.GetComponent<BarracksStructure>();
+    //     if (barracksStructure == null) return;
+    //     string targetType = barracksStructure.TargetAnimalType;
+    //     CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMinDist, validSynergyMaterial, "Optimal Synergy Range");
+    //     CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMaxDist, potentialSynergyMaterial, "Maximum Synergy Range");
+    //     foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
+    //         if (animal.GetAnimalType.ToString() == targetType)
+    //         {
+    //             float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
+    //             if (sqrDistance <= barracksStructure.synergyMaxDist * barracksStructure.synergyMaxDist)
+    //             {
+    //                 float distance = Mathf.Sqrt(sqrDistance);
+    //                 Color lineColor = distance <= barracksStructure.synergyMinDist ? Color.red : Color.green;
+    //                 CreateSynergyLine(currentGhost.transform.position, animal.transform.position, lineColor, $"Barracks-{targetType}");
+    //             }
+    //         }
+    // }
+
+    // private void ShowCropSynergyPreview()
+    // {
+    //     foreach (var silo in FindObjectsByType<SiloStructure>(FindObjectsSortMode.None))
+    //         // if (silo != null && (currentGhost.transform.position - silo.transform.position).sqrMagnitude <= 100f)
+    //         if (silo != null && (currentGhost.transform.position - silo.transform.position).sqrMagnitude <=  currentStructureData.cropSiloSynergyRange * currentStructureData.cropSiloSynergyRange)
+    //             CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Crop");
+    // }
+
     private void ShowSiloSynergyPreview()
+{
+    Debug.Log("here is the distance for the crop synergy: " + currentStructureData.cropSiloSynergyRange + " the current structure is: " + currentStructureData.structureName);
+
+    // Draw circles still in world space
+    CreateRangeIndicator(currentGhost.transform.position, currentStructureData.siloSynergyRange * gridController.GetCellSize(), potentialSynergyMaterial, "Animal Synergy Range");
+    CreateRangeIndicator(currentGhost.transform.position, currentStructureData.cropSiloSynergyRange * gridController.GetCellSize(), potentialSynergyMaterial, "Crop Synergy Range");
+
+    Vector2Int ghostCell = gridController.WorldToGridCoords(currentGhost.transform.position);
+
+    foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
     {
-        CreateRangeIndicator(currentGhost.transform.position, 15f, potentialSynergyMaterial, "Animal Synergy Range");
-        CreateRangeIndicator(currentGhost.transform.position, 10f, potentialSynergyMaterial, "Crop Synergy Range");
-        foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
-            if ((currentGhost.transform.position - animal.transform.position).sqrMagnitude <= 225f)
-                CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal"); ;
-        foreach (var crop in FindObjectsByType<CropStructure>(FindObjectsSortMode.None))
-            if (crop != null && (currentGhost.transform.position - crop.transform.position).sqrMagnitude <= 100f)
-                CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
+        Vector2Int animalCell = gridController.WorldToGridCoords(animal.transform.position);
+        if (GridDistance(ghostCell, animalCell) <= currentStructureData.siloSynergyRange)
+            CreateSynergyLine(currentGhost.transform.position, animal.transform.position, Color.green, "Silo-Animal");
     }
 
-    private void ShowAnimalSynergyPreview()
+    foreach (var crop in FindObjectsByType<CropStructure>(FindObjectsSortMode.None))
     {
-        foreach (var silo in FindObjectsByType<SiloStructure>(FindObjectsSortMode.None))
-            if ((currentGhost.transform.position - silo.transform.position).sqrMagnitude <= 225f)
-                CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Animal");
-        AnimalStructure animalStructure = currentGhost.GetComponent<AnimalStructure>();
-        if (animalStructure != null)
-            foreach (var barrack in FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None))
-                if (barrack.TargetAnimalType == animalStructure.GetAnimalType.ToString())
-                {
-                    float sqrDistance = (currentGhost.transform.position - barrack.transform.position).sqrMagnitude;
-                    if (sqrDistance <= barrack.synergyMaxDist * barrack.synergyMaxDist)
-                    {
-                        float distance = Mathf.Sqrt(sqrDistance);
-                        Color lineColor = distance <= barrack.synergyMinDist ? Color.red : Color.green;
-                        CreateSynergyLine(currentGhost.transform.position, barrack.transform.position, lineColor, $"Barracks-{animalStructure.GetAnimalType}");
-                    }
-                }
+        Vector2Int cropCell = gridController.WorldToGridCoords(crop.transform.position);
+        if (GridDistance(ghostCell, cropCell) <= currentStructureData.cropSiloSynergyRange)
+            CreateSynergyLine(currentGhost.transform.position, crop.transform.position, Color.green, "Silo-Crop");
+    }
+}
+
+private void ShowAnimalSynergyPreview()
+{
+    Vector2Int ghostCell = gridController.WorldToGridCoords(currentGhost.transform.position);
+
+    foreach (var silo in FindObjectsByType<SiloStructure>(FindObjectsSortMode.None))
+    {
+        Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
+        if (GridDistance(ghostCell, siloCell) <= silo.structureData.siloSynergyRange)
+            CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Animal");
     }
 
-    private void ShowBarracksSynergyPreview()
+    AnimalStructure animalStructure = currentGhost.GetComponent<AnimalStructure>();
+    if (animalStructure != null)
     {
-        BarracksStructure barracksStructure = currentGhost.GetComponent<BarracksStructure>();
-        if (barracksStructure == null) return;
-        string targetType = barracksStructure.TargetAnimalType;
-        CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMinDist, validSynergyMaterial, "Optimal Synergy Range");
-        CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMaxDist, potentialSynergyMaterial, "Maximum Synergy Range");
-        foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
-            if (animal.GetAnimalType.ToString() == targetType)
+        foreach (var barrack in FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None))
+        {
+            if (barrack.TargetAnimalType == animalStructure.GetAnimalType.ToString())
             {
-                float sqrDistance = (currentGhost.transform.position - animal.transform.position).sqrMagnitude;
-                if (sqrDistance <= barracksStructure.synergyMaxDist * barracksStructure.synergyMaxDist)
+                Vector2Int barrackCell = gridController.WorldToGridCoords(barrack.transform.position);
+                int dist = GridDistance(ghostCell, barrackCell);
+
+                if (dist <= barrack.synergyMaxDist)
                 {
-                    float distance = Mathf.Sqrt(sqrDistance);
-                    Color lineColor = distance <= barracksStructure.synergyMinDist ? Color.red : Color.green;
-                    CreateSynergyLine(currentGhost.transform.position, animal.transform.position, lineColor, $"Barracks-{targetType}");
+                    Color lineColor = dist <= barrack.synergyMinDist ? Color.red : Color.green;
+                    CreateSynergyLine(currentGhost.transform.position, barrack.transform.position, lineColor, $"Barracks-{animalStructure.GetAnimalType}");
                 }
             }
+        }
     }
+}
 
-    private void ShowCropSynergyPreview()
+private void ShowBarracksSynergyPreview()
+{
+    BarracksStructure barracksStructure = currentGhost.GetComponent<BarracksStructure>();
+    if (barracksStructure == null) return;
+
+    string targetType = barracksStructure.TargetAnimalType;
+
+    CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMinDist * gridController.GetCellSize(), validSynergyMaterial, "Optimal Synergy Range");
+    CreateRangeIndicator(currentGhost.transform.position, barracksStructure.synergyMaxDist * gridController.GetCellSize(), potentialSynergyMaterial, "Maximum Synergy Range");
+
+    Vector2Int ghostCell = gridController.WorldToGridCoords(currentGhost.transform.position);
+
+    foreach (var animal in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
     {
-        foreach (var silo in FindObjectsByType<SiloStructure>(FindObjectsSortMode.None))
-            if (silo != null && (currentGhost.transform.position - silo.transform.position).sqrMagnitude <= 100f)
-                CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Crop");
+        if (animal.GetAnimalType.ToString() == targetType)
+        {
+            Vector2Int animalCell = gridController.WorldToGridCoords(animal.transform.position);
+            int dist = GridDistance(ghostCell, animalCell);
+
+            if (dist <= barracksStructure.synergyMaxDist)
+            {
+                Color lineColor = dist <= barracksStructure.synergyMinDist ? Color.red : Color.green;
+                CreateSynergyLine(currentGhost.transform.position, animal.transform.position, lineColor, $"Barracks-{targetType}");
+            }
+        }
     }
+}
+
+private void ShowCropSynergyPreview()
+{
+    Vector2Int ghostCell = gridController.WorldToGridCoords(currentGhost.transform.position);
+
+    foreach (var silo in FindObjectsByType<SiloStructure>(FindObjectsSortMode.None))
+    {
+        Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
+        if (GridDistance(ghostCell, siloCell) <= currentStructureData.cropSiloSynergyRange)
+            CreateSynergyLine(currentGhost.transform.position, silo.transform.position, Color.green, "Silo-Crop");
+    }
+}
+
+
+
 
     private GameObject CreateRangeIndicator(Vector3 position, float radius, Material material, string label = "")
     {
@@ -1256,20 +1365,25 @@ public class BuildController : MonoBehaviour
     private void ShowSynergyText(Vector3 position, string text, Color color)
     {
         if (string.IsNullOrEmpty(text)) return;
+
         GameObject textObj = new GameObject("SynergyText");
-        textObj.transform.position = new Vector3(position.x, position.y + 1f, position.z);
+
+        textObj.transform.position = new Vector3(position.x, position.y + 5f, position.z);
+
         TextMesh textMesh = textObj.AddComponent<TextMesh>();
         textMesh.text = text;
         textMesh.color = color;
-        textMesh.fontSize = 32;
-        textMesh.characterSize = 0.1f;
+        textMesh.fontSize = 50;        // internal font size
+        textMesh.characterSize = 0.2f;   // world-space scale
+
+        // textMesh.characterSize = 0.1f;
         textMesh.alignment = TextAlignment.Center;
         textMesh.anchor = TextAnchor.MiddleCenter;
         MeshRenderer renderer = textObj.GetComponent<MeshRenderer>();
         renderer.material.shader = Shader.Find("GUI/Text Shader");
 
         // Create a simple billboard script to make text face camera
-        // textObj.AddComponent<SimpleBillboard>();
+        textObj.AddComponent<SimpleBillboard>();
 
         // Add to synergy indicators for cleanup
         synergyIndicators.Add(textObj);
@@ -1279,8 +1393,8 @@ public class BuildController : MonoBehaviour
     {
         if (color == Color.green)
         {
-            if (synergyType.Contains("Silo-Animal")) return "+20% Food Efficiency";
-            if (synergyType.Contains("Silo-Crop")) return "+50% Yield";
+            if (synergyType.Contains("Silo-Animal")) return "20% Less Food Needed";
+            if (synergyType.Contains("Silo-Crop")) return "+50% Harvest";
             if (synergyType.Contains("Barracks")) return "20% Discount on Recruitment";
         }
         else if (color == Color.red) return "No Discount on Recruitment";
@@ -1295,6 +1409,30 @@ public class BuildController : MonoBehaviour
         synergyLines.Clear();
         activeSynergyLines.Clear();
     }
+
+    private int GridDistance(Vector2Int a, Vector2Int b)
+{
+    int dx = a.x - b.x;
+    int dy = a.y - b.y;
+    return Mathf.RoundToInt(Mathf.Sqrt(dx * dx + dy * dy));
+}
+
+
+
+
+
+
+
+
+    // private void ClearSynergyVisualization()
+    // {
+    //     foreach (var indicator in synergyIndicators) if (indicator != null) Destroy(indicator);
+    //     synergyIndicators.Clear();
+    //     foreach (var line in synergyLines) if (line != null && line.gameObject != null) Destroy(line.gameObject);
+    //     synergyLines.Clear();
+    //     activeSynergyLines.Clear();
+    // }
+
 
     void UpdateGhostPositionForMove()
     {

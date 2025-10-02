@@ -24,10 +24,12 @@ MonoBehaviour:
   moneyPerProduct: 60
   baseFoodRequired: 2
   foodSynergyMultiplier: 0.8
+  siloSynergyRange: 20
   sunflowerBaseHarvestAmount: 10
   wheatBaseHarvestAmount: 10
   carrotsBaseHarvestAmount: 10
   cropSynergyMultiplier: 1.5
+  cropSiloSynergyRange: 15
   totalPerSilo: 100
   unlockDay: 5
   targetAnimalType: 
@@ -38,3 +40,5 @@ MonoBehaviour:
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 200
   protectionRadius: 5
+  synergyMinDist: 20
+  synergyMaxDist: 30

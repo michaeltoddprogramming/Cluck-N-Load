@@ -19,12 +19,15 @@ public class StructureData : ScriptableObject
     public int moneyPerProduct = 50;
     public int baseFoodRequired = 2;
     public float foodSynergyMultiplier = 1f;
+    public float siloSynergyRange = 15f;
+    
 
     [Header("Crop stats")]
     public float sunflowerBaseHarvestAmount = 10f;
     public float wheatBaseHarvestAmount = 10f;
     public float carrotsBaseHarvestAmount = 10f;
     public float cropSynergyMultiplier = 1.5f;
+    public float cropSiloSynergyRange = 15f;
 
     [Header("Silo stats")]
     public int totalPerSilo = 100;
@@ -48,6 +51,8 @@ public class StructureData : ScriptableObject
     public int recruitmentCostPerAnimal = 50;
     [Tooltip("Radius for army animals to patrol around the flag.")]
     public float protectionRadius = 5f;
+    public float synergyMinDist = 20f;
+    public float synergyMaxDist = 30f;
 }
 
 public enum StructureType

@@ -84,6 +84,8 @@ public class AnimalStructure : Structure
         productionSettings.baseFoodRequired = data.baseFoodRequired;
         synergyFoodRequired = data.foodSynergyMultiplier;
 
+        siloSynergyRange = data.siloSynergyRange;
+
 
         // Register with static list for efficient lookups
         allAnimalStructures.Add(this);

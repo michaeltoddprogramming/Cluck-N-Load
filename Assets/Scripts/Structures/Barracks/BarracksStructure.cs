@@ -67,6 +67,9 @@ public class BarracksStructure : Structure
         nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         nightManager?.RegisterBarracksStructure(this);
 
+        synergyMaxDist = structureData.synergyMaxDist;
+        synergyMinDist = structureData.synergyMinDist;
+
         InitializeFlag();
         // Delay initial search to allow other structures to initialize
         StartCoroutine(DelayedInitialSearch(1f));  // Wait 1 second before first search

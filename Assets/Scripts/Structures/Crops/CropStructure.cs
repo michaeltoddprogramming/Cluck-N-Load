@@ -55,6 +55,7 @@ public class CropStructure : Structure
     {
         base.Start();
         data = GetData();
+        multiplierRange = data.cropSiloSynergyRange;
         if (currentCropType == CropType.Carrots)
         {
             baseCropHarvestAmount = data.carrotsBaseHarvestAmount;

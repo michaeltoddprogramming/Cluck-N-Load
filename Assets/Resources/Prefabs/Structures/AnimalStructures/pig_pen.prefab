@@ -343,7 +343,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawningLocation: {fileID: 893578192223190635}
   floorParent: {fileID: 8186721383650232557}
-  data: {fileID: 11400000, guid: 850bf9057bb5c9441abe5cc784f0c61f, type: 2}
+  data: {fileID: 11400000, guid: 344ea70912ec0724db495027a2bcfb19, type: 2}
 --- !u!1 &893578192223190635
 GameObject:
   m_ObjectHideFlags: 0

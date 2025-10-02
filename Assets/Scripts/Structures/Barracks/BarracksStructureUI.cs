@@ -310,7 +310,7 @@ public class BarracksStructureUI : BaseStructureUI
         if (placeFlagButton != null)
         {
             placeFlagButton.interactable = false;
-            placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
+            // placeFlagButton.GetComponentInChildren<TextMeshProUGUI>().text = "Placing...";
         }
         if (flagPlacementIndicator != null) flagPlacementIndicator.SetActive(true);
         

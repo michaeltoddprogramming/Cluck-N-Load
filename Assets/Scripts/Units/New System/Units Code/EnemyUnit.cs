@@ -490,7 +490,7 @@ public class EnemyUnit : BaseUnit
         float attackRange = 2f; // see helper below
 
         // Debug info (remove or lower verbosity later)
-        Debug.Log($"{name} -> {currentTarget.name} distToSurface={distToTargetSurface:F2} attackRange={attackRange:F2} agent.remaining={agent.remainingDistance:F2} agent.stop={agent.stoppingDistance:F2}");
+        // Debug.Log($"{name} -> {currentTarget.name} distToSurface={distToTargetSurface:F2} attackRange={attackRange:F2} agent.remaining={agent.remainingDistance:F2} agent.stop={agent.stoppingDistance:F2}");
 
         // If the wolf has its own collider and you want precise edge-to-edge, you could optionally subtract
         // the wolf's 'radius'. In most cases using distToTargetSurface <= attackRange is fine.

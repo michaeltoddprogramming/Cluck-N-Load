@@ -645,10 +645,10 @@ public class NightManager : MonoBehaviour
         }
         else if (value == 20 && hours == 5)
         {
-            print("CRITICAL: Year transition triggered at Day 20, Hour 5");
-            UnityEngine.Debug.LogError($"YEAR TRANSITION: Day 20, hour 5 detected! About to increment year from {years} to {years + 1}");
-            Debug.Log("Day 20, hour 5 - triggering year transition");
-            Debug.Log($"Before year transition: years={years}, days={days}, hours={hours}");
+            // print("CRITICAL: Year transition triggered at Day 20, Hour 5");
+            // UnityEngine.Debug.LogError($"YEAR TRANSITION: Day 20, hour 5 detected! About to increment year from {years} to {years + 1}");
+            // Debug.Log("Day 20, hour 5 - triggering year transition");
+            // Debug.Log($"Before year transition: years={years}, days={days}, hours={hours}");
             // StartNotification("Night starting soon!!", 5f);
 
             if (yearAudioSource != null)

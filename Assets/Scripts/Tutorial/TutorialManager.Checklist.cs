@@ -16,7 +16,7 @@ public partial class TutorialManager
         { "Building", new[] { "open_build_shop", "build_farmhouse", "build_crop_plot", "build_silo" } },
         { "Markets & Strategy", new[] { "price_panel_tutorial", "price_panel_explanation", "synergy_explanation" } },
         { "Farming", new[] { "plant_first_crop", "harvest_first_crops" } },
-        { "Animals", new[] { "build_chicken_coop", "build_chicken_barracks", "buy_chickens", "feed_chickens", "collect_eggs" } },
+        { "Animals", new[] { "build_chicken_coop", "build_chicken_barracks", "explain_coop_ui", "buy_chickens", "feed_chickens", "collect_eggs" } },
         { "Defense", new[] { "recruit_soldiers", "build_first_hay_bale", "build_wall_chain", "place_flag", "prepare_defense" } },
     };
 

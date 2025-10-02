@@ -106,6 +106,12 @@ public class BarracksStructureUI : BaseStructureUI
             RefreshSheepFlagListIfOpen();
         }; // Auto-update sheep flag panel
 
+        // Trigger tutorial when barracks UI is opened for the first time
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            TutorialManager.Instance.Trigger(TutorialTrigger.BarracksUIOpened);
+        }
+
         setUpStats();
 
         if (recruitButton != null)

@@ -390,6 +390,15 @@ public class AnimalStructure : Structure
         }
     }
 
+    public void OnMoved()
+    {
+        CivilianSpawner spawner = GetComponentInChildren<CivilianSpawner>();
+        if (spawner != null)
+        {
+            spawner.RespawnAnimals();
+        }
+    }
+
     public void OnNewDay()
     {
         if (isProducing && animalCount > 0)
@@ -449,6 +458,10 @@ public class AnimalStructure : Structure
         {
             int previousCount = animalCount;
             animalCount -= amount;
+
+            CivilianSpawner spawner = GetComponentInChildren<CivilianSpawner>();
+            if (spawner != null)
+                spawner.DespawnAnimals(animalCount);
             
             // Only reset production state if ALL animals are recruited away
             if (animalCount <= 0)

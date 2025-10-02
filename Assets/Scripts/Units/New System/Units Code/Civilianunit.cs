@@ -7,6 +7,9 @@ public class CivilianUnit : MonoBehaviour
     [SerializeField] private CivilianData data;
     [SerializeField] private Animator animator;
 
+    public CivilianSpawner spawner; // assign on spawn
+
+
     public float speed;
     public float minWait;
     public float maxWait;
@@ -64,6 +67,20 @@ public class CivilianUnit : MonoBehaviour
         PickNewTarget();
         rb.MovePosition(new Vector3(transform.position.x, spawnY, transform.position.z));
         StartCoroutine(WanderRoutine());
+    }
+
+    void DespawnAndRespawn()
+    {
+        if (spawner != null)
+        {
+            // Tell spawner to remove this civilian
+            spawner.RemoveSpecificAnimal(gameObject);
+
+            // Spawn a new civilian using spawner
+            spawner.SpawnSingleAnimal();
+        }
+
+        Destroy(gameObject); // remove this one
     }
 
     Vector3 GetRandomPointOnPanel(MeshCollider pane)
@@ -141,8 +158,12 @@ public class CivilianUnit : MonoBehaviour
                 }
                 else
                 {
-                    PickNewTarget();
-                    break;
+                    // PickNewTarget();
+                    // break;
+
+                    // If outside the pane, respawn
+                    DespawnAndRespawn();
+                    yield break;
                 }
 
                 yield return new WaitForFixedUpdate();

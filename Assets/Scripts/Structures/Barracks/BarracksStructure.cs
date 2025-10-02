@@ -638,26 +638,58 @@ public class BarracksStructure : Structure
         }
     }
 
+    // private void UpdateRecruitmentCostByDistance()
+    // {
+    //     int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    //     if (targetAnimalStructure == null)
+    //     {
+    //         recruitmentCostPerAnimal = baseCost;
+    //         return;
+    //     }
+    //     GridController gridController = FindFirstObjectByType<GridController>();
+    //     if (gridController == null)
+    //     {
+    //         recruitmentCostPerAnimal = baseCost;
+    //         return;
+    //     }
+    //     Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+    //     Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+    //     int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+    //     int minCost = (int)(baseCost * synergyDiscount);
+    //     recruitmentCostPerAnimal = gridDist <= synergyMinDist ? baseCost : minCost;
+    // }
+
     private void UpdateRecruitmentCostByDistance()
+{
+    int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+    if (targetAnimalStructure == null)
     {
-        int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
-        if (targetAnimalStructure == null)
-        {
-            recruitmentCostPerAnimal = baseCost;
-            return;
-        }
-        GridController gridController = FindFirstObjectByType<GridController>();
-        if (gridController == null)
-        {
-            recruitmentCostPerAnimal = baseCost;
-            return;
-        }
-        Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
-        Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
-        int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
-        int minCost = (int)(baseCost * synergyDiscount);
-        recruitmentCostPerAnimal = gridDist <= synergyMinDist ? baseCost : minCost;
+        recruitmentCostPerAnimal = baseCost;
+        return;
     }
+
+    GridController gridController = FindFirstObjectByType<GridController>();
+    if (gridController == null)
+    {
+        recruitmentCostPerAnimal = baseCost;
+        return;
+    }
+
+    Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+    Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+    int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+
+    // Apply discount only if distance is within min and max
+    if (gridDist >= synergyMinDist && gridDist <= synergyMaxDist)
+    {
+        recruitmentCostPerAnimal = (int)(baseCost * synergyDiscount);
+    }
+    else
+    {
+        recruitmentCostPerAnimal = baseCost;
+    }
+}
+
 
     public int GetMaxAnimalCount() => maxArmyAnimals;
     public int GetAnimalCount() => ArmyAnimalCount;

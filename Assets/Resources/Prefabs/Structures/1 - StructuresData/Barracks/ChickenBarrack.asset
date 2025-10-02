@@ -40,5 +40,5 @@ MonoBehaviour:
   maxArmyAnimals: 5
   recruitmentCostPerAnimal: 20
   protectionRadius: 5
-  synergyMinDist: 20
-  synergyMaxDist: 40
+  synergyMinDist: 15
+  synergyMaxDist: 20

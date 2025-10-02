@@ -24,5 +24,5 @@ public enum TutorialTrigger
     BuiltChickenBarracks, BuiltCowBarracks, BuiltSheepBarracks, BuiltGoatBarracks, BuiltPigBarracks,
     BoughtFirstAnimals, Bought5CivilianAnimals, FedFirstAnimals, CollectedFirstProducts, RecruitedFirstSoldiers, Recruited3ArmyAnimals, BuiltFirstWall, BuiltFirstHayBale, Built10HayBales, PlacedFirstFlag,
     InputDetected, SpringSeason, SummerSeason, FallSeason, WinterSeason, AnimalProductionBoosted, PricePanelOpened, PricePanelClosed,
-    MelonyFound, MelonyMovementTest, MelonyZoomTest, MelonyRotateTest
+    MelonyFound, MelonyMovementTest, MelonyZoomTest, MelonyRotateTest, BarracksUIOpened
 }

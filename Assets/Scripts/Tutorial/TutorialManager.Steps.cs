@@ -245,13 +245,89 @@ public partial class TutorialManager
         });
         steps.Add(pricePanelStep);
 
-        steps.Add(new TutorialStep
+        var pricePanelExplanationStep = new TutorialStep
         {
             stepId = "price_panel_explanation",
             title = "Market Intelligence",
             instructionText = "See the numbers? <color=cyan>Left</color> shows your <color=yellow>inventory</color>, <color=cyan>right</color> shows <color=gold>current prices</color>! <color=green>Green %</color> means <color=orange>seasonal bonus</color>. Close when done!",
             triggerToWaitFor = TutorialTrigger.PricePanelClosed
+        };
+        pricePanelExplanationStep.onStepStart = new UnityEvent();
+        pricePanelExplanationStep.onStepStart.AddListener(() =>
+        {
+            // Find and highlight the close button on the price panel
+            GameObject closeBtn = null;
+            
+            // Try multiple methods to find the close button
+            PricePanelUI pricePanelUI = FindFirstObjectByType<PricePanelUI>();
+            if (pricePanelUI != null)
+            {
+                // Search within the price panel for common button names
+                Transform[] children = pricePanelUI.GetComponentsInChildren<Transform>(true);
+                foreach (Transform child in children)
+                {
+                    if (child.name.ToLower().Contains("close") || 
+                        child.name.ToLower().Contains("red") ||
+                        child.name == "redBtn" ||
+                        child.name == "CloseButton")
+                    {
+                        closeBtn = child.gameObject;
+                        Debug.Log($"Found close button: {child.name}");
+                        break;
+                    }
+                }
+            }
+            
+            // Fallback: try direct GameObject.Find
+            if (closeBtn == null)
+            {
+                closeBtn = GameObject.Find("redBtn");
+            }
+            
+            if (closeBtn != null)
+            {
+                HighlightUIWithoutArrow(closeBtn, true);
+                Debug.Log($"Highlighting close button: {closeBtn.name}");
+            }
+            else
+            {
+                Debug.LogWarning("Could not find price panel close button to highlight!");
+            }
         });
+        pricePanelExplanationStep.onStepComplete = new UnityEvent();
+        pricePanelExplanationStep.onStepComplete.AddListener(() =>
+        {
+            // Clear highlight from the close button
+            GameObject closeBtn = null;
+            
+            PricePanelUI pricePanelUI = FindFirstObjectByType<PricePanelUI>();
+            if (pricePanelUI != null)
+            {
+                Transform[] children = pricePanelUI.GetComponentsInChildren<Transform>(true);
+                foreach (Transform child in children)
+                {
+                    if (child.name.ToLower().Contains("close") || 
+                        child.name.ToLower().Contains("red") ||
+                        child.name == "redBtn" ||
+                        child.name == "CloseButton")
+                    {
+                        closeBtn = child.gameObject;
+                        break;
+                    }
+                }
+            }
+            
+            if (closeBtn == null)
+            {
+                closeBtn = GameObject.Find("redBtn");
+            }
+            
+            if (closeBtn != null)
+            {
+                HighlightUIWithoutArrow(closeBtn, false);
+            }
+        });
+        steps.Add(pricePanelExplanationStep);
 
         steps.Add(new TutorialStep
         {
@@ -326,6 +402,23 @@ public partial class TutorialManager
             HighlightBuyAnimalsButton();
         });
         steps.Add(buyChickensStep);
+
+        // Explain the Chicken Barracks UI when player opens it (AFTER buying chickens)
+        var explainBarracksUIStep = new TutorialStep
+        {
+            stepId = "explain_coop_ui",
+            title = "Understanding Barracks",
+            instructionText = "<color=yellow>Civilians</color> = recruits from <color=orange>Coop</color>. <color=red>Army</color> = trained soldiers. <color=red>Recruit</color> button trains them. <color=cyan>Place Flag</color> = defense position!",
+            triggerToWaitFor = TutorialTrigger.None
+        };
+        explainBarracksUIStep.onStepStart = new UnityEvent();
+        explainBarracksUIStep.onStepStart.AddListener(() =>
+        {
+            HighlightLastBuiltStructure("ChickenBarracks");
+            // Auto-advance after player has time to read (about 8 seconds)
+            StartCoroutine(AutoAdvanceAfterDelay(8f));
+        });
+        steps.Add(explainBarracksUIStep);
 
         steps.Add(new TutorialStep
         {
@@ -1316,5 +1409,36 @@ public partial class TutorialManager
         Trigger(triggerToFire);
 
         Debug.Log($"Melony found for task: {currentMelonyTask}! Player demonstrated {currentMelonyTask} controls.");
+    }
+
+    private IEnumerator AutoAdvanceAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Auto-advance to next step
+        if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
+        {
+            var currentStep = steps[currentStepIndex];
+            
+            // Mark step as complete if it has a stepId
+            if (!string.IsNullOrEmpty(currentStep.stepId))
+            {
+                MarkStepComplete(currentStep.stepId);
+            }
+            
+            // Clear any highlights
+            if (currentStep.uiToHighlight != null)
+            {
+                HighlightUI(currentStep.uiToHighlight, false);
+            }
+            
+            waitingForStepToComplete = false;
+            lastStepCompletionTime = Time.realtimeSinceStartup;
+            
+            if (!isProcessingStep)
+            {
+                StartCoroutine(DelayedNextStep());
+            }
+        }
     }
 }

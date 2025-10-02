@@ -91,6 +91,12 @@ public class BarracksStructureUI : BaseStructureUI
 
         barracksStructure.OnArmyChanged += UpdateUI;
 
+        // Trigger tutorial when barracks UI is opened for the first time
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            TutorialManager.Instance.Trigger(TutorialTrigger.BarracksUIOpened);
+        }
+
         setUpStats();
 
         if (recruitButton != null)

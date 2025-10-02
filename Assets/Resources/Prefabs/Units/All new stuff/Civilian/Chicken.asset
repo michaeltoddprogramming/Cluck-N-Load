@@ -15,6 +15,6 @@ MonoBehaviour:
   UnitName: Civilian Chicken
   Prefab: {fileID: 8637256727808660261, guid: 5559a52a0269dfa4284f882352f51853, type: 3}
   MovementSpeed: 3
-  minWait: 1
-  maxWait: 3
+  minWait: 3
+  maxWait: 10
   stopThreshold: 0.2

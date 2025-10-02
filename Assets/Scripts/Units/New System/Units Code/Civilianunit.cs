@@ -1,17 +1,23 @@
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
+[RequireComponent(typeof(Rigidbody))]
 public class CivilianUnit : MonoBehaviour
 {
     [SerializeField] private CivilianData data;
     [SerializeField] private Animator animator;
+
+    public CivilianSpawner spawner; // assign on spawn
+
 
     public float speed;
     public float minWait;
     public float maxWait;
     public float stopThreshold;
     public float spawnY;
+
+    float stuckTimer = 0f;
+    float stuckThreshold = 3f; // seconds before picking a new target
 
     private Rigidbody rb;
     private Vector3 target;
@@ -22,6 +28,11 @@ public class CivilianUnit : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+
+        if (!TryGetComponent<Collider>(out _))
+        {
+            Debug.LogWarning($"{name} has no collider! Please add a BoxCollider or CapsuleCollider.");
+        }
 
         // Freeze rotations, lock Y position
         rb.constraints = RigidbodyConstraints.FreezeRotationX |
@@ -66,6 +77,20 @@ public class CivilianUnit : MonoBehaviour
         StartCoroutine(WanderRoutine());
     }
 
+    void DespawnAndRespawn()
+    {
+        if (spawner != null)
+        {
+            // Tell spawner to remove this civilian
+            spawner.RemoveSpecificAnimal(gameObject);
+
+            // Spawn a new civilian using spawner
+            spawner.SpawnSingleAnimal();
+        }
+
+        Destroy(gameObject); // remove this one
+    }
+
     Vector3 GetRandomPointOnPanel(MeshCollider pane)
     {
         Mesh mesh = pane.sharedMesh;
@@ -102,51 +127,198 @@ public class CivilianUnit : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(dir);
     }
 
+//     IEnumerator WanderRoutine()
+//     {
+//         while (true)
+//         {
+// #if UNITY_EDITOR
+//             Debug.DrawLine(rb.position, target, Color.red, 1f);
+// #endif
+//             Vector3 flatTarget = new Vector3(target.x, 0f, target.z);
+
+//             while (Vector3.Distance(new Vector3(rb.position.x, 0f, rb.position.z), flatTarget) > stopThreshold)
+//             {
+//                 Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
+//                 Vector3 moveDir = (flatTarget - flatPos).normalized;
+
+//                 float step = speed * Time.fixedDeltaTime;
+//                 Vector3 nextPos = rb.position + moveDir * step;
+//                 nextPos.y = spawnY;
+
+//                 Ray ray = new Ray(nextPos + Vector3.up * 5f, Vector3.down);
+//                 if (currentPane.Raycast(ray, out RaycastHit hit, 10f))
+//                 {
+//                     nextPos = hit.point;
+//                     nextPos.y = spawnY;
+
+//                     float distanceMoved = Vector3.Distance(rb.position, nextPos);
+//                     if (distanceMoved < 0.001f)
+//                         stuckTimer += Time.fixedDeltaTime; // not moving, increase timer
+//                     else
+//                         stuckTimer = 0f; // reset if moving
+
+//                     rb.MovePosition(nextPos);
+
+//                     // Set walking speed for animation
+//                     // animator.SetFloat("speed", speed);
+//                     float currentSpeed = ((nextPos - rb.position) / Time.fixedDeltaTime).magnitude;
+//                     animator.SetFloat("speed", currentSpeed);
+
+//                     // Reset idle choice if moving
+//                     if (isChoosingIdle)
+//                     {
+//                         animator.SetBool("isFeeding", false);
+//                         animator.SetBool("isSleeping", false);
+//                         isChoosingIdle = false;
+//                     }
+//                 }
+//                 else
+//                 {
+//                     // PickNewTarget();
+//                     // break;
+
+//                     // If outside the pane, respawn
+//                     DespawnAndRespawn();
+//                     yield break;
+//                 }
+
+//                 yield return new WaitForFixedUpdate();
+//             }
+
+//             // Stopped → pick idle/eat/sleep
+//             animator.SetFloat("speed", 0f);
+//             if (!isChoosingIdle)
+//             {
+//                 isChoosingIdle = true;
+//                 StartCoroutine(PickIdleAnimation());
+//             }
+
+//             yield return new WaitForSeconds(Random.Range(minWait, maxWait));
+//             PickNewTarget();
+//         }
+//     }
+
     IEnumerator WanderRoutine()
     {
         while (true)
         {
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
             Debug.DrawLine(rb.position, target, Color.red, 1f);
-#endif
+    #endif
             Vector3 flatTarget = new Vector3(target.x, 0f, target.z);
+            stuckTimer = 0f; // reset timer when starting new target
 
-            while (Vector3.Distance(new Vector3(rb.position.x, 0f, rb.position.z), flatTarget) > stopThreshold)
+            // while (Vector3.Distance(new Vector3(rb.position.x, 0f, rb.position.z), flatTarget) > stopThreshold)
+            // {
+            //     Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
+            //     Vector3 moveDir = (flatTarget - flatPos).normalized;
+
+            //     float step = speed * Time.fixedDeltaTime;
+            //     Vector3 nextPos = rb.position + moveDir * step;
+            //     nextPos.y = spawnY;
+
+            //     Ray ray = new Ray(nextPos + Vector3.up * 5f, Vector3.down);
+            //     if (currentPane.Raycast(ray, out RaycastHit hit, 10f))
+            //     {
+            //         nextPos = hit.point;
+            //         nextPos.y = spawnY;
+
+            //         // Save previous position
+            //         Vector3 prevPos = rb.position;
+
+            //         // Move the civilian
+            //         rb.MovePosition(nextPos);
+
+            //         // Check if actually moved
+            //         float distanceMoved = Vector3.Distance(prevPos, rb.position);
+            //         if (distanceMoved < 2f)
+            //             stuckTimer += Time.fixedDeltaTime; // not moving, increase timer
+            //         else
+            //             stuckTimer = 0f; // reset if moving
+
+            //         // If stuck too long, pick a new target
+            //         if (stuckTimer > stuckThreshold)
+            //         {
+            //             PickNewTarget();
+            //             flatTarget = new Vector3(target.x, 0f, target.z); // update flat target
+            //             stuckTimer = 0f;
+            //         }
+
+            //         // Set walking speed for animation
+            //         float currentSpeed = ((rb.position - prevPos) / Time.fixedDeltaTime).magnitude;
+            //         animator.SetFloat("speed", currentSpeed);
+
+            //         // Reset idle choice if moving
+            //         if (isChoosingIdle)
+            //         {
+            //             animator.SetBool("isFeeding", false);
+            //             animator.SetBool("isSleeping", false);
+            //             isChoosingIdle = false;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         // If outside the pane, respawn
+            //         DespawnAndRespawn();
+            //         yield break;
+            //     }
+
+            //     yield return new WaitForFixedUpdate();
+            // }
+
+            Vector3 lastPosition = rb.position;
+            stuckTimer = 0f;
+
+        while (Vector3.Distance(new Vector3(rb.position.x, 0f, rb.position.z), flatTarget) > stopThreshold)
+        {
+            Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
+            Vector3 moveDir = (flatTarget - flatPos).normalized;
+
+            float step = speed * Time.fixedDeltaTime;
+            Vector3 nextPos = rb.position + moveDir * step;
+            nextPos.y = spawnY;
+
+            if (currentPane.Raycast(new Ray(nextPos + Vector3.up * 5f, Vector3.down), out RaycastHit hit, 10f))
             {
-                Vector3 flatPos = new Vector3(rb.position.x, 0f, rb.position.z);
-                Vector3 moveDir = (flatTarget - flatPos).normalized;
+                rb.MovePosition(hit.point);
 
-                float step = speed * Time.fixedDeltaTime;
-                Vector3 nextPos = rb.position + moveDir * step;
-                nextPos.y = spawnY;
+                // Check if we actually moved closer
+                float distanceToTarget = Vector3.Distance(rb.position, flatTarget);
+                float distanceLast = Vector3.Distance(lastPosition, flatTarget);
 
-                Ray ray = new Ray(nextPos + Vector3.up * 5f, Vector3.down);
-                if (currentPane.Raycast(ray, out RaycastHit hit, 10f))
-                {
-                    nextPos = hit.point;
-                    nextPos.y = spawnY;
-
-                    rb.MovePosition(nextPos);
-
-                    // Set walking speed for animation
-                    animator.SetFloat("speed", speed);
-
-                    // Reset idle choice if moving
-                    if (isChoosingIdle)
-                    {
-                        animator.SetBool("isFeeding", false);
-                        animator.SetBool("isSleeping", false);
-                        isChoosingIdle = false;
-                    }
-                }
+                if (distanceToTarget >= distanceLast) // stuck or not making progress
+                    stuckTimer += Time.fixedDeltaTime;
                 else
+                    stuckTimer = 0f;
+
+                lastPosition = rb.position;
+
+                if (stuckTimer > stuckThreshold)
                 {
                     PickNewTarget();
-                    break;
+                    flatTarget = new Vector3(target.x, 0f, target.z);
+                    stuckTimer = 0f;
+                    lastPosition = rb.position;
                 }
 
-                yield return new WaitForFixedUpdate();
+                // Animator
+                animator.SetFloat("speed", moveDir.sqrMagnitude * speed);
+                if (isChoosingIdle)
+                {
+                    animator.SetBool("isFeeding", false);
+                    animator.SetBool("isSleeping", false);
+                    isChoosingIdle = false;
+                }
             }
+            else
+            {
+                DespawnAndRespawn();
+                yield break;
+            }
+
+            yield return new WaitForFixedUpdate();
+        }
+
 
             // Stopped → pick idle/eat/sleep
             animator.SetFloat("speed", 0f);
@@ -160,6 +332,7 @@ public class CivilianUnit : MonoBehaviour
             PickNewTarget();
         }
     }
+
 
     private IEnumerator PickIdleAnimation()
     {

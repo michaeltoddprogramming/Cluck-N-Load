@@ -1007,6 +1007,12 @@ public class BuildController : MonoBehaviour
         // IMPORTANT: Recalculate all synergies after moving a structure
         UpdateAllSynergies();
 
+        AnimalStructure animal = movingStructure.GetComponent<AnimalStructure>();
+        if (animal != null)
+        {
+            animal.OnMoved();
+        }
+
         movingStructure = null;
         isMoveModeActive = false;
         if (currentGhost != null)

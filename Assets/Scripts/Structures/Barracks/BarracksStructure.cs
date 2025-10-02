@@ -380,6 +380,8 @@ public class BarracksStructure : Structure
                 Debug.LogError($"Army animal prefab {armyAnimal.name} does not have ArmyAnimal component!");
             }
         }
+        // civilianSpawner?.RemoveAnimalsByChunk(amount);
+
         OnArmyChanged?.Invoke();
         // UpdateRecruitmentCostByDistance();
         playRecruitSound();

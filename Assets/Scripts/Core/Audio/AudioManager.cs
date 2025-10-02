@@ -103,7 +103,7 @@ public class AudioManager : MonoBehaviour
         allAudioSources = FindObjectsOfType<AudioSource>();
         foreach (var source in allAudioSources)
         {
-            if (System.Array.IndexOf(exceptions, source) < 0)
+            if (System.Array.IndexOf(exceptions, source) < 0 && source != null)
             {
                 source.mute = true;
             }
@@ -114,7 +114,7 @@ public class AudioManager : MonoBehaviour
     {
         foreach (var source in allAudioSources)
         {
-            if (System.Array.IndexOf(exceptions, source) < 0)
+            if (System.Array.IndexOf(exceptions, source) < 0 && source != null)
             {
                 source.mute = false;
             }

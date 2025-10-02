@@ -4,7 +4,7 @@ using UnityEngine;
 public class CivilianData : UnitData
 {
     [Header("Wander Settings")]
-    public float minWait = 1f;
-    public float maxWait = 3f;
+    public float minWait = 3f;
+    public float maxWait = 10f;
     public float stopThreshold = 0.05f;
 }

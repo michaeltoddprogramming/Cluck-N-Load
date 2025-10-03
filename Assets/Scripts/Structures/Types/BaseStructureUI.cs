@@ -11,6 +11,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     [SerializeField] protected Button moveButton;
 
     protected Structure structure;
+    protected NightManager nightManager;
 
     [Header("Health Bars")]
     [SerializeField] private Slider healthBarSlider;
@@ -24,6 +25,9 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null) canvas.sortingOrder = 1;
         this.structure = structure;
+
+        // Get reference to NightManager
+        nightManager = FindFirstObjectByType<NightManager>();
 
         if (structureNameText != null) structureNameText.text = structure.GetStructureName();
         UpdateHealthDisplay();
@@ -45,6 +49,17 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
         moveButton?.onClick.AddListener(() =>
         {
+            // Check if it's night time or paused before allowing move
+            if (nightManager != null && (!nightManager.IsDay || nightManager.getIsPaused()))
+            {
+                // Play error sound to indicate action is not allowed
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayErrorSound();
+                }
+                return;
+            }
+
             BuildController buildController = FindFirstObjectByType<BuildController>();
             if (buildController != null)
             {
@@ -52,6 +67,24 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
                 StructureUIManager.Instance?.HideStructureUI();
             }
         });
+    }
+
+    protected virtual void Update()
+    {
+        // Update move button interactability based on day/night and pause state
+        if (moveButton != null && nightManager != null)
+        {
+            bool canMove = nightManager.IsDay && !nightManager.getIsPaused();
+            moveButton.interactable = canMove;
+            
+            // Optional: Visual feedback for disabled state
+            if (moveButton.image != null)
+            {
+                Color buttonColor = moveButton.image.color;
+                buttonColor.a = canMove ? 1f : 0.5f;
+                moveButton.image.color = buttonColor;
+            }
+        }
     }
 
     protected virtual void UpdateHealthDisplay()

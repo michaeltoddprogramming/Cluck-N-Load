@@ -181,6 +181,9 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void Update()
     {
+        // Call base update to handle move button logic
+        base.Update();
+        
         // Check for pause state changes and update UI immediately
         NightManager nightManager = NightManager.Instance;
         if (nightManager != null)

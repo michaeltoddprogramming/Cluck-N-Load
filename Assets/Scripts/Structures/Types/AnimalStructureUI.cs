@@ -86,6 +86,9 @@ public class AnimalStructureUI : BaseStructureUI
 
     private void Update()
     {
+        // Call base update to handle move button logic
+        base.Update();
+        
         // Check for pause state changes and update UI immediately
         if (nightManager != null)
         {

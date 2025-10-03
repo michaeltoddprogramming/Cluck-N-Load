@@ -41,4 +41,4 @@ MonoBehaviour:
   recruitmentCostPerAnimal: 60
   protectionRadius: 5
   synergyMinDist: 20
-  synergyMaxDist: 40
+  synergyMaxDist: 25

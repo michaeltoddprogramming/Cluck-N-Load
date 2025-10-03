@@ -650,6 +650,25 @@ public class ArmyUnit : BaseUnit
     public void SetTimeOfDay(bool isNight)
     {
         isNightTime = isNight;
+
+        if (!isNightTime)
+        {
+            // Daytime: stop fighting and run back
+            currentTarget = null;
+            StopRoaming();
+
+            if (agent != null && agent.isActiveAndEnabled)
+            {
+                agent.ResetPath();
+            }
+
+            BackToBarracks();   // force return to barracks
+        }
+        else
+        {
+            // Nighttime: go to the flag / defend
+            MoveToFlag();
+        }
     }
 
     public bool GetTimeOfDay()
@@ -671,7 +690,7 @@ public class ArmyUnit : BaseUnit
 
     public void BackToBarracks()
     {
-        if (isNightTime) return;
+        // if (isNightTime) return;
         if (barracks == null)
         {
             Debug.LogWarning("No barracks set for this unit.");

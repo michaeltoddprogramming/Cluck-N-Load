@@ -363,6 +363,14 @@ public class BuildController : MonoBehaviour
         if (isMoveModeActive) CancelMove();
         else
         {
+            // Check if it's night time or paused - prevent move mode
+            NightManager nightManager = NightManager.Instance;
+            if (nightManager != null && (!nightManager.IsDay || nightManager.getIsPaused()))
+            {
+                Debug.Log("Cannot toggle move mode: Game is paused or it's night time");
+                return;
+            }
+            
             isMoveModeActive = true;
             isBuildModeActive = false;
             if (currentGhost != null)
@@ -376,6 +384,15 @@ public class BuildController : MonoBehaviour
     public void StartMoveModeForStructure(Structure structure)
     {
         if (structure == null) return;
+        
+        // Check if it's night time or paused - prevent move mode
+        NightManager nightManager = NightManager.Instance;
+        if (nightManager != null && (!nightManager.IsDay || nightManager.getIsPaused()))
+        {
+            Debug.Log("Cannot start move mode: Game is paused or it's night time");
+            return;
+        }
+        
         isMoveModeActive = true;
         isBuildModeActive = false;
         if (currentGhost != null)

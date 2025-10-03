@@ -187,7 +187,12 @@ public class CropStructureUI : BaseStructureUI
         return amount * baseValue;
     }
 
-    private void Update() => UpdateUI();
+    private void Update()
+    {
+        // Call base update to handle move button logic
+        base.Update();
+        UpdateUI();
+    }
 
     private void UpdateUI()
     {

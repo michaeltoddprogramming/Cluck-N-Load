@@ -291,46 +291,78 @@ public class ArmyUnit : BaseUnit
     //     }
     // }
 
+    // public IEnumerator CowAttack()
+    // {
+    //     if (isRecoiling) yield break;
+
+    //     canShoot = false;
+
+    //     // --- STOP MOVEMENT COMPLETELY ---
+    //     agent.ResetPath();
+    //     agent.isStopped = true;
+    //     agent.velocity = Vector3.zero;
+    //     agent.enabled = false;
+
+    //     float attackDuration = 2.5f;
+    //     float elapsed = 0f;
+    //     float fireRate = 0.1f; // shoot every 0.1s
+
+    //     // Trigger attack animation
+    //     SetTrigger("Attack");
+
+    //     // Loop fire for 2.5s
+    //     while (elapsed < attackDuration && currentTarget != null && !currentTarget.IsDead())
+    //     {
+    //         // Play sound (limited by SoundLimiter)
+    //         PlaySound(data.AttackSound, 'a');
+
+    //         // Fire VFX toward target’s current position
+    //         GetComponent<CowShootingVFX>().ShootCow(currentTarget.transform.position);
+    //         currentTarget.TakeDamage(data.AttackDamage);
+
+    //         yield return new WaitForSeconds(fireRate);
+    //         elapsed += fireRate;
+    //     }
+
+    //     // --- UNLOCK MOVEMENT ---
+    //     agent.enabled = true;
+    //     agent.isStopped = false;
+    //     canShoot = true;
+
+
+    // }
+
     public IEnumerator CowAttack()
+{
+    if (isRecoiling) yield break;
+
+    canShoot = false;
+    agent.ResetPath();
+    agent.isStopped = true;
+    agent.velocity = Vector3.zero;
+    agent.enabled = false;
+
+    SetTrigger("Attack");
+
+    float attackDuration = 2.5f;
+    float fireRate = 0.1f;
+    float elapsed = 0f;
+
+    while (elapsed < attackDuration && currentTarget != null && !currentTarget.IsDead())
     {
-        if (isRecoiling) yield break;
+        PlaySound(data.AttackSound, 'a');
+        GetComponent<CowShootingVFX>().ShootCow(currentTarget.transform.position);
+        currentTarget.TakeDamage(data.AttackDamage);
 
-        canShoot = false;
-
-        // --- STOP MOVEMENT COMPLETELY ---
-        agent.ResetPath();
-        agent.isStopped = true;
-        agent.velocity = Vector3.zero;
-        agent.enabled = false;
-
-        float attackDuration = 2.5f;
-        float elapsed = 0f;
-        float fireRate = 0.1f; // shoot every 0.1s
-
-        // Trigger attack animation
-        SetTrigger("Attack");
-
-        // Loop fire for 2.5s
-        while (elapsed < attackDuration && currentTarget != null && !currentTarget.IsDead())
-        {
-            // Play sound (limited by SoundLimiter)
-            PlaySound(data.AttackSound, 'a');
-
-            // Fire VFX toward target’s current position
-            GetComponent<CowShootingVFX>().ShootCow(currentTarget.transform.position);
-            currentTarget.TakeDamage(data.AttackDamage);
-
-            yield return new WaitForSeconds(fireRate);
-            elapsed += fireRate;
-        }
-
-        // --- UNLOCK MOVEMENT ---
-        agent.enabled = true;
-        agent.isStopped = false;
-        canShoot = true;
-
-
+        elapsed += fireRate;
+        yield return new WaitForSeconds(fireRate);
     }
+
+    agent.enabled = true;
+    agent.isStopped = false;
+    canShoot = true;
+}
+
 
 
 
@@ -618,6 +650,25 @@ public class ArmyUnit : BaseUnit
     public void SetTimeOfDay(bool isNight)
     {
         isNightTime = isNight;
+
+        if (!isNightTime)
+        {
+            // Daytime: stop fighting and run back
+            currentTarget = null;
+            StopRoaming();
+
+            if (agent != null && agent.isActiveAndEnabled)
+            {
+                agent.ResetPath();
+            }
+
+            BackToBarracks();   // force return to barracks
+        }
+        else
+        {
+            // Nighttime: go to the flag / defend
+            MoveToFlag();
+        }
     }
 
     public bool GetTimeOfDay()
@@ -639,7 +690,7 @@ public class ArmyUnit : BaseUnit
 
     public void BackToBarracks()
     {
-        if (isNightTime) return;
+        // if (isNightTime) return;
         if (barracks == null)
         {
             Debug.LogWarning("No barracks set for this unit.");

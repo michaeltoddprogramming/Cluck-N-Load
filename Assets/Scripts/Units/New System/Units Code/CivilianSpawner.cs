@@ -70,6 +70,8 @@ public class CivilianSpawner : MonoBehaviour
             desiredTotalAnimals = 3;
         else if (totalPurchases >= 3)
             desiredTotalAnimals = 2;
+        else if(totalPurchases == 0)
+            desiredTotalAnimals = 0;
         else
             desiredTotalAnimals = 1;
 

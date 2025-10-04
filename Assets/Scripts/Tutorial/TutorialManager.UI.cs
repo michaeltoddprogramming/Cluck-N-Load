@@ -10,26 +10,47 @@ public partial class TutorialManager
     {
         if (tutorialArrow == null)
         {
+            // Find the highest level canvas (usually the main UI canvas)
+            Canvas[] allCanvases = FindObjectsOfType<Canvas>();
+            Canvas topCanvas = null;
+            int highestSortingOrder = -1;
+            
+            foreach (Canvas canvas in allCanvases)
+            {
+                if (canvas.sortingOrder > highestSortingOrder || topCanvas == null)
+                {
+                    topCanvas = canvas;
+                    highestSortingOrder = canvas.sortingOrder;
+                }
+            }
+            
+            // Create arrow as child of the top-level canvas to ensure it's always visible
+            Transform parentTransform = topCanvas != null ? topCanvas.transform : tutorialPanel.transform;
+            
             tutorialArrow = new GameObject("TutorialArrow");
-            tutorialArrow.transform.SetParent(tutorialPanel.transform, false);
+            tutorialArrow.transform.SetParent(parentTransform, false);
             arrowRect = tutorialArrow.AddComponent<RectTransform>();
-            arrowRect.sizeDelta = new Vector2(40, 40);
-            Texture2D texture = new Texture2D(40, 40);
+            
+            // Consistent arrow size across devices
+            arrowRect.sizeDelta = new Vector2(50, 50); // Slightly larger for better visibility
+            
+            // Create the arrow texture with consistent colors
+            Texture2D texture = new Texture2D(50, 50);
             Color arrowColor = new Color(0f, 1f, 0.4f, 1f); // Bright green
             Color edgeColor = new Color(1f, 1f, 1f, 1f); // White edge
             
-            // Create a better triangle shape
-            for (int y = 0; y < 40; y++)
+            // Create a better triangle shape (pointing down)
+            for (int y = 0; y < 50; y++)
             {
-                for (int x = 0; x < 40; x++)
+                for (int x = 0; x < 50; x++)
                 {
-                    float centerX = 20f;
-                    float centerY = 30f;
+                    float centerX = 25f;
+                    float centerY = 37f; // Move triangle higher in texture
                     
-                    // Triangle pointing down
+                    // Triangle pointing down - more defined shape
                     bool insideTriangle = (y <= centerY) && 
-                                        (x >= centerX - (centerY - y) * 0.8f) && 
-                                        (x <= centerX + (centerY - y) * 0.8f);
+                                        (x >= centerX - (centerY - y) * 0.7f) && 
+                                        (x <= centerX + (centerY - y) * 0.7f);
                     
                     // Edge detection for white outline
                     bool isEdge = false;
@@ -40,11 +61,11 @@ public partial class TutorialManager
                             for (int dy = -1; dy <= 1; dy++)
                             {
                                 int nx = x + dx, ny = y + dy;
-                                if (nx >= 0 && nx < 40 && ny >= 0 && ny < 40)
+                                if (nx >= 0 && nx < 50 && ny >= 0 && ny < 50)
                                 {
                                     bool neighborInside = (ny <= centerY) && 
-                                                        (nx >= centerX - (centerY - ny) * 0.8f) && 
-                                                        (nx <= centerX + (centerY - ny) * 0.8f);
+                                                        (nx >= centerX - (centerY - ny) * 0.7f) && 
+                                                        (nx <= centerX + (centerY - ny) * 0.7f);
                                     if (!neighborInside)
                                     {
                                         isEdge = true;
@@ -63,56 +84,183 @@ public partial class TutorialManager
                 }
             }
             texture.Apply();
-            Sprite triangleSprite = Sprite.Create(texture, new Rect(0, 0, 40, 40), new Vector2(0.5f, 0.5f), 100f);
+            
+            // Create sprite with consistent settings
+            Sprite triangleSprite = Sprite.Create(texture, new Rect(0, 0, 50, 50), new Vector2(0.5f, 0.5f), 100f);
             Image arrowImage = tutorialArrow.AddComponent<Image>();
             arrowImage.sprite = triangleSprite;
             arrowImage.preserveAspect = true;
             arrowImage.color = Color.white;
             arrowImage.raycastTarget = false; // Allow clicks to pass through the arrow
+            
+            // Add Canvas component to ensure arrow appears on top of all UI
+            Canvas arrowCanvas = tutorialArrow.AddComponent<Canvas>();
+            arrowCanvas.overrideSorting = true;
+            arrowCanvas.sortingOrder = 9999; // Very high fixed sorting order to ensure it's always on top
+            arrowCanvas.sortingLayerName = "UI"; // Ensure it's on the UI layer
+            
+            // Add GraphicRaycaster to maintain proper UI interaction
+            tutorialArrow.AddComponent<GraphicRaycaster>();
+            
+            // Ensure arrow starts hidden
             tutorialArrow.SetActive(false);
+            
+            Debug.Log($"[TutorialArrow] Created with sorting order: {arrowCanvas.sortingOrder} (base: {highestSortingOrder})");
+        }
+    }
+
+    // Ensure the arrow has the highest sorting order to appear on top of all UI
+    private void EnsureArrowOnTop()
+    {
+        if (tutorialArrow == null) return;
+        
+        Canvas arrowCanvas = tutorialArrow.GetComponent<Canvas>();
+        if (arrowCanvas == null) return;
+        
+        // Find the current highest sorting order
+        Canvas[] allCanvases = FindObjectsOfType<Canvas>();
+        int highestSortingOrder = -1;
+        
+        foreach (Canvas canvas in allCanvases)
+        {
+            if (canvas != arrowCanvas && canvas.sortingOrder > highestSortingOrder)
+            {
+                highestSortingOrder = canvas.sortingOrder;
+            }
+        }
+        
+        // Set arrow sorting order to maximum to ensure it's always on top
+        int newSortingOrder = Mathf.Max(highestSortingOrder + 200, 9999);
+        if (arrowCanvas.sortingOrder < newSortingOrder)
+        {
+            arrowCanvas.sortingOrder = newSortingOrder;
+            Debug.Log($"[TutorialArrow] Updated sorting order to: {newSortingOrder} (highest found: {highestSortingOrder})");
         }
     }
 
     public void ShowArrowPointing(GameObject target, bool show)
     {
         if (target == null)
+        {
+            // If target is null, always hide the arrow
+            HideArrow();
             return;
+        }
 
         EnsureArrowExists();
         if (show)
         {
+            // Ensure arrow has the highest sorting order when showing
+            EnsureArrowOnTop();
+            
             RectTransform targetRect = target.GetComponent<RectTransform>();
+            Vector3 targetCenter;
+            Vector3 screenPoint;
+            
             if (targetRect != null)
             {
-                Vector3[] screenCorners = new Vector3[4];
-                targetRect.GetWorldCorners(screenCorners);
-                Vector3 targetCenter = (screenCorners[0] + screenCorners[1] + screenCorners[2] + screenCorners[3]) / 4f;
-                Canvas canvas = targetRect.GetComponentInParent<Canvas>();
-                RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-                Vector3[] canvasCorners = new Vector3[4];
-                canvasRect.GetWorldCorners(canvasCorners);
-                float screenWidth = canvasCorners[2].x - canvasCorners[0].x;
-                float screenHeight = canvasCorners[2].y - canvasCorners[0].y;
-                float normalizedX = (targetCenter.x - canvasCorners[0].x) / screenWidth;
-                float normalizedY = (targetCenter.y - canvasCorners[0].y) / screenHeight;
-                Vector3 arrowPosition = targetCenter + new Vector3(0, -50, 0);
-                arrowRect.position = arrowPosition;
-                arrowRect.rotation = Quaternion.Euler(0, 0, 0);
+                // Handle UI elements
+                Vector3[] targetCorners = new Vector3[4];
+                targetRect.GetWorldCorners(targetCorners);
+                targetCenter = (targetCorners[0] + targetCorners[1] + targetCorners[2] + targetCorners[3]) / 4f;
+                
+                // Convert target position to screen space, then to arrow's canvas space
+                screenPoint = RectTransformUtility.WorldToScreenPoint(Camera.main, targetCenter);
+            }
+            else
+            {
+                // Handle world objects (structures)
+                Renderer targetRenderer = target.GetComponent<Renderer>();
+                if (targetRenderer != null)
+                {
+                    // Get the bounds of the structure and position arrow above it
+                    Vector3 bounds = targetRenderer.bounds.center;
+                    float structureHeight = targetRenderer.bounds.size.y;
+                    targetCenter = bounds + new Vector3(0, structureHeight * 0.7f, 0); // Position above the structure
+                    Debug.Log($"[TutorialArrow] World object with renderer: {target.name}, bounds center: {bounds}, height: {structureHeight}, target center: {targetCenter}");
+                }
+                else
+                {
+                    // Fallback to transform position
+                    targetCenter = target.transform.position + new Vector3(0, 2f, 0);
+                    Debug.Log($"[TutorialArrow] World object without renderer: {target.name}, transform position: {target.transform.position}, target center: {targetCenter}");
+                }
+                
+                // Convert world position to screen space
+                screenPoint = Camera.main.WorldToScreenPoint(targetCenter);
+                Debug.Log($"[TutorialArrow] Screen point: {screenPoint}, z-depth: {screenPoint.z}");
+            }
+            
+            if (targetRect != null || screenPoint.z > 0) // Ensure world object is in front of camera
+            {
+                
+                // Get the arrow's parent canvas for positioning
+                Canvas arrowParentCanvas = tutorialArrow.GetComponentInParent<Canvas>();
+                RectTransform arrowCanvasRect = arrowParentCanvas.GetComponent<RectTransform>();
+                
+                Vector2 localPoint;
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    arrowCanvasRect, 
+                    screenPoint, 
+                    arrowParentCanvas.worldCamera ?? Camera.main, 
+                    out localPoint))
+                {
+                    // Position arrow below the target with consistent offset
+                    float yOffset = targetRect != null ? -60 : -80; // Larger offset for world objects
+                    Vector2 arrowPosition = localPoint + new Vector2(0, yOffset);
+                    arrowRect.anchoredPosition = arrowPosition;
+                    
+                    Debug.Log($"[TutorialArrow] Positioned at: {arrowPosition}, Target: {target.name} (Type: {(targetRect != null ? "UI" : "World")})");
+                }
+                else
+                {
+                    Debug.LogWarning("[TutorialArrow] Failed to convert screen point to local point");
+                    // Fallback positioning
+                    arrowRect.position = targetCenter + new Vector3(0, -60, 0);
+                }
+                
+                arrowRect.rotation = Quaternion.Euler(0, 0, 0); // Always point down
                 tutorialArrow.SetActive(true);
                 LeanTween.cancel(tutorialArrow);
                 
-                // More prominent bounce animation
-                LeanTween.scale(tutorialArrow, new Vector3(1.3f, 1.3f, 1.3f), 0.4f).setLoopPingPong().setEase(LeanTweenType.easeInOutBack);
-                LeanTween.move(tutorialArrow, arrowPosition + new Vector3(0, -15, 0), 0.5f).setLoopPingPong().setEase(LeanTweenType.easeInOutBack);
+                // Store the final positioned location AFTER positioning is complete
+                Vector2 finalPos = arrowRect.anchoredPosition;
+                Debug.Log($"[TutorialArrow] Final position for tween: {finalPos}");
                 
-                // Add rotation wobble for extra attention
+                // Consistent animation parameters
+                LeanTween.scale(tutorialArrow, new Vector3(1.3f, 1.3f, 1.3f), 0.4f).setLoopPingPong().setEase(LeanTweenType.easeInOutBack);
+                LeanTween.value(tutorialArrow, 0f, -15f, 0.5f).setLoopPingPong().setEase(LeanTweenType.easeInOutBack).setOnUpdate((float val) =>
+                {
+                    if (arrowRect != null)
+                    {
+                        arrowRect.anchoredPosition = finalPos + new Vector2(0, val);
+                    }
+                });
+                
+                // Consistent rotation wobble
                 LeanTween.rotate(tutorialArrow, new Vector3(0, 0, 5f), 0.3f).setLoopPingPong().setEase(LeanTweenType.easeInOutSine);
             }
         }
         else
         {
+            HideArrow();
+        }
+    }
+
+    // Helper method for consistent arrow cleanup
+    private void HideArrow()
+    {
+        if (tutorialArrow != null)
+        {
             tutorialArrow.SetActive(false);
             LeanTween.cancel(tutorialArrow);
+            // Reset arrow transform to prevent positioning issues
+            if (arrowRect != null)
+            {
+                arrowRect.localScale = Vector3.one;
+                arrowRect.localRotation = Quaternion.identity;
+                arrowRect.anchoredPosition = Vector3.zero; // Reset anchored position
+            }
         }
     }
 

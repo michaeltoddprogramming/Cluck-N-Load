@@ -72,6 +72,13 @@ public class PricePanelUI : MonoBehaviour
         animalStructure = FindFirstObjectByType<AnimalStructure>();
         productionBoosts = FindFirstObjectByType<ProductionBoosts>();
 
+        // Ensure price panel canvas doesn't interfere with tutorial arrow
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            // Keep price panel sorting order low (tutorial arrow uses 9999+)
+            canvas.sortingOrder = 10;
+        }
 
         // audioSourceOpen.clip = audioClipOpen;
         // audioSourceOpen.Play();

@@ -252,6 +252,9 @@ public partial class TutorialManager : MonoBehaviour
                 if (currentStep.uiToHighlight != null)
                     HighlightUI(currentStep.uiToHighlight, false);
 
+                // Ensure arrow is always hidden when transitioning
+                ShowArrowPointing(null, false);
+
                 ClearKeyIndicators();
                 CleanupAllWorldHighlights();
                 CleanupShopHighlights();
@@ -437,6 +440,12 @@ public partial class TutorialManager : MonoBehaviour
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
+    
+        // Ensure all tutorial elements are cleaned up
+        ShowArrowPointing(null, false); // Hide arrow
+        ClearKeyIndicators();
+        CleanupAllWorldHighlights();
+        CleanupShopHighlights();
     
         currentStepIndex = steps.Count;
         waitingForStepToComplete = false;

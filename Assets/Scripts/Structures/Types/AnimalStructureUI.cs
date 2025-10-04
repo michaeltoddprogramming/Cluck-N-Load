@@ -32,7 +32,7 @@ public class AnimalStructureUI : BaseStructureUI
     private int newAnimalCount;
     private AnimalStructure animalStructure;
     private bool isAnimalStructure;
-    // nightManager is inherited from BaseStructureUI (protected field)
+    private NightManager nightManager;
     private bool lastPauseState = false; // Track pause state changes
 
     private float lastUIUpdate;
@@ -120,7 +120,7 @@ public class AnimalStructureUI : BaseStructureUI
             animalStructure.OnAnimalCountChanged += UpdateUI;
             animalStructure.PlayBackgroundNoise();
         }
-        // nightManager is already initialized in BaseStructureUI.Initialize()
+        nightManager = NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         if (!isAnimalStructure)
         {
             HideAnimalSpecificUI();

@@ -111,7 +111,7 @@ public partial class TutorialManager
         {
             stepId = "season_bonuses",
             title = "Seasonal Bonuses",
-            instructionText = "<color=green>Seasons</color> boost <color=yellow>production</color> from different <color=orange>animals</color>. Watch the <color=cyan>season icon</color>! <color=cyan><b>Synergy Tip:</b></color> Match <color=orange>animals</color> to their <color=green>bonus seasons</color> for <color=gold>maximum profit</color>!",
+            instructionText = "<color=green>Seasons</color> boost <color=yellow>production</color> from different <color=orange>animals</color>. Watch the <color=cyan>season icon</color>! <color=cyan><b>Synergy Tip:</b></color> Match <color=orange>animals</color> to their <color=green>bonus seasons</color> for <color=gold>maximum profit</color>! Check the price panel to see current bonuses.",
             triggerToWaitFor = TutorialTrigger.None
         };
         seasonBonusStep.onStepStart = new UnityEvent();
@@ -286,7 +286,7 @@ public partial class TutorialManager
             
             if (closeBtn != null)
             {
-                HighlightUIWithoutArrow(closeBtn, true);
+                HighlightUI(closeBtn, true);
                 Debug.Log($"Highlighting close button: {closeBtn.name}");
             }
             else
@@ -324,7 +324,7 @@ public partial class TutorialManager
             
             if (closeBtn != null)
             {
-                HighlightUIWithoutArrow(closeBtn, false);
+                HighlightUI(closeBtn, false);
             }
         });
         steps.Add(pricePanelExplanationStep);
@@ -379,7 +379,8 @@ public partial class TutorialManager
             stepId = "build_chicken_barracks",
             title = "Chicken Barracks",
             instructionText = "<color=cyan>Train</color> your <color=orange>chickens</color>! Build <color=red>Barracks</color> for your <color=yellow>feathered fighters</color>. <color=cyan><b>Synergy:</b></color> <color=orange>Civilian chickens</color> become <color=red>soldier chickens</color>!",
-            triggerToWaitFor = TutorialTrigger.BuiltChickenBarracks
+            triggerToWaitFor = TutorialTrigger.BuiltChickenBarracks,
+            uiToHighlight = shopButton
         };
         chickenBarracksStep.onStepStart = new UnityEvent();
         chickenBarracksStep.onStepStart.AddListener(() =>
@@ -398,6 +399,7 @@ public partial class TutorialManager
         buyChickensStep.onStepStart = new UnityEvent();
         buyChickensStep.onStepStart.AddListener(() =>
         {
+            Debug.Log("[TutorialDebug] Buy Chickens step started - highlighting chicken coop");
             HighlightLastBuiltStructure("ChickenCoop");
             HighlightBuyAnimalsButton();
         });
@@ -472,7 +474,8 @@ public partial class TutorialManager
             stepId = "build_first_hay_bale",
             title = "Wall Building Basics",
             instructionText = "Select <color=yellow>hay bale</color>, <color=cyan><b>CLICK</b></color> to place first one. Then move mouse and <color=orange><b>RIGHT-CLICK</b></color> to cancel (places just that <color=yellow>1 wall</color>).",
-            triggerToWaitFor = TutorialTrigger.BuiltFirstHayBale
+            triggerToWaitFor = TutorialTrigger.BuiltFirstHayBale,
+            uiToHighlight = shopButton
         };
         buildFirstHayBaleStep.onStepStart = new UnityEvent();
         buildFirstHayBaleStep.onStepStart.AddListener(() =>
@@ -873,20 +876,77 @@ public partial class TutorialManager
 
     private void HighlightLastBuiltStructure(string structureType)
     {
-        GameObject[] structures = GameObject.FindGameObjectsWithTag(structureType);
-        if (structures.Length > 0)
-        {
-            HighlightWorldStructure(structures[structures.Length - 1], true);
-            return;
-        }
+        Debug.Log($"[HighlightStructure] Looking for structure type: {structureType}");
+        
+        // Log all existing structures first
+        Debug.Log("[HighlightStructure] All existing structures:");
         foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
         {
-            if (structure.gameObject.name.Contains(structureType))
+            Debug.Log($"  - Name: '{structure.gameObject.name}', Tag: '{structure.gameObject.tag}', Type: {structure.GetType().Name}");
+        }
+        
+        // First try to find by tag
+        GameObject[] structures = GameObject.FindGameObjectsWithTag(structureType);
+        Debug.Log($"[HighlightStructure] Found {structures.Length} structures with tag '{structureType}'");
+        
+        if (structures.Length > 0)
+        {
+            GameObject targetStructure = structures[structures.Length - 1];
+            Debug.Log($"[HighlightStructure] Highlighting structure with tag: {targetStructure.name} at position {targetStructure.transform.position}");
+            HighlightWorldStructure(targetStructure, true);
+            return;
+        }
+        
+        // If no tagged structures found, search by name
+        Debug.Log($"[HighlightStructure] No tagged structures found, searching by name containing '{structureType}'");
+        foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
+        {
+            Debug.Log($"[HighlightStructure] Checking structure: {structure.gameObject.name}");
+            if (structure.gameObject.name.ToLower().Contains(structureType.ToLower()))
             {
+                Debug.Log($"[HighlightStructure] Found matching structure by name: {structure.gameObject.name} at position {structure.transform.position}");
                 HighlightWorldStructure(structure.gameObject, true);
                 return;
             }
         }
+        
+        // If still not found, try alternative names for chicken coop
+        if (structureType.ToLower().Contains("chicken"))
+        {
+            Debug.Log("[HighlightStructure] Trying alternative chicken coop names...");
+            string[] alternativeNames = { "coop", "chicken", "hen", "poultry" };
+            
+            foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
+            {
+                string structureName = structure.gameObject.name.ToLower();
+                foreach (string altName in alternativeNames)
+                {
+                    if (structureName.Contains(altName))
+                    {
+                        Debug.Log($"[HighlightStructure] Found structure with alternative name: {structure.gameObject.name}");
+                        HighlightWorldStructure(structure.gameObject, true);
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // Special case: If looking for ChickenCoop, try to find AnimalStructure
+        if (structureType == "ChickenCoop")
+        {
+            Debug.Log("[HighlightStructure] Looking for AnimalStructure as chicken coop...");
+            foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
+            {
+                if (structure is AnimalStructure)
+                {
+                    Debug.Log($"[HighlightStructure] Found AnimalStructure (chicken coop): {structure.gameObject.name}");
+                    HighlightWorldStructure(structure.gameObject, true);
+                    return;
+                }
+            }
+        }
+        
+        Debug.LogWarning($"[HighlightStructure] Could not find any structure matching '{structureType}'");
     }
 
     private void HighlightWorldStructure(GameObject structure, bool enable)
@@ -896,6 +956,39 @@ public partial class TutorialManager
         if (!originalScales.ContainsKey(structure))
             originalScales[structure] = structure.transform.localScale;
         Transform highlightIndicator = structure.transform.Find("TutorialHighlight");
+        
+        // Show/hide the UI arrow pointing to the structure
+        ShowArrowPointing(structure, enable);
+        
+        // Check if this is a structure with UI components that shouldn't be scaled
+        Structure structureComponent = structure.GetComponent<Structure>();
+        bool hasUIComponents = false;
+        
+        if (structureComponent != null)
+        {
+            // Check by actual structure type instead of name patterns
+            hasUIComponents = structureComponent is BarracksStructure ||     // Chicken barracks
+                             structureComponent is AnimalStructure ||       // Animal structures like chicken coops
+                             structureComponent is CropStructure ||         // Crop plots with planting UI
+                             structureComponent is SiloStructure ||         // Silos with storage UI
+                             structureComponent.GetComponent<BaseStructureUI>() != null; // Any structure with UI component
+        }
+        
+        // Fallback to name-based detection if component check fails
+        if (!hasUIComponents)
+        {
+            hasUIComponents = structure.name.Contains("Barracks") || 
+                              structure.name.Contains("Coop") ||        
+                              structure.name.Contains("Pen") ||         
+                              structure.name.Contains("FarmHouse") ||   
+                              structure.name.Contains("CropPlot") ||    
+                              structure.name.Contains("Silo") ||        
+                              structure.GetComponentInChildren<Canvas>() != null ||
+                              structure.GetComponentInChildren<UnityEngine.UI.Button>() != null;
+        }
+        
+        Debug.Log($"[StructureHighlight] Structure: {structure.name}, Type: {structureComponent?.GetType().Name}, HasUI: {hasUIComponents}");
+        
         if (highlightIndicator == null && enable)
         {
             if (highlightPrefab == null)
@@ -931,10 +1024,15 @@ public partial class TutorialManager
                 .setLoopPingPong()
                 .setIgnoreTimeScale(true)
                 .setEase(LeanTweenType.easeInOutQuad);
-            LeanTween.scale(structure, structure.transform.localScale * 1.08f, 0.5f)
-                .setLoopPingPong()
-                .setIgnoreTimeScale(true)
-                .setEase(LeanTweenType.easeInOutQuad);
+            
+            // Only scale structures that don't have UI components
+            if (!hasUIComponents)
+            {
+                LeanTween.scale(structure, structure.transform.localScale * 1.08f, 0.5f)
+                    .setLoopPingPong()
+                    .setIgnoreTimeScale(true)
+                    .setEase(LeanTweenType.easeInOutQuad);
+            }
         }
         else if (highlightIndicator != null)
         {
@@ -945,10 +1043,15 @@ public partial class TutorialManager
                     .setLoopPingPong()
                     .setIgnoreTimeScale(true)
                     .setEase(LeanTweenType.easeInOutQuad);
-                LeanTween.scale(structure, structure.transform.localScale * 1.08f, 0.5f)
-                    .setLoopPingPong()
-                    .setIgnoreTimeScale(true)
-                    .setEase(LeanTweenType.easeInOutQuad);
+                
+                // Only scale structures that don't have UI components
+                if (!hasUIComponents)
+                {
+                    LeanTween.scale(structure, structure.transform.localScale * 1.08f, 0.5f)
+                        .setLoopPingPong()
+                        .setIgnoreTimeScale(true)
+                        .setEase(LeanTweenType.easeInOutQuad);
+                }
             }
             else
             {
@@ -962,6 +1065,8 @@ public partial class TutorialManager
                             activeWorldHighlights.Remove(highlightIndicator.gameObject);
                         }
                     });
+                // Hide the arrow when disabling highlight
+                ShowArrowPointing(structure, false);
             }
         }
     }
@@ -1091,6 +1196,9 @@ public partial class TutorialManager
 
     private void CleanupAllWorldHighlights()
     {
+        // Hide the arrow when cleaning up all highlights
+        ShowArrowPointing(null, false);
+        
         foreach (GameObject highlight in activeWorldHighlights)
         {
             if (highlight != null)

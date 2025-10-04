@@ -979,17 +979,7 @@ public class NightManager : MonoBehaviour
         // Declare once at the beginning
         ProductionBoosts productionBoosts = FindFirstObjectByType<ProductionBoosts>();
 
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
-        {
-            // Now just use the already declared variable
-            if (productionBoosts != null)
-            {
-                float[] normalValues = new float[5] { 1f, 1f, 1f, 1f, 1f };
-                productionBoosts.SetBoosted(normalValues);
-            }
-
-            return;
-        }
+        // Allow bonuses during tutorial - removed tutorial check
 
         float sameProduct = Random.Range(0f, 1f);
         int product1 = Random.Range(1, 6);
@@ -1242,19 +1232,18 @@ public class NightManager : MonoBehaviour
     {
 
         // During tutorial, we'll just show a message explaining the concept
-        string tutorialMessage = "Each season brings <b>special bonuses</b> to your farm animals!\n\nAfter completing the tutorial, you'll see which animals produce more each season.";
+        string tutorialMessage = "Each season brings <b>special bonuses</b> to your farm animals!\n\nYou can see which animals produce more by checking the price panel.";
 
         // Show a notification that doesn't overwhelm with details
         StartProductionNotification(tutorialMessage, 7f);
 
-        // Don't actually apply any bonuses during tutorial
-        // Change variable name to avoid conflict with the one in chooseAnimalProductForSeason
+        // Apply normal seasonal bonuses during tutorial (allow players to see them working)
         ProductionBoosts productionBoostsManager = FindFirstObjectByType<ProductionBoosts>();
         if (productionBoostsManager != null)
         {
-            // Reset all bonuses to normal (1.0f)
-            float[] normalValues = new float[5] { 1f, 1f, 1f, 1f, 1f };
-            productionBoostsManager.SetBoosted(normalValues);
+            // Let the normal seasonal bonus system work during tutorial
+            // This will call chooseAnimalProductForSeason() which will apply random bonuses
+            chooseAnimalProductForSeason();
         }
     }
 

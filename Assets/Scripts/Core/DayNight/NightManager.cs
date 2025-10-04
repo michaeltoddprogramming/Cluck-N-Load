@@ -711,13 +711,13 @@ public class NightManager : MonoBehaviour
         // After completing the first year (year 2+), all enemy types should be available
         if (years >= 2)
         {
-            print($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
-            Debug.LogError($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
+            // print($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
+            // Debug.LogError($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
             if (enemyIndicator != null) 
             {
                 enemyIndicator.MakeAllEnemiesVisible();
                 print("Called MakeAllEnemiesVisible()");
-                Debug.LogError("Called MakeAllEnemiesVisible()");
+                // Debug.LogError("Called MakeAllEnemiesVisible()");
             }
             else
             {

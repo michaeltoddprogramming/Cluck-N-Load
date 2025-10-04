@@ -937,20 +937,32 @@ public class CheatManager : MonoBehaviour
     {
         // Instantly complete all production (cheat mode)
         AnimalStructure[] animals = FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None);
+        int completedCount = 0;
         foreach (var animal in animals)
         {
-            if (animal.IsProducing)
+            if (animal != null && animal.IsProducing)
             {
                 animal.InstantCompleteProductionCheat();
+                completedCount++;
             }
         }
-        Debug.Log("All production completed instantly (cheat)");
+        Debug.Log($"Instantly completed production for {completedCount} animal structures (cheat)");
     }
     
     private void InstantGrowCrops()
     {
-        // Instantly grow all crops (if you have a crop system)
-        Debug.Log("All crops grown instantly");
+        // Instantly grow all crops
+        CropStructure[] crops = FindObjectsByType<CropStructure>(FindObjectsSortMode.None);
+        int grownCount = 0;
+        foreach (var crop in crops)
+        {
+            if (crop != null && crop.CurrentCropType != CropStructure.CropType.None && !crop.CropReady)
+            {
+                crop.CheatInstantGrowth();
+                grownCount++;
+            }
+        }
+        Debug.Log($"Instantly grew {grownCount} crops (cheat)");
     }
     
     private void InstantKillAllEnemies()

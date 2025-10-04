@@ -404,29 +404,42 @@ public partial class TutorialManager
         steps.Add(buyChickensStep);
 
         // Explain the Chicken Barracks UI when player opens it (AFTER buying chickens)
-        var explainBarracksUIStep = new TutorialStep
+        // This step completes immediately and moves to feeding step
+        steps.Add(new TutorialStep
         {
             stepId = "explain_coop_ui",
             title = "Understanding Barracks",
             instructionText = "<color=yellow>Civilians</color> = recruits from <color=orange>Coop</color>. <color=red>Army</color> = trained soldiers. <color=red>Recruit</color> button trains them. <color=cyan>Place Flag</color> = defense position!",
             triggerToWaitFor = TutorialTrigger.None
-        };
-        explainBarracksUIStep.onStepStart = new UnityEvent();
-        explainBarracksUIStep.onStepStart.AddListener(() =>
-        {
-            HighlightLastBuiltStructure("ChickenBarracks");
-            // Auto-advance after player has time to read (about 8 seconds)
-            StartCoroutine(AutoAdvanceAfterDelay(8f));
         });
-        steps.Add(explainBarracksUIStep);
 
-        steps.Add(new TutorialStep
+        var feedChickensStep = new TutorialStep
         {
             stepId = "feed_chickens",
             title = "Feed Chickens",
             instructionText = "<color=cyan>Feed</color> <color=orange>chickens</color> to make <color=yellow>eggs</color>! <color=green>Well-fed animals</color> = <color=cyan>ready to produce</color>. <color=yellow>Click Feed</color>.",
             triggerToWaitFor = TutorialTrigger.FedFirstAnimals
+        };
+        feedChickensStep.onStepStart = new UnityEvent();
+        feedChickensStep.onStepStart.AddListener(() =>
+        {
+            // Ensure player has enough sunflowers to feed 5 chickens
+            if (InventoryManager.Instance != null)
+            {
+                int currentSunflowers = InventoryManager.Instance.GetItemCount("Sunflower");
+                int requiredSunflowers = 10; // Should be enough for 5 chickens
+                if (currentSunflowers < requiredSunflowers)
+                {
+                    int toAdd = requiredSunflowers - currentSunflowers;
+                    InventoryManager.Instance.AddItem("Sunflower", toAdd);
+                    Debug.Log($"Tutorial: Added {toAdd} sunflowers to ensure player can feed chickens");
+                }
+            }
+            
+            // Highlight the chicken coop for feeding
+            HighlightLastBuiltStructure("ChickenCoop");
         });
+        steps.Add(feedChickensStep);
 
         steps.Add(new TutorialStep
         {
@@ -1413,12 +1426,14 @@ public partial class TutorialManager
 
     private IEnumerator AutoAdvanceAfterDelay(float delay)
     {
+        Debug.Log($"AutoAdvanceAfterDelay: Starting {delay}s delay for step {currentStepIndex}");
         yield return new WaitForSeconds(delay);
         
         // Auto-advance to next step
         if (waitingForStepToComplete && currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
             var currentStep = steps[currentStepIndex];
+            Debug.Log($"AutoAdvanceAfterDelay: Completing step '{currentStep.stepId}' at index {currentStepIndex}");
             
             // Mark step as complete if it has a stepId
             if (!string.IsNullOrEmpty(currentStep.stepId))
@@ -1439,6 +1454,10 @@ public partial class TutorialManager
             {
                 StartCoroutine(DelayedNextStep());
             }
+        }
+        else
+        {
+            Debug.Log($"AutoAdvanceAfterDelay: Cancelled - waitingForStepToComplete: {waitingForStepToComplete}, currentStepIndex: {currentStepIndex}");
         }
     }
 }

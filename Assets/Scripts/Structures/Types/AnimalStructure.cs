@@ -131,15 +131,25 @@ public class AnimalStructure : Structure
 
     public void Feed()
     {
-        if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) return;
+        Debug.Log($"[Feed] Attempting to feed {animalType}. Animals: {animalCount}, IsDay: {nightManager?.IsDay}, IsProducing: {isProducing}, ProductReady: {productReady}");
+        
+        if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) 
+        {
+            Debug.Log($"[Feed] Feed cancelled - conditions not met");
+            return;
+        }
+        
         int foodRequired = (int)((productionSettings.baseFoodRequired * animalCount) * foodMultiplier);
         if (foodRequired <= 0)
         {
             foodRequired = 1;
         }
 
+        Debug.Log($"[Feed] Food required: {foodRequired} {requiredFood}. Player has: {InventoryManager.Instance?.GetItemCount(requiredFood)}");
+
         if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
         {
+            Debug.Log($"[Feed] Successfully feeding {animalType}. Removing {foodRequired} {requiredFood} from inventory");
             InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
             isProducing = true;
             productReady = false;
@@ -156,7 +166,7 @@ public class AnimalStructure : Structure
 
             if (TutorialManager.Instance != null && 
                 TutorialManager.Instance.IsTutorialActive() && 
-                animalCount >= 3) 
+                animalCount >= 1) // Changed from >= 3 to >= 1 for better tutorial experience
             {
                 StartCoroutine(DelayedInstantCompleteForTutorial());
             }
@@ -181,14 +191,29 @@ public class AnimalStructure : Structure
 
     private IEnumerator DelayedInstantCompleteForTutorial()
     {
-        yield return new WaitForSeconds(2f);
+        Debug.Log($"[Tutorial] Starting DelayedInstantCompleteForTutorial for {animalType} with {animalCount} animals");
+        yield return new WaitForSeconds(1f);
+        
         // Only allow instant complete if tutorial is active and feed_chickens step is not completed
         if (TutorialManager.Instance != null && 
             TutorialManager.Instance.IsTutorialActive() && 
             !TutorialManager.Instance.GetCompletedStepIds().Contains("feed_chickens"))
         {
+            Debug.Log("[Tutorial] Starting instant production completion...");
             InstantCompleteProductionForTutorial();
+            
+            // Brief wait for production completion visual feedback
+            yield return new WaitForSeconds(1f);
+            
+            Debug.Log("[Tutorial] Triggering FedFirstAnimals trigger after visual feedback");
             TutorialManager.Instance.Trigger(TutorialTrigger.FedFirstAnimals);
+        }
+        else
+        {
+            string reason = TutorialManager.Instance == null ? "TutorialManager is null" :
+                           !TutorialManager.Instance.IsTutorialActive() ? "Tutorial not active" :
+                           "feed_chickens step already completed";
+            Debug.Log($"[Tutorial] DelayedInstantCompleteForTutorial cancelled: {reason}");
         }
     }
 

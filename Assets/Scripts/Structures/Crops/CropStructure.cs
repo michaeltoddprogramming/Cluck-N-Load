@@ -365,8 +365,18 @@ public class CropStructure : Structure
     {
         if (currentCropType != CropType.None && !cropReady)
         {
+            // Set proper crop growth model states
             cropReady = true;
-            UpdateVisuals(3); // Final growth stage
+            isGrowing = false;
+            
+            // Update visual to final growth stage (fully grown)
+            UpdateCropVisual(currentCropType, 2);
+            
+            // Show ready indicator for harvest
+            if (readyIndicator != null)
+                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
+                
+            Debug.Log($"[Cheat] Instantly grew {currentCropType} crop to ready state");
         }
     }
 

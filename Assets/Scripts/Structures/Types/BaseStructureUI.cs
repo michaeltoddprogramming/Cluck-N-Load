@@ -11,6 +11,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     [SerializeField] protected Button moveButton;
 
     protected Structure structure;
+    [System.NonSerialized]
     protected NightManager nightManager;
 
     [Header("Health Bars")]

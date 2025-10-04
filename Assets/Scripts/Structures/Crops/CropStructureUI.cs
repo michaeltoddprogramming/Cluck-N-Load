@@ -21,9 +21,6 @@ public class CropStructureUI : BaseStructureUI
     [SerializeField] private Sprite carrotIcon;
     [SerializeField] private Sprite defaultIcon;
 
-    [Header("Dependencies")]
-    [SerializeField] private NightManager nightManager;
-
     [Header("Audio")]
     [SerializeField] private AudioClip errorSound;
     [SerializeField] private AudioClip plantSound;

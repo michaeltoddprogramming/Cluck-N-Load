@@ -1,33 +1,43 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System;
 
 public class ReadyIndicator : MonoBehaviour
 {
+    [Header("Prefab Settings")]
+    [SerializeField] private GameObject harvestIndicatorPrefab; // Prefab for crop harvesting
+    [SerializeField] private GameObject collectIndicatorPrefab; // Prefab for animal collection
+    
     [Header("Visual Settings")]
-    [SerializeField] private GameObject indicatorPrefab;
     [SerializeField] private Vector3 hoverOffset = new Vector3(0, 2f, 0);
     [SerializeField] private float bobAmount = 0.3f;
     [SerializeField] private float bobSpeed = 2f;
     [SerializeField] private float pulseAmount = 0.2f;
     [SerializeField] private float pulseSpeed = 1.5f;
     
-    [Header("Icon Types")]
-    [SerializeField] private Sprite harvestIcon; // For crops
-    [SerializeField] private Sprite collectIcon; // For animals
-    [SerializeField] private Sprite defaultIcon;
+    [Header("Click Settings")]
+    [SerializeField] private float clickScaleEffect = 1.2f;
+    [SerializeField] private float clickEffectDuration = 0.1f;
     
     private GameObject currentIndicator;
     private Vector3 basePosition;
     private float timeOffset;
     private Camera mainCamera;
     private Canvas worldCanvas;
+    private IndicatorType currentType;
+    private bool isClickable = true;
+    
+    // Events for click handling
+    public event Action OnHarvestClicked;
+    public event Action OnCollectClicked;
     
     public enum IndicatorType { Harvest, Collect, Default }
     
     void Start()
     {
         mainCamera = Camera.main;
-        timeOffset = Random.Range(0f, 2f * Mathf.PI); // Random animation offset
+        timeOffset = UnityEngine.Random.Range(0f, 2f * Mathf.PI); // Random animation offset
         
         // Find or create world space canvas
         worldCanvas = FindObjectOfType<Canvas>();
@@ -35,32 +45,33 @@ public class ReadyIndicator : MonoBehaviour
         {
             CreateWorldCanvas();
         }
-        
-        // Create default indicator prefab if none assigned
-        if (indicatorPrefab == null)
-        {
-            CreateDefaultIndicatorPrefab();
-        }
     }
     
     public void ShowIndicator(IndicatorType type = IndicatorType.Default)
     {
         if (currentIndicator != null) return; // Already showing
         
-        // Create indicator
-        currentIndicator = Instantiate(indicatorPrefab, worldCanvas.transform);
+        currentType = type;
         
-        // Set icon based on type
-        Image iconImage = currentIndicator.GetComponentInChildren<Image>();
-        if (iconImage != null)
+        // Choose the appropriate prefab
+        GameObject prefabToUse = type switch
         {
-            iconImage.sprite = type switch
-            {
-                IndicatorType.Harvest => harvestIcon ?? defaultIcon,
-                IndicatorType.Collect => collectIcon ?? defaultIcon,
-                _ => defaultIcon
-            };
+            IndicatorType.Harvest => harvestIndicatorPrefab,
+            IndicatorType.Collect => collectIndicatorPrefab,
+            _ => harvestIndicatorPrefab // Default fallback
+        };
+        
+        if (prefabToUse == null)
+        {
+            Debug.LogWarning($"[ReadyIndicator] No prefab assigned for {type} indicator type!");
+            return;
         }
+        
+        // Create indicator from prefab
+        currentIndicator = Instantiate(prefabToUse, worldCanvas.transform);
+        
+        // Add click functionality
+        SetupClickable(currentIndicator, type);
         
         // Position above structure
         basePosition = transform.position + hoverOffset;
@@ -72,6 +83,8 @@ public class ReadyIndicator : MonoBehaviour
             currentIndicator.transform.LookAt(mainCamera.transform);
             currentIndicator.transform.Rotate(0, 180, 0); // Face camera properly
         }
+        
+        Debug.Log($"[ReadyIndicator] Showing {type} indicator for {gameObject.name}");
     }
     
     public void HideIndicator()
@@ -120,125 +133,131 @@ public class ReadyIndicator : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         scaler.scaleFactor = 1f;
         
-        // Add GraphicRaycaster
+        // Add GraphicRaycaster for click detection
         canvasGO.AddComponent<GraphicRaycaster>();
         
         Debug.Log("Created world space canvas for indicators");
     }
     
-    private void CreateDefaultIndicatorPrefab()
+    private void SetupClickable(GameObject indicator, IndicatorType type)
     {
-        // Create a simple indicator with background and icon
-        GameObject indicator = new GameObject("ReadyIndicator");
+        // Ensure the indicator has the necessary components for clicking
         
-        // Add Canvas component for UI elements
-        Canvas canvas = indicator.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.WorldSpace;
-        canvas.worldCamera = mainCamera;
+        // Add Button component to the main indicator or find existing one
+        Button button = indicator.GetComponent<Button>();
+        if (button == null)
+        {
+            button = indicator.AddComponent<Button>();
+        }
         
-        // Set canvas size
-        RectTransform canvasRect = indicator.GetComponent<RectTransform>();
-        canvasRect.sizeDelta = new Vector2(100, 100);
+        // Ensure there's an Image component for the button to work
+        Image buttonImage = indicator.GetComponent<Image>();
+        if (buttonImage == null)
+        {
+            buttonImage = indicator.AddComponent<Image>();
+            buttonImage.color = Color.clear; // Invisible but clickable
+        }
         
-        // Create background circle
-        GameObject background = new GameObject("Background");
-        background.transform.SetParent(indicator.transform);
+        // Add click listener
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => OnIndicatorClicked(type));
         
-        Image bgImage = background.AddComponent<Image>();
-        bgImage.color = new Color(1f, 1f, 1f, 0.9f); // Semi-transparent white
-        bgImage.sprite = CreateCircleSprite(); // Create a circle sprite
+        // Add visual feedback
+        var colors = button.colors;
+        colors.pressedColor = new Color(1f, 1f, 1f, 0.5f);
+        colors.highlightedColor = new Color(1f, 1f, 1f, 0.3f);
+        button.colors = colors;
         
-        RectTransform bgRect = background.GetComponent<RectTransform>();
-        bgRect.anchorMin = Vector2.zero;
-        bgRect.anchorMax = Vector2.one;
-        bgRect.sizeDelta = Vector2.zero;
-        bgRect.anchoredPosition = Vector2.zero;
+        // Ensure the button can be clicked by making sure it has proper sizing
+        RectTransform rectTransform = indicator.GetComponent<RectTransform>();
+        if (rectTransform == null)
+        {
+            rectTransform = indicator.AddComponent<RectTransform>();
+        }
+        rectTransform.sizeDelta = new Vector2(80, 80); // Generous click area
         
-        // Create icon
-        GameObject iconGO = new GameObject("Icon");
-        iconGO.transform.SetParent(indicator.transform);
-        
-        Image iconImage = iconGO.AddComponent<Image>();
-        iconImage.color = new Color(0.2f, 0.8f, 0.2f, 1f); // Green color
-        iconImage.sprite = CreateExclamationSprite(); // Create exclamation mark
-        
-        RectTransform iconRect = iconGO.GetComponent<RectTransform>();
-        iconRect.anchorMin = new Vector2(0.2f, 0.2f);
-        iconRect.anchorMax = new Vector2(0.8f, 0.8f);
-        iconRect.sizeDelta = Vector2.zero;
-        iconRect.anchoredPosition = Vector2.zero;
-        
-        // Save as prefab reference
-        indicatorPrefab = indicator;
-        indicator.SetActive(false);
-        
-        Debug.Log("Created default indicator prefab");
+        Debug.Log($"[ReadyIndicator] Set up clickable {type} indicator");
     }
     
-    private Sprite CreateCircleSprite()
+    private void OnIndicatorClicked(IndicatorType type)
     {
-        // Create a simple circle texture
-        int size = 64;
-        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        if (!isClickable) return;
         
-        Vector2 center = new Vector2(size / 2f, size / 2f);
-        float radius = size / 2f - 2f;
+        Debug.Log($"[ReadyIndicator] Clicked {type} indicator on {gameObject.name}");
         
-        for (int x = 0; x < size; x++)
+        // Play click animation
+        StartCoroutine(ClickAnimation());
+        
+        // Trigger appropriate action
+        switch (type)
         {
-            for (int y = 0; y < size; y++)
-            {
-                float distance = Vector2.Distance(new Vector2(x, y), center);
-                Color color = distance <= radius ? Color.white : Color.clear;
-                texture.SetPixel(x, y, color);
-            }
+            case IndicatorType.Harvest:
+                OnHarvestClicked?.Invoke();
+                TriggerHarvest();
+                break;
+            case IndicatorType.Collect:
+                OnCollectClicked?.Invoke();
+                TriggerCollect();
+                break;
         }
         
-        texture.Apply();
-        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+        // Hide indicator after successful click
+        HideIndicator();
     }
     
-    private Sprite CreateExclamationSprite()
+    private void TriggerHarvest()
     {
-        // Create a simple exclamation mark texture
-        int size = 32;
-        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
-        
-        // Clear texture
-        for (int x = 0; x < size; x++)
+        // Try to harvest crop
+        CropStructure cropStructure = GetComponent<CropStructure>();
+        if (cropStructure != null && cropStructure.CropReady)
         {
-            for (int y = 0; y < size; y++)
-            {
-                texture.SetPixel(x, y, Color.clear);
-            }
+            cropStructure.Harvest();
+            Debug.Log($"[ReadyIndicator] Auto-harvested crop on {gameObject.name}");
+        }
+    }
+    
+    private void TriggerCollect()
+    {
+        // Try to collect from animal
+        AnimalStructure animalStructure = GetComponent<AnimalStructure>();
+        if (animalStructure != null && animalStructure.ProductReady)
+        {
+            animalStructure.Collect();
+            Debug.Log($"[ReadyIndicator] Auto-collected from animal on {gameObject.name}");
+        }
+    }
+    
+    private System.Collections.IEnumerator ClickAnimation()
+    {
+        if (currentIndicator == null) yield break;
+        
+        isClickable = false;
+        
+        // Scale up
+        Vector3 originalScale = currentIndicator.transform.localScale;
+        Vector3 targetScale = originalScale * clickScaleEffect;
+        
+        float elapsed = 0f;
+        while (elapsed < clickEffectDuration / 2f)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / (clickEffectDuration / 2f);
+            currentIndicator.transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
+            yield return null;
         }
         
-        // Draw exclamation mark (simple rectangle and dot)
-        int centerX = size / 2;
-        int width = 6;
-        
-        // Main line
-        for (int y = size / 4; y < size * 3 / 4; y++)
+        // Scale back down
+        elapsed = 0f;
+        while (elapsed < clickEffectDuration / 2f)
         {
-            for (int x = centerX - width / 2; x <= centerX + width / 2; x++)
-            {
-                if (x >= 0 && x < size && y >= 0 && y < size)
-                    texture.SetPixel(x, y, Color.white);
-            }
+            elapsed += Time.deltaTime;
+            float t = elapsed / (clickEffectDuration / 2f);
+            currentIndicator.transform.localScale = Vector3.Lerp(targetScale, originalScale, t);
+            yield return null;
         }
         
-        // Dot at bottom
-        for (int y = size / 8; y < size / 6; y++)
-        {
-            for (int x = centerX - width / 2; x <= centerX + width / 2; x++)
-            {
-                if (x >= 0 && x < size && y >= 0 && y < size)
-                    texture.SetPixel(x, y, Color.white);
-            }
-        }
-        
-        texture.Apply();
-        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+        currentIndicator.transform.localScale = originalScale;
+        isClickable = true;
     }
     
     void OnDestroy()

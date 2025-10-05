@@ -831,6 +831,7 @@ public class ArmyUnit : BaseUnit
             // Check if agent is valid before setting destination
             if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
             {
+                Debug.LogWarning($"The agent is null: {agent == null} and the is activeis: {agent.isActiveAndEnabled}");
                 Debug.LogWarning($"NavMeshAgent invalid in RoamAroundFlag for {gameObject.name}");
                 isRoaming = false;
                 roamingRoutine = null;

@@ -4,8 +4,8 @@ using System.Collections;
 
 public class CombatManager : MonoBehaviour
 {
-    [SerializeField] private float maxTimeSpan = 20f;
-    [SerializeField] private float minTimeSpan = 10f;
+    [SerializeField] private float maxTimeSpan = 30f;
+    [SerializeField] private float minTimeSpan = 20f;
     [SerializeField] private float nightlyScale = 0.9f;
     [SerializeField] private float seasonScale = 0.5f;
     [SerializeField] private List<EnemyData> allEnemyData;

@@ -2551,16 +2551,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72a8995870504e84cb01855dff8b0401, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tabbedController: {fileID: 0}
   volumeSlider: {fileID: 4889914856414646520}
+  musicVolumeSlider: {fileID: 0}
+  sfxVolumeSlider: {fileID: 0}
+  muteToggle: {fileID: 0}
   fullscreenToggle: {fileID: 2781104775462809761}
   resolutionDropdown: {fileID: 8751060535616230483}
   qualityDropdown: {fileID: 8538689165193700507}
   vsyncToggle: {fileID: 2944085569896362154}
+  brightnessSlider: {fileID: 0}
   slotDropdown: {fileID: 8396010737807937122}
   saveButton: {fileID: 1874239891543198876}
+  autosaveToggle: {fileID: 0}
+  difficultyDropdown: {fileID: 0}
+  tutorialsToggle: {fileID: 0}
+  mouseSensitivitySlider: {fileID: 0}
+  invertMouseToggle: {fileID: 0}
+  resetKeybindsButton: {fileID: 0}
   applyButton: {fileID: 555820338449056671}
   cancelButton: {fileID: 4026601799299818825}
   backToMenuButton: {fileID: 3806174449126957654}
+  closeButton: {fileID: 0}
   saveFeedbackText: {fileID: 7076697217417890489}
 --- !u!1 &2695301937487386062
 GameObject:
@@ -4856,7 +4868,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -97, y: -59}
+  m_AnchoredPosition: {x: -109.7, y: -68.6}
   m_SizeDelta: {x: 90.33, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1276450898839380650

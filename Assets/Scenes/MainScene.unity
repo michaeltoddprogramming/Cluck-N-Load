@@ -6323,8 +6323,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiParent: {fileID: 713383478}
   defaultStructureUI: {fileID: 3724273108228962489, guid: e95c011b60e029342bde1aaa6911b03c, type: 3}
-  uiOffset: 5
-  screenOffset: {x: 0, y: 20}
+  uiOffset: 0
+  screenOffset: {x: -293.8, y: 0}
   closeSound: {fileID: 369685986}
   openSound: {fileID: 369685985}
 --- !u!224 &369685984
@@ -9004,6 +9004,10 @@ PrefabInstance:
     - target: {fileID: 7588071889537490790, guid: e7aafa3361813f041810b935e9c8df5b, type: 3}
       propertyPath: m_Name
       value: Tillage_6x1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7588071889537490790, guid: e7aafa3361813f041810b935e9c8df5b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -18210,6 +18214,10 @@ PrefabInstance:
     - target: {fileID: 4847757468758050264, guid: 772619802dded0140a801dd015e2acf7, type: 3}
       propertyPath: m_Name
       value: Flower
+      objectReference: {fileID: 0}
+    - target: {fileID: 4847757468758050264, guid: 772619802dded0140a801dd015e2acf7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5767910265155511815, guid: 772619802dded0140a801dd015e2acf7, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

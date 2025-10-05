@@ -18,8 +18,8 @@ MonoBehaviour:
   Type: 4
   Health: 380
   AttackDamage: 1
-  AttackRange: 10
-  AttackCooldown: 2.5
+  AttackRange: 6
+  AttackCooldown: 4
   Acceleration: 4
   AngularSpeed: 120
   StoppingDistance: 2

@@ -546,7 +546,7 @@ public class SpawnUnits : MonoBehaviour
     {
         maxSpawnAmount += nightlySpawnMultiplier;
         // minSpawnAmount += nightlySpawnMultiplier;
-        // Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}************************************************");
+        Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}************************************************");
 
     }
     public void increaseAfterSeason()
@@ -556,7 +556,7 @@ public class SpawnUnits : MonoBehaviour
         // Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}===============================================");
 
         nightlySpawnMultiplier = Mathf.CeilToInt(nightlySpawnMultiplier * seasonSpawnMultiplier);
-        // Debug.Log($"nightly things: {nightlySpawnMultiplier}=====================================================");
+        Debug.Log($"nightly things: {nightlySpawnMultiplier}=====================================================");
     }
 
 

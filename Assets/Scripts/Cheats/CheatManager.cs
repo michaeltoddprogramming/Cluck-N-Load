@@ -10,7 +10,7 @@ public class CheatManager : MonoBehaviour
     
     [Header("Cheat Activation")]
     [SerializeField] private KeyCode[] cheatKeys = { KeyCode.C, KeyCode.H, KeyCode.E, KeyCode.A, KeyCode.T };
-    [SerializeField] private float keyInputTimeout = 2f;
+    [SerializeField] private float keyInputTimeout = 0.2f;
     
     [Header("Cheat Panel UI")]
     [SerializeField] private GameObject cheatPanel;

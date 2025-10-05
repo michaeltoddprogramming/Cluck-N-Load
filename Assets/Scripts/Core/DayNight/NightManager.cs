@@ -306,14 +306,14 @@ public class NightManager : MonoBehaviour
         
         timeIndicator.exchangeTimeIcon("fast");
         timeSpeedEffect.StartSpeedEffect();
-        if (isPaused)
-        {
-            Time.timeScale = 1f;
-        }
+        // if (isPaused)
+        // {
+        //     Time.timeScale = 1f;
+        // }
 
-        isFast = !isFast;
+        isFast = true;
         isPaused = false;
-        Time.timeScale = isFast ? speedOfFast : 1f;
+        Time.timeScale = speedOfFast;
 
         if (shopManager != null)
         {

@@ -6324,7 +6324,7 @@ MonoBehaviour:
   uiParent: {fileID: 713383478}
   defaultStructureUI: {fileID: 3724273108228962489, guid: e95c011b60e029342bde1aaa6911b03c, type: 3}
   uiOffset: 5
-  screenOffset: {x: 0, y: 20}
+  screenOffset: {x: -293.8, y: 0}
   closeSound: {fileID: 369685986}
   openSound: {fileID: 369685985}
 --- !u!224 &369685984

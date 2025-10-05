@@ -399,7 +399,6 @@ public partial class TutorialManager
         buyChickensStep.onStepStart = new UnityEvent();
         buyChickensStep.onStepStart.AddListener(() =>
         {
-            Debug.Log("[TutorialDebug] Buy Chickens step started - highlighting chicken coop");
             HighlightLastBuiltStructure("ChickenCoop");
             HighlightBuyAnimalsButton();
         });
@@ -443,13 +442,46 @@ public partial class TutorialManager
         });
         steps.Add(feedChickensStep);
 
-        steps.Add(new TutorialStep
+        var collectEggsStep = new TutorialStep
         {
             stepId = "collect_eggs",
             title = "Collect Eggs",
             instructionText = "<color=yellow>Eggs ready</color>! <color=yellow>Click Collect</color> - eggs <color=cyan>automatically sell</color> for <color=gold>coins</color>! This is how you <color=green>make money</color>.",
             triggerToWaitFor = TutorialTrigger.CollectedFirstProducts
+        };
+        collectEggsStep.onStepStart = new UnityEvent();
+        collectEggsStep.onStepStart.AddListener(() =>
+        {
+            // Check if eggs were already collected (player was too fast)
+            bool eggAlreadyCollected = false;
+            
+            // Look for any animal structure that's not producing and not ready (indicating it was collected)
+            foreach (var animalStructure in FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None))
+            {
+                if (animalStructure != null && animalStructure.GetAnimalType == AnimalStructure.AnimalType.Chicken)
+                {
+                    // If chickens exist but no product is ready and not currently producing, eggs were likely collected
+                    if (!animalStructure.ProductReady && !animalStructure.IsProducing && animalStructure.AnimalCount > 0)
+                    {
+                        eggAlreadyCollected = true;
+                        Debug.Log("[Tutorial] Detected eggs were already collected - auto-completing step");
+                        break;
+                    }
+                }
+            }
+            
+            if (eggAlreadyCollected)
+            {
+                // Auto-complete this step with a small delay
+                StartCoroutine(AutoCompleteCollectEggsStep());
+            }
+            else
+            {
+                // Highlight the chicken coop for collecting eggs
+                HighlightLastBuiltStructure("ChickenCoop");
+            }
         });
+        steps.Add(collectEggsStep);
 
         var recruitSoldiersStep = new TutorialStep
         {
@@ -1567,5 +1599,16 @@ public partial class TutorialManager
         {
             Debug.Log($"AutoAdvanceAfterDelay: Cancelled - waitingForStepToComplete: {waitingForStepToComplete}, currentStepIndex: {currentStepIndex}");
         }
+    }
+
+    private IEnumerator AutoCompleteCollectEggsStep()
+    {
+        // Small delay to let the step UI appear briefly
+        yield return new WaitForSeconds(0.5f);
+        
+        Debug.Log("[Tutorial] Auto-completing collect_eggs step - eggs were already collected");
+        
+        // Trigger the completion
+        Trigger(TutorialTrigger.CollectedFirstProducts);
     }
 }

@@ -369,7 +369,16 @@ public class AnimalStructure : Structure
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(totalMoneyEarned, transform.position);
-            TutorialManager.Instance?.Trigger(TutorialTrigger.CollectedFirstProducts);
+            
+            // Simple, robust tutorial trigger - always fire if tutorial is active and step not completed
+            if (TutorialManager.Instance != null && 
+                TutorialManager.Instance.IsTutorialActive() && 
+                !TutorialManager.Instance.GetCompletedStepIds().Contains("collect_eggs"))
+            {
+                Debug.Log($"[Tutorial] Triggering CollectedFirstProducts - tutorial step auto-completion will handle timing");
+                // Use immediate trigger since the step's onStepStart now handles early collection
+                TutorialManager.Instance.Trigger(TutorialTrigger.CollectedFirstProducts);
+            }
         }
         else
         {
@@ -800,13 +809,19 @@ public class AnimalStructure : Structure
         OnAnimalCountChanged?.Invoke();
     }
     
-    // Helper method to delay tutorial triggers and prevent race conditions
+    // Helper method to delay tutorial triggers and prevent race conditions (kept for other uses)
     private IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, float delay)
     {
+        Debug.Log($"[Tutorial] DelayedTutorialTrigger waiting {delay}s for {trigger}");
         yield return new WaitForSeconds(delay);
         if (TutorialManager.Instance != null)
         {
+            Debug.Log($"[Tutorial] DelayedTutorialTrigger firing {trigger}");
             TutorialManager.Instance.Trigger(trigger);
+        }
+        else
+        {
+            Debug.LogWarning($"[Tutorial] DelayedTutorialTrigger cancelled - TutorialManager is null");
         }
     }
 }

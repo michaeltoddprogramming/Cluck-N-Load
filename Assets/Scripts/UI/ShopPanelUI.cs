@@ -34,6 +34,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     [SerializeField] private GameObject comingSoonPanel; // Panel for upcoming features 
 
+    [Header("Repair things")]
+    public GameObject repairItemPrefab; 
+
+    [Header("Tab buttons")]
+    [SerializeField] private RectTransform  shopTab;
+    [SerializeField] private RectTransform  repairTab;
+
+
     private void Awake()
     {
         Canvas canvas = GetComponent<Canvas>();
@@ -841,5 +849,63 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             default:
                 return false;
         }
+    }
+
+
+    public void PopulateRepairList()
+    {
+        // Clear old items
+        foreach (Transform child in contentParent)
+            Destroy(child.gameObject);
+
+        // Example: just 5 dummy items
+        for (int i = 0; i < 5; i++)
+        {
+            GameObject item = Instantiate(repairItemPrefab, contentParent);
+            // item.transform.Find("NameText").GetComponent<TextMeshProUGUI>().text = "Building " + (i + 1);
+            // item.transform.Find("CostText").GetComponent<TextMeshProUGUI>().text = $"Repair Cost: {10*(i+1)}";
+
+            // Button btn = item.transform.Find("RepairButton").GetComponent<Button>();
+            // int index = i; // capture index
+            // btn.onClick.AddListener(() => RepairBuilding(index));
+        }
+    }
+
+    public void SetLayoutForShop()
+    {
+        Vector2 size = shopTab.sizeDelta;
+        size.y = 133;
+        shopTab.sizeDelta = size;
+        
+        Vector2 size2 = repairTab.sizeDelta;
+        size2.y = 100;
+        repairTab.sizeDelta = size2;
+        
+        GridLayoutGroup layout = contentParent.GetComponent<GridLayoutGroup>();
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = 2;  // 2 columns for shop
+        layout.cellSize = new Vector2(350, 400); // adjust size for shop items
+        layout.spacing = new Vector2(10, 10);
+
+        PopulateShop(currNav);
+    }
+
+    public void SetLayoutForRepair()
+    {
+        Vector2 size = repairTab.sizeDelta;
+        size.y = 133;
+        repairTab.sizeDelta = size;
+        
+        Vector2 size2 = shopTab.sizeDelta;
+        size2.y = 100;
+        shopTab.sizeDelta = size2;
+
+        GridLayoutGroup layout = contentParent.GetComponent<GridLayoutGroup>();
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = 1;  // 1 column for repair list
+        layout.cellSize = new Vector2(690, 140); // taller for repair items
+        layout.spacing = new Vector2(10, 10);
+
+        PopulateRepairList();
     }
 }

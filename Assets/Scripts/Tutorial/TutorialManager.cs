@@ -74,6 +74,10 @@ public partial class TutorialManager : MonoBehaviour
 
     private bool wasTutorialSkippedByDev = false; // Add this field near the other private fields
     
+    // Session-based tutorial tracking - survives scene reloads but not application restart
+    private static bool tutorialCompletedThisSession = false;
+    private static bool tutorialSkippedThisSession = false;
+    
     [Header("Melony Hunt System")]
     public GameObject melonyPrefab; // Civilian chicken prefab
     public AudioClip melonyExplosionSound;
@@ -159,6 +163,17 @@ public partial class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
+        // Check if tutorial was already completed or skipped in this application session
+        if (tutorialCompletedThisSession || tutorialSkippedThisSession)
+        {
+            Debug.Log("TutorialManager: Tutorial already completed/skipped this session - not starting again");
+            if (tutorialPanel != null)
+            {
+                tutorialPanel.SetActive(false);
+            }
+            return;
+        }
+        
         // Prevent multiple simultaneous starts
         if (isProcessingStep || IsTutorialActive())
         {
@@ -436,6 +451,10 @@ public partial class TutorialManager : MonoBehaviour
 
     public void EndTutorial()
     {
+        // Mark tutorial as completed for this session
+        tutorialCompletedThisSession = true;
+        Debug.Log("TutorialManager: Tutorial completed - marked for session");
+        
         // Hide tutorial UI
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
@@ -465,6 +484,10 @@ public partial class TutorialManager : MonoBehaviour
             Debug.Log("SkipTutorial called but tutorial is not active");
             return;
         }
+        
+        // Mark tutorial as skipped for this session
+        tutorialSkippedThisSession = true;
+        Debug.Log("TutorialManager: Tutorial skipped via UI - marked for session");
         
         Debug.Log($"SkipTutorial: Starting skip process. Current step: {currentStepIndex}/{steps.Count}");
         
@@ -541,6 +564,10 @@ public partial class TutorialManager : MonoBehaviour
     
     private void DevSkipTutorial()
     {
+        // Mark tutorial as skipped for this session
+        tutorialSkippedThisSession = true;
+        Debug.Log("TutorialManager: Tutorial dev-skipped - marked for session");
+        
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)
             nextStepButton.gameObject.SetActive(false);
@@ -827,6 +854,23 @@ public partial class TutorialManager : MonoBehaviour
     public bool WasTutorialSkippedByDev()
     {
         return wasTutorialSkippedByDev;
+    }
+    
+    // Methods to check session-based tutorial state
+    public static bool WasTutorialCompletedThisSession()
+    {
+        return tutorialCompletedThisSession;
+    }
+    
+    public static bool WasTutorialSkippedThisSession()
+    {
+        return tutorialSkippedThisSession;
+    }
+    
+    // Method to check if tutorial should be blocked this session
+    public static bool ShouldSkipTutorialThisSession()
+    {
+        return tutorialCompletedThisSession || tutorialSkippedThisSession;
     }
     
     private void HandleMelonyClickDetection()

@@ -355,6 +355,7 @@ public class BuildController : MonoBehaviour
     }
 
     public bool IsBuildModeActive() => isBuildModeActive;
+    public bool IsMoveModeActive() => isMoveModeActive;
     public bool IsDeleteModeActive() => isDeleteModeActive;
     public bool HasActiveGhost() => currentGhost != null;
 
@@ -1009,7 +1010,7 @@ public class BuildController : MonoBehaviour
 
     void PlaceMovedStructure(int x, int y)
     {
-        if (!IsValidPlacement(x, y)) return;
+        if (!IsValidPlacementWithoutMoney(x, y)) return; // Use no-money check for moving existing structures
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
         movingStructure.transform.position = cellCenter;
         movingStructure.transform.rotation = currentRotation;
@@ -1037,6 +1038,8 @@ public class BuildController : MonoBehaviour
             Destroy(currentGhost);
             currentGhost = null;
         }
+        currentBuildTargetPrefab = null; // Clear the build target to prevent shop from entering build mode
+        currentStructureData = null; // Also clear the structure data
         DisableBuildMode();
     }
 
@@ -1067,7 +1070,7 @@ public class BuildController : MonoBehaviour
         }
     }
 
-    void CancelMove()
+    public void CancelMove()
     {
         if (movingStructure != null)
         {
@@ -1083,6 +1086,8 @@ public class BuildController : MonoBehaviour
             Destroy(currentGhost);
             currentGhost = null;
         }
+        currentBuildTargetPrefab = null; // Clear the build target to prevent shop from entering build mode
+        currentStructureData = null; // Also clear the structure data
         ClearSynergyVisualization();
         gridController.HideGrid();
         DisableBuildMode();
@@ -1116,8 +1121,23 @@ public class BuildController : MonoBehaviour
 
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(useX, useY);
         currentGhost.transform.position = cellCenter;
-        bool isValidPlacement = IsValidPlacement(useX, useY);
-        bool canAfford = currentStructureData != null && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(currentStructureData.cost);
+        
+        // Use different validation logic for move mode vs build mode
+        bool isValidPlacement;
+        bool canAfford = true; // Default to true for move mode
+        
+        if (isMoveModeActive)
+        {
+            // For moving existing structures, don't check money
+            isValidPlacement = IsValidPlacementWithoutMoney(useX, useY);
+            canAfford = true; // Always "affordable" when moving existing structures
+        }
+        else
+        {
+            // For building new structures, check both placement and money
+            isValidPlacement = IsValidPlacement(useX, useY);
+            canAfford = currentStructureData != null && MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(currentStructureData.cost);
+        }
 
         // Update ghost color based on affordability and placement
         foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
@@ -1482,7 +1502,7 @@ private void ShowCropSynergyPreview()
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(useX, useY);
         currentGhost.transform.position = cellCenter;
         currentGhost.SetActive(true);
-        bool isValidPlacement = IsValidPlacement(useX, useY);
+        bool isValidPlacement = IsValidPlacementWithoutMoney(useX, useY); // Use no-money check for move mode
         foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
             renderer.material.color = isValidPlacement ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
         UpdateSynergyVisualization();
@@ -2573,6 +2593,7 @@ private void ShowCropSynergyPreview()
 
         ClearSynergyVisualization(); // <-- Add this line
         currentBuildTargetPrefab = null;
+        currentStructureData = null; // Also clear structure data for consistency
     }
 
     private Vector2Int GetGridCellUnderCursor(bool ignoreStructures = false)

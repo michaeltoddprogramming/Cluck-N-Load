@@ -372,16 +372,24 @@ public class NightManager : MonoBehaviour
         // Set weather for night: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
         {
-            int season = currentSeason;
-            float rainChance = 0.3f;
-            float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
-            float roll = Random.value;
-            if (season == 4 && roll < snowChance)
-                WeatherManager.Instance.SpawnSnow();
-            else if (roll < rainChance)
-                WeatherManager.Instance.SpawnRain();
-            else
+            // Don't allow rain during tutorial
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+            {
                 WeatherManager.Instance.ClearWeather();
+            }
+            else
+            {
+                int season = currentSeason;
+                float rainChance = 0.15f; // Reduced from 0.3f to 0.15f
+                float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
+                float roll = Random.value;
+                if (season == 4 && roll < snowChance)
+                    WeatherManager.Instance.SpawnSnow();
+                else if (roll < rainChance)
+                    WeatherManager.Instance.SpawnRain();
+                else
+                    WeatherManager.Instance.ClearWeather();
+            }
         }
 
         // Start wolf spawning when night begins
@@ -478,16 +486,24 @@ public class NightManager : MonoBehaviour
         // Set weather for day: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
         {
-            int season = currentSeason; // You may need to track season in NightManager
-            float rainChance = 0.3f;
-            float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
-            float roll = Random.value;
-            if (season == 4 && roll < snowChance)
-                WeatherManager.Instance.SpawnSnow();
-            else if (roll < rainChance)
-                WeatherManager.Instance.SpawnRain();
-            else
+            // Don't allow rain during tutorial
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+            {
                 WeatherManager.Instance.ClearWeather();
+            }
+            else
+            {
+                int season = currentSeason; // You may need to track season in NightManager
+                float rainChance = 0.15f; // Reduced from 0.3f to 0.15f
+                float snowChance = (season == 4) ? 0.5f : 0f; // Only snow in winter
+                float roll = Random.value;
+                if (season == 4 && roll < snowChance)
+                    WeatherManager.Instance.SpawnSnow();
+                else if (roll < rainChance)
+                    WeatherManager.Instance.SpawnRain();
+                else
+                    WeatherManager.Instance.ClearWeather();
+            }
         }
 
         // Advance growing crops to stage 2, preserve ready-to-harvest crops
@@ -865,13 +881,18 @@ public class NightManager : MonoBehaviour
     {
         if (WeatherManager.Instance != null)
         {
-            if (currentSeason == 4)
+            // Don't allow rain during tutorial
+            if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+            {
+                WeatherManager.Instance.ClearWeather();
+            }
+            else if (currentSeason == 4)
             {
                 WeatherManager.Instance.SpawnSnow();
             }
             else
             {
-                float rainChance = 0.3f;
+                float rainChance = 0.15f; // Reduced from 0.3f to 0.15f
                 float roll = Random.value;
                 if (roll < rainChance)
                     WeatherManager.Instance.SpawnRain();

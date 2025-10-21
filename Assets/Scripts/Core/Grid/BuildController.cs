@@ -728,7 +728,7 @@ public class BuildController : MonoBehaviour
             Debug.Log($"Spent {totalCost} for chain of {defenceGhostChain.Count} structures");
         }
 
-        // Place all structures in the chain
+        // Place all structures in the chain (suppress sound for each individual placement)
         int placedCount = 0;
         foreach (GameObject ghost in defenceGhostChain)
         {
@@ -738,7 +738,7 @@ public class BuildController : MonoBehaviour
             // Check if this position is still valid before placing
             if (IsValidPlacementForChain(gridCoords.x, gridCoords.y))
             {
-                PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y);
+                PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y, playSound: false); // Suppress sound for individual placements
                 placedCount++;
                 Debug.Log($"FinalizeDefenceChain: Successfully placed structure {placedCount} at {gridCoords}");
             }
@@ -749,6 +749,12 @@ public class BuildController : MonoBehaviour
         }
 
         Debug.Log($"FinalizeDefenceChain: Successfully placed {placedCount} out of {defenceGhostChain.Count} structures in chain");
+
+        // Play build sound once after all structures are placed
+        if (placedCount > 0)
+        {
+            AudioManager.Instance?.PlayPlaceSound();
+        }
 
         // Tutorial trigger for chain completion
         if (placedCount > 0)
@@ -1808,7 +1814,7 @@ private void ShowCropSynergyPreview()
     }
 
     // Place item without money check (used for defence chains where money is already spent)
-    private void PlaceItemWithoutMoneyCheck(int x, int y)
+    private void PlaceItemWithoutMoneyCheck(int x, int y, bool playSound = true)
     {
         Debug.Log($"PlaceItemWithoutMoneyCheck at ({x}, {y})");
         
@@ -1880,7 +1886,13 @@ private void ShowCropSynergyPreview()
         {
             gridController.SetCellOccupied(cell.x, cell.y, true);
         }
-        AudioManager.Instance?.PlayPlaceSound();
+        
+        // Only play sound if requested (to avoid multiple sounds in chain building)
+        if (playSound)
+        {
+            AudioManager.Instance?.PlayPlaceSound();
+        }
+        
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
 

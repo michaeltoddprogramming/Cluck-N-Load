@@ -1830,6 +1830,7 @@ private void ShowCropSynergyPreview()
 
         if(currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
         {
+            Debug.LogWarning("Placing Farm House this will not be added to the building list");
             //do not add it to the buidling manager
         }
         else
@@ -1949,6 +1950,12 @@ private void ShowCropSynergyPreview()
         if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
         {
             ShopUIManager.Instance?.OnFarmHousePlaced();
+        }
+
+        if (structure != null && !structure.GetStructureName().ToLower().Contains("farm house"))
+        {
+            BuildingManager.Instance?.addBuilding(placedItem);
+            // Debug.Log($"Added {placedItem.name} to BuildingManager list");
         }
 
         if (dustPoof != null)

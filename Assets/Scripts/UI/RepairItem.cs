@@ -26,13 +26,6 @@ public class RepairItem : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        Debug.Log("Current Money: " + currentMoney + ", Repair Cost: " + repairCost);
-        Debug.Log("Repair Button Interactable: " + (repairButton != null ? repairButton.interactable.ToString() : "null"));
-    }
-
-
     public void Initialize(GameObject building, string structureName, int cost)
     {
         structureNameText.text = structureName;

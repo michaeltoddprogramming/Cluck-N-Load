@@ -15,6 +15,11 @@ public class RepairItem : MonoBehaviour
     private int currentMoney;
     private int repairCost;
 
+    [Header("Pulse Highlight Settings")]
+    [SerializeField] private float pulseScale = 1.2f;
+    [SerializeField] private float pulseDuration = 0.5f;
+    private bool isPulsing = false;
+
     public System.Action<RepairItem> OnRepaired;
 
     private void Awake()
@@ -70,5 +75,27 @@ public class RepairItem : MonoBehaviour
     public int GetRepairCost()
     {
         return repairCost;
+    }
+
+    public void OnRepairButtonHoverEnter()
+    {
+        if (!repairButton.interactable && !isPulsing)
+        {
+            isPulsing = true;
+            costText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
+            LeanTween.scale(costText.gameObject, Vector3.one * pulseScale, pulseDuration)
+                .setEaseInOutSine()
+                .setLoopPingPong();
+        }
+    }
+
+    public void OnRepairButtonHoverExit()
+    {
+        if (isPulsing)
+        {
+            isPulsing = false;
+            LeanTween.cancel(costText.gameObject);
+            costText.transform.localScale = Vector3.one;
+        }
     }
 }

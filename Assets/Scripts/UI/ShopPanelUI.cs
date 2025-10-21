@@ -43,6 +43,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public TextMeshProUGUI totalRepairCostText;
     public Button repairAllButton;
+    public Sprite greyNormalButton;
     private int currentMoney;
     private int totalRepairCost;
 
@@ -50,6 +51,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private RectTransform  shopTab;
     [SerializeField] private RectTransform  repairTab;
 
+    [Header("Pulse Highlight Settings")]
+    [SerializeField] private float pulseScale = 1.2f;
+    [SerializeField] private float pulseDuration = 0.5f;
+    private bool isPulsing = false;
 
     private void Awake()
     {
@@ -905,6 +910,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             //set text
             totalRepairCost = 0;
             totalRepairCostText.text = $"{totalRepairCost}";
+            // repairAllButton.image.sprite = greyNormalButton;
             repairAllButton.interactable = false;
 
             repairNotification.SetActive(true);
@@ -963,6 +969,28 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if(totalRepairCostText != null)
         {
             totalRepairCostText.color = currentMoney >= totalRepairCost ? Color.white : Color.red;
+        }
+    }
+
+    public void OnRepairButtonHoverEnter()
+    {
+        if (!repairAllButton.interactable && !isPulsing)
+        {
+            isPulsing = true;
+            totalRepairCostText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
+            LeanTween.scale(totalRepairCostText.gameObject, Vector3.one * pulseScale, pulseDuration)
+                .setEaseInOutSine()
+                .setLoopPingPong();
+        }
+    }
+
+    public void OnRepairButtonHoverExit()
+    {
+        if (isPulsing)
+        {
+            isPulsing = false;
+            LeanTween.cancel(totalRepairCostText.gameObject);
+            totalRepairCostText.transform.localScale = Vector3.one;
         }
     }
 

@@ -56,13 +56,15 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private float pulseDuration = 0.5f;
     private bool isPulsing = false;
 
+    private UIHover uiHover;
+
     private void Awake()
     {
         Canvas canvas = GetComponent<Canvas>();
-        if (canvas != null)
-        {
-            canvas.sortingOrder = 100; // Ensure Shop UI is on top
-        }
+        // if (canvas != null)
+        // {
+        //     canvas.sortingOrder = 100; // Ensure Shop UI is on top
+        // }
         // Ensure only one instance of ShopPanelUI exists
         if (Instance != null && Instance != this)
         {
@@ -70,6 +72,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             Destroy(gameObject);
             return;
         }
+
+        uiHover = FindObjectOfType<UIHover>();
+        if (uiHover == null)
+            Debug.LogWarning("No UIHover found in the scene!");
 
         Instance = this;
     }
@@ -976,6 +982,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (!repairAllButton.interactable && !isPulsing)
         {
+            if(uiHover != null)
+            {
+                uiHover.Show("Broke!", "Not enough money to repair!", repairAllButton.GetComponent<RectTransform>());
+            }
+
             isPulsing = true;
             totalRepairCostText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
             LeanTween.scale(totalRepairCostText.gameObject, Vector3.one * pulseScale, pulseDuration)
@@ -988,6 +999,11 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (isPulsing)
         {
+            if(uiHover != null)
+            {
+                uiHover.Hide();
+            }
+
             isPulsing = false;
             LeanTween.cancel(totalRepairCostText.gameObject);
             totalRepairCostText.transform.localScale = Vector3.one;

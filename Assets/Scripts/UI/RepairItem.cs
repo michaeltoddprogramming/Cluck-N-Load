@@ -22,6 +22,9 @@ public class RepairItem : MonoBehaviour
 
     public System.Action<RepairItem> OnRepaired;
 
+    private UIHover uiHover;
+
+
     private void Awake()
     {
         canvasGroup = GetComponent<CanvasGroup>();
@@ -29,6 +32,10 @@ public class RepairItem : MonoBehaviour
         {
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
+
+        uiHover = FindObjectOfType<UIHover>();
+        if (uiHover == null)
+            Debug.LogWarning("No UIHover found in the scene!");
     }
 
     public void Initialize(GameObject building, string structureName, int cost)
@@ -81,6 +88,11 @@ public class RepairItem : MonoBehaviour
     {
         if (!repairButton.interactable && !isPulsing)
         {
+            if(uiHover != null)
+            {
+                uiHover.Show("Broke!", "Not enough money to repair!", repairButton.GetComponent<RectTransform>());
+            }
+
             isPulsing = true;
             costText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
             LeanTween.scale(costText.gameObject, Vector3.one * pulseScale, pulseDuration)
@@ -93,6 +105,11 @@ public class RepairItem : MonoBehaviour
     {
         if (isPulsing)
         {
+            if(uiHover != null)
+            {
+                uiHover.Hide();
+            }
+
             isPulsing = false;
             LeanTween.cancel(costText.gameObject);
             costText.transform.localScale = Vector3.one;

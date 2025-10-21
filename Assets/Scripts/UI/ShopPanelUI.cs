@@ -1056,9 +1056,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnRepairButtonClick()
     {
-        if(repairAllButton.interactable == false && totalRepairCost == 0)
+        if(repairAllButton.interactable == false)
         {
-            AudioManager.Instance?.PlayErrorSound();  
+            if(totalRepairCost == 0)
+            {
+                AudioManager.Instance?.PlayErrorSound();  
+            }
             return;      
         }
         else if(repairAllButton.interactable == false)

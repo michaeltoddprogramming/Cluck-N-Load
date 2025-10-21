@@ -914,7 +914,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void UpdateRepairList()
     {
-        SetLayoutForRepair();
+        if(!onShop)
+        {
+            PopulateRepairList();
+        }
     }
 
 

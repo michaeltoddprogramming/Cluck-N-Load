@@ -2505,6 +2505,8 @@ private void ShowCropSynergyPreview()
                     gridController.SetCellOccupied(pos.x, pos.y, false);
                 }
 
+                BuildingManager.Instance?.removeBuilding(structure.gameObject);
+
                 // Destroy the structure
                 Destroy(structure.gameObject);
                 AudioManager.Instance?.PlayRemoveSound();

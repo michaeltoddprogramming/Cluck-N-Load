@@ -90,7 +90,7 @@ public class RepairItem : MonoBehaviour
         {
             if(uiHover != null)
             {
-                uiHover.Show("Broke!", "Not enough money to repair!", repairButton.GetComponent<RectTransform>());
+                uiHover.Show("Broke!", "You can't afford repairs!", repairButton.GetComponent<RectTransform>());
             }
 
             isPulsing = true;
@@ -103,12 +103,13 @@ public class RepairItem : MonoBehaviour
 
     public void OnRepairButtonHoverExit()
     {
+        if(uiHover != null)
+        {
+            uiHover.Hide();
+        }
+
         if (isPulsing)
         {
-            if(uiHover != null)
-            {
-                uiHover.Hide();
-            }
 
             isPulsing = false;
             LeanTween.cancel(costText.gameObject);

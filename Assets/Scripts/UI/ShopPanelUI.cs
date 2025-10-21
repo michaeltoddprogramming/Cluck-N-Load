@@ -1016,25 +1016,37 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             if(uiHover != null)
             {
-                uiHover.Show("Broke!", "Not enough money to repair!", repairAllButton.GetComponent<RectTransform>());
+                if(totalRepairCost == 0)
+                {
+                    uiHover.Show("All set!", "Nothing needs repairing.", repairAllButton.GetComponent<RectTransform>());
+
+                }
+                else
+                {
+                    uiHover.Show("Broke!", "You can't afford repairs!", repairAllButton.GetComponent<RectTransform>());
+                    isPulsing = true;
+                    totalRepairCostText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
+                    LeanTween.scale(totalRepairCostText.gameObject, Vector3.one * pulseScale, pulseDuration)
+                        .setEaseInOutSine()
+                        .setLoopPingPong();
+                }
             }
 
-            isPulsing = true;
-            totalRepairCostText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
-            LeanTween.scale(totalRepairCostText.gameObject, Vector3.one * pulseScale, pulseDuration)
-                .setEaseInOutSine()
-                .setLoopPingPong();
         }
     }
 
     public void OnRepairButtonHoverExit()
     {
+        if(uiHover != null)
+        {
+            uiHover.Hide();
+        }
         if (isPulsing)
         {
-            if(uiHover != null)
-            {
-                uiHover.Hide();
-            }
+            // if(uiHover != null)
+            // {
+            //     uiHover.Hide();
+            // }
 
             isPulsing = false;
             LeanTween.cancel(totalRepairCostText.gameObject);

@@ -425,6 +425,9 @@ public class Structure : MonoBehaviour
             Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
         }
 
+        // Remove from BuildingManager list
+        BuildingManager.Instance?.removeBuilding(this.gameObject);
+
         if (isRegisteredWithGameLoop && GameLoopManager.Instance != null)
         {
             GameLoopManager.Instance.UnregisterStructure(this);
@@ -452,6 +455,17 @@ public class Structure : MonoBehaviour
     public bool IsDead()
     {
         return currentHealth <= 0;
+    }
+
+    public bool canBeRepaired()
+    {
+        return (float)currentHealth / GetMaxHealth() <= 0.3f;
+    }
+
+    public void Repair(int amount)
+    {
+        currentHealth = GetMaxHealth();
+        OnHealthChanged?.Invoke();
     }
 
     #endregion

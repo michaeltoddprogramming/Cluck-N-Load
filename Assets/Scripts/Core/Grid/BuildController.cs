@@ -88,6 +88,9 @@ public class BuildController : MonoBehaviour
 
     [SerializeField] private GridDataGenerator gridDataGenerator;
 
+    //list of buildings for repair
+    private BuildingManager buildingManager;
+
 
 
     void Start()
@@ -1825,6 +1828,15 @@ private void ShowCropSynergyPreview()
         Structure structure = placedItem.GetComponent<Structure>();
         placedItem.name = $"Item_{x}_{y}";
 
+        if(currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
+        {
+            //do not add it to the buidling manager
+        }
+        else
+        {
+            BuildingManager.Instance?.addBuilding(placedItem);
+        }
+
         // Disable farmhouse in shop after placement
         if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
         {
@@ -1851,6 +1863,7 @@ private void ShowCropSynergyPreview()
             StartCoroutine(EnableSelectionAfterRelease(structure));
             HandleTutorialTriggers(structure);
         }
+
         List<Vector2Int> footprint = GetStructureFootprint(placedItem);
         foreach (Vector2Int cell in footprint)
         {
@@ -2410,6 +2423,13 @@ private void ShowCropSynergyPreview()
             else
             {
                 Debug.Log("No structure data found for money back calculation");
+            }
+
+            //remove building from the building manager except for farmhouse
+            if (!structure.GetStructureName().ToLower().Contains("farm house"))
+            {
+                BuildingManager.Instance?.removeBuilding(placedItem);
+                // Debug.Log($"Removed {placedItem.name} from BuildingManager list");
             }
 
             Destroy(placedItem);

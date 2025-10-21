@@ -462,10 +462,16 @@ public class Structure : MonoBehaviour
         return (float)currentHealth / GetMaxHealth() <= 0.3f;
     }
 
-    public void Repair(int amount)
+    public bool Repair()
     {
+        if(!canBeRepaired())
+        {
+            return false;
+        }
+
         currentHealth = GetMaxHealth();
         OnHealthChanged?.Invoke();
+        return true;
     }
 
     #endregion
@@ -567,6 +573,11 @@ public class Structure : MonoBehaviour
     public int GetCost()
     {
         return structureData != null ? structureData.cost : 0;
+    }
+
+    public int GetRepairCost()
+    {
+        return structureData != null ? structureData.RepairCost : 0;
     }
 
     #endregion

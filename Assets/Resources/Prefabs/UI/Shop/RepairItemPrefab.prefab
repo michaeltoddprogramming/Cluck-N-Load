@@ -284,8 +284,9 @@ GameObject:
   - component: {fileID: 5120556388870773807}
   - component: {fileID: 8833085246168025645}
   - component: {fileID: 7590780056794130847}
-  - component: {fileID: 2966078956150789857}
   - component: {fileID: 8774732436718745078}
+  - component: {fileID: 6296494840156431608}
+  - component: {fileID: 4757130369689169973}
   m_Layer: 5
   m_Name: RepairItemPrefab
   m_TagString: Untagged
@@ -358,7 +359,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4265318633475862390}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
@@ -395,7 +396,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2966078956150789857}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: StructureItemUI, Assembly-CSharp
         m_MethodName: SelectStructure
         m_Mode: 1
@@ -407,25 +408,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &2966078956150789857
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4265318633475862390}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 240ea47d7cb1b8041a6a7852f7ae277f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  icon: {fileID: 0}
-  nameText: {fileID: 0}
-  costText: {fileID: 0}
-  descriptionText: {fileID: 0}
-  selectButton: {fileID: 0}
-  lockedOverlay: {fileID: 0}
-  nightManager: {fileID: 0}
 --- !u!82 &8774732436718745078
 AudioSource:
   m_ObjectHideFlags: 0
@@ -523,6 +505,33 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6296494840156431608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4265318633475862390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec0d36b21b5754b43a2efeeb0cb80cbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  structureNameText: {fileID: 4059525435964344983}
+  costText: {fileID: 4374793532132126210}
+  repairButton: {fileID: 1320921361315076425}
+--- !u!225 &4757130369689169973
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4265318633475862390}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &5200233619587019938
 GameObject:
   m_ObjectHideFlags: 0
@@ -955,10 +964,10 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
+    m_HighlightedSprite: {fileID: 21300000, guid: 9fd91ce55000ad24aafbabb06303626f, type: 3}
     m_PressedSprite: {fileID: 21300000, guid: e7730705a7903654b9e0054dd77a9969, type: 3}
     m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 21300000, guid: 0883c5875873cd94ca995e1fa4a6687d, type: 3}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
     m_HighlightedTrigger: Highlighted
@@ -969,4 +978,16 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4272093838828615931}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6296494840156431608}
+        m_TargetAssemblyTypeName: RepairItem, Assembly-CSharp
+        m_MethodName: repairBuilding
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

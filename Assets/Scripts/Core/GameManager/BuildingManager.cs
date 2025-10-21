@@ -54,4 +54,6 @@ public class BuildingManager : MonoBehaviour
         }
         return brokenBuildings;
     }
+
+    
 }

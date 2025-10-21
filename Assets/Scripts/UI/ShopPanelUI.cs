@@ -858,16 +858,50 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         foreach (Transform child in contentParent)
             Destroy(child.gameObject);
 
-        // Example: just 5 dummy items
-        for (int i = 0; i < 5; i++)
+        
+        List<GameObject> brokenBuildings = BuildingManager.Instance.getBrokenBuildings();
+
+        foreach (GameObject building in brokenBuildings)
         {
             GameObject item = Instantiate(repairItemPrefab, contentParent);
-            // item.transform.Find("NameText").GetComponent<TextMeshProUGUI>().text = "Building " + (i + 1);
-            // item.transform.Find("CostText").GetComponent<TextMeshProUGUI>().text = $"Repair Cost: {10*(i+1)}";
 
-            // Button btn = item.transform.Find("RepairButton").GetComponent<Button>();
-            // int index = i; // capture index
-            // btn.onClick.AddListener(() => RepairBuilding(index));
+            RepairItem repairItem = item.GetComponent<RepairItem>();
+
+            if(repairItem != null)
+            {
+                repairItem.Initialize(building, building.GetComponent<Structure>().GetStructureName(), building.GetComponent<Structure>().GetRepairCost());
+            }
+
+            repairItem.OnRepaired += RemoveRepairItem;
+        }
+    }
+
+    private void RemoveRepairItem(RepairItem item)
+    {
+        if (item != null)
+        {
+            CanvasGroup cg = item.GetComponent<CanvasGroup>();
+
+
+            if (cg != null)
+            {
+                //scale effect
+                LeanTween.alphaCanvas(cg, 0f, 0.3f);
+                LeanTween.scale(item.gameObject, Vector3.zero, 0.3f).setEaseInBack().setOnComplete(() =>
+                {
+                    Destroy(item.gameObject);
+                });
+
+                // fade effect
+                // LeanTween.alphaCanvas(cg, 0f, 0.3f).setOnComplete(() =>
+                // {
+                //     Destroy(item.gameObject);
+                // });
+            }
+            else
+            {
+                Destroy(item.gameObject); 
+            }
         }
     }
 

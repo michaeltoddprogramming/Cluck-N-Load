@@ -28609,6 +28609,8 @@ GameObject:
   - component: {fileID: 1632256045}
   - component: {fileID: 1632256049}
   - component: {fileID: 1632256051}
+  - component: {fileID: 1632256054}
+  - component: {fileID: 1632256055}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -29781,6 +29783,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3239cbd41313e94b8f8b74d35c2a991, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1632256054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20e2d8d6f906a3543861b082eb3634a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildings: []
+--- !u!114 &1632256055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bb95212ab335040940102b9b8e0213, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageKey: 304
 --- !u!1 &1632586687
 GameObject:
   m_ObjectHideFlags: 0

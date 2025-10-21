@@ -20,6 +20,7 @@ MonoBehaviour:
   cost: 100
   health: 300
   uiPrefab: {fileID: 3724273108228962489, guid: 9f241fbe6bf363348a02b08b70581906, type: 3}
+  repairCost: 80
   costPerAnimal: 20
   moneyPerProduct: 40
   baseFoodRequired: 1

@@ -46,6 +46,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public Sprite greyNormalButton;
     private int currentMoney;
     private int totalRepairCost;
+    public TextMeshProUGUI filteredText;
 
     [Header("Tab buttons")]
     [SerializeField] private RectTransform  shopTab;
@@ -60,6 +61,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private bool onShop = true;
     private bool showAll = false;
+
 
     private void Awake()
     {
@@ -85,6 +87,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     void Start()
     {
+        showCurrentFilter();
         PopulateShop();
 
         // Link the close button to the ShopUIManager's CloseShop method
@@ -131,6 +134,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 Debug.LogWarning("Invalid nav bar selection: " + num);
                 return;
         }
+
+        showCurrentFilter();
 
         if (tempNav != currNav)
         {
@@ -1234,6 +1239,34 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             showAll = true;
             PopulateRepairList();
         }
+        showCurrentFilter();
+    }
+
+    public void showCurrentFilter()
+    {
+        if(showAll)
+        {
+            filteredText.text = "All";
+        }
+        else
+        {
+            switch(currNav)
+            {
+                case 'C':
+                    filteredText.text = "Pens";
+                    break;
+                case 'A':
+                    filteredText.text = "Barracks";
+                    break;
+                case 'P':
+                    filteredText.text = "Resources";
+                    break;
+                case 'S':
+                    filteredText.text = "Walls";
+                    break;
+            }
+        }
+        
     }
 }
 

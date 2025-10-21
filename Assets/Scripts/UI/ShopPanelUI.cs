@@ -868,7 +868,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         Structure.OnAnyStructureDamaged.AddListener(UpdateRepairList);
 
         if (MoneyManager.Instance != null)
-            MoneyManager.Instance.OnMoneyChanged += UpdateTopSection;
+            MoneyManager.Instance.OnMoneyChanged += OnMoneyChange;
     }
 
     private void OnDisable()
@@ -879,7 +879,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         Structure.OnAnyStructureDamaged.RemoveListener(UpdateRepairList);
 
         if (MoneyManager.Instance != null)
-            MoneyManager.Instance.OnMoneyChanged -= UpdateTopSection;
+            MoneyManager.Instance.OnMoneyChanged -= OnMoneyChange;
     }
 
     private void UpdateRepairList()
@@ -903,7 +903,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             // topSection.SetActive(false);
 
             //set text
-            totalRepairCostText.text = "0";
+            totalRepairCost = 0;
+            totalRepairCostText.text = $"{totalRepairCost}";
             repairAllButton.interactable = false;
 
             repairNotification.SetActive(true);
@@ -913,7 +914,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             topSection.SetActive(true);
             
-            totalRepairCostText.text = "0";
+            totalRepairCostText.text = $"{totalRepairCost}";
             repairAllButton.interactable = true;
 
             repairNotification.SetActive(false);
@@ -938,6 +939,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         totalRepairCostText.text = $"{totalRepairCost}";
+
         if(MoneyManager.Instance.GetCurrentMoney() <= totalRepairCost)
         {
             repairAllButton.interactable = false;
@@ -950,7 +952,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
-    private void UpdateTopSection(int money)
+    private void OnMoneyChange(int money)
     {
         currentMoney = money;
         if (repairAllButton != null)
@@ -960,6 +962,28 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if(totalRepairCostText != null)
         {
+            totalRepairCostText.color = currentMoney >= totalRepairCost ? Color.white : Color.red;
+        }
+    }
+
+
+    private void UpdateTopSection()
+    {
+        if (repairAllButton != null)
+        {
+            if(totalRepairCost == 0)
+            {
+                repairAllButton.interactable = false;
+            }
+            else
+            {
+                repairAllButton.interactable = currentMoney >= totalRepairCost;
+            }
+        }
+
+        if(totalRepairCostText != null)
+        {
+            totalRepairCostText.text = $"{totalRepairCost}";
             totalRepairCostText.color = currentMoney >= totalRepairCost ? Color.white : Color.red;
         }
     }
@@ -981,6 +1005,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     Destroy(item.gameObject);
                     item.transform.SetParent(null);
                     CheckRepairNotification();
+                    totalRepairCost -= item.GetRepairCost();
+                    UpdateTopSection();
                 });
 
                 // fade effect
@@ -995,6 +1021,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 Destroy(item.gameObject); 
                 item.transform.SetParent(null);
                 CheckRepairNotification();
+                totalRepairCost -= item.GetRepairCost();
+                UpdateTopSection();
             }
             CheckRepairNotification();
         }
@@ -1004,9 +1032,16 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void repairAllBuildings()
     {
-        BuildingManager.Instance.repairAllBuildings();
+        if(BuildingManager.Instance.repairAllBuildings())
+        {
+            MoneyManager.Instance.SpendMoney(totalRepairCost);
+            totalRepairCost = 0;
+            UpdateTopSection();
+        }        
 
         repairAnimation();
+
+        PopulateRepairList();
     }
 
     public void repairAnimation()

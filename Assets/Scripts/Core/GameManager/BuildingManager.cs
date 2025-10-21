@@ -64,7 +64,6 @@ public class BuildingManager : MonoBehaviour
     public bool repairAllBuildings()
     {
         List<GameObject> brokenBuildings = getBrokenBuildings();
-        int totalCost = 0;
 
         foreach (GameObject building in brokenBuildings)
         {

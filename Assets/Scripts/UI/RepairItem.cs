@@ -66,4 +66,9 @@ public class RepairItem : MonoBehaviour
         if (MoneyManager.Instance != null)
             MoneyManager.Instance.OnMoneyChanged -= UpdateButtonState;
     }    
+
+    public int GetRepairCost()
+    {
+        return repairCost;
+    }
 }

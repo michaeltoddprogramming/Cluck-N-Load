@@ -965,10 +965,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     }
 
     private void RemoveRepairItem(RepairItem item)
-    {
-        Debug.Log("RemoveRepairItem called: " + item);
-
-         
+    {         
         if (item != null)
         {
             CanvasGroup cg = item.GetComponent<CanvasGroup>();
@@ -976,15 +973,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
             if (cg != null)
             {
-                // item.transform.SetParent(null);
 
                 //scale effect
                 LeanTween.alphaCanvas(cg, 0f, 0.3f);
                 LeanTween.scale(item.gameObject, Vector3.zero, 0.3f).setEaseInBack().setOnComplete(() =>
                 {
                     Destroy(item.gameObject);
-                    Debug.Log("i was supposed to play the animation");
-                    // CheckRepairNotification();
+                    item.transform.SetParent(null);
+                    CheckRepairNotification();
                 });
 
                 // fade effect
@@ -996,16 +992,13 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             }
             else
             {
-                Debug.Log("i fucked up for some reason");
                 Destroy(item.gameObject); 
-                // CheckRepairNotification();
+                item.transform.SetParent(null);
+                CheckRepairNotification();
             }
             CheckRepairNotification();
         }
     }
-
-
-
 
 
 
@@ -1032,31 +1025,23 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     // item.transform.SetParent(null);
 
                     LeanTween.alphaCanvas(cg, 0f, 0.3f);
-                    LeanTween.scale(item.gameObject, Vector3.zero, 0.3f)
-                        .setEaseInBack()
-                        .setOnComplete(() => Destroy(item.gameObject));
+                    LeanTween.scale(item.gameObject, Vector3.zero, 0.3f).setEaseInBack().setOnComplete(() =>
+                    {
+                        Destroy(item.gameObject);
+                        item.transform.SetParent(null);
+                        CheckRepairNotification();
+                    });
                 }
                 else
                 {
-                    Destroy(item.gameObject);
+                    Destroy(item.gameObject); 
+                    item.transform.SetParent(null);
+                    CheckRepairNotification();
                 }
+                CheckRepairNotification();
             }
         }
-
-        // Update repair notification and top section after all are gone
-        // StartCoroutine(DelayedRepairUpdate(0.35f)); // slightly longer than animation
     }
-
-    // private IEnumerator DelayedRepairUpdate(float delay)
-    // {
-    //     yield return new WaitForSeconds(delay);
-    //     CheckRepairNotification();
-    //     totalRepairCost = 0;
-    //     totalRepairCostText.text = "0";
-    //     repairAllButton.interactable = false;
-    //     totalRepairCostText.color = Color.white;
-    // }
-
 
     private void CheckRepairNotification()
     {

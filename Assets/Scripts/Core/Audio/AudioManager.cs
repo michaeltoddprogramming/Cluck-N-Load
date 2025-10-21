@@ -26,6 +26,9 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource[] exceptions;
     private AudioSource[] allAudioSources;
 
+    [Header("Repair SFX")]
+    [SerializeField] private AudioSource repairSFX;
+
     private void Awake()
     {
         // Singleton pattern
@@ -91,7 +94,7 @@ public class AudioManager : MonoBehaviour
 
     public void PlayErrorSound()
     {
-        Debug.Log("[AudioManager] PlayErrorSound called from: " + System.Environment.StackTrace);
+        // Debug.Log("[AudioManager] PlayErrorSound called from: " + System.Environment.StackTrace);
         if (errorSound != null)
         {
             errorSound.Play();
@@ -118,6 +121,14 @@ public class AudioManager : MonoBehaviour
             {
                 source.mute = false;
             }
+        }
+    }
+
+    public void PlayRepairSound()
+    {
+        if (repairSFX != null)
+        {
+            repairSFX.Play();
         }
     }
 }

@@ -1054,6 +1054,20 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
+    public void OnRepairButtonClick()
+    {
+        if(repairAllButton.interactable == false && totalRepairCost == 0)
+        {
+            AudioManager.Instance?.PlayErrorSound();  
+            return;      
+        }
+        else if(repairAllButton.interactable == false)
+        {
+            AudioManager.Instance?.PlayInsufficientFundsSound();  
+            return;      
+        }        
+    }
+
 
     private void UpdateTopSection()
     {
@@ -1135,6 +1149,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             MoneyManager.Instance.SpendMoney(totalRepairCost);
             totalRepairCost = 0;
             UpdateTopSection();
+
+            AudioManager.Instance?.PlayRepairSound();
         }        
 
         repairAnimation();

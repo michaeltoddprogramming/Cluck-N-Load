@@ -56,6 +56,7 @@ public class RepairItem : MonoBehaviour
         {
             MoneyManager.Instance.SpendMoney(repairCost);
             OnRepaired?.Invoke(this);
+            AudioManager.Instance?.PlayRepairSound();
         }
     }
 
@@ -115,5 +116,14 @@ public class RepairItem : MonoBehaviour
             LeanTween.cancel(costText.gameObject);
             costText.transform.localScale = Vector3.one;
         }
+    }
+
+    public void OnRepairButtonClick()
+    {
+        if(repairButton.interactable == false)
+        {
+            AudioManager.Instance?.PlayInsufficientFundsSound();  
+            return;      
+        }        
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using TMPro;
 
 public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -12,6 +13,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public GameObject itemPrefab; // Your StructureItem prefab
     public Transform contentParent; // The "StructureList" object
+    public RectTransform scrollViewParent; 
     public StructureDatabase database; // Your ScriptableObject
     [SerializeField] private Button closeButton; // Reference to the close button
 
@@ -35,7 +37,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private GameObject comingSoonPanel; // Panel for upcoming features 
 
     [Header("Repair things")]
-    public GameObject repairItemPrefab; 
+    public GameObject repairItemPrefab;  
+    public GameObject repairNotification;
+    public GameObject topSection;
+
+    public TextMeshProUGUI totalRepairCostText;
+    public Button repairAllButton;
+    private int currentMoney;
+    private int totalRepairCost;
 
     [Header("Tab buttons")]
     [SerializeField] private RectTransform  shopTab;
@@ -851,6 +860,33 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
+    private void OnEnable()
+    {
+        BuildingManager.onBuildingAdded.AddListener(UpdateRepairList);
+        BuildingManager.onBuildingRemoved.AddListener(UpdateRepairList);
+
+        Structure.OnAnyStructureDamaged.AddListener(UpdateRepairList);
+
+        if (MoneyManager.Instance != null)
+            MoneyManager.Instance.OnMoneyChanged += UpdateTopSection;
+    }
+
+    private void OnDisable()
+    {
+        BuildingManager.onBuildingAdded.RemoveListener(UpdateRepairList);
+        BuildingManager.onBuildingRemoved.RemoveListener(UpdateRepairList);
+
+        Structure.OnAnyStructureDamaged.RemoveListener(UpdateRepairList);
+
+        if (MoneyManager.Instance != null)
+            MoneyManager.Instance.OnMoneyChanged -= UpdateTopSection;
+    }
+
+    private void UpdateRepairList()
+    {
+        SetLayoutForRepair();
+    }
+
 
     public void PopulateRepairList()
     {
@@ -861,8 +897,34 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         
         List<GameObject> brokenBuildings = BuildingManager.Instance.getBrokenBuildings();
 
+        if(brokenBuildings == null || brokenBuildings.Count == 0)
+        {
+            //maybe remove it when there is nothing
+            // topSection.SetActive(false);
+
+            //set text
+            totalRepairCostText.text = "0";
+            repairAllButton.interactable = false;
+
+            repairNotification.SetActive(true);
+            return;
+        }
+        else
+        {
+            topSection.SetActive(true);
+            
+            totalRepairCostText.text = "0";
+            repairAllButton.interactable = true;
+
+            repairNotification.SetActive(false);
+        }
+
+        totalRepairCost = 0;
+
         foreach (GameObject building in brokenBuildings)
         {
+            totalRepairCost += building.GetComponent<Structure>().GetRepairCost();
+
             GameObject item = Instantiate(repairItemPrefab, contentParent);
 
             RepairItem repairItem = item.GetComponent<RepairItem>();
@@ -874,10 +936,39 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
             repairItem.OnRepaired += RemoveRepairItem;
         }
+
+        totalRepairCostText.text = $"{totalRepairCost}";
+        if(MoneyManager.Instance.GetCurrentMoney() <= totalRepairCost)
+        {
+            repairAllButton.interactable = false;
+            totalRepairCostText.color = Color.red;
+        }
+        else
+        {
+            repairAllButton.interactable = true;
+            totalRepairCostText.color = Color.white;
+        }
+    }
+
+    private void UpdateTopSection(int money)
+    {
+        currentMoney = money;
+        if (repairAllButton != null)
+        {
+            repairAllButton.interactable = currentMoney >= totalRepairCost;
+        }
+
+        if(totalRepairCostText != null)
+        {
+            totalRepairCostText.color = currentMoney >= totalRepairCost ? Color.white : Color.red;
+        }
     }
 
     private void RemoveRepairItem(RepairItem item)
     {
+        Debug.Log("RemoveRepairItem called: " + item);
+
+         
         if (item != null)
         {
             CanvasGroup cg = item.GetComponent<CanvasGroup>();
@@ -885,11 +976,15 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
             if (cg != null)
             {
+                // item.transform.SetParent(null);
+
                 //scale effect
                 LeanTween.alphaCanvas(cg, 0f, 0.3f);
                 LeanTween.scale(item.gameObject, Vector3.zero, 0.3f).setEaseInBack().setOnComplete(() =>
                 {
                     Destroy(item.gameObject);
+                    Debug.Log("i was supposed to play the animation");
+                    // CheckRepairNotification();
                 });
 
                 // fade effect
@@ -897,16 +992,89 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 // {
                 //     Destroy(item.gameObject);
                 // });
+                // CheckRepairNotification();
             }
             else
             {
+                Debug.Log("i fucked up for some reason");
                 Destroy(item.gameObject); 
+                // CheckRepairNotification();
+            }
+            CheckRepairNotification();
+        }
+    }
+
+
+
+
+
+
+    public void repairAllBuildings()
+    {
+        BuildingManager.Instance.repairAllBuildings();
+
+        repairAnimation();
+    }
+
+    public void repairAnimation()
+    {
+        // Get all RepairItem components currently in the list
+        RepairItem[] items = contentParent.GetComponentsInChildren<RepairItem>();
+
+        foreach (RepairItem item in items)
+        {
+            if (item != null)
+            {
+                CanvasGroup cg = item.GetComponent<CanvasGroup>();
+
+                if (cg != null)
+                {
+                    // item.transform.SetParent(null);
+
+                    LeanTween.alphaCanvas(cg, 0f, 0.3f);
+                    LeanTween.scale(item.gameObject, Vector3.zero, 0.3f)
+                        .setEaseInBack()
+                        .setOnComplete(() => Destroy(item.gameObject));
+                }
+                else
+                {
+                    Destroy(item.gameObject);
+                }
             }
         }
+
+        // Update repair notification and top section after all are gone
+        // StartCoroutine(DelayedRepairUpdate(0.35f)); // slightly longer than animation
+    }
+
+    // private IEnumerator DelayedRepairUpdate(float delay)
+    // {
+    //     yield return new WaitForSeconds(delay);
+    //     CheckRepairNotification();
+    //     totalRepairCost = 0;
+    //     totalRepairCostText.text = "0";
+    //     repairAllButton.interactable = false;
+    //     totalRepairCostText.color = Color.white;
+    // }
+
+
+    private void CheckRepairNotification()
+    {
+        // Show notification if there are no remaining repair items
+        repairNotification.SetActive(contentParent.childCount == 0);
     }
 
     public void SetLayoutForShop()
     {
+        if(scrollViewParent != null)
+        {
+            Vector2 size1 = scrollViewParent.sizeDelta;
+            size1.y = 524f; 
+            scrollViewParent.sizeDelta = size1;
+        }
+
+        topSection.SetActive(false);
+        repairNotification.SetActive(false);
         Vector2 size = shopTab.sizeDelta;
         size.y = 133;
         shopTab.sizeDelta = size;
@@ -920,12 +1088,22 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         layout.constraintCount = 2;  // 2 columns for shop
         layout.cellSize = new Vector2(350, 400); // adjust size for shop items
         layout.spacing = new Vector2(10, 10);
+        layout.padding.top = 0;
 
         PopulateShop(currNav);
     }
 
     public void SetLayoutForRepair()
     {
+        if(scrollViewParent != null)
+        {
+            Vector2 size1 = scrollViewParent.sizeDelta;
+            size1.y = 469f; 
+            scrollViewParent.sizeDelta = size1;
+            // Debug.Log($"SetLayoutForRepair: Adjusted scrollViewParent height to {scrollViewParent.sizeDelta}");
+        }
+
+        topSection.SetActive(true);
         Vector2 size = repairTab.sizeDelta;
         size.y = 133;
         repairTab.sizeDelta = size;
@@ -934,11 +1112,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         size2.y = 100;
         shopTab.sizeDelta = size2;
 
-        GridLayoutGroup layout = contentParent.GetComponent<GridLayoutGroup>();
+        GridLayoutGroup layout = contentParent.GetComponent<GridLayoutGroup>();        
         layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         layout.constraintCount = 1;  // 1 column for repair list
         layout.cellSize = new Vector2(690, 140); // taller for repair items
         layout.spacing = new Vector2(10, 10);
+        // layout.padding.top = 50;
 
         PopulateRepairList();
     }

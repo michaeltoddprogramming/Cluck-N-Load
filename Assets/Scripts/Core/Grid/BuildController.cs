@@ -1830,7 +1830,7 @@ private void ShowCropSynergyPreview()
 
         if(currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
         {
-            Debug.LogWarning("Placing Farm House this will not be added to the building list");
+            // Debug.LogWarning("Placing Farm House this will not be added to the building list");
             //do not add it to the buidling manager
         }
         else

@@ -1,9 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 public class BuildingManager : MonoBehaviour
 {
     public static BuildingManager Instance;
+
+    public static UnityEvent onBuildingAdded = new UnityEvent();
+    public static UnityEvent onBuildingRemoved = new UnityEvent();
 
     public List<GameObject> buildings = new List<GameObject>();
 
@@ -33,11 +37,13 @@ public class BuildingManager : MonoBehaviour
     public void addBuilding(GameObject building)
     {
         buildings.Add(building);
+        onBuildingAdded.Invoke();
     }
 
     public void removeBuilding(GameObject building)
     {
         buildings.Remove(building);
+        onBuildingRemoved.Invoke();
     }
 
     public List<GameObject> getBrokenBuildings()
@@ -55,5 +61,21 @@ public class BuildingManager : MonoBehaviour
         return brokenBuildings;
     }
 
-    
+    public bool repairAllBuildings()
+    {
+        List<GameObject> brokenBuildings = getBrokenBuildings();
+        int totalCost = 0;
+
+        foreach (GameObject building in brokenBuildings)
+        {
+            Structure bh = building.GetComponent<Structure>();
+            if (bh != null)
+            {
+                bh.Repair();
+            }
+        }
+        return true;
+    }
+
+
 }

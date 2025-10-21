@@ -287,8 +287,8 @@ public class BuildController : MonoBehaviour
             Vector3 currentPosition = currentGhost != null ? currentGhost.transform.position : originalPosition;
             Vector2Int gridCoords = gridController.WorldToGridCoords(currentPosition);
 
-            // Check if current position is valid, if not use original position as fallback
-            if (IsValidPlacement(gridCoords.x, gridCoords.y))
+            // Check if current position is valid (skip money check since we're moving)
+            if (IsValidPlacement(gridCoords.x, gridCoords.y, checkMoney: false))
             {
                 // Place at current ghost position
                 movingStructure.transform.position = currentPosition;
@@ -944,7 +944,9 @@ public class BuildController : MonoBehaviour
 
     void PlaceMovedStructure(int x, int y)
     {
-        if (!IsValidPlacement(x, y)) return;
+        // Skip money check when moving structures (checkMoney = false)
+        if (!IsValidPlacement(x, y, checkMoney: false)) return;
+        
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(x, y);
         movingStructure.transform.position = cellCenter;
         movingStructure.transform.rotation = currentRotation;
@@ -1417,7 +1419,10 @@ private void ShowCropSynergyPreview()
         Vector3 cellCenter = gridController.GetCellCenterFromTexture(useX, useY);
         currentGhost.transform.position = cellCenter;
         currentGhost.SetActive(true);
-        bool isValidPlacement = IsValidPlacement(useX, useY);
+        
+        // Skip money check when moving structures (checkMoney: false)
+        bool isValidPlacement = IsValidPlacement(useX, useY, checkMoney: false);
+        
         foreach (Renderer renderer in currentGhost.GetComponentsInChildren<Renderer>())
             renderer.material.color = isValidPlacement ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
         UpdateSynergyVisualization();
@@ -1650,7 +1655,7 @@ private void ShowCropSynergyPreview()
         Debug.Log($"Cached footprint for {currentBuildTargetPrefab.name}: {cachedStructureFootprint.Count} cells");
     }
 
-    bool IsValidPlacement(int x, int y)
+    bool IsValidPlacement(int x, int y, bool checkMoney = true)
     {
         // Add null checks FIRST
         if (gridController == null || gridDataGenerator == null)
@@ -1704,8 +1709,8 @@ private void ShowCropSynergyPreview()
             if (!cell.flags.isOwned) return false;
         }
 
-        // Check money
-        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost))
+        // Check money only if requested (skip when moving structures)
+        if (checkMoney && currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost))
             return false;
 
         return true;

@@ -1133,7 +1133,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if(scrollViewParent != null)
         {
             Vector2 size1 = scrollViewParent.sizeDelta;
-            size1.y = 524f; 
+            size1.y = 600f; 
             scrollViewParent.sizeDelta = size1;
         }
 

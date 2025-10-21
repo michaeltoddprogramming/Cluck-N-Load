@@ -427,6 +427,17 @@ public class BuildController : MonoBehaviour
             var field = typeof(AnimalStructure).GetField("animalType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             field?.SetValue(ghostAnimal, animal.GetAnimalType);
         }
+        
+        // IMPORTANT: For defense structures, manually unregister from defense registry
+        DefenseStructure defenseStructure = structure.GetComponent<DefenseStructure>();
+        if (defenseStructure != null)
+        {
+            Debug.Log("StartMoveModeForStructure: Unregistering defense structure from registry");
+            var unregisterMethod = typeof(DefenseStructure).GetMethod("UnregisterFromRegistry", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            unregisterMethod?.Invoke(defenseStructure, null);
+        }
+        
         structure.UnregisterFromGrid();
         structure.gameObject.SetActive(false);
         gridController.ShowGrid();
@@ -954,6 +965,16 @@ public class BuildController : MonoBehaviour
         List<Vector2Int> newFootprint = GetStructureFootprint(movingStructure.gameObject);
         foreach (Vector2Int cell in newFootprint) gridController.SetCellOccupied(cell.x, cell.y, true);
         movingStructure.RegisterWithGrid();
+        
+        // IMPORTANT: For defense structures, force re-registration in the defense registry
+        DefenseStructure defenseStructure = movingStructure.GetComponent<DefenseStructure>();
+        if (defenseStructure != null)
+        {
+            // Manually trigger defense structure registration by calling Start via reflection
+            // Or use a coroutine to rebuild connectors after a delay
+            StartCoroutine(DelayedDefenseStructureUpdate(defenseStructure));
+        }
+        
         AudioManager.Instance?.PlayPlaceSound();
         gridController.UpdateGridTexture();
         if (gridMonitor != null && newFootprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(newFootprint, GridChangeType.Structural);
@@ -975,6 +996,46 @@ public class BuildController : MonoBehaviour
             currentGhost = null;
         }
         DisableBuildMode();
+    }
+
+    // Coroutine to handle defense structure re-registration and connector updates after moving
+    private IEnumerator DelayedDefenseStructureUpdate(DefenseStructure defenseStructure)
+    {
+        // Wait a frame to ensure position is finalized
+        yield return null;
+        
+        Debug.Log("DelayedDefenseStructureUpdate: Force re-registering defense structure");
+        
+        // Use reflection to call the private RegisterInRegistry method
+        var registerMethod = typeof(DefenseStructure).GetMethod("RegisterInRegistry", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        if (registerMethod != null)
+        {
+            registerMethod.Invoke(defenseStructure, null);
+            Debug.Log("Successfully re-registered defense structure");
+        }
+        else
+        {
+            Debug.LogError("Could not find RegisterInRegistry method");
+        }
+        
+        // Wait another frame for registration to complete
+        yield return null;
+        
+        // Now rebuild all connectors
+        DefenseStructure.RebuildAllConnectors();
+    }
+
+    // Coroutine to rebuild connectors after moving a fence (ensures proper registration)
+    private IEnumerator DelayedConnectorRebuildAfterMove()
+    {
+        // Wait a couple frames to ensure the moved defense structure is properly registered
+        yield return null;
+        yield return null;
+
+        Debug.Log("DelayedConnectorRebuildAfterMove: Rebuilding all defense structure connectors");
+        DefenseStructure.RebuildAllConnectors();
     }
 
     private void UpdateAllSynergies()

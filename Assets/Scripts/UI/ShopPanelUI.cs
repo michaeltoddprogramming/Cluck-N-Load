@@ -58,6 +58,9 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private UIHover uiHover;
 
+    private bool onShop = true;
+    private bool showAll = false;
+
     private void Awake()
     {
         Canvas canvas = GetComponent<Canvas>();
@@ -105,6 +108,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void changeNavBar(int num)
     {
         char tempNav = currNav;
+        if(showAll)
+        {
+            showAll = false;
+        }
 
         switch (num)
         {
@@ -127,7 +134,14 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (tempNav != currNav)
         {
-            PopulateShop(currNav);
+            if(onShop)
+            {
+                PopulateShop(currNav);
+            }
+            else
+            {
+                PopulateRepairList();
+            }
         }
     }
 
@@ -906,7 +920,17 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             Destroy(child.gameObject);
 
         
-        List<GameObject> brokenBuildings = BuildingManager.Instance.getBrokenBuildings();
+        List<GameObject> brokenBuildings;
+        
+        if(showAll)
+        {
+            brokenBuildings = BuildingManager.Instance.getBrokenBuildings('X');
+        }
+        else
+        {
+            brokenBuildings = BuildingManager.Instance.getBrokenBuildings(currNav);
+        }
+        
 
         if(brokenBuildings == null || brokenBuildings.Count == 0)
         {
@@ -1076,7 +1100,17 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void repairAllBuildings()
     {
-        if(BuildingManager.Instance.repairAllBuildings())
+        char type;
+        if(showAll)
+        {
+            type = 'X';
+        }
+        else
+        {
+            type = currNav;
+        }
+
+        if(BuildingManager.Instance.repairAllBuildings(type))
         {
             MoneyManager.Instance.SpendMoney(totalRepairCost);
             totalRepairCost = 0;
@@ -1130,6 +1164,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void SetLayoutForShop()
     {
+        onShop = true;
         if(scrollViewParent != null)
         {
             Vector2 size1 = scrollViewParent.sizeDelta;
@@ -1159,6 +1194,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void SetLayoutForRepair()
     {
+        onShop = false;
         if(scrollViewParent != null)
         {
             Vector2 size1 = scrollViewParent.sizeDelta;
@@ -1185,4 +1221,19 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         PopulateRepairList();
     }
+
+    public void showAllBuildings()
+    {
+        if(showAll)
+        {
+            showAll = false;
+            PopulateRepairList();
+        }
+        else
+        {
+            showAll = true;
+            PopulateRepairList();
+        }
+    }
 }
+

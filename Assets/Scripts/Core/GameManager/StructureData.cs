@@ -79,5 +79,6 @@ public enum StructureType
     Animal,
     Barracks,
     Decoration,
-    Placed
+    Placed,
+    Nothing,
 }

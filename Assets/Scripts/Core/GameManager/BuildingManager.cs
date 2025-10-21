@@ -46,24 +46,74 @@ public class BuildingManager : MonoBehaviour
         onBuildingRemoved.Invoke();
     }
 
-    public List<GameObject> getBrokenBuildings()
+    public List<GameObject> getBrokenBuildings(char type)
     {
         List<GameObject> brokenBuildings = new List<GameObject>();
+
+        StructureType structureType = StructureType.Animal;
+        StructureType structureType2 = StructureType.Nothing;
+
+        bool anyType = false;
+     
+        switch (type)
+        {
+            case 'C':
+                structureType = StructureType.Animal;
+                structureType2 = StructureType.Nothing;
+                anyType = false;
+                break;
+            case 'A':
+                structureType = StructureType.Barracks;
+                structureType2 = StructureType.Nothing;
+                break;
+            case 'P':
+                structureType = StructureType.CropPlot;
+                structureType2 = StructureType.Silo;
+                break;
+            case 'S':
+                structureType = StructureType.Defense;
+                structureType2 = StructureType.Nothing;
+                anyType = false;
+                break;
+            case 'X':
+                anyType = true;
+                break;
+            default:
+                Debug.LogWarning("Invalid type for repairAllBuildings");
+                break;
+        }
         
         foreach (GameObject building in buildings)
         {
             Structure bh = building.GetComponent<Structure>();
             if (bh != null && bh.canBeRepaired())
             {
-                brokenBuildings.Add(building);
+                if(anyType)
+                {
+                    brokenBuildings.Add(building);
+                }
+                else if(structureType2 != StructureType.Nothing)
+                {
+                    if(bh.GetStructureType() == structureType || bh.GetStructureType() == structureType2)
+                    {
+                        brokenBuildings.Add(building);
+                    }
+                }
+                else 
+                {
+                    if(bh.GetStructureType() == structureType)
+                    {
+                        brokenBuildings.Add(building);
+                    }
+                }
             }
         }
         return brokenBuildings;
     }
 
-    public bool repairAllBuildings()
-    {
-        List<GameObject> brokenBuildings = getBrokenBuildings();
+    public bool repairAllBuildings(char type)
+    {        
+        List<GameObject> brokenBuildings = getBrokenBuildings(type);
 
         foreach (GameObject building in brokenBuildings)
         {

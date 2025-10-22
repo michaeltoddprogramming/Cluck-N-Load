@@ -109,161 +109,7 @@ public class UIHoverManager : MonoBehaviour
         }
     }
 
-// public void FlyMoney(RectTransform targetButton)
-// {
-//     if (moneyUI == null || targetButton == null) return;
-
-//     // Ensure money starts at the fixed original position
-//     moneyUI.anchoredPosition = moneyOriginalPos;
-
-//     // Convert button position to the local position relative to moneyUI's parent
-//     Vector2 localTargetPos;
-//     RectTransformUtility.ScreenPointToLocalPointInRectangle(
-//         moneyUI.parent as RectTransform,
-//         targetButton.position, // world position of the button
-//         null,                  // camera is null for Overlay canvas
-//         out localTargetPos
-//     );
-
-//     // Animate to button
-//     LeanTween.moveLocal(moneyUI.gameObject, localTargetPos, duration)
-//         .setEase(LeanTweenType.easeInOutSine)
-//         .setOnComplete(() =>
-//         {
-//             // Animate back to fixed original position
-//             LeanTween.moveLocal(moneyUI.gameObject, moneyOriginalPos, duration)
-//                 .setEase(LeanTweenType.easeInOutSine);
-//         });
-// }
-
-// public void FlyMoney(RectTransform targetButton)
-// {
-//     if (moneyUI == null || targetButton == null)
-//     {
-//         Debug.LogWarning("FlyMoney: moneyUI or targetButton is null");
-//         return;
-//     }
-
-//     // Start at fixed original position
-//     moneyUI.anchoredPosition = moneyOriginalPos;
-//     Debug.Log($"FlyMoney: Starting at moneyOriginalPos = {moneyOriginalPos}");
-
-//     // Convert button world position to anchored position relative to parent
-//     RectTransformUtility.ScreenPointToLocalPointInRectangle(
-//         moneyUI.parent as RectTransform,
-//         RectTransformUtility.WorldToScreenPoint(null, targetButton.position),
-//         null,
-//         out Vector2 localPoint
-//     );
-//     Debug.Log($"FlyMoney: Target button = {targetButton.name}, localPoint = {localPoint}");
-
-//     // Animate to button using anchoredPosition
-//     LeanTween.value(moneyUI.gameObject, moneyUI.anchoredPosition, localPoint, duration)
-//         .setEase(LeanTweenType.easeInOutSine)
-//         .setOnUpdate((Vector2 val) =>
-//         {
-//             moneyUI.anchoredPosition = val;
-//             // Debug.Log($"FlyMoney: Moving to button, current anchoredPosition = {moneyUI.anchoredPosition}");
-//         })
-//         .setOnComplete(() =>
-//         {
-//             Debug.Log("FlyMoney: Reached button, now moving back to original position");
-//             // Animate back to original anchored position
-//             LeanTween.value(moneyUI.gameObject, moneyUI.anchoredPosition, moneyOriginalPos, duration)
-//                 .setEase(LeanTweenType.easeInOutSine)
-//                 .setOnUpdate((Vector2 val) =>
-//                 {
-//                     moneyUI.anchoredPosition = val;
-//                     // Debug.Log($"FlyMoney: Moving back, current anchoredPosition = {moneyUI.anchoredPosition}");
-//                 })
-//                 .setOnComplete(() =>
-//                 {
-//                     Debug.Log("FlyMoney: Returned to original position");
-//                 });
-//         });
-// }
-
-// public void FlyMoney(RectTransform targetButton)
-// {
-//     if (moneyUI == null || targetButton == null)
-//     {
-//         Debug.LogWarning("FlyMoney: moneyUI or targetButton is null");
-//         return;
-//     }
-
-//     // Start at fixed original position
-//     moneyUI.anchoredPosition = moneyOriginalPos;
-//     Debug.Log($"FlyMoney: Starting at moneyOriginalPos = {moneyOriginalPos}");
-
-//     // Get the camera that renders the button's canvas
-//     Canvas buttonCanvas = targetButton.GetComponentInParent<Canvas>();
-//     Camera cam = buttonCanvas != null && buttonCanvas.renderMode != RenderMode.ScreenSpaceOverlay
-//         ? buttonCanvas.worldCamera
-//         : null;
-
-//     // Convert button world position to anchored position relative to moneyUI's parent
-//     RectTransformUtility.ScreenPointToLocalPointInRectangle(
-//         moneyUI.parent as RectTransform,
-//         RectTransformUtility.WorldToScreenPoint(cam, targetButton.position),
-//         cam,
-//         out Vector2 localPoint
-//     );
-//     Debug.Log($"FlyMoney: Target button = {targetButton.name}, localPoint = {localPoint}");
-
-//     // Animate to button
-//     LeanTween.value(moneyUI.gameObject, moneyUI.anchoredPosition, localPoint, duration)
-//         .setEase(LeanTweenType.easeInOutSine)
-//         .setOnUpdate((Vector2 val) => moneyUI.anchoredPosition = val)
-//         .setOnComplete(() =>
-//         {
-//             Debug.Log("FlyMoney: Reached button, now moving back to original position");
-//             // Animate back to original anchored position
-//             LeanTween.value(moneyUI.gameObject, moneyUI.anchoredPosition, moneyOriginalPos, duration)
-//                 .setEase(LeanTweenType.easeInOutSine)
-//                 .setOnUpdate((Vector2 val) => moneyUI.anchoredPosition = val)
-//                 .setOnComplete(() => Debug.Log("FlyMoney: Returned to original position"));
-//         });
-// }
-
-
-// the best i have had yet ------------------------------------------------------------------------------
-// public void FlyMoney(RectTransform targetButton)
-// {
-//     if (moneyUI == null || targetButton == null)
-//     {
-//         Debug.LogWarning("FlyMoney: moneyUI or targetButton is null");
-//         return;
-//     }
-
-//     // Fixed original anchored position
-//     moneyUI.anchoredPosition = moneyOriginalPos;
-//     Debug.Log($"FlyMoney: Starting at {moneyOriginalPos}");
-
-//     // Get target button's world position
-//     Vector3 buttonWorldPos = targetButton.position;
-
-//     // Convert button world position to local position relative to moneyUI's parent
-//     Vector3 localTargetPos = moneyUI.parent.InverseTransformPoint(buttonWorldPos);
-//     Debug.Log($"FlyMoney: Target button = {targetButton.name}, localTargetPos = {localTargetPos}");
-
-//     // Animate to button
-//     LeanTween.moveLocal(moneyUI.gameObject, localTargetPos, duration)
-//         .setEase(LeanTweenType.easeInOutSine)
-//         .setOnComplete(() =>
-//         {
-//             Debug.Log("FlyMoney: Reached button, moving back to original position");
-
-//             // Animate back to original anchored position
-//             LeanTween.moveLocal(moneyUI.gameObject, moneyOriginalPos, duration)
-//                 .setEase(LeanTweenType.easeInOutSine)
-//                 .setOnComplete(() =>
-//                 {
-//                     Debug.Log("FlyMoney: Returned to original position");
-//                 });
-//         });
-// }
-
-
+// This is perfect ------------------------------------------------------------------------------
 public void FlyMoney(RectTransform targetButton)
 {
     if (moneyUI == null || targetButton == null)
@@ -271,6 +117,9 @@ public void FlyMoney(RectTransform targetButton)
         Debug.LogWarning("FlyMoney: moneyUI or targetButton is null");
         return;
     }
+
+    // Make sure it's rendered above everything
+    moneyUI.SetAsLastSibling();
 
     // Force start at anchored original
     moneyUI.anchoredPosition = moneyOriginalPos;

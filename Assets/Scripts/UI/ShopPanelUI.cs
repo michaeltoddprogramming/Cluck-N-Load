@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using TMPro;
 
 public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -12,6 +13,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public GameObject itemPrefab; // Your StructureItem prefab
     public Transform contentParent; // The "StructureList" object
+    public RectTransform scrollViewParent; 
     public StructureDatabase database; // Your ScriptableObject
     [SerializeField] private Button closeButton; // Reference to the close button
 
@@ -34,13 +36,40 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     [SerializeField] private GameObject comingSoonPanel; // Panel for upcoming features 
 
+    [Header("Repair things")]
+    public GameObject repairItemPrefab;  
+    public GameObject repairNotification;
+    public GameObject topSection;
+
+    public TextMeshProUGUI totalRepairCostText;
+    public Button repairAllButton;
+    public Sprite greyNormalButton;
+    private int currentMoney;
+    private int totalRepairCost;
+    public TextMeshProUGUI filteredText;
+
+    [Header("Tab buttons")]
+    [SerializeField] private RectTransform  shopTab;
+    [SerializeField] private RectTransform  repairTab;
+
+    [Header("Pulse Highlight Settings")]
+    [SerializeField] private float pulseScale = 1.2f;
+    [SerializeField] private float pulseDuration = 0.5f;
+    private bool isPulsing = false;
+
+    private UIHover uiHover;
+
+    private bool onShop = true;
+    private bool showAll = false;
+
+
     private void Awake()
     {
         Canvas canvas = GetComponent<Canvas>();
-        if (canvas != null)
-        {
-            canvas.sortingOrder = 100; // Ensure Shop UI is on top
-        }
+        // if (canvas != null)
+        // {
+        //     canvas.sortingOrder = 100; // Ensure Shop UI is on top
+        // }
         // Ensure only one instance of ShopPanelUI exists
         if (Instance != null && Instance != this)
         {
@@ -49,11 +78,16 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
         }
 
+        uiHover = FindObjectOfType<UIHover>();
+        if (uiHover == null)
+            Debug.LogWarning("No UIHover found in the scene!");
+
         Instance = this;
     }
 
     void Start()
     {
+        showCurrentFilter();
         PopulateShop();
 
         // Link the close button to the ShopUIManager's CloseShop method
@@ -77,6 +111,10 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void changeNavBar(int num)
     {
         char tempNav = currNav;
+        if(showAll)
+        {
+            showAll = false;
+        }
 
         switch (num)
         {
@@ -97,9 +135,18 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 return;
         }
 
+        showCurrentFilter();
+
         if (tempNav != currNav)
         {
-            PopulateShop(currNav);
+            if(onShop)
+            {
+                PopulateShop(currNav);
+            }
+            else
+            {
+                PopulateRepairList();
+            }
         }
     }
 
@@ -842,4 +889,418 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 return false;
         }
     }
+
+    private void OnEnable()
+    {
+        BuildingManager.onBuildingAdded.AddListener(UpdateRepairList);
+        BuildingManager.onBuildingRemoved.AddListener(UpdateRepairList);
+
+        Structure.OnAnyStructureDamaged.AddListener(UpdateRepairList);
+
+        if (MoneyManager.Instance != null)
+            MoneyManager.Instance.OnMoneyChanged += OnMoneyChange;
+    }
+
+    private void OnDisable()
+    {
+        BuildingManager.onBuildingAdded.RemoveListener(UpdateRepairList);
+        BuildingManager.onBuildingRemoved.RemoveListener(UpdateRepairList);
+
+        Structure.OnAnyStructureDamaged.RemoveListener(UpdateRepairList);
+
+        if (MoneyManager.Instance != null)
+            MoneyManager.Instance.OnMoneyChanged -= OnMoneyChange;
+    }
+
+    private void UpdateRepairList()
+    {
+        if(!onShop)
+        {
+            PopulateRepairList();
+        }
+    }
+
+
+    public void PopulateRepairList()
+    {
+        // Clear old items
+        foreach (Transform child in contentParent)
+            Destroy(child.gameObject);
+
+        
+        List<GameObject> brokenBuildings;
+        
+        if(showAll)
+        {
+            brokenBuildings = BuildingManager.Instance.getBrokenBuildings('X');
+        }
+        else
+        {
+            brokenBuildings = BuildingManager.Instance.getBrokenBuildings(currNav);
+        }
+        
+
+        if(brokenBuildings == null || brokenBuildings.Count == 0)
+        {
+            //maybe remove it when there is nothing
+            // topSection.SetActive(false);
+
+            //set text
+            totalRepairCost = 0;
+            totalRepairCostText.text = $"{totalRepairCost}";
+            // repairAllButton.image.sprite = greyNormalButton;
+            repairAllButton.interactable = false;
+
+            repairNotification.SetActive(true);
+            return;
+        }
+        else
+        {
+            topSection.SetActive(true);
+            
+            totalRepairCostText.text = $"{totalRepairCost}";
+            repairAllButton.interactable = true;
+
+            repairNotification.SetActive(false);
+        }
+
+        totalRepairCost = 0;
+
+        foreach (GameObject building in brokenBuildings)
+        {
+            totalRepairCost += building.GetComponent<Structure>().GetRepairCost();
+
+            GameObject item = Instantiate(repairItemPrefab, contentParent);
+
+            RepairItem repairItem = item.GetComponent<RepairItem>();
+
+            if(repairItem != null)
+            {
+                repairItem.Initialize(building, building.GetComponent<Structure>().GetStructureName(), building.GetComponent<Structure>().GetRepairCost());
+            }
+
+            repairItem.OnRepaired += RemoveRepairItem;
+        }
+
+        totalRepairCostText.text = $"{totalRepairCost}";
+
+        if(MoneyManager.Instance.GetCurrentMoney() <= totalRepairCost)
+        {
+            repairAllButton.interactable = false;
+            totalRepairCostText.color = Color.red;
+        }
+        else
+        {
+            repairAllButton.interactable = true;
+            totalRepairCostText.color = Color.white;
+        }
+    }
+
+    private void OnMoneyChange(int money)
+    {
+        currentMoney = money;
+        if (repairAllButton != null)
+        {
+            repairAllButton.interactable = currentMoney >= totalRepairCost;
+        }
+
+        if(totalRepairCostText != null)
+        {
+            totalRepairCostText.color = currentMoney >= totalRepairCost ? Color.white : Color.red;
+        }
+    }
+
+    public void OnRepairButtonHoverEnter()
+    {
+        if (!repairAllButton.interactable && !isPulsing)
+        {
+            if(uiHover != null)
+            {
+                if(totalRepairCost == 0)
+                {
+                    uiHover.Show("All set!", "Nothing needs repairing.", repairAllButton.GetComponent<RectTransform>());
+
+                }
+                else
+                {
+                    uiHover.Show("Broke!", "You can't afford repairs!", repairAllButton.GetComponent<RectTransform>());
+                    isPulsing = true;
+                    totalRepairCostText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
+                    LeanTween.scale(totalRepairCostText.gameObject, Vector3.one * pulseScale, pulseDuration)
+                        .setEaseInOutSine()
+                        .setLoopPingPong();
+                }
+            }
+
+        }
+    }
+
+    public void OnRepairButtonHoverExit()
+    {
+        if(uiHover != null)
+        {
+            uiHover.Hide();
+        }
+        if (isPulsing)
+        {
+            // if(uiHover != null)
+            // {
+            //     uiHover.Hide();
+            // }
+
+            isPulsing = false;
+            LeanTween.cancel(totalRepairCostText.gameObject);
+            totalRepairCostText.transform.localScale = Vector3.one;
+        }
+    }
+
+    public void OnRepairButtonClick()
+    {
+        if(repairAllButton.interactable == false)
+        {
+            if(totalRepairCost == 0)
+            {
+                AudioManager.Instance?.PlayErrorSound();  
+            }
+            return;      
+        }
+        else if(repairAllButton.interactable == false)
+        {
+            AudioManager.Instance?.PlayInsufficientFundsSound();  
+            return;      
+        }        
+    }
+
+
+    private void UpdateTopSection()
+    {
+        if (repairAllButton != null)
+        {
+            if(totalRepairCost == 0)
+            {
+                repairAllButton.interactable = false;
+            }
+            else
+            {
+                repairAllButton.interactable = currentMoney >= totalRepairCost;
+            }
+        }
+
+        if(totalRepairCostText != null)
+        {
+            totalRepairCostText.text = $"{totalRepairCost}";
+            totalRepairCostText.color = currentMoney >= totalRepairCost ? Color.white : Color.red;
+        }
+    }
+
+    private void RemoveRepairItem(RepairItem item)
+    {         
+        if (item != null)
+        {
+            CanvasGroup cg = item.GetComponent<CanvasGroup>();
+
+
+            if (cg != null)
+            {
+
+                //scale effect
+                LeanTween.alphaCanvas(cg, 0f, 0.3f);
+                LeanTween.scale(item.gameObject, Vector3.zero, 0.3f).setEaseInBack().setOnComplete(() =>
+                {
+                    Destroy(item.gameObject);
+                    item.transform.SetParent(null);
+                    CheckRepairNotification();
+                    totalRepairCost -= item.GetRepairCost();
+                    UpdateTopSection();
+                });
+
+                // fade effect
+                // LeanTween.alphaCanvas(cg, 0f, 0.3f).setOnComplete(() =>
+                // {
+                //     Destroy(item.gameObject);
+                // });
+                // CheckRepairNotification();
+            }
+            else
+            {
+                Destroy(item.gameObject); 
+                item.transform.SetParent(null);
+                CheckRepairNotification();
+                totalRepairCost -= item.GetRepairCost();
+                UpdateTopSection();
+            }
+            CheckRepairNotification();
+        }
+    }
+
+
+
+    public void repairAllBuildings()
+    {
+        char type;
+        if(showAll)
+        {
+            type = 'X';
+        }
+        else
+        {
+            type = currNav;
+        }
+
+        if(BuildingManager.Instance.repairAllBuildings(type))
+        {
+            MoneyManager.Instance.SpendMoney(totalRepairCost);
+            totalRepairCost = 0;
+            UpdateTopSection();
+
+            AudioManager.Instance?.PlayRepairSound();
+        }        
+
+        repairAnimation();
+
+        PopulateRepairList();
+    }
+
+    public void repairAnimation()
+    {
+        // Get all RepairItem components currently in the list
+        RepairItem[] items = contentParent.GetComponentsInChildren<RepairItem>();
+
+        foreach (RepairItem item in items)
+        {
+            if (item != null)
+            {
+                CanvasGroup cg = item.GetComponent<CanvasGroup>();
+
+                if (cg != null)
+                {
+                    // item.transform.SetParent(null);
+
+                    LeanTween.alphaCanvas(cg, 0f, 0.3f);
+                    LeanTween.scale(item.gameObject, Vector3.zero, 0.3f).setEaseInBack().setOnComplete(() =>
+                    {
+                        Destroy(item.gameObject);
+                        item.transform.SetParent(null);
+                        CheckRepairNotification();
+                    });
+                }
+                else
+                {
+                    Destroy(item.gameObject); 
+                    item.transform.SetParent(null);
+                    CheckRepairNotification();
+                }
+                CheckRepairNotification();
+            }
+        }
+    }
+
+    private void CheckRepairNotification()
+    {
+        // Show notification if there are no remaining repair items
+        repairNotification.SetActive(contentParent.childCount == 0);
+    }
+
+    public void SetLayoutForShop()
+    {
+        onShop = true;
+        if(scrollViewParent != null)
+        {
+            Vector2 size1 = scrollViewParent.sizeDelta;
+            size1.y = 600f; 
+            scrollViewParent.sizeDelta = size1;
+        }
+
+        topSection.SetActive(false);
+        repairNotification.SetActive(false);
+        Vector2 size = shopTab.sizeDelta;
+        size.y = 133;
+        shopTab.sizeDelta = size;
+        
+        Vector2 size2 = repairTab.sizeDelta;
+        size2.y = 100;
+        repairTab.sizeDelta = size2;
+        
+        GridLayoutGroup layout = contentParent.GetComponent<GridLayoutGroup>();
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = 2;  // 2 columns for shop
+        layout.cellSize = new Vector2(350, 400); // adjust size for shop items
+        layout.spacing = new Vector2(10, 10);
+        layout.padding.top = 0;
+
+        PopulateShop(currNav);
+    }
+
+    public void SetLayoutForRepair()
+    {
+        onShop = false;
+        if(scrollViewParent != null)
+        {
+            Vector2 size1 = scrollViewParent.sizeDelta;
+            size1.y = 469f; 
+            scrollViewParent.sizeDelta = size1;
+            // Debug.Log($"SetLayoutForRepair: Adjusted scrollViewParent height to {scrollViewParent.sizeDelta}");
+        }
+
+        topSection.SetActive(true);
+        Vector2 size = repairTab.sizeDelta;
+        size.y = 133;
+        repairTab.sizeDelta = size;
+        
+        Vector2 size2 = shopTab.sizeDelta;
+        size2.y = 100;
+        shopTab.sizeDelta = size2;
+
+        GridLayoutGroup layout = contentParent.GetComponent<GridLayoutGroup>();        
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = 1;  // 1 column for repair list
+        layout.cellSize = new Vector2(690, 140); // taller for repair items
+        layout.spacing = new Vector2(10, 10);
+        // layout.padding.top = 50;
+
+        PopulateRepairList();
+    }
+
+    public void showAllBuildings()
+    {
+        if(showAll)
+        {
+            showAll = false;
+            PopulateRepairList();
+        }
+        else
+        {
+            showAll = true;
+            PopulateRepairList();
+        }
+        showCurrentFilter();
+    }
+
+    public void showCurrentFilter()
+    {
+        if(showAll)
+        {
+            filteredText.text = "All";
+        }
+        else
+        {
+            switch(currNav)
+            {
+                case 'C':
+                    filteredText.text = "Pens";
+                    break;
+                case 'A':
+                    filteredText.text = "Barracks";
+                    break;
+                case 'P':
+                    filteredText.text = "Resources";
+                    break;
+                case 'S':
+                    filteredText.text = "Walls";
+                    break;
+            }
+        }
+        
+    }
 }
+

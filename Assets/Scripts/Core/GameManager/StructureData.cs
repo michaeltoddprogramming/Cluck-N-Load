@@ -14,6 +14,11 @@ public class StructureData : ScriptableObject
     public int health;
     public GameObject uiPrefab;
 
+    [Header("Repair Info")]
+    [Tooltip("Automatically calculated as 80% of cost")]
+    [SerializeField] private int repairCost; // Visible in Inspector
+    public int RepairCost => repairCost; // Access in code
+
     [Header("Civilian stats")]
     public int costPerAnimal = 50;
     public int moneyPerProduct = 50;
@@ -53,6 +58,12 @@ public class StructureData : ScriptableObject
     public float protectionRadius = 5f;
     public float synergyMinDist = 20f;
     public float synergyMaxDist = 30f;
+
+    private void OnValidate()
+    {
+        // Automatically calculate repairCost when cost changes
+        repairCost = Mathf.RoundToInt(cost * 0.8f);
+    }
 }
 
 public enum StructureType
@@ -68,5 +79,6 @@ public enum StructureType
     Animal,
     Barracks,
     Decoration,
-    Placed
+    Placed,
+    Nothing,
 }

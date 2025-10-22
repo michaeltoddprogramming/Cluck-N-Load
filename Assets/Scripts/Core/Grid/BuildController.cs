@@ -86,6 +86,9 @@ public class BuildController : MonoBehaviour
 
     [SerializeField] private GridDataGenerator gridDataGenerator;
 
+    //list of buildings for repair
+    private BuildingManager buildingManager;
+
 
 
     void Start()
@@ -1814,6 +1817,16 @@ private void ShowCropSynergyPreview()
         Structure structure = placedItem.GetComponent<Structure>();
         placedItem.name = $"Item_{x}_{y}";
 
+        if(currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
+        {
+            // Debug.LogWarning("Placing Farm House this will not be added to the building list");
+            //do not add it to the buidling manager
+        }
+        else
+        {
+            BuildingManager.Instance?.addBuilding(placedItem);
+        }
+
         // Disable farmhouse in shop after placement
         if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
         {
@@ -1840,6 +1853,7 @@ private void ShowCropSynergyPreview()
             StartCoroutine(EnableSelectionAfterRelease(structure));
             HandleTutorialTriggers(structure);
         }
+
         List<Vector2Int> footprint = GetStructureFootprint(placedItem);
         foreach (Vector2Int cell in footprint)
         {
@@ -1925,6 +1939,12 @@ private void ShowCropSynergyPreview()
         if (structure != null && structure.GetStructureName().ToLower().Contains("farm house"))
         {
             ShopUIManager.Instance?.OnFarmHousePlaced();
+        }
+
+        if (structure != null && !structure.GetStructureName().ToLower().Contains("farm house"))
+        {
+            BuildingManager.Instance?.addBuilding(placedItem);
+            // Debug.Log($"Added {placedItem.name} to BuildingManager list");
         }
 
         if (dustPoof != null)
@@ -2408,6 +2428,13 @@ private void ShowCropSynergyPreview()
                 Debug.Log("No structure data found for money back calculation");
             }
 
+            //remove building from the building manager except for farmhouse
+            if (!structure.GetStructureName().ToLower().Contains("farm house"))
+            {
+                BuildingManager.Instance?.removeBuilding(placedItem);
+                // Debug.Log($"Removed {placedItem.name} from BuildingManager list");
+            }
+
             Destroy(placedItem);
             AudioManager.Instance?.PlayRemoveSound();
             foreach (Vector2Int pos in footprint) gridController.SetCellOccupied(pos.x, pos.y, false);
@@ -2473,6 +2500,8 @@ private void ShowCropSynergyPreview()
                 {
                     gridController.SetCellOccupied(pos.x, pos.y, false);
                 }
+
+                BuildingManager.Instance?.removeBuilding(structure.gameObject);
 
                 // Destroy the structure
                 Destroy(structure.gameObject);

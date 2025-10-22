@@ -4,6 +4,8 @@ using System.Linq;
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.Events;
+
 
 public class Structure : MonoBehaviour
 {
@@ -69,6 +71,8 @@ public class Structure : MonoBehaviour
     public delegate void StructureEvent(Structure structure);
     public event StructureEvent OnDamaged;
     public event StructureEvent OnDestroyed;
+    public static UnityEvent OnAnyStructureDamaged = new UnityEvent();
+    private bool hasTriggeredLowHealthEvent = false;
     public delegate void StructureDestroyedEventHandler(Structure destroyedStructure);
     public event StructureDestroyedEventHandler OnStructureDestroyed;
 
@@ -377,6 +381,12 @@ public class Structure : MonoBehaviour
         OnDamaged?.Invoke(this);
         OnHealthChanged?.Invoke(); // Trigger health changed event for UI
 
+        if (!hasTriggeredLowHealthEvent && currentHealth <= (int)(GetMaxHealth() * 0.3f))
+        {
+            hasTriggeredLowHealthEvent = true;
+            OnAnyStructureDamaged.Invoke();
+        }
+
         if (currentHealth <= 0)
         {
             TargetManager.Instance?.UnregisterTarget(this);
@@ -425,6 +435,9 @@ public class Structure : MonoBehaviour
             Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
         }
 
+        // Remove from BuildingManager list
+        BuildingManager.Instance?.removeBuilding(this.gameObject);
+
         if (isRegisteredWithGameLoop && GameLoopManager.Instance != null)
         {
             GameLoopManager.Instance.UnregisterStructure(this);
@@ -452,6 +465,29 @@ public class Structure : MonoBehaviour
     public bool IsDead()
     {
         return currentHealth <= 0;
+    }
+
+    public bool canBeRepaired()
+    {
+        return (float)currentHealth / GetMaxHealth() <= 0.3f;
+    }
+
+    public bool Repair()
+    {
+        if(!canBeRepaired())
+        {
+            return false;
+        }
+
+        currentHealth = GetMaxHealth();
+        OnHealthChanged?.Invoke();
+
+        if (hasTriggeredLowHealthEvent)
+        {
+            hasTriggeredLowHealthEvent = false;
+            // OnAnyStructureDamaged.Invoke();
+        }
+        return true;
     }
 
     #endregion
@@ -553,6 +589,11 @@ public class Structure : MonoBehaviour
     public int GetCost()
     {
         return structureData != null ? structureData.cost : 0;
+    }
+
+    public int GetRepairCost()
+    {
+        return structureData != null ? structureData.RepairCost : 0;
     }
 
     #endregion

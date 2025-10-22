@@ -150,21 +150,63 @@ public class CropStructureUI : BaseStructureUI
                 statusText.color = Color.yellow;
                 statusText.text = "Harvest unsuccessful: No space in silo";
                 PlayErrorSound();
+                // NEW: Show notification for silo space error
+                if (NotificationManager.Instance != null)
+                {
+                    NotificationManager.ShowError("Silo Full!", "Build more silos or sell existing crops");
+                }
                 break;
             case "yes":
                 statusText.color = Color.green;
                 statusText.text = $"Harvest successful! +${moneyGained}";
                 PlaySound(harvestSound);
+                // NEW: Show success notification for harvest with boost info
+                if (NotificationManager.Instance != null)
+                {
+                    string cropName = cropStructure.CurrentCropType.ToString();
+                    if (string.IsNullOrEmpty(cropName) || cropName == "None")
+                    {
+                        cropName = "Crop"; // Fallback for uninitialized crop types
+                    }
+                    
+                    string baseMessage = $"{cropAmount} {cropName} harvested";
+                    
+                    // Check if harvest multiplier is active
+                    if (cropStructure.CropHarvestMultiplier > 1f)
+                    {
+                        int bonusPercent = Mathf.RoundToInt((cropStructure.CropHarvestMultiplier - 1f) * 100f);
+                        baseMessage += $" • +{bonusPercent}% silo bonus!";
+                        NotificationManager.ShowAchievement($"{cropName} Boosted!", baseMessage);
+                    }
+                    else
+                    {
+                        // NEW: Show error when no harvest boost is active - show harvest and missed potential
+                        // Calculate what they could have earned with silo bonus (assuming 50% bonus)
+                        int potentialCropAmount = Mathf.RoundToInt(cropAmount * 1.5f);
+                        int missedCrops = potentialCropAmount - cropAmount;
+                        NotificationManager.ShowError($"{cropName} No Boost!", $"{cropAmount} harvested • Missing +{missedCrops} crop!");
+                    }
+                }
                 break;
             case "ready":
                 statusText.color = Color.yellow;
                 statusText.text = "Harvest unsuccessful: Crop not ready";
                 PlayErrorSound();
+                // NEW: Show warning for not ready
+                if (NotificationManager.Instance != null)
+                {
+                    NotificationManager.ShowWarning("Not Ready Yet!", "Crops need more time to grow");
+                }
                 break;
             default:
                 statusText.color = Color.yellow;
                 statusText.text = "Harvest unsuccessful: Unknown issue";
                 PlayErrorSound();
+                // NEW: Show error for unknown issues
+                if (NotificationManager.Instance != null)
+                {
+                    NotificationManager.ShowError("Harvest Failed!", "Something went wrong");
+                }
                 break;
         }
         plantButton.interactable = true;

@@ -1803,6 +1803,11 @@ private void ShowCropSynergyPreview()
             {
                 AudioManager.Instance.PlayInsufficientFundsSound();
             }
+            // NEW: Show notification for insufficient funds
+            if (NotificationManager.Instance != null && currentStructureData != null)
+            {
+                NotificationManager.ShowError("Not Enough Money!", $"Need ${currentStructureData.cost} to build {currentStructureData.structureName}");
+            }
             return;
         }
 

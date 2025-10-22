@@ -594,7 +594,13 @@ public class NightManager : MonoBehaviour
                 clockTickingSource.Play();
             }
 
-            StartNotification("Night starting soon!!", 5f);
+            // StartNotification("Night starting soon!!", 5f);
+            
+            // NEW: Add modern warning notification for night approaching
+            if (NotificationManager.Instance != null)
+            {
+                NotificationManager.ShowWarning("Night Approaching!", "Prepare defenses • Enemies spawn soon");
+            }
 
             Coroutine skyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxAfternoon, 2f));
             skyboxCoroutines.Add(skyboxCor);
@@ -859,6 +865,9 @@ public class NightManager : MonoBehaviour
         {
             ShowPeteSeasonNotification(season);
         }
+        
+        // NEW: Add modern notification system for season changes
+        ShowSeasonChangeNotification(season);
     }
 
     private void SetSeasonWeather()
@@ -1045,7 +1054,13 @@ public class NightManager : MonoBehaviour
             {
                 doubleProductionSource.Play();
             }
-            StartProductionNotification(message, 5);
+            // StartProductionNotification(message, 5);
+            
+            // NEW: Add modern notification for production boost
+            if (NotificationManager.Instance != null)
+            {
+                NotificationManager.ShowAchievement("Double Production!", $"{fullAnimalName} earning 100% more!");
+            }
 
         }
         else
@@ -1124,7 +1139,13 @@ public class NightManager : MonoBehaviour
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
-                StartProductionNotification(message, 5);
+                // StartProductionNotification(message, 5);
+                
+                // NEW: Add modern notification for dual production boost
+                if (NotificationManager.Instance != null)
+                {
+                    NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output!");
+                }
 
                 // if (doubleProductionSource != null)
                 // {
@@ -1217,7 +1238,13 @@ public class NightManager : MonoBehaviour
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
-                StartProductionNotification(message, 5);
+                // StartProductionNotification(message, 5);
+                
+                // NEW: Add modern notification for dual production boost
+                if (NotificationManager.Instance != null)
+                {
+                    NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output!");
+                }
 
                 // if (doubleProductionSource != null)
                 // {
@@ -1291,6 +1318,45 @@ public class NightManager : MonoBehaviour
             4 => "Winter's arrived! Crops grow slower but your animals huddle together for warmth. Expect snow and tougher enemies!",
             _ => "Something's wrong with the seasons, partner..."
         };
+    }
+
+    // NEW: Modern notification system for season changes
+    private void ShowSeasonChangeNotification(int season)
+    {
+        if (NotificationManager.Instance == null) return;
+
+        string title = "";
+        string message = "";
+        string theme = "Info";
+
+        switch (season)
+        {
+            case 1: // Spring
+                title = YearsChanged ? $"Year {Years} - Spring!" : "Spring Has Arrived!";
+                message = "Animals energetic • Perfect farming weather";
+                theme = "Success";
+                break;
+            case 2: // Summer  
+                title = "Summer Heat!";
+                message = "Faster crop growth • Wolves extra aggressive";
+                theme = "Warning";
+                break;
+            case 3: // Fall
+                title = "Fall Harvest Season!";
+                message = "Animals eat more, produce more • Expand livestock";
+                theme = "Achievement";
+                break;
+            case 4: // Winter
+                title = "Winter is Here!";
+                message = "Slower crops • Snow incoming • Tougher enemies";
+                theme = "Info";
+                break;
+        }
+
+        if (!string.IsNullOrEmpty(title))
+        {
+            NotificationManager.ShowNotification(title, message, theme, 4f);
+        }
     }
 
     private string determineAnimalProduct(int product)

@@ -370,6 +370,41 @@ public class AnimalStructure : Structure
         {
             MoneyManager.Instance.AddMoney(totalMoneyEarned, transform.position);
             
+            // NEW: Show notification for animal collection with boost info
+            if (NotificationManager.Instance != null)
+            {
+                string animalName = animalType.ToString();
+                if (string.IsNullOrEmpty(animalName) || animalName == "None")
+                {
+                    animalName = "Animal"; // Fallback for uninitialized types
+                }
+                
+                // Handle plurals properly
+                string displayName = animalCount == 1 ? animalName : animalName + "s";
+                string baseMessage = $"${totalMoneyEarned} from {animalCount} {displayName}";
+                
+                // Check for production boost
+                if (boostedAmount > 1f)
+                {
+                    int bonusPercent = Mathf.RoundToInt((boostedAmount - 1f) * 100f);
+                    baseMessage += $" • +{bonusPercent}% season bonus!";
+                    NotificationManager.ShowAchievement($"{displayName} Boosted!", baseMessage);
+                }
+                // Check for silo synergy (reduced food cost)
+                else if (foodMultiplier < normalFoodRequired)
+                {
+                    int savings = Mathf.RoundToInt((1f - (foodMultiplier / normalFoodRequired)) * 100f);
+                    baseMessage += $" • {savings}% less feed used!";
+                    NotificationManager.ShowSuccess($"{displayName} Collected!", baseMessage);
+                }
+                else
+                {
+                    // NEW: Show error when no boosts are active - show earnings and missed potential
+                    int missedSavings = Mathf.RoundToInt((1f - (synergyFoodRequired / normalFoodRequired)) * 100f);
+                    NotificationManager.ShowError($"{displayName} No Boosts!", $"${totalMoneyEarned} earned • Missing {missedSavings}% feed savings!");
+                }
+            }
+            
             // Simple, robust tutorial trigger - always fire if tutorial is active and step not completed
             if (TutorialManager.Instance != null && 
                 TutorialManager.Instance.IsTutorialActive() && 
@@ -595,7 +630,12 @@ public class AnimalStructure : Structure
             float gridDistance = Vector2Int.Distance(animalCell, siloCell);
             minGridDistance = Mathf.Min(minGridDistance, gridDistance);
         }
+        
+        float oldMultiplier = foodMultiplier;
         foodMultiplier = minGridDistance <= siloSynergyRange ? synergyFoodRequired : normalFoodRequired;
+        
+        // REMOVED: Synergy notifications are now shown in collection notifications instead
+        // This avoids temporary/spam notifications
     }
 
     public static void UpdateAllAnimalSynergies()

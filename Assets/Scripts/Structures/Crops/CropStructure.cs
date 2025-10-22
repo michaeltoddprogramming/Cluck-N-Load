@@ -290,7 +290,12 @@ public class CropStructure : Structure
             float gridDistance = Vector2Int.Distance(cropCell, siloCell);
             minGridDistance = Mathf.Min(minGridDistance, gridDistance);
         }
+        
+        float oldMultiplier = cropHarvestMultiplier;
         cropHarvestMultiplier = minGridDistance <= multiplierRange ? cropHarvestMultiplierIncrease : 1f;
+        
+        // REMOVED: Synergy notifications are now shown in harvest notifications instead
+        // This avoids temporary/spam notifications
     }
 
     public static float[] GetAllCropHarvestMultipliers(string[] cropTypes)

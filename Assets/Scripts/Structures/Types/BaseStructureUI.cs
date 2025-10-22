@@ -78,13 +78,8 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
             bool canMove = nightManager.IsDay && !nightManager.getIsPaused();
             moveButton.interactable = canMove;
             
-            // Optional: Visual feedback for disabled state
-            if (moveButton.image != null)
-            {
-                Color buttonColor = moveButton.image.color;
-                buttonColor.a = canMove ? 1f : 0.5f;
-                moveButton.image.color = buttonColor;
-            }
+            // Let Unity's Button component handle the visual disabled state
+            // (uses the Button's Color Tint settings in the Inspector)
         }
     }
 

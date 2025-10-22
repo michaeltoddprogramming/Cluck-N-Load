@@ -554,6 +554,18 @@ public class OptionsMenuController : MonoBehaviour
     {
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenuScene")
         {
+            // Reset GameLoopManager state before going to menu to prevent game state persistence issues
+            if (GameLoopManager.Instance != null)
+            {
+                GameLoopManager.Instance.ResetForNewGame();
+            }
+            
+            // Also reset other persistent managers that might cause issues
+            if (ShopUIManager.Instance != null)
+            {
+                ShopUIManager.Instance.ResetShopState();
+            }
+            
             if (SceneTransitionManager.Instance != null)
             {
                 SceneTransitionManager.Instance.LoadSceneWithLoading("MainMenuScene");

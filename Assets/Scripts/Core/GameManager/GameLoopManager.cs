@@ -83,8 +83,15 @@ public class GameLoopManager : MonoBehaviour
 
     private void Start()
     {
+        // Always reset game state when Start is called to ensure clean state for new games
         isGameOver = false;
         isPaused = false;
+        checkFarmHouseDestruction = true; // Enable farmhouse destruction check by default
+        checkAllStructuresDestroyed = true;
+        
+        // Don't clear structures here as they might be loaded from save data
+        // allStructures.Clear();
+        // totalStructuresBuilt = 0;
 
         // Debug: Check if there's a leftover SelectedSaveSlot key
         if (PlayerPrefs.HasKey("SelectedSaveSlot"))
@@ -363,6 +370,33 @@ private void CheckGameOverConditions()
         allStructures.Clear();
         totalStructuresBuilt = 0;
         Time.timeScale = 1f;
+        
+        // Reset game over conditions to their default states
+        checkFarmHouseDestruction = true; // Enable farmhouse destruction check for new games
+        checkAllStructuresDestroyed = true;
+        
+        Debug.Log("GameLoopManager: Game state reset for new game");
+    }
+    
+    // Method to reset game state when returning to main menu
+    public void ResetForNewGame()
+    {
+        RestartGame();
+        
+        // Clean up any ongoing coroutines
+        if (waitForNightManagerCoroutine != null)
+        {
+            StopCoroutine(waitForNightManagerCoroutine);
+            waitForNightManagerCoroutine = null;
+        }
+        
+        // Hide game over panel if it's showing
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(false);
+        }
+        
+        Debug.Log("GameLoopManager: Fully reset for new game session");
     }
 
     private void OnDestroy()

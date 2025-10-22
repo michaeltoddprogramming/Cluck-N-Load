@@ -204,14 +204,21 @@ public class ShopUIManager : MonoBehaviour
             return;
         }
 
-        // Check if there's an active ghost building - if so, cancel it and exit build mode
+        // Check if there's an active ghost building or move mode - if so, cancel it and then open shop
         BuildController buildController = FindFirstObjectByType<BuildController>();
-        if (buildController != null && buildController.IsBuildModeActive() && buildController.HasActiveGhost())
+        if (buildController != null && buildController.HasActiveGhost() && 
+            (buildController.IsBuildModeActive() || buildController.IsMoveModeActive()))
         {
-            Debug.Log("Cancelling current building to open shop");
-            buildController.CancelCurrentBuilding();
-            // After cancelling, we'll open the shop (it should restore automatically via CancelCurrentBuilding)
-            return;
+            Debug.Log("Cancelling current building/move to open shop");
+            if (buildController.IsBuildModeActive())
+            {
+                buildController.CancelCurrentBuilding();
+            }
+            else
+            {
+                buildController.CancelMove();
+            }
+            // Don't return - continue to open the shop
         }
 
         // Use the actual panel state instead of isVisible flag

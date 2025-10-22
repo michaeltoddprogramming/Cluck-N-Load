@@ -6374,7 +6374,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3724273108228962489, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4875622262517869169, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_text
@@ -15669,12 +15669,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20.61
+  m_fontSize: 20.65
   m_fontSizeBase: 20.61
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 28
+  m_fontSizeMax: 30
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -29937,6 +29937,7 @@ GameObject:
   - component: {fileID: 1632256051}
   - component: {fileID: 1632256054}
   - component: {fileID: 1632256055}
+  - component: {fileID: 1632256056}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -31135,6 +31136,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageKey: 304
+--- !u!114 &1632256056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632256031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff4c1fd6eb909db45b52782f2173af1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiHover: {fileID: 0}
+  currentPulseTarget: {fileID: 0}
+  pulseScale: 1.2
+  smallPulseScale: 0.4
+  pulseDuration: 0.5
+  moneyUI: {fileID: 2084042127}
+  duration: 0.5
+  delay: 0
 --- !u!1 &1632586687
 GameObject:
   m_ObjectHideFlags: 0
@@ -38788,12 +38809,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 58.61
+  m_fontSize: 53
   m_fontSizeBase: 58.61
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 0
+  m_fontSizeMax: 58
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512

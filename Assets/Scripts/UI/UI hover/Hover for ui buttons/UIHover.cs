@@ -7,7 +7,7 @@ public class UIHover : MonoBehaviour
     [SerializeField] private GameObject tooltipPanel;
     [SerializeField] private TextMeshProUGUI Title;
     [SerializeField] private TextMeshProUGUI Description;
-    [SerializeField] private Vector2 offset = new Vector2(0, -200);
+    [SerializeField] private Vector2 offset = new Vector2(0, 100);
 
     [Header("Pop Animation Settings")]
     [SerializeField] private float animationDuration = 0.15f; // snappy speed
@@ -29,10 +29,27 @@ public class UIHover : MonoBehaviour
         tooltipPanel.SetActive(false);
     }
 
-    public void Show(string title, string description, RectTransform target)
+    public void Show(string title, string description, RectTransform target, bool scalePanel = false, Vector2? newOffset = null)
     {
         Title.text = title;
         Description.text = description;
+
+
+        offset = newOffset ?? new Vector2(0, 100);
+        Debug.Log($"this is the offset: {offset}");
+
+        if(scalePanel)
+        {
+            tooltipPanel.transform.localScale = Vector3.one * 0.8f;
+            normalScale = 0.8f;
+            popScale = 1f;
+        }
+        else
+        {
+            normalScale = 1f;
+            popScale = 1.2f;
+            tooltipPanel.transform.localScale = Vector3.one * 1f;
+        }
 
         tooltipPanel.transform.position = (Vector3)target.position + (Vector3)offset;
 

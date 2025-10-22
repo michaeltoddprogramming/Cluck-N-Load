@@ -61,7 +61,7 @@ public class HoverToolTip : MonoBehaviour
                 break;
             case TooltipType.season:
                 offset.x = 0;
-                description = string.Format(description, $"\t\t{NightManager.Instance.GetSeason()}", $"\t\t{NightManager.Instance.Days}");
+                description = string.Format(description, $"\t\t{NightManager.Instance?.GetSeason()}", $"\t\t{NightManager.Instance?.Days}");
                 break;
             case TooltipType.coin:
                 offset.x = 80;

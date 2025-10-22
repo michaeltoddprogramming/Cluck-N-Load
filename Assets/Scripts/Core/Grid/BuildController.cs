@@ -506,16 +506,29 @@ public class BuildController : MonoBehaviour
                         isDefenceChainDragging = true;
                     }
                 }
-                // Mouse button released = finalize chain
-                else if (Input.GetMouseButtonUp(0) && isDefenceChainDragging && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                // Mouse button released
+                else if (Input.GetMouseButtonUp(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
-                    Debug.Log("HandleBuildInput: Mouse released in defense chain mode - calling FinalizeDefenceChain");
-                    FinalizeDefenceChain();
+                    Debug.Log("HandleBuildInput: Mouse released in defense chain mode");
+                    
+                    // Check if user dragged (creating a chain of 2+) or just clicked (single fence)
+                    if (isDefenceChainDragging && defenceGhostChain.Count >= 2)
+                    {
+                        // User dragged and created a chain - place all
+                        Debug.Log($"Dragged chain with {defenceGhostChain.Count} fences - placing all");
+                        FinalizeDefenceChain();
+                    }
+                    else
+                    {
+                        // Single click (no drag or only 1 fence) - place just one fence at initial position
+                        Debug.Log("Single click - placing one fence");
+                        PlaceSingleDefenceStructure();
+                    }
                 }
-                // Right click to cancel chain
+                // Right click to cancel chain (works during drag or before placement)
                 if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
-                    Debug.Log("HandleBuildInput: Right click detected in defense chain mode - calling CancelDefenceChain");
+                    Debug.Log($"HandleBuildInput: Right click detected in defense chain mode (dragging: {isDefenceChainDragging}) - calling CancelDefenceChain");
                     CancelDefenceChain();
                 }
             }
@@ -693,6 +706,57 @@ public class BuildController : MonoBehaviour
         {
             currentGhost.SetActive(true);
         }
+    }
+
+    // Place a single defense structure (for single click without drag)
+    private void PlaceSingleDefenceStructure()
+    {
+        Debug.Log("PlaceSingleDefenceStructure: Placing single fence at initial position");
+        
+        if (currentStructureData == null || MoneyManager.Instance == null)
+        {
+            CancelDefenceChain();
+            return;
+        }
+
+        // Check if player can afford one structure
+        int singleCost = currentStructureData.cost;
+        if (!MoneyManager.Instance.CanAfford(singleCost))
+        {
+            Debug.Log("PlaceSingleDefenceStructure: Cannot afford single structure");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
+            CancelDefenceChain();
+            return;
+        }
+
+        // Spend money and place at initial cell
+        MoneyManager.Instance.SpendMoney(singleCost);
+        Debug.Log($"Spent {singleCost} for single defense structure");
+
+        if (IsValidPlacementForChain(initialDefenceCell.x, initialDefenceCell.y))
+        {
+            PlaceItemWithoutMoneyCheck(initialDefenceCell.x, initialDefenceCell.y, playSound: true);
+            Debug.Log($"PlaceSingleDefenceStructure: Placed single structure at {initialDefenceCell}");
+
+            // Tutorial trigger for single fence placement
+            HandleChainTutorialTrigger(1, false);
+
+            // Update connectors after placement
+            StartCoroutine(DelayedConnectorRebuild());
+        }
+        else
+        {
+            Debug.LogWarning($"PlaceSingleDefenceStructure: Cannot place at {initialDefenceCell} - invalid position");
+        }
+
+        // Clean up chain mode
+        isDefenceChainModeActive = false;
+        isDefenceChainDragging = false;
+        ClearDefenceGhostChain();
+        if (currentGhost != null) currentGhost.SetActive(true);
     }
 
     // Finalize defence chain: place real objects

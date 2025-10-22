@@ -31150,8 +31150,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiHover: {fileID: 0}
   currentPulseTarget: {fileID: 0}
+  moneyOriginalPos: {x: 0, y: 0}
   pulseScale: 1.2
-  smallPulseScale: 0.4
+  smallPulseScale: 0.3
   pulseDuration: 0.5
   moneyUI: {fileID: 2084042127}
   duration: 0.5

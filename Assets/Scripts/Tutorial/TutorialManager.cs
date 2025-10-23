@@ -607,7 +607,7 @@ public partial class TutorialManager : MonoBehaviour
         {
             string theme = GetDiscoveryTheme(discoveryStep);
             string cleanMessage = StripRichText(discoveryStep.instructionText);
-            NotificationManager.ShowNotification(discoveryStep.title, cleanMessage, theme, 6f);
+            NotificationManager.ShowNotification(discoveryStep.title, cleanMessage, theme, 4f);
         }
 
         isShowingDiscovery = true;
@@ -741,7 +741,7 @@ public partial class TutorialManager : MonoBehaviour
         if (NotificationManager.Instance != null)
         {
             string cleanMessage = StripRichText(seasonStep.instructionText);
-            NotificationManager.ShowAchievement(seasonStep.title, cleanMessage, 7f);
+            NotificationManager.ShowAchievement(seasonStep.title, cleanMessage, 4f);
         }
     }
 
@@ -773,7 +773,7 @@ public partial class TutorialManager : MonoBehaviour
         // Use the new notification system for Pete's healing explanation
         if (NotificationManager.Instance != null)
         {
-            NotificationManager.ShowSuccess("Pete's Farm House Tip", peteMessage, 5f);
+            NotificationManager.ShowSuccess("Pete's Farm House Tip", peteMessage, 3f);
         }
     }
 

@@ -177,7 +177,7 @@ public class NotificationManager : MonoBehaviour
         }
     }
 
-    public static void ShowNotification(string title, string message, string theme = "Info", float duration = 3f, System.Action onComplete = null)
+    public static void ShowNotification(string title, string message, string theme = "Info", float duration = 2f, System.Action onComplete = null)
     {
         if (Instance == null) return;
 
@@ -194,48 +194,48 @@ public class NotificationManager : MonoBehaviour
         Instance.ProcessQueue();
     }
 
-    public static void ShowSuccess(string title, string message = "", float duration = 2.5f)
+    public static void ShowSuccess(string title, string message = "", float duration = 1.5f)
     {
         ShowNotification(title, message, "Success", duration);
     }
 
-    public static void ShowWarning(string title, string message = "", float duration = 2.5f)
+    public static void ShowWarning(string title, string message = "", float duration = 1.5f)
     {
         ShowNotification(title, message, "Warning", duration);
     }
 
-    public static void ShowError(string title, string message = "", float duration = 2.5f)
+    public static void ShowError(string title, string message = "", float duration = 1.5f)
     {
         ShowNotification(title, message, "Error", duration);
     }
 
-    public static void ShowAchievement(string title, string message = "", float duration = 2.5f)
+    public static void ShowAchievement(string title, string message = "", float duration = 1.5f)
     {
         ShowNotification(title, message, "Achievement", duration);
     }
 
-    public static void ShowBadge(string title, string message = "", float duration = 2.5f)
+    public static void ShowBadge(string title, string message = "", float duration = 1.5f)
     {
         ShowNotification(title, message, "Badge", duration);
     }
 
-    public static void ShowAnimalUnlock(string animalName, string message = "", float duration = 2.5f)
+    public static void ShowAnimalUnlock(string animalName, string message = "", float duration = 1.5f)
     {
         string title = $"New Animal: {animalName}";
         ShowNotification(title, message, "Animal", duration);
     }
 
-    public static void ShowRaccoon(string message = "", float duration = 3f)
+    public static void ShowRaccoon(string message = "", float duration = 2f)
     {
         ShowNotification("Raccoon Unlocked!", message, "Raccoon", duration);
     }
 
-    public static void ShowBoar(string message = "", float duration = 3f)
+    public static void ShowBoar(string message = "", float duration = 2f)
     {
         ShowNotification("Boar Unlocked!", message, "Boar", duration);
     }
 
-    public static void ShowBear(string message = "", float duration = 3f)
+    public static void ShowBear(string message = "", float duration = 2f)
     {
         ShowNotification("Bear Unlocked!", message, "Bear", duration);
     }

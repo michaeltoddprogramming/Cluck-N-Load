@@ -894,13 +894,6 @@ public class NightManager : MonoBehaviour
 
     private void setSeason(int season)
     {
-        // COMPILATION DEFINITELY FORCED NOW!
-        print($"CRITICAL DEBUG: setSeason called with season={season}, years={years}");
-        // UnityEngine.Debug.LogError($"ENEMY INDICATOR DEBUG: setSeason called with season={season}, years={years}");
-        Debug.Log("===== setSeason method called =====");
-        Debug.Log($"setSeason called: season={season}, years={years}, yearsChanged={YearsChanged}");
-        Debug.Log($"EnemyIndicator instance check: {enemyIndicator}");
-        Debug.Log($"About to call UpdateEnemyIndicatorForSeason with season={season}");
         currentSeason = season;
         string text;
         switch (season)
@@ -910,35 +903,36 @@ public class NightManager : MonoBehaviour
                 {
                     text = $"Year {Years} done!!\nSpring!!!!";
                     seasonIcon.sprite = spring;
-                    if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                        TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
+                   // if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                   //     TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
                 }
                 else
                 {
                     text = "Spring!!";
                     seasonIcon.sprite = spring;
-                    if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                        TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
+                    //if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                    //    TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
                 }
                 break;
             case 2:
                 YearsChanged = false;
                 text = "Summer!!";
                 seasonIcon.sprite = summer;
-                if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                    TutorialManager.Instance.Trigger(TutorialTrigger.SummerSeason);
+                // REMOVED: Summer season notification no longer needed
+                // if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                //     TutorialManager.Instance.Trigger(TutorialTrigger.SummerSeason);
                 break;
             case 3:
                 text = "Fall!!";
                 seasonIcon.sprite = fall;
-                if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                    TutorialManager.Instance.Trigger(TutorialTrigger.FallSeason);
+                //if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                //    TutorialManager.Instance.Trigger(TutorialTrigger.FallSeason);
                 break;
             case 4:
                 text = "Winter!!";
                 seasonIcon.sprite = winter;
-                if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                    TutorialManager.Instance.Trigger(TutorialTrigger.WinterSeason);
+                //if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+                //    TutorialManager.Instance.Trigger(TutorialTrigger.WinterSeason);
                 break;
             default:
                 text = "";
@@ -1396,7 +1390,7 @@ public class NightManager : MonoBehaviour
         // Use the new notification system instead of the old text display
         if (NotificationManager.Instance != null)
         {
-            NotificationManager.ShowNotification("Seasonal Bonuses", tutorialMessage, "Info", 7f);
+            NotificationManager.ShowNotification("Seasonal Bonuses", tutorialMessage, "Info", 4f);
         }
 
         // Apply normal seasonal bonuses during tutorial (allow players to see them working)
@@ -1750,7 +1744,7 @@ public class NightManager : MonoBehaviour
             
             string randomMessage = funnyMessages[Random.Range(0, funnyMessages.Length)];
             // Longer duration for important daily achievement
-            NotificationManager.ShowAchievement($"Day {days} Survived!", randomMessage, 6f);
+            NotificationManager.ShowAchievement($"Day {days} Survived!", randomMessage, 4f);
         }
         
         // Add money with coin animation at NightManager position after notification

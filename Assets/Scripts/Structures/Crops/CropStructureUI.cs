@@ -185,7 +185,7 @@ public class CropStructureUI : BaseStructureUI
                     {
                         int bonusPercent = Mathf.RoundToInt((cropStructure.CropHarvestMultiplier - 1f) * 100f);
                         baseMessage += $" • +{bonusPercent}% silo bonus!";
-                        NotificationManager.ShowAchievement($"{cropName} Boosted!", baseMessage, 3f);
+                        NotificationManager.ShowAchievement($"{cropName} Boosted!", baseMessage, 2f);
                     }
                     else
                     {
@@ -194,7 +194,7 @@ public class CropStructureUI : BaseStructureUI
                         int potentialCropAmount = Mathf.RoundToInt(cropAmount * 1.5f);
                         int missedCrops = potentialCropAmount - cropAmount;
                         string missedDisplayName = missedCrops == 1 ? GetCropNameSingular(cropType) : cropName;
-                        NotificationManager.ShowError($"{cropName} No Boost!", $"{cropAmount} {cropDisplayName} harvested • Missing +{missedCrops} {missedDisplayName}!", 3f);
+                        NotificationManager.ShowError($"{cropName} No Boost!", $"{cropAmount} {cropDisplayName} harvested • Missing +{missedCrops} {missedDisplayName}!", 2f);
                     }
                 }
                 break;

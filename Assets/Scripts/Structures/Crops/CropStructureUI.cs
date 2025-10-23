@@ -34,12 +34,13 @@ public class CropStructureUI : BaseStructureUI
     private bool isCropStructure;
     private char currCrop = 'N';
 
-    public UIHoverManager hoverManager;
+    // public UIHoverManager hoverManager;
     private float displayedGrowth = 0f;
 
     private void Awake()
     {
-        hoverManager = FindObjectOfType<UIHoverManager>();
+        base.Awake();
+        // hoverManager = FindObjectOfType<UIHoverManager>();
     }
 
     public override void Initialize(Structure structure)
@@ -405,7 +406,17 @@ private bool wasGrowing = false;
             //when they have not planted yet
             else if(button == harvestButton.gameObject && !cropStructure.IsGrowing && !cropStructure.CropReady)
             {
-                hoverManager.ShowHover(harvestButton, "Barren Land!", $"Plant something first!", true, new Vector2(200, 0), plantButton.gameObject);
+                hoverManager.ShowHover(harvestButton, "Barren Land!", "Plant something first!", true, new Vector2(200, 0), plantButton.gameObject);
+            }
+            //when it is night and they can not plant
+            else if(button == plantButton.gameObject && !nightManager.IsDay)
+            {
+                hoverManager.ShowHover(harvestButton, "Night Shift!", $"Farmer is asleep, try in the morning!", true, new Vector2(200, 0));
+            }
+            //when they try to move at night 
+            else if(button == moveButton.gameObject && !nightManager.IsDay)
+            {
+                hoverManager.ShowHover(moveButton, "Sleeping!", $"Buildings can’t be moved at night!", true, new Vector2(200, 0));
             }
         }
     }
@@ -423,14 +434,22 @@ private bool wasGrowing = false;
         //when it is planed but not ready for harvest
         if(button == harvestButton.gameObject && cropStructure.IsGrowing && !cropStructure.CropReady)
         {
-            Debug.Log("i am plaing sound here 1!");
             hoverManager.PlayErrorFeedback(false, harvestButton);
         }
         //when they have not planted yet
         else if(button == harvestButton.gameObject && !cropStructure.IsGrowing &&!cropStructure.CropReady)
         {
-            Debug.Log("i am plaing sound here 2!");
             hoverManager.PlayErrorFeedback(false, harvestButton);
+        }
+        //when it is night and they can not plant
+        else if(button == plantButton.gameObject && !nightManager.IsDay)
+        {
+            hoverManager.PlayErrorFeedback(false, plantButton);
+        }
+        //when they try to move at night 
+        else if(button == moveButton.gameObject && !nightManager.IsDay)
+        {
+            hoverManager.PlayErrorFeedback(false, moveButton);
         }
     }
 }

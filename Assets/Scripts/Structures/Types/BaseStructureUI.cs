@@ -21,11 +21,19 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     private Color midColor = new Color(1f, 0.9f, 0.2f);
     private Color dangerColor = new Color(1f, 0.2f, 0.2f);
 
+    public UIHoverManager hoverManager; 
+
+    public void Awake()
+    {
+        hoverManager = FindObjectOfType<UIHoverManager>();
+    }
+
     public virtual void Initialize(Structure structure)
     {
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null) canvas.sortingOrder = 1;
         this.structure = structure;
+
 
         // Get reference to NightManager
         nightManager = FindFirstObjectByType<NightManager>();
@@ -119,5 +127,35 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
         if (healthBarFill != null)
             healthBarFill.color = healthPercent > 0.6f ? healthyColor : healthPercent > 0.3f ? midColor : dangerColor;
+    }
+
+     public void OnMoveButtonHoverEnter(GameObject button)
+    {
+
+        if(hoverManager != null)
+        {
+            //when they try to move at night 
+            if(button == moveButton.gameObject && !nightManager.IsDay)
+            {
+                hoverManager.ShowHover(moveButton, "Sleeping!", $"Buildings can’t be moved at night!", true, new Vector2(200, 0));
+            }
+        }
+    }
+
+    public void OnMoveButtonHoverExit()
+    {
+        if(hoverManager != null)
+        {
+            hoverManager.HideHover();
+        }
+    }
+
+    public void OnMoveButtonClick(GameObject button)
+    {
+        //when they try to move at night 
+        if(button == moveButton.gameObject && !nightManager.IsDay)
+        {
+            hoverManager.PlayErrorFeedback(false, moveButton);
+        }
     }
 }

@@ -57,7 +57,7 @@ public class AnimalStructureUI : BaseStructureUI
     
     private System.Action pendingAction;
 
-    public UIHoverManager hoverManager;
+    // public UIHoverManager hoverManager;
 
 
 
@@ -88,7 +88,8 @@ public class AnimalStructureUI : BaseStructureUI
 
     private void Awake()
     {
-        hoverManager = FindObjectOfType<UIHoverManager>();
+        base.Awake();
+        // hoverManager = FindObjectOfType<UIHoverManager>();
     }
 
     private void Update()

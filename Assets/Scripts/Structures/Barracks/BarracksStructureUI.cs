@@ -78,12 +78,14 @@ public class BarracksStructureUI : BaseStructureUI
 
     // private BarracksStructure barrackStructure;
 
-    public UIHoverManager hoverManager;
+    // public UIHoverManager hoverManager;
     [SerializeField] public GameObject civilianSection;
 
     private void Awake()
     {
-        hoverManager = FindObjectOfType<UIHoverManager>();
+        
+        base.Awake();
+        // hoverManager = FindObjectOfType<UIHoverManager>();
     }
 
     public override void Initialize(Structure structure)

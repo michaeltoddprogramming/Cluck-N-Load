@@ -38,6 +38,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
+        UpdateAffordability();
         // Dynamically update lock state in case cheat is toggled
         if (data != null)
         {
@@ -90,7 +91,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 // Restore normal color when not paused
                 UpdateAffordability(); // This will set the correct color based on affordability
             }
-                UpdateAffordability(); // This will set the correct color based on affordability
+                 // This will set the correct color based on affordability
         }
 
         // Button interactability considers day lock, affordability, and pause state
@@ -243,7 +244,10 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void UpdateAffordability()
     {
         if (data == null || selectButton == null || MoneyManager.Instance == null)
+        {
+            Debug.Log("here is the info after testing the affordability: " + data + selectButton + MoneyManager.Instance);
             return;
+        }
 
         bool canAfford = MoneyManager.Instance.CanAfford(data.cost);
         bool isPaused = nightManager != null && nightManager.getIsPaused();

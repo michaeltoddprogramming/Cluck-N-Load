@@ -12,6 +12,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public Button selectButton;
     public GameObject lockedOverlay;
     public NightManager nightManager;
+    public UIHoverManager hoverManager;
+
 
     private StructureData data;
     private BuildController buildController;
@@ -28,6 +30,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         buildController = FindFirstObjectByType<BuildController>();
         nightManager = FindFirstObjectByType<NightManager>();
+        hoverManager = FindObjectOfType<UIHoverManager>();
     }
 
     private void Update()
@@ -84,6 +87,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 // Restore normal color when not paused
                 UpdateAffordability(); // This will set the correct color based on affordability
             }
+                UpdateAffordability(); // This will set the correct color based on affordability
         }
 
         // Button interactability considers day lock, affordability, and pause state
@@ -112,7 +116,19 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             nameText.text = structure.structureName;
 
         if (costText != null)
-            costText.text = $"{structure.cost}";
+        {
+            if(!MoneyManager.Instance.CanAfford(structure.cost))
+            {
+                costText.color = Color.red;
+                costText.text = $"{structure.cost}";
+            }
+            else
+            {
+                costText.color = Color.white;
+                costText.text = $"{structure.cost}";
+            }
+                // costText.text = $"{structure.cost}";
+        }
 
         if (descriptionText != null)
             descriptionText.text = structure.description;
@@ -179,6 +195,12 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (data == null)
         {
             PlayErrorSound();
+            return;
+        }
+
+        if(!MoneyManager.Instance.CanAfford(data.cost))
+        {
+            hoverManager.PlayErrorFeedbackForGameObject(true, this.gameObject);
             return;
         }
 

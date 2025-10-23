@@ -106,7 +106,7 @@ public class UIHoverManager : MonoBehaviour
             }
             else
             {
-                AudioManager.Instance.PlayErrorSound();
+                AudioManager.Instance.PlayInsufficientFundsSound();
                 if(button != null)
                 {
                     Debug.Log("it should be playing the money effect");
@@ -114,6 +114,30 @@ public class UIHoverManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void PlayErrorFeedbackForGameObject(bool isMoney, GameObject button)
+    {
+        if (button == null)
+            return;
+
+
+        // if(!button.interactable)
+        // {
+            if(!isMoney)
+            {
+                AudioManager.Instance.PlayErrorSound();
+            }
+            else
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+                if(button != null)
+                {
+                    Debug.Log("it should be playing the money effect");
+                    FlyMoney(button.GetComponent<RectTransform>());
+                }
+            }
+        // }
     }
 
 // This is perfect ------------------------------------------------------------------------------

@@ -793,7 +793,7 @@ MonoBehaviour:
   selectButton: {fileID: 0}
   lockedOverlay: {fileID: 7570491810665617869}
   nightManager: {fileID: 0}
-  selectAudioSource: {fileID: 8774732436718745078}
+  hoverManager: {fileID: 0}
 --- !u!82 &8774732436718745078
 AudioSource:
   m_ObjectHideFlags: 0

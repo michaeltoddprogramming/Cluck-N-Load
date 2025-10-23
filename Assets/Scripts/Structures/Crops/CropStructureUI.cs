@@ -138,9 +138,20 @@ public class CropStructureUI : BaseStructureUI
     {
         if (!isCropStructure || cropStructure == null) return;
 
+        // Capture crop info BEFORE harvesting (since Harvest() resets CurrentCropType to None)
+        CropStructure.CropType cropType = cropStructure.CurrentCropType;
+        string cropName = cropType.ToString();
+        if (string.IsNullOrEmpty(cropName) || cropName == "None")
+        {
+            cropName = "Crop"; // Fallback for uninitialized crop types
+        }
+
+        // Get singular form for proper pluralization
+        string cropNameSingular = GetCropNameSingular(cropType);
+
         // Use the public properties instead of private fields
         int cropAmount = Mathf.RoundToInt(cropStructure.BaseCropHarvestAmount * cropStructure.CropHarvestMultiplier);
-        int moneyGained = CalculateMoneyGain(cropStructure.CurrentCropType, cropAmount);
+        int moneyGained = CalculateMoneyGain(cropType, cropAmount);
 
         string result = cropStructure.Harvest();
 
@@ -163,20 +174,18 @@ public class CropStructureUI : BaseStructureUI
                 // NEW: Show success notification for harvest with boost info
                 if (NotificationManager.Instance != null)
                 {
-                    string cropName = cropStructure.CurrentCropType.ToString();
-                    if (string.IsNullOrEmpty(cropName) || cropName == "None")
-                    {
-                        cropName = "Crop"; // Fallback for uninitialized crop types
-                    }
+                    // Handle plurals properly for crop names
+                    string cropDisplayName = cropAmount == 1 ? cropNameSingular : cropName;
+                    string baseMessage = $"{cropAmount} {cropDisplayName} harvested";
                     
-                    string baseMessage = $"{cropAmount} {cropName} harvested";
+                    Debug.Log($"[Crop Harvest] cropName: {cropName}, cropAmount: {cropAmount}, cropDisplayName: {cropDisplayName}, baseMessage: {baseMessage}");
                     
                     // Check if harvest multiplier is active
                     if (cropStructure.CropHarvestMultiplier > 1f)
                     {
                         int bonusPercent = Mathf.RoundToInt((cropStructure.CropHarvestMultiplier - 1f) * 100f);
                         baseMessage += $" • +{bonusPercent}% silo bonus!";
-                        NotificationManager.ShowAchievement($"{cropName} Boosted!", baseMessage);
+                        NotificationManager.ShowAchievement($"{cropName} Boosted!", baseMessage, 3f);
                     }
                     else
                     {
@@ -184,7 +193,8 @@ public class CropStructureUI : BaseStructureUI
                         // Calculate what they could have earned with silo bonus (assuming 50% bonus)
                         int potentialCropAmount = Mathf.RoundToInt(cropAmount * 1.5f);
                         int missedCrops = potentialCropAmount - cropAmount;
-                        NotificationManager.ShowError($"{cropName} No Boost!", $"{cropAmount} harvested • Missing +{missedCrops} crop!");
+                        string missedDisplayName = missedCrops == 1 ? GetCropNameSingular(cropType) : cropName;
+                        NotificationManager.ShowError($"{cropName} No Boost!", $"{cropAmount} {cropDisplayName} harvested • Missing +{missedCrops} {missedDisplayName}!", 3f);
                     }
                 }
                 break;
@@ -302,5 +312,16 @@ public class CropStructureUI : BaseStructureUI
     private void PlaySound(AudioClip clip)
     {
         if (clip != null && audioSource != null) audioSource.PlayOneShot(clip);
+    }
+
+    private string GetCropNameSingular(CropStructure.CropType cropType)
+    {
+        return cropType switch
+        {
+            CropStructure.CropType.Sunflower => "Sunflower",
+            CropStructure.CropType.Wheat => "Wheat",
+            CropStructure.CropType.Carrots => "Carrot",
+            _ => "Crop"
+        };
     }
 }

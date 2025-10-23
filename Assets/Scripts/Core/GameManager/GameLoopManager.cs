@@ -48,6 +48,9 @@ public class GameLoopManager : MonoBehaviour
 
     public System.Action OnGameOver;
     
+    private int previousDay = -1;
+    private HashSet<string> announcedUnlockedStructures = new HashSet<string>();
+    
     private Coroutine waitForNightManagerCoroutine;
 
     public bool IsGameOver => isGameOver;
@@ -150,10 +153,14 @@ public class GameLoopManager : MonoBehaviour
             {
                 NightManager.Instance.Days = saveData.day;
                 NightManager.Instance.SetSeason(saveData.season);
+                NightManager.Instance.SetLastSurvivalRewardDay(saveData.day); // Prevent duplicate survival rewards
 
                 // Always start in the morning when loading a save
                 NightManager.Instance.Hours = 7;
                 NightManager.Instance.Minutes = 0;
+                
+                // Initialize announced structures for loaded game
+                InitializeAnnouncedStructures();
             }
 
             if (saveData != null)
@@ -171,6 +178,9 @@ public class GameLoopManager : MonoBehaviour
         {
             MoneyManager.Instance?.ResetMoney();
             Debug.Log("GameLoopManager: Started completely new game, money reset, tutorial should start");
+            
+            // Initialize announced structures for fresh game
+            InitializeAnnouncedStructures();
         }
 
 
@@ -423,8 +433,69 @@ private void OnDisable()
 
 public void OnDayChanged(int newDay)
 {
+    // Update previous day
+    previousDay = newDay;
+    
     if (ShopPanelUI.Instance != null)
         ShopPanelUI.Instance.PopulateShop();
+}
+
+private void CheckForNewlyUnlockedStructures(int newDay)
+{
+    if (structureDatabase == null || structureDatabase.allStructures == null)
+        return;
+    
+    Debug.Log($"Checking for newly unlocked structures on day {newDay}. Already announced: {announcedUnlockedStructures.Count} structures");
+    
+    foreach (StructureData structure in structureDatabase.allStructures)
+    {
+        if (structure.unlockDay == newDay && !announcedUnlockedStructures.Contains(structure.structureName))
+        {
+            Debug.Log($"Found newly unlocked structure: {structure.structureName} (unlockDay: {structure.unlockDay})");
+            
+            // Mark this structure as announced
+            announcedUnlockedStructures.Add(structure.structureName);
+            
+            // Show badge notification for newly unlocked structure - more dramatic!
+            if (NotificationManager.Instance != null)
+            {
+                NotificationManager.ShowBadge("New Structure Unlocked!", $"{structure.structureName} is now available!", 1f);
+            }
+            
+            // Also trigger the feature unlocked event
+            if (GameEventManager.Instance != null)
+            {
+                GameEventManager.Instance.TriggerFeatureUnlocked($"Structure: {structure.structureName}");
+            }
+        }
+    }
+}
+
+public void CheckForNewlyUnlockedStructuresMorning()
+{
+    int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
+    Debug.Log($"CheckForNewlyUnlockedStructuresMorning called with currentDay = {currentDay}");
+    CheckForNewlyUnlockedStructures(currentDay);
+}
+
+private void InitializeAnnouncedStructures()
+{
+    if (structureDatabase == null || structureDatabase.allStructures == null)
+        return;
+    
+    int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
+    
+    // Mark all structures that should already be unlocked as announced
+    foreach (StructureData structure in structureDatabase.allStructures)
+    {
+        if (structure.unlockDay <= currentDay)
+        {
+            announcedUnlockedStructures.Add(structure.structureName);
+            Debug.Log($"Marked {structure.structureName} as already announced (unlockDay: {structure.unlockDay} <= currentDay: {currentDay})");
+        }
+    }
+    
+    Debug.Log($"Initialized announced structures: {announcedUnlockedStructures.Count} structures marked as already unlocked for day {currentDay}");
 }
 
     [ContextMenu("Trigger Game Over")]

@@ -1158,6 +1158,17 @@ public class EnemyUnit : BaseUnit
         }
     }
 
+    protected override void Die()
+    {
+        // Record enemy defeat for combat statistics
+        if (CombatStatistics.Instance != null)
+        {
+            CombatStatistics.Instance.RecordEnemyDefeated(data.Type.ToString());
+        }
+
+        base.Die();
+    }
+
     public bool IsDead()
     {
         return currHealth <= 0;
@@ -1186,6 +1197,12 @@ public class EnemyUnit : BaseUnit
 
         SetTrigger("Attack");
         PlaySound(data.AttackSound, 'a');
+
+        // Record damage dealt for combat statistics
+        if (CombatStatistics.Instance != null)
+        {
+            CombatStatistics.Instance.RecordDamageDealt(data.AttackDamage);
+        }
 
         // Apply damage based on target type
         switch (target)

@@ -9,8 +9,8 @@ public class CheatManager : MonoBehaviour
     public static CheatManager Instance { get; private set; }
     
     [Header("Cheat Activation")]
-    [SerializeField] private KeyCode[] cheatKeys = { KeyCode.C, KeyCode.H, KeyCode.E, KeyCode.A, KeyCode.T };
-    [SerializeField] private float keyInputTimeout = 0.2f;
+    [SerializeField] private KeyCode[] cheatKeys = { KeyCode.DownArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.UpArrow };
+    [SerializeField] private float keyInputTimeout = 1.0f;
     
     [Header("Cheat Panel UI")]
     [SerializeField] private GameObject cheatPanel;
@@ -92,6 +92,13 @@ public class CheatManager : MonoBehaviour
     
     private void Awake()
     {
+        // Ensure the GameObject is active so the cheat system works
+        if (!gameObject.activeSelf)
+        {
+            gameObject.SetActive(true);
+            Debug.Log("CheatManager: Activated GameObject");
+        }
+        
         // Only initialize if this GameObject is explicitly placed in the scene
         // This prevents accidental initialization when other scripts reference it
         if (Instance == null)
@@ -118,6 +125,24 @@ public class CheatManager : MonoBehaviour
     {
         // Wait for a few frames to ensure all managers are initialized
         yield return new WaitForSeconds(1f);
+        
+        // Auto-find cheat panel if not assigned
+        if (cheatPanel == null)
+        {
+            cheatPanel = GameObject.Find("CheatPanel");
+            if (cheatPanel == null)
+            {
+                cheatPanel = GameObject.FindGameObjectWithTag("CheatPanel");
+            }
+            if (cheatPanel != null)
+            {
+                Debug.Log("CheatManager: Auto-found cheat panel");
+            }
+            else
+            {
+                Debug.LogWarning("CheatManager: Could not find cheat panel GameObject");
+            }
+        }
         
         SetupUI();
         if (cheatPanel != null)
@@ -147,6 +172,7 @@ public class CheatManager : MonoBehaviour
             {
                 inputSequence.Add(key);
                 lastInputTime = Time.time;
+                Debug.Log($"Cheat key pressed: {key}, sequence count: {inputSequence.Count}");
                 
                 if (CheckSequence())
                 {

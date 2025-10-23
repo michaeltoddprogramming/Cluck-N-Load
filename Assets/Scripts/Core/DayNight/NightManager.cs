@@ -12,6 +12,28 @@ public class NightManager : MonoBehaviour
     private int currentSeason = 1;
     public event System.Action<int> OnDayChanged;
 
+    [Header("Enemy Unlock Notifications")]
+    [Tooltip("Enable a special badge notification when Raccoons become available (season 2)")]
+    public bool notifyRaccoonUnlock = true;
+    public string raccoonUnlockTitle = "Raccoons Unlocked!";
+    [TextArea]
+    public string raccoonUnlockMessage = "Raccoons will now appear during this season. Stay alert!";
+    private bool raccoonAnnounced = false;
+
+    [Tooltip("Enable a special badge notification when Boars become available (season 3)")]
+    public bool notifyBoarUnlock = true;
+    public string boarUnlockTitle = "Boars Unlocked!";
+    [TextArea]
+    public string boarUnlockMessage = "Boars will now appear during this season. They're tougher than other enemies!";
+    private bool boarAnnounced = false;
+
+    [Tooltip("Enable a special badge notification when Bears become available (season 4)")]
+    public bool notifyBearUnlock = true;
+    public string bearUnlockTitle = "Bears Unlocked!";
+    [TextArea]
+    public string bearUnlockMessage = "Bears will now appear during this season. The most dangerous enemy yet!";
+    private bool bearAnnounced = false;
+
     // Start night button
     [Header("Start NIght button")]
     [SerializeField] private Button startNightButton;
@@ -111,6 +133,8 @@ public class NightManager : MonoBehaviour
             OnDayChanged?.Invoke(days);
         }
     }
+
+    private int lastSurvivalRewardDay = -1;
 
     [SerializeField] private int years;
     public int Years
@@ -558,7 +582,10 @@ public class NightManager : MonoBehaviour
             Hours = 0;
         }
 
-        if (value == 5)
+        if (value == 0)
+        {
+        }
+        else if (value == 5)
         {
             if (days == 5 || days == 10 || days == 15 || days == 20)
             {
@@ -578,6 +605,21 @@ public class NightManager : MonoBehaviour
             lightingCoroutines.Add(lightCor);
 
             sceneLight.colorTemperature = 2000f;
+
+            // Combat report display temporarily disabled
+
+            // Award survival bonus for completing the night
+            if (days > 0 && lastSurvivalRewardDay < days)
+            {
+                lastSurvivalRewardDay = days;
+                AwardSurvivalBonus();
+            }
+
+            // Check for newly unlocked structures in the morning
+            if (GameLoopManager.Instance != null)
+            {
+                GameLoopManager.Instance.CheckForNewlyUnlockedStructuresMorning();
+            }
         }
         else if (value == 7)
         {
@@ -727,6 +769,10 @@ public class NightManager : MonoBehaviour
         {
             Debug.Log("Cheat active - showing all enemies");
             if (enemyIndicator != null) enemyIndicator.MakeAllEnemiesVisible();
+            // If cheat/unlock-all makes enemies visible, ensure notifications are shown
+            NotifyRaccoonUnlock();
+            NotifyBoarUnlock();
+            NotifyBearUnlock();
             return;
         }
         
@@ -759,12 +805,18 @@ public class NightManager : MonoBehaviour
                     break;
                 case 2:
                     enemyIndicator.MakeRacoonVisible();
+                    // Ensure raccoon notification appears when season switches to raccoon season
+                    NotifyRaccoonUnlock();
                     break;
                 case 3:
                     enemyIndicator.MakeBoarVisible();
+                    // Ensure boar notification appears when season switches to boar season
+                    NotifyBoarUnlock();
                     break;
                 case 4:
                     enemyIndicator.MakeBearVisible();
+                    // Ensure bear notification appears when season switches to bear season
+                    NotifyBearUnlock();
                     break;
             }
         }
@@ -772,6 +824,51 @@ public class NightManager : MonoBehaviour
         {
             Debug.LogError("Enemy indicator is null!");
         }
+    }
+
+    private void NotifyRaccoonUnlock()
+    {
+        if (!notifyRaccoonUnlock || raccoonAnnounced) return;
+        raccoonAnnounced = true;
+        if (NotificationManager.Instance != null)
+        {
+            NotificationManager.ShowRaccoon(raccoonUnlockMessage, 5f);
+        }
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Raccoon");
+        }
+        Debug.Log("NotifyRaccoonUnlock executed: raccoonAnnounced set to true");
+    }
+
+    private void NotifyBoarUnlock()
+    {
+        if (!notifyBoarUnlock || boarAnnounced) return;
+        boarAnnounced = true;
+        if (NotificationManager.Instance != null)
+        {
+            NotificationManager.ShowBoar(boarUnlockMessage, 5f);
+        }
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Boar");
+        }
+        Debug.Log("NotifyBoarUnlock executed: boarAnnounced set to true");
+    }
+
+    private void NotifyBearUnlock()
+    {
+        if (!notifyBearUnlock || bearAnnounced) return;
+        bearAnnounced = true;
+        if (NotificationManager.Instance != null)
+        {
+            NotificationManager.ShowBear(bearUnlockMessage, 5f);
+        }
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Bear");
+        }
+        Debug.Log("NotifyBearUnlock executed: bearAnnounced set to true");
     }
 
     private void UpdateDayCountUI()
@@ -876,14 +973,29 @@ public class NightManager : MonoBehaviour
         Debug.Log($"About to call UpdateEnemyIndicatorForSeason with season={season}, enemyIndicator={enemyIndicator}");
         UpdateEnemyIndicatorForSeason(season);
 
-        // Use Pete for season notifications instead of basic text
-        if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+        // Special-case notification: raccoon unlock on season 2 (Summer)
+        if (season == 2 && notifyRaccoonUnlock && !raccoonAnnounced)
         {
-            ShowPeteSeasonNotification(season);
+            raccoonAnnounced = true;
+            if (NotificationManager.Instance != null)
+            {
+                NotificationManager.ShowRaccoon(raccoonUnlockMessage, 5f);
+            }
+            if (GameEventManager.Instance != null)
+            {
+                GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Raccoon");
+            }
+            Debug.Log("Raccoon unlock notification triggered.");
         }
+
+        // Use Pete for season notifications instead of basic text
+        // DISABLED: Now using modern notification system instead to avoid duplicate notifications
+        // if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
+        // {
+        //     ShowPeteSeasonNotification(season);
+        // }
         
-        // NEW: Add modern notification system for season changes
-        ShowSeasonChangeNotification(season);
+        // Season change notifications removed - players will learn about seasons through gameplay
     }
 
     private void SetSeasonWeather()
@@ -1080,7 +1192,7 @@ public class NightManager : MonoBehaviour
             // NEW: Add modern notification for production boost
             if (NotificationManager.Instance != null)
             {
-                NotificationManager.ShowAchievement("Double Production!", $"{fullAnimalName} earning 100% more!");
+                NotificationManager.ShowAchievement("Double Production!", $"{fullAnimalName} earning 100% more! (Lasts entire season)");
             }
 
         }
@@ -1165,7 +1277,7 @@ public class NightManager : MonoBehaviour
                 // NEW: Add modern notification for dual production boost
                 if (NotificationManager.Instance != null)
                 {
-                    NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output!");
+                    NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
 
                 // if (doubleProductionSource != null)
@@ -1264,7 +1376,7 @@ public class NightManager : MonoBehaviour
                 // NEW: Add modern notification for dual production boost
                 if (NotificationManager.Instance != null)
                 {
-                    NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output!");
+                    NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
 
                 // if (doubleProductionSource != null)
@@ -1278,12 +1390,14 @@ public class NightManager : MonoBehaviour
     // New helper method to show simplified tutorial explanation
     public void ShowSimplifiedTutorialSeasonBonus()
     {
-
         // During tutorial, we'll just show a message explaining the concept
-        string tutorialMessage = "Each season brings <b>special bonuses</b> to your farm animals!\n\nYou can see which animals produce more by checking the price panel.";
+        string tutorialMessage = "Each season brings special bonuses to your farm animals! You can see which animals produce more by checking the price panel.";
 
-        // Show a notification that doesn't overwhelm with details
-        StartProductionNotification(tutorialMessage, 7f);
+        // Use the new notification system instead of the old text display
+        if (NotificationManager.Instance != null)
+        {
+            NotificationManager.ShowNotification("Seasonal Bonuses", tutorialMessage, "Info", 7f);
+        }
 
         // Apply normal seasonal bonuses during tutorial (allow players to see them working)
         ProductionBoosts productionBoostsManager = FindFirstObjectByType<ProductionBoosts>();
@@ -1354,22 +1468,22 @@ public class NightManager : MonoBehaviour
         {
             case 1: // Spring
                 title = YearsChanged ? $"Year {Years} - Spring!" : "Spring Has Arrived!";
-                message = "Animals energetic • Perfect farming weather";
+                message = "Animals energetic • Perfect farming weather • 2 random animals get +50% production";
                 theme = "Success";
                 break;
             case 2: // Summer  
                 title = "Summer Heat!";
-                message = "Faster crop growth • Wolves extra aggressive";
+                message = "Faster crop growth • Wolves extra aggressive • 2 random animals get +50% production";
                 theme = "Warning";
                 break;
             case 3: // Fall
                 title = "Fall Harvest Season!";
-                message = "Animals eat more, produce more • Expand livestock";
+                message = "Animals eat more, produce more • Expand livestock • 2 random animals get +50% production";
                 theme = "Achievement";
                 break;
             case 4: // Winter
                 title = "Winter is Here!";
-                message = "Slower crops • Snow incoming • Tougher enemies";
+                message = "Slower crops • Snow incoming • Tougher enemies • 2 random animals get +50% production";
                 theme = "Info";
                 break;
         }
@@ -1524,6 +1638,11 @@ public class NightManager : MonoBehaviour
     }
 
     public int GetDays() => days;
+
+    public void SetLastSurvivalRewardDay(int day)
+    {
+        lastSurvivalRewardDay = day;
+    }
     public bool GetIsDay() => isDay;
     public int GetCurrentSeason()
     {
@@ -1602,5 +1721,44 @@ public class NightManager : MonoBehaviour
     public bool getIsPaused()
     {
         return isPaused;
+    }
+
+    private void AwardSurvivalBonus()
+    {
+        const int SURVIVAL_BONUS = 100;
+        
+        // Show achievement notification with random funny message first
+        if (NotificationManager.Instance != null)
+        {
+            string[] funnyMessages = {
+                "You didn't die! Here's some pocket money.",
+                "Congratulations! You survived another night of farm chaos!",
+                "Farm life didn't kill you today. Bonus points!",
+                "You made it! The chickens didn't revolt... yet.",
+                "Survival bonus: Because farming is basically war.",
+                "You lived! Now go spend this on more questionable life choices.",
+                "Another day, another dollar... wait, 100 dollars!",
+                "Farmers gonna farm, but you survived to tell the tale!",
+                "You beat the night! The wolves are disappointed.",
+                "Survival of the fittest farmer! You win this round.",
+                "You didn't get eaten by your own livestock. Impressive!",
+                "Farm life: Where 'surviving the night' is an achievement.",
+                "You made it through! The silo didn't collapse on you.",
+                "Congratulations! Your farm didn't burn down overnight.",
+                "You survived! Now go hug a chicken or something."
+            };
+            
+            string randomMessage = funnyMessages[Random.Range(0, funnyMessages.Length)];
+            // Longer duration for important daily achievement
+            NotificationManager.ShowAchievement($"Day {days} Survived!", randomMessage, 6f);
+        }
+        
+        // Add money with coin animation at NightManager position after notification
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.AddMoney(SURVIVAL_BONUS, transform.position);
+        }
+        
+        Debug.Log($"[NightManager] Awarded ${SURVIVAL_BONUS} survival bonus for day {days}");
     }
 }

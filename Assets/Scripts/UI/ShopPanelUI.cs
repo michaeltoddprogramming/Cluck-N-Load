@@ -926,8 +926,29 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         // Clear old items
         foreach (Transform child in contentParent)
             Destroy(child.gameObject);
+        // Defensive debug info
+        Debug.Log($"PopulateRepairList called - currNav: {currNav}, showAll: {showAll}");
+        if (repairItemPrefab == null)
+        {
+            Debug.LogError("repairItemPrefab is not assigned in ShopPanelUI! Repair list cannot be populated.");
+            return;
+        }
+        else
+        {
+            var comp = repairItemPrefab.GetComponent<RepairItem>();
+            Debug.Log($"repairItemPrefab assigned: {repairItemPrefab.name}, has RepairItem component: {comp != null}");
+            if (comp == null)
+            {
+                Debug.LogError("The assigned repairItemPrefab does not contain a RepairItem component. Please assign the correct prefab to avoid shop items appearing in repair list.");
+                // Do not proceed to instantiate an incorrect prefab - abort population to avoid UI mixups
+                repairNotification.SetActive(true);
+                totalRepairCost = 0;
+                totalRepairCostText.text = $"{totalRepairCost}";
+                repairAllButton.interactable = false;
+                return;
+            }
+        }
 
-        
         List<GameObject> brokenBuildings;
         
         if(showAll)
@@ -970,15 +991,28 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             totalRepairCost += building.GetComponent<Structure>().GetRepairCost();
 
+            // Instantiate the repair item but only if the prefab contains the RepairItem component
             GameObject item = Instantiate(repairItemPrefab, contentParent);
-
-            RepairItem repairItem = item.GetComponent<RepairItem>();
-
-            if(repairItem != null)
+            if (item == null)
             {
-                repairItem.Initialize(building, building.GetComponent<Structure>().GetStructureName(), building.GetComponent<Structure>().GetRepairCost());
+                Debug.LogError("Failed to instantiate repairItemPrefab - null returned");
+                continue;
             }
 
+            RepairItem repairItem = item.GetComponent<RepairItem>();
+            if (repairItem == null)
+            {
+                Debug.LogError($"Instantiated prefab '{item.name}' does not contain a RepairItem component. Destroying to avoid UI pollution.");
+                Destroy(item);
+                continue;
+            }
+
+            // Initialize repair item
+            string structureName = building.GetComponent<Structure>() != null ? building.GetComponent<Structure>().GetStructureName() : building.name;
+            int repairCostLocal = building.GetComponent<Structure>() != null ? building.GetComponent<Structure>().GetRepairCost() : 0;
+            repairItem.Initialize(building, structureName, repairCostLocal);
+
+            // Wire up callback safely
             repairItem.OnRepaired += RemoveRepairItem;
         }
 

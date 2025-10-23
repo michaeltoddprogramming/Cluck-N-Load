@@ -71,22 +71,12 @@ public class FarmHouseStructureUI : BaseStructureUI
                     {
                         PlaySound(errorSound);
                         Debug.Log("Not enough money to hire worker!");
-                        // NEW: Show notification for insufficient funds
-                        if (NotificationManager.Instance != null)
-                        {
-                            NotificationManager.ShowError("Can't Hire Worker!", "Need $100 to hire a farm worker");
-                        }
                     }
                 }
                 else
                 {
                     PlaySound(errorSound);
                     Debug.Log("Cannot add more workers - farm house is at capacity!");
-                    // NEW: Show notification for capacity limit
-                    if (NotificationManager.Instance != null)
-                    {
-                        NotificationManager.ShowWarning("Farmhouse Full!", "Upgrade or build another farmhouse");
-                    }
                 }
             });
         }

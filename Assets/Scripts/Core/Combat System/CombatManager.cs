@@ -162,6 +162,12 @@ public class CombatManager : MonoBehaviour
             afterSeason();
         }
 
+        // Reset combat statistics for the new night
+        if (CombatStatistics.Instance != null)
+        {
+            CombatStatistics.Instance.ResetStats();
+        }
+
         isNight = true;
         // spawnUnits.SpawnEnemies();
         StartCoroutine(SpawnEnemies());

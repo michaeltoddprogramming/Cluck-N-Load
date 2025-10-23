@@ -378,6 +378,13 @@ public class Structure : MonoBehaviour
         if (isIndestructible) return;
 
         currentHealth -= amount;
+        
+        // Record damage taken for combat statistics
+        if (CombatStatistics.Instance != null)
+        {
+            CombatStatistics.Instance.RecordDamageTaken(amount);
+        }
+        
         OnDamaged?.Invoke(this);
         OnHealthChanged?.Invoke(); // Trigger health changed event for UI
 

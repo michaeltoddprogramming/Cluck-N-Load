@@ -374,6 +374,7 @@ public class AnimalStructure : Structure
             if (NotificationManager.Instance != null)
             {
                 string animalName = animalType.ToString();
+                Debug.Log($"[Animal Collection] animalType: {animalType}, animalName: {animalName}, animalCount: {animalCount}");
                 if (string.IsNullOrEmpty(animalName) || animalName == "None")
                 {
                     animalName = "Animal"; // Fallback for uninitialized types
@@ -383,6 +384,7 @@ public class AnimalStructure : Structure
                 string displayName = animalCount == 1 ? animalName : animalName + "s";
                 string baseMessage = $"${totalMoneyEarned} from {animalCount} {displayName}";
                 
+                Debug.Log($"[Animal Collection] Notification: displayName='{displayName}', baseMessage='{baseMessage}'");
                 // Check for production boost
                 if (boostedAmount > 1f)
                 {
@@ -395,7 +397,8 @@ public class AnimalStructure : Structure
                 {
                     int savings = Mathf.RoundToInt((1f - (foodMultiplier / normalFoodRequired)) * 100f);
                     baseMessage += $" • {savings}% less feed used!";
-                    NotificationManager.ShowSuccess($"{displayName} Collected!", baseMessage);
+                    // Shorter duration for routine successes
+                    NotificationManager.ShowSuccess($"{displayName} Collected!", baseMessage, 2.5f);
                 }
                 else
                 {

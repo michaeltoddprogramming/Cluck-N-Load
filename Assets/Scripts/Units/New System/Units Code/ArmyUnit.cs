@@ -391,6 +391,12 @@ public class ArmyUnit : BaseUnit
         // Debug.Log("Chicken attacking " + currentTarget.name);
         currentTarget.TakeDamage(data.AttackDamage);
 
+        // Record damage dealt for combat statistics
+        if (CombatStatistics.Instance != null)
+        {
+            CombatStatistics.Instance.RecordDamageDealt(data.AttackDamage);
+        }
+
         canShoot = true;
     }
 
@@ -602,6 +608,12 @@ public class ArmyUnit : BaseUnit
         // Debug.Log("Army unit took damage: " + damage + "siedruhfgiowuehfiuwehfiuwehfiuwehiufhweiurfhiuehrfg");
         if (currHealth <= 0 || currHealth - damage <= 0)
         {
+            // Record damage taken before death
+            if (CombatStatistics.Instance != null)
+            {
+                CombatStatistics.Instance.RecordDamageTaken(damage);
+            }
+
             PlaySound(data.DeathSound, 'd');
             currHealth = 0;
             UpdateHealthBar();
@@ -610,6 +622,12 @@ public class ArmyUnit : BaseUnit
         }
         else
         {
+            // Record damage taken
+            if (CombatStatistics.Instance != null)
+            {
+                CombatStatistics.Instance.RecordDamageTaken(damage);
+            }
+
             PlaySound(data.HurtSound, 'h');
             currHealth -= damage;
             UpdateHealthBar();
@@ -618,6 +636,12 @@ public class ArmyUnit : BaseUnit
 
     protected void handleDie()
     {
+        // Record army unit loss for combat statistics
+        if (CombatStatistics.Instance != null)
+        {
+            CombatStatistics.Instance.RecordArmyUnitLoss(data.Type.ToString());
+        }
+
         TargetManager.Instance.UnregisterTarget(this);
 
         Die();

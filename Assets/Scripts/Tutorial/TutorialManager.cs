@@ -602,38 +602,51 @@ public partial class TutorialManager : MonoBehaviour
         if (isShowingDiscovery)
             return;
 
+        // Use the new notification system for discoveries
+        if (NotificationManager.Instance != null)
+        {
+            string theme = GetDiscoveryTheme(discoveryStep);
+            string cleanMessage = StripRichText(discoveryStep.instructionText);
+            NotificationManager.ShowNotification(discoveryStep.title, cleanMessage, theme, 6f);
+        }
+
         isShowingDiscovery = true;
         currentDiscoveryStep = discoveryStep;
 
-        bool wasTutorialActive = tutorialPanel.activeSelf;
-        bool wasChecklistActive = checklistPanel != null && checklistPanel.activeSelf;
+        // Mark this discovery as processed
+        StartCoroutine(MarkDiscoveryComplete());
+    }
 
-        tutorialPanel.SetActive(true);
-        if (checklistPanel != null)
-            checklistPanel.SetActive(false);
+    private IEnumerator MarkDiscoveryComplete()
+    {
+        yield return new WaitForSeconds(0.5f);
+        isShowingDiscovery = false;
+        currentDiscoveryStep = null;
+    }
 
-        // Show close button only for discovery steps
-        if (discoveryCloseButton != null)
-        {
-            discoveryCloseButton.gameObject.SetActive(true);
-            discoveryCloseButton.onClick.RemoveAllListeners();
-            discoveryCloseButton.onClick.AddListener(() => CloseDiscoveryPopup());
-        }
+    private string GetDiscoveryTheme(TutorialStep step)
+    {
+        if (step.stepId.Contains("season"))
+            return "Info";
+        if (step.stepId.Contains("production") || step.stepId.Contains("boost"))
+            return "Achievement";
+        if (step.stepId.Contains("discover"))
+            return "New";
+        return "Success";
+    }
 
-        // Hide next button for discovery steps
-        if (nextStepButton != null)
-            nextStepButton.gameObject.SetActive(false);
-
-        if (skipTutorialButton != null)
-            skipTutorialButton.gameObject.SetActive(false);
-
-        if (typingCoroutine != null)
-            StopCoroutine(typingCoroutine);
-
-        typingCoroutine = StartCoroutine(TypeTextWithMumble(discoveryStep.instructionText));
-        titleText.text = discoveryStep.title;
-        UpdateCharacterPortrait(discoveryStep);
-        HighlightUI(discoveryStep.uiToHighlight, true);
+    private string StripRichText(string richText)
+    {
+        if (string.IsNullOrEmpty(richText)) return richText;
+        
+        // Simple rich text removal - remove color tags and bold tags
+        string cleaned = richText;
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"<color[^>]*>", "");
+        cleaned = cleaned.Replace("</color>", "");
+        cleaned = cleaned.Replace("<b>", "").Replace("</b>", "");
+        cleaned = cleaned.Replace("<i>", "").Replace("</i>", "");
+        
+        return cleaned;
     }
 
     private IEnumerator AutoCloseDiscovery(bool restoreTutorialState, bool restoreChecklistState)
@@ -724,32 +737,11 @@ public partial class TutorialManager : MonoBehaviour
 
     public void ShowPeteSeasonNotification(TutorialStep seasonStep)
     {
-        // Use the existing discovery popup system to show Pete's season notifications
-        if (isShowingDiscovery) return; // Don't interrupt existing discovery
-
-        // Temporarily register this as a discovery step
-        isShowingDiscovery = true;
-        currentDiscoveryStep = seasonStep;
-
-        // Show the tutorial panel and populate with Pete's season message
-        tutorialPanel.SetActive(true);
-        
-        if (typingCoroutine != null)
-            StopCoroutine(typingCoroutine);
-
-        typingCoroutine = StartCoroutine(TypeTextWithMumble(seasonStep.instructionText));
-        titleText.text = seasonStep.title;
-        UpdateCharacterPortrait(seasonStep);
-
-        // Hide next step button and show discovery close button
-        if (nextStepButton != null)
-            nextStepButton.gameObject.SetActive(false);
-
-        if (discoveryCloseButton != null)
+        // Use the new notification system for Pete's season notifications
+        if (NotificationManager.Instance != null)
         {
-            discoveryCloseButton.gameObject.SetActive(true);
-            discoveryCloseButton.onClick.RemoveAllListeners();
-            discoveryCloseButton.onClick.AddListener(ClosePeteSeasonNotification);
+            string cleanMessage = StripRichText(seasonStep.instructionText);
+            NotificationManager.ShowAchievement(seasonStep.title, cleanMessage, 7f);
         }
     }
 
@@ -775,23 +767,14 @@ public partial class TutorialManager : MonoBehaviour
         
         hasShownFarmHouseHealing = true;
         
-        string seasonName = GetSeasonNameForHealing(season);
-        string peteMessage = $"Hey there, partner! Notice anything about your farm house?\n\n" +
-                           $"Every time a new season rolls around, your farm house gets restored to <b>full health</b>! " +
-                           $"Mother Nature's way of giving you a fresh start.\n\n" +
-                           $"No need to worry about repairs - each season brings renewal!";
+        string peteMessage = "Every time a new season rolls around, your farm house gets restored to full health! " +
+                           "Mother Nature's way of giving you a fresh start. No need to worry about repairs - each season brings renewal!";
         
-        // Create a discovery step for Pete's healing explanation
-        var healingStep = new TutorialStep
+        // Use the new notification system for Pete's healing explanation
+        if (NotificationManager.Instance != null)
         {
-            stepId = "pete_farmhouse_healing",
-            title = "Pete's Farm House Tip",
-            instructionText = peteMessage,
-            triggerToWaitFor = TutorialTrigger.None
-        };
-
-        // Show Pete's healing explanation as a discovery popup
-        ShowPeteSeasonNotification(healingStep);
+            NotificationManager.ShowSuccess("Pete's Farm House Tip", peteMessage, 5f);
+        }
     }
 
     private string GetSeasonNameForHealing(int season)

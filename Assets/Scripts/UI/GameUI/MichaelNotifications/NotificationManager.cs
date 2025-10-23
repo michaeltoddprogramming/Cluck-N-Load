@@ -77,6 +77,47 @@ public class NotificationManager : MonoBehaviour
             borderColor = new Color(1f, 0.4f, 1f, 1f),
             textColor = new Color(1f, 0.9f, 1f, 1f),
             iconColor = new Color(1f, 0.5f, 1f, 1f)
+        },
+        // Badge - Dramatic red/orange for major achievements that "slam" onto screen
+        new NotificationTheme { 
+            themeName = "Badge", 
+            backgroundColor = new Color(0.4f, 0.1f, 0.05f, 0.98f),
+            borderColor = new Color(1f, 0.3f, 0.1f, 1f),
+            textColor = new Color(1f, 1f, 1f, 1f),
+            iconColor = new Color(1f, 0.6f, 0.2f, 1f)
+        }
+        ,
+        // Animal - Soft natural green for animal unlocks
+        new NotificationTheme {
+            themeName = "Animal",
+            backgroundColor = new Color(0.12f, 0.3f, 0.18f, 0.95f),
+            borderColor = new Color(0.5f, 0.8f, 0.5f, 1f),
+            textColor = new Color(0.95f, 1f, 0.9f, 1f),
+            iconColor = new Color(0.7f, 1f, 0.6f, 1f)
+        },
+        // Raccoon - Gray/teal accent for raccoon-specific messages
+        new NotificationTheme {
+            themeName = "Raccoon",
+            backgroundColor = new Color(0.13f, 0.15f, 0.16f, 0.97f),
+            borderColor = new Color(0.4f, 0.8f, 0.9f, 1f),
+            textColor = new Color(1f, 1f, 1f, 1f),
+            iconColor = new Color(0.6f, 0.85f, 0.9f, 1f)
+        },
+        // Boar - Brown/earth tones for boar-specific messages
+        new NotificationTheme {
+            themeName = "Boar",
+            backgroundColor = new Color(0.25f, 0.15f, 0.1f, 0.97f),
+            borderColor = new Color(0.8f, 0.5f, 0.3f, 1f),
+            textColor = new Color(1f, 0.95f, 0.85f, 1f),
+            iconColor = new Color(0.9f, 0.6f, 0.4f, 1f)
+        },
+        // Bear - Dark blue/gray for bear-specific messages (winter/ice theme)
+        new NotificationTheme {
+            themeName = "Bear",
+            backgroundColor = new Color(0.1f, 0.15f, 0.25f, 0.97f),
+            borderColor = new Color(0.4f, 0.6f, 0.9f, 1f),
+            textColor = new Color(0.9f, 0.95f, 1f, 1f),
+            iconColor = new Color(0.6f, 0.8f, 1f, 1f)
         }
     };
 
@@ -153,24 +194,50 @@ public class NotificationManager : MonoBehaviour
         Instance.ProcessQueue();
     }
 
-    public static void ShowSuccess(string title, string message = "", float duration = 3f)
+    public static void ShowSuccess(string title, string message = "", float duration = 2.5f)
     {
         ShowNotification(title, message, "Success", duration);
     }
 
-    public static void ShowWarning(string title, string message = "", float duration = 4f)
+    public static void ShowWarning(string title, string message = "", float duration = 2.5f)
     {
         ShowNotification(title, message, "Warning", duration);
     }
 
-    public static void ShowError(string title, string message = "", float duration = 5f)
+    public static void ShowError(string title, string message = "", float duration = 2.5f)
     {
         ShowNotification(title, message, "Error", duration);
     }
 
-    public static void ShowAchievement(string title, string message = "", float duration = 4f)
+    public static void ShowAchievement(string title, string message = "", float duration = 2.5f)
     {
         ShowNotification(title, message, "Achievement", duration);
+    }
+
+    public static void ShowBadge(string title, string message = "", float duration = 2.5f)
+    {
+        ShowNotification(title, message, "Badge", duration);
+    }
+
+    public static void ShowAnimalUnlock(string animalName, string message = "", float duration = 2.5f)
+    {
+        string title = $"New Animal: {animalName}";
+        ShowNotification(title, message, "Animal", duration);
+    }
+
+    public static void ShowRaccoon(string message = "", float duration = 3f)
+    {
+        ShowNotification("Raccoon Unlocked!", message, "Raccoon", duration);
+    }
+
+    public static void ShowBoar(string message = "", float duration = 3f)
+    {
+        ShowNotification("Boar Unlocked!", message, "Boar", duration);
+    }
+
+    public static void ShowBear(string message = "", float duration = 3f)
+    {
+        ShowNotification("Bear Unlocked!", message, "Bear", duration);
     }
 
     private void ProcessQueue()
@@ -212,36 +279,62 @@ public class NotificationManager : MonoBehaviour
         }
 
         // === DRAMATIC ENTRANCE ANIMATION ===
-        // Start with a flash effect (fixed to not create lines)
-        StartCoroutine(FlashEffect(notification, theme));
+        bool isBadge = data.theme == "Badge";
         
-        // Slide in from right with smoother animation (less bouncy)
-        LeanTween.moveX(rectTransform, targetPosition.x, slideInDuration)
-            .setEase(LeanTweenType.easeOutQuart)
-            .setDelay(0.1f);
-
-        // Scale up with gentle entrance (much less bouncy)
-        LeanTween.scale(notification, Vector3.one, slideInDuration * 0.8f)
-            .setEase(LeanTweenType.easeOutQuart)
-            .setDelay(0.2f);
-
-        // Fade in
-        LeanTween.alphaCanvas(canvasGroup, 1f, slideInDuration * 0.6f)
-            .setDelay(0.15f);
-
-        // Gentle settle effect (much less bouncy)
-        yield return new WaitForSeconds(slideInDuration * 0.9f);
+        // Start with a flash effect (more intense for badges)
+        StartCoroutine(FlashEffect(notification, theme, isBadge));
         
-        LeanTween.scale(notification, Vector3.one * 1.03f, 0.2f)
-            .setEase(LeanTweenType.easeInOutQuad)
-            .setOnComplete(() =>
-            {
-                LeanTween.scale(notification, Vector3.one, 0.3f)
-                    .setEase(LeanTweenType.easeInOutQuad);
-            });
+        // Slide in from right - FASTER and more forceful for badges
+        float slideDuration = isBadge ? slideInDuration * 0.6f : slideInDuration;
+        LeanTween.moveX(rectTransform, targetPosition.x, slideDuration)
+            .setEase(isBadge ? LeanTweenType.easeOutBack : LeanTweenType.easeOutQuart)
+            .setDelay(isBadge ? 0f : 0.1f);
 
-        // Sparkle effects during display - RE-ENABLED with line effects removed
-        StartCoroutine(SparkleEffectNoLines(notification, data.duration));
+        // Scale up - BIGGER bounce for badges
+        float scaleDuration = isBadge ? slideDuration * 0.7f : slideDuration * 0.8f;
+        float maxScale = isBadge ? 1.2f : 1.0f;
+        LeanTween.scale(notification, Vector3.one * maxScale, scaleDuration)
+            .setEase(isBadge ? LeanTweenType.easeOutBack : LeanTweenType.easeOutQuart)
+            .setDelay(isBadge ? 0.05f : 0.2f);
+
+        // Fade in - faster for badges
+        float fadeDelay = isBadge ? 0.05f : 0.15f;
+        LeanTween.alphaCanvas(canvasGroup, 1f, slideDuration * 0.5f)
+            .setDelay(fadeDelay);
+
+        // Settle effect - more dramatic bounce for badges
+        yield return new WaitForSeconds(slideDuration * 0.8f);
+        
+        if (isBadge)
+        {
+            // Dramatic badge settle - bigger bounce back to normal
+            LeanTween.scale(notification, Vector3.one * 1.1f, 0.15f)
+                .setEase(LeanTweenType.easeOutQuad)
+                .setOnComplete(() =>
+                {
+                    LeanTween.scale(notification, Vector3.one * 0.98f, 0.1f)
+                        .setEase(LeanTweenType.easeInOutQuad)
+                        .setOnComplete(() =>
+                        {
+                            LeanTween.scale(notification, Vector3.one, 0.2f)
+                                .setEase(LeanTweenType.easeOutBounce);
+                        });
+                });
+        }
+        else
+        {
+            // Gentle settle effect for other notifications
+            LeanTween.scale(notification, Vector3.one * 1.03f, 0.2f)
+                .setEase(LeanTweenType.easeInOutQuad)
+                .setOnComplete(() =>
+                {
+                    LeanTween.scale(notification, Vector3.one, 0.3f)
+                        .setEase(LeanTweenType.easeInOutQuad);
+                });
+        }
+
+        // Sparkle effects during display - more intense for badges
+        StartCoroutine(SparkleEffectNoLines(notification, data.duration, isBadge));
 
         // === DISPLAY DURATION ===
         yield return new WaitForSeconds(data.duration);
@@ -525,7 +618,7 @@ public class NotificationManager : MonoBehaviour
         return texture;
     }
     
-    private IEnumerator FlashEffect(GameObject notification, NotificationTheme theme)
+    private IEnumerator FlashEffect(GameObject notification, NotificationTheme theme, bool isBadge = false)
     {
         if (notification == null) yield break;
         
@@ -544,8 +637,8 @@ public class NotificationManager : MonoBehaviour
         flashRect.offsetMax = Vector2.zero;
         flashRect.localScale = Vector3.one;
         
-        // Bright white flash
-        Color flashColor = new Color(1f, 1f, 1f, 0.8f);
+        // Bright white flash - more intense for badges
+        Color flashColor = new Color(1f, 1f, 1f, isBadge ? 1f : 0.8f);
         if (theme != null)
         {
             // Tint the flash with the theme color
@@ -569,16 +662,20 @@ public class NotificationManager : MonoBehaviour
             });
     }
 
-    private IEnumerator SparkleEffectNoLines(GameObject notification, float duration)
+    private IEnumerator SparkleEffectNoLines(GameObject notification, float duration, bool isBadge = false)
     {
         float elapsed = 0f;
         Image backgroundImage = notification.GetComponent<Image>();
         Color originalColor = backgroundImage.color;
         
+        // More intense sparkle for badges
+        float intensityMultiplier = isBadge ? 2f : 1f;
+        float frequency = isBadge ? 4f : 3f;
+        
         while (elapsed < duration && notification != null)
         {
-            // Subtle glow pulse on the background - this creates the nice glow effect
-            float glowAmount = Mathf.Sin(elapsed * 3f) * sparkleIntensity * 0.3f;
+            // Subtle glow pulse on the background - more intense for badges
+            float glowAmount = Mathf.Sin(elapsed * frequency) * sparkleIntensity * 0.3f * intensityMultiplier;
             Color glowColor = originalColor + Color.white * glowAmount;
             glowColor.a = originalColor.a;
             
@@ -657,11 +754,43 @@ public class NotificationManager : MonoBehaviour
 
     private NotificationTheme GetTheme(string themeName)
     {
+        if (string.IsNullOrEmpty(themeName))
+            return themes.Length > 0 ? themes[0] : null;
+
+        // Normalize input: case-insensitive and collapse duplicated letters (e.g., "Racoon" vs "Raccoon").
+        string Normalize(string s)
+        {
+            s = s.Trim().ToLowerInvariant();
+            // Collapse repeated characters (only collapse runs >1 to a single char)
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            char? last = null;
+            foreach (char c in s)
+            {
+                if (last == null || c != last)
+                {
+                    sb.Append(c);
+                }
+                last = c;
+            }
+            return sb.ToString();
+        }
+
+        string target = Normalize(themeName);
         foreach (NotificationTheme theme in themes)
         {
+            if (theme == null || string.IsNullOrEmpty(theme.themeName)) continue;
+            if (Normalize(theme.themeName).Equals(target))
+                return theme;
+        }
+
+        // fallback to exact-case-insensitive match, then default theme
+        foreach (NotificationTheme theme in themes)
+        {
+            if (theme == null || theme.themeName == null) continue;
             if (theme.themeName.Equals(themeName, System.StringComparison.OrdinalIgnoreCase))
                 return theme;
         }
+
         return themes.Length > 0 ? themes[0] : null;
     }
     

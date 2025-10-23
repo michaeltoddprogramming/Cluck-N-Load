@@ -912,7 +912,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         foreach (Transform child in contentParent)
             Destroy(child.gameObject);
         // Defensive debug info
-        Debug.Log($"PopulateRepairList called - currNav: {currNav}, showAll: {showAll}");
         if (repairItemPrefab == null)
         {
             Debug.LogError("repairItemPrefab is not assigned in ShopPanelUI! Repair list cannot be populated.");
@@ -921,7 +920,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         else
         {
             var comp = repairItemPrefab.GetComponent<RepairItem>();
-            Debug.Log($"repairItemPrefab assigned: {repairItemPrefab.name}, has RepairItem component: {comp != null}");
             if (comp == null)
             {
                 Debug.LogError("The assigned repairItemPrefab does not contain a RepairItem component. Please assign the correct prefab to avoid shop items appearing in repair list.");

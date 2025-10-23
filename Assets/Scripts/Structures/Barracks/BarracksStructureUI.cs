@@ -101,7 +101,6 @@ public class BarracksStructureUI : BaseStructureUI
 
         barracksStructure.OnArmyChanged += UpdateUI;
         barracksStructure.OnArmyChanged += () => {
-            Debug.Log("[SHEEP FLAG] Army changed - refreshing sheep flag panel");
             RefreshSheepFlagListIfOpen();
         }; // Auto-update sheep flag panel
 
@@ -407,7 +406,6 @@ public class BarracksStructureUI : BaseStructureUI
         // Handle mouse input
         if (Input.GetMouseButtonDown(0)) // Left click to place flag
         {
-            Debug.Log("Left mouse button pressed during flag placement");
             PlaceFlagAtMousePosition();
         }
         else if (Input.GetMouseButtonDown(1)) // Right click to cancel

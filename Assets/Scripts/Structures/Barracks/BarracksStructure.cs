@@ -239,7 +239,6 @@ public class BarracksStructure : Structure
             {
                 Vector2Int animalCell = gridController.WorldToGridCoords(structure.transform.position);
                 float gridDistance = Vector2Int.Distance(barracksCell, animalCell);
-                Debug.Log($"{GetStructureName()}: Checking {structure.GetAnimalType} at distance {gridDistance}");
                 if (gridDistance < minGridDistance)
                 {
                     minGridDistance = gridDistance;
@@ -250,7 +249,6 @@ public class BarracksStructure : Structure
         targetAnimalStructure = closestStructure;
         if (targetAnimalStructure != null)
         {
-            Debug.Log($"{GetStructureName()}: Found target {targetAnimalStructure.GetAnimalType} at distance {minGridDistance}");
         }
         else
         {

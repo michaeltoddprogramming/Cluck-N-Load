@@ -525,8 +525,6 @@ public class Structure : MonoBehaviour
             bool shouldShow = GetCurrentHealth() < GetMaxHealth() && 
                              (!isDaytime || healthPercent <= 0.5f);
             
-            Debug.Log($"[{gameObject.name}] Day/Night Change - Health: {GetCurrentHealth()}/{GetMaxHealth()} | IsDay: {isDaytime} | ShouldShow: {shouldShow}");
-            
             // Smoothly fade health bar in/out
             FadeHealthBar(shouldShow);
         }

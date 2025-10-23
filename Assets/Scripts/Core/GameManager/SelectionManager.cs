@@ -47,7 +47,6 @@ public class SelectionManager : MonoBehaviour
                         if (structure != null && structure.gameObject.name != "BuildGhost" &&
                             structure.GetAllowSelectionAndUI() && structure.GetCurrentHealth() > 0)
                         {
-                            Debug.Log($"Found valid structure: {structure.name}");
                             SelectStructure(structure);
                             return;
                         }

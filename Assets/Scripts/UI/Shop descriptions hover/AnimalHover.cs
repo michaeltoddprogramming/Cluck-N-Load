@@ -155,7 +155,6 @@ public class AnimalHover : MonoBehaviour
 
     private void productionIcon()
     {
-        Debug.Log("here is the name: " + database.name);
         if (database.structureName == "Chicken Coop")
         {
             productIcon.sprite = productionSprites[0];

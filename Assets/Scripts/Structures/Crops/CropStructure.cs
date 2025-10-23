@@ -71,8 +71,6 @@ public class CropStructure : Structure
         else
         {
             baseCropHarvestAmount = data.wheatBaseHarvestAmount;
-            Debug.Log($"database wheat {data.wheatBaseHarvestAmount}");
-            Debug.Log($"Base wheat harvest amount set to {baseCropHarvestAmount}");
         }
 
         cropHarvestMultiplierIncrease = data.cropSynergyMultiplier;
@@ -141,14 +139,10 @@ public class CropStructure : Structure
         else if (currentCropType == CropType.Sunflower)
         {
             baseCropHarvestAmount = data.sunflowerBaseHarvestAmount;
-            Debug.Log($"database sunflower {data.sunflowerBaseHarvestAmount}");
-            Debug.Log($"Base sunflower harvest amount set to {baseCropHarvestAmount}");
         }
         else
         {
             baseCropHarvestAmount = data.wheatBaseHarvestAmount;
-            Debug.Log($"database wheat {data.wheatBaseHarvestAmount}");
-            Debug.Log($"Base wheat harvest amount set to {baseCropHarvestAmount}");
         }
     }
 

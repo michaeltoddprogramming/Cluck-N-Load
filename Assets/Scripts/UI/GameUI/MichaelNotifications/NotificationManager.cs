@@ -405,7 +405,6 @@ public class NotificationManager : MonoBehaviour
             notificationRect.anchoredPosition = positionOffset;
             notificationRect.localScale = Vector3.one;
             
-            Debug.Log($"Notification anchored at: {anchor}, Size: {notificationSize}, Offset: {positionOffset}");
         }
 
         // Setup text components
@@ -801,13 +800,13 @@ public class NotificationManager : MonoBehaviour
             CanvasScaler scaler = notificationCanvas.GetComponent<CanvasScaler>();
             if (scaler != null)
             {
-                Debug.Log($"Canvas Scaler - UI Scale Mode: {scaler.uiScaleMode}, Reference Resolution: {scaler.referenceResolution}");
+                
             }
             
             RectTransform canvasRect = notificationCanvas.GetComponent<RectTransform>();
             if (canvasRect != null)
             {
-                Debug.Log($"Canvas RectTransform - Size: {canvasRect.sizeDelta}, Scale: {canvasRect.localScale}");
+                
             }
         }
         
@@ -816,7 +815,7 @@ public class NotificationManager : MonoBehaviour
             RectTransform containerRect = notificationContainer.GetComponent<RectTransform>();
             if (containerRect != null)
             {
-                Debug.Log($"Container RectTransform - Size: {containerRect.sizeDelta}, Position: {containerRect.anchoredPosition}, Anchors: {containerRect.anchorMin} to {containerRect.anchorMax}");
+                
             }
         }
     }

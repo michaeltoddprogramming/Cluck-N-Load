@@ -1279,7 +1279,6 @@ public class BuildController : MonoBehaviour
 
     private void ShowSiloSynergyPreview()
 {
-    Debug.Log("here is the distance for the crop synergy: " + currentStructureData.cropSiloSynergyRange + " the current structure is: " + currentStructureData.structureName);
 
     // Draw circles still in world space
     CreateRangeIndicator(currentGhost.transform.position, currentStructureData.siloSynergyRange * gridController.GetCellSize(), potentialSynergyMaterial, "Animal Synergy Range");
@@ -2255,7 +2254,7 @@ private void ShowCropSynergyPreview()
             };
             if (animalTrigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{animalType}_coop"))
             {
-                Debug.Log($"Triggering animal structure tutorial step: build_{animalType}_coop");
+                
                 StartCoroutine(DelayedTutorialTrigger(animalTrigger, $"build_{animalType}_coop", 0.1f));
             }
             // Trigger re-search for all barracks when a new animal structure is built
@@ -2301,7 +2300,6 @@ private void ShowCropSynergyPreview()
         // Only trigger if the step isn't already completed (prevents reset on movement)
         if (trigger != TutorialTrigger.None && stepId != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
         {
-            Debug.Log($"Triggering tutorial step: {stepId} for structure: {name}");
             // Use a small delay to ensure proper processing when building quickly
             StartCoroutine(DelayedTutorialTrigger(trigger, stepId, 0.1f));
         }
@@ -2320,7 +2318,6 @@ private void ShowCropSynergyPreview()
         // Double-check that the step hasn't been completed while we were waiting
         if (TutorialManager.Instance != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
         {
-            Debug.Log($"Firing delayed tutorial trigger: {stepId}");
             TutorialManager.Instance.Trigger(trigger);
         }
         else

@@ -172,7 +172,6 @@ public class AnimalStructureUI : BaseStructureUI
         int animalCount = animalStructure.AnimalCount;
         int maxAnimalCount = animalStructure.MaxAnimalCount;
         bool isPaused = nightManager.getIsPaused();
-        Debug.Log($"[AnimalStructureUI] UpdateUI called - isPaused: {isPaused}");
         bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
         bool canCollect = productReady && nightManager.IsDay && !isPaused;
         // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")

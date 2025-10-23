@@ -1310,7 +1310,7 @@ public class EnemyUnit : BaseUnit
         obstacleTarget = null;
         
         destination = GetRandomOutsidePosition();
-        Debug.Log($"{name} retreating to: {destination}");
+        
 
         if (!agent.isOnNavMesh)
         {

@@ -129,7 +129,6 @@ public class MoneyManager : MonoBehaviour
         int previousMoney = _currentMoney;
         _currentMoney += amount;
         
-        Debug.Log($"MoneyManager.AddMoney: Adding {amount} money. Previous: {previousMoney}, New: {_currentMoney}");
         
         UpdateMoneyUI();
         SaveMoney();
@@ -137,7 +136,7 @@ public class MoneyManager : MonoBehaviour
         
         // Debug coin animation
         if (collectionPosition.HasValue) {
-            Debug.Log($"AddMoney with position: {amount} at {collectionPosition.Value}");
+            
             
             if (CoinAnimation.Instance != null) {
                 CoinAnimation.Instance.PlayCoinAnimation(collectionPosition.Value, amount);

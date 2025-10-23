@@ -20,6 +20,7 @@ public class CropStructureUI : BaseStructureUI
     [SerializeField] private Sprite WheatIcon;
     [SerializeField] private Sprite carrotIcon;
     [SerializeField] private Sprite defaultIcon;
+    [SerializeField] private Slider cropGrowthBar;
 
     [Header("Audio")]
     [SerializeField] private AudioClip errorSound;
@@ -32,6 +33,9 @@ public class CropStructureUI : BaseStructureUI
     private CropStructure cropStructure;
     private bool isCropStructure;
     private char currCrop = 'N';
+
+    public UIHoverManager hoverManager;
+    private float displayedGrowth = 0f;
 
     public override void Initialize(Structure structure)
     {
@@ -183,12 +187,132 @@ public class CropStructureUI : BaseStructureUI
 
         return amount * baseValue;
     }
+private float lastCheckedHour = 0f;
+private float cropGrowthProgress = 0f;
+private float plantedAtHour = -1f; // Track when crop was planted
+private bool wasGrowing = false;
 
     private void Update()
     {
         // Call base update to handle move button logic
         base.Update();
         UpdateUI();
+
+        if (cropStructure == null || nightManager == null || cropGrowthBar == null)
+    {
+        if (cropGrowthBar != null)
+        {
+            cropGrowthBar.value = 0f;
+            cropGrowthBar.gameObject.SetActive(false);
+        }
+        return;
+    }
+
+    // Let the crop handle its growth
+    cropStructure.TrackGrowth(nightManager);
+
+    if (cropStructure.CropReady)
+    {
+        cropGrowthBar.value = 1f;
+        cropGrowthBar.gameObject.SetActive(true);
+    }
+    else if (cropStructure.IsGrowing)
+    {
+        cropGrowthBar.value = cropStructure.GetGrowthProgress();
+        cropGrowthBar.gameObject.SetActive(true);
+    }
+    else
+    {
+        cropGrowthBar.value = 0f;
+        cropGrowthBar.gameObject.SetActive(false);
+    }
+
+
+        //this does work
+        //  if (cropStructure == null || nightManager == null)
+        // {
+        //     if (cropGrowthBar != null)
+        //     {
+        //         cropGrowthBar.value = 0f;
+        //         cropGrowthBar.gameObject.SetActive(false);
+        //     }
+        //     return;
+        // }
+
+        // bool isGrowing = cropStructure.IsGrowing;
+        // bool cropReady = cropStructure.CropReady;
+
+        // // Detect when crop is newly planted
+        // if (isGrowing && !wasGrowing)
+        // {
+        //     // Crop just got planted - record the time
+        //     plantedAtHour = nightManager.Hours + (nightManager.Minutes / 60f);
+        //     cropGrowthProgress = 0f;
+        // }
+
+        // // Reset when crop is harvested or no longer growing
+        // if (!isGrowing && wasGrowing)
+        // {
+        //     plantedAtHour = -1f;
+        //     cropGrowthProgress = 0f;
+        // }
+
+        // wasGrowing = isGrowing;
+
+        // // Update the progress bar
+        // if (cropGrowthBar != null)
+        // {
+        //     if (cropReady)
+        //     {
+        //         // Crop is ready - show full bar
+        //         cropGrowthBar.value = 1f;
+        //         cropGrowthBar.gameObject.SetActive(true);
+        //     }
+        //     else if (isGrowing && plantedAtHour >= 0)
+        //     {
+        //         // Calculate current hour
+        //         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                
+        //         // Calculate hours elapsed since planting
+        //         float hoursElapsed;
+        //         if (currentHour >= plantedAtHour)
+        //         {
+        //             hoursElapsed = currentHour - plantedAtHour;
+        //         }
+        //         else
+        //         {
+        //             // Handle day wrap (planted late, now early next day)
+        //             hoursElapsed = (24f - plantedAtHour) + currentHour;
+        //         }
+
+        //         // Crops grow from planting until 5 AM (start of day)
+        //         // Calculate total hours needed based on when planted
+        //         float targetHour = 5f; // 5 AM when day starts
+        //         float totalHoursNeeded;
+                
+        //         if (plantedAtHour <= targetHour)
+        //         {
+        //             // Planted in morning, needs to grow until next morning
+        //             totalHoursNeeded = (24f - plantedAtHour) + targetHour;
+        //         }
+        //         else
+        //         {
+        //             // Planted in afternoon/evening, grows until next morning
+        //             totalHoursNeeded = (24f - plantedAtHour) + targetHour;
+        //         }
+
+        //         // Calculate progress as percentage
+        //         float growthFraction = Mathf.Clamp01(hoursElapsed / totalHoursNeeded);
+        //         cropGrowthBar.value = growthFraction;
+        //         cropGrowthBar.gameObject.SetActive(true);
+        //     }
+        //     else
+        //     {
+        //         // No crop or not growing
+        //         cropGrowthBar.value = 0f;
+        //         cropGrowthBar.gameObject.SetActive(false);
+        //     }
+        // }
     }
 
     private void UpdateUI()
@@ -260,5 +384,80 @@ public class CropStructureUI : BaseStructureUI
     private void PlaySound(AudioClip clip)
     {
         if (clip != null && audioSource != null) audioSource.PlayOneShot(clip);
+    }
+
+    public void OnButtonHoverEnter(GameObject button)
+    {
+        // Debug.Log("Hover enter on button: " + button.name);
+        if(hoverManager != null)
+        {
+            //when it is planed but not ready for harvest
+            // if(button == harvestButton.gameObject && isGrowing &&!cropStructure.CropReady)
+            // {
+            //     hoverManager.ShowHover(harvestButton, "Patience, Farmer!", "Give it more time to grow!", true, new Vector2(-200, 0), progressBar.gameObject);
+            // }
+            // //when they cant afford more
+            // else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1))
+            // {
+            //     hoverManager.ShowHover(addAnimal, "Broke!", $"You can only afford {newAnimalCount}.", true, new Vector2(200, 0), costText.gameObject);
+            // }
+            // //when there isnt more space
+            // else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) >= maxAnimalCount)
+            // {
+            //     hoverManager.ShowHover(addAnimal, "Overcrowded!", "No more room for more animals.", true, new Vector2(200, 0), animalCountText.gameObject);
+            // }
+            // //where there are no civilian animals
+            // else if(button == addAnimal.gameObject && !barracksStructure.CanRecruit(newAnimalCount + 1))
+            // {
+            //     hoverManager.ShowHover(addAnimal, "No civilians!", "Buy more civilians to recruit!", true, new Vector2(200, 0), civilianSection);
+            // }
+            // //when they want less than 0 new animals
+            // else if(button == minusAnimal.gameObject && newAnimalCount <= 0)
+            // {
+            //     hoverManager.ShowHover(minusAnimal, "Recruiting air?", "Must recruit at least 1 animal", true, new Vector2(-200, 0), animalCountText.gameObject);
+            // }
+            // // when they can not place flag cause they have zero animals
+            // else if(button == placeFlagButton.gameObject && newAnimalCount <= 0)
+            // {
+            //     hoverManager.ShowHover(placeFlagButton, "No Army!", "Cant place flag with no army!", true, new Vector2(-200, 0), animalCountText.gameObject);
+            // }
+
+        }
+    }
+
+    public void OnButtonHoverExit()
+    {
+        if(hoverManager != null)
+        {
+            hoverManager.HideHover();
+        }
+    }
+
+    public void OnButtonClick(GameObject button)
+    {
+        // if(button == recruitButton.gameObject && newAnimalCount == 0)
+        // {
+        //     hoverManager.PlayErrorFeedback(false, recruitButton);
+        // }
+        // //when they cant afford more
+        // else if(button == addAnimal.gameObject && !MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()))
+        // {
+        //     hoverManager.PlayErrorFeedback(true, addAnimal);
+        // }
+        // //when there isnt more space
+        // else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) <= maxAnimalCount)
+        // {
+        //     hoverManager.PlayErrorFeedback(false, addAnimal);
+        // }
+        // //when they want less than 0 new animals
+        // else if(button == minusAnimal.gameObject && newAnimalCount <= 0)
+        // {
+        //     hoverManager.PlayErrorFeedback(false, minusAnimal);
+        // }
+        // // when they can not place flag cause they have zero animals
+        // else if(button == placeFlagButton.gameObject && newAnimalCount <= 0)
+        // {
+        //     hoverManager.PlayErrorFeedback(false, placeFlagButton);
+        // }  
     }
 }

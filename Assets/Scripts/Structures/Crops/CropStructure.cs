@@ -389,4 +389,53 @@ public class CropStructure : Structure
             TutorialManager.Instance.Trigger(trigger);
         }
     }
+
+    private float plantedAtHour = -1f; // When crop was planted
+private float cropGrowthProgress = 0f; // 0 to 1
+private bool wasGrowing = false;
+
+public void TrackGrowth(NightManager nightManager)
+{
+    if (!isGrowing) 
+    {
+        cropGrowthProgress = cropReady ? 1f : 0f;
+        plantedAtHour = -1f;
+        wasGrowing = false;
+        return;
+    }
+
+    float currentHour = nightManager.Hours + nightManager.Minutes / 60f;
+
+    // Detect newly planted crop
+    if (!wasGrowing)
+    {
+        plantedAtHour = currentHour;
+        cropGrowthProgress = 0f;
+    }
+
+    wasGrowing = true;
+
+    // Calculate hours elapsed
+    float hoursElapsed = currentHour >= plantedAtHour 
+        ? currentHour - plantedAtHour 
+        : (24f - plantedAtHour) + currentHour;
+
+    // Crops grow until 5 AM next day
+    float totalHoursNeeded = (24f - plantedAtHour) + 5f; 
+
+    cropGrowthProgress = Mathf.Clamp01(hoursElapsed / totalHoursNeeded);
+
+    // Automatically mark ready if fully grown
+    if (cropGrowthProgress >= 1f)
+    {
+        cropReady = true;
+        isGrowing = false;
+        cropGrowthProgress = 1f;
+    }
+}
+
+public float GetGrowthProgress() => cropGrowthProgress; // 0..1
+
+
+    
 }

@@ -37,7 +37,14 @@ public class PauseManager : MonoBehaviour
                     OptionsMenuController.Instance.ShowMenu();
             }
         }
+
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            pausedOrPlay();
+        }
     }
+
 
     public void pausedOrPlay()
     {

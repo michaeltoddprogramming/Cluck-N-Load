@@ -19,6 +19,9 @@ public class BarracksStructureUI : BaseStructureUI
 
     [Header("UI Control")]
     [SerializeField] private CanvasGroup uiCanvasGroup;
+    
+    // Optimization: Only run Update() when UI is visible
+    private bool isUIVisible = false;
 
     [Header("Recruitment Warning")]
     [SerializeField] private GameObject recruitmentWarningPanel;
@@ -34,7 +37,7 @@ public class BarracksStructureUI : BaseStructureUI
     private int animalCount = 0;
     private int maxAnimalCount = 0;
     private System.Action pendingRecruitAction;
-    private bool lastPauseState = false; // Track pause state changes
+    // Note: lastPauseState is inherited from BaseStructureUI
 
     // Public property to check if this barracks is currently placing a flag
     public bool IsPlacingFlag => isPlacingFlag;
@@ -179,6 +182,11 @@ public class BarracksStructureUI : BaseStructureUI
 
     protected override void Update()
     {
+        // OPTIMIZATION: Skip Update() if UI is not visible (hidden barracks don't need updates)
+        // EXCEPTION: Keep running if placing flags, managing sheep flags, or moving sheep flags (need input handling)
+        if (!isUIVisible && !isPlacingFlag && !isMovingSheepFlag && !isManagingSheepFlags)
+            return;
+        
         // Call base update to handle move button logic
         base.Update();
         
@@ -1348,6 +1356,9 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void HideUI()
     {
+        // OPTIMIZATION: Mark UI as hidden to skip Update() loop
+        isUIVisible = false;
+        
         // Use CanvasGroup to fade out and disable interaction without stopping Update method
         if (uiCanvasGroup != null)
         {
@@ -1359,6 +1370,9 @@ public class BarracksStructureUI : BaseStructureUI
     
     private void ShowUI()
     {
+        // OPTIMIZATION: Mark UI as visible to enable Update() loop
+        isUIVisible = true;
+        
         // Use CanvasGroup to restore UI visibility and interaction
         if (uiCanvasGroup != null)
         {

@@ -33,7 +33,7 @@ public class AnimalStructureUI : BaseStructureUI
     private AnimalStructure animalStructure;
     private bool isAnimalStructure;
     private new NightManager nightManager;
-    private bool lastPauseState = false; // Track pause state changes
+    // Note: lastPauseState is inherited from BaseStructureUI
 
     private float lastUIUpdate;
     private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second

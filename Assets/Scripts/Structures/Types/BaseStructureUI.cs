@@ -13,6 +13,10 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     protected Structure structure;
     [System.NonSerialized]
     protected NightManager nightManager;
+    
+    // Optimization: Change detection for day/night and pause state
+    protected bool lastIsDayState = true;
+    protected bool lastPauseState = false;
 
     [Header("Health Bars")]
     [SerializeField] private Slider healthBarSlider;
@@ -72,11 +76,22 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     protected virtual void Update()
     {
-        // Update move button interactability based on day/night and pause state
+        // OPTIMIZATION: Only update move button when state actually changes
+        // Avoids 300 property accesses/second with 5 barracks (5 × 60 FPS)
         if (moveButton != null && nightManager != null)
         {
-            bool canMove = nightManager.IsDay && !nightManager.getIsPaused();
-            moveButton.interactable = canMove;
+            bool currentIsDay = nightManager.IsDay;
+            bool currentIsPaused = nightManager.getIsPaused();
+            
+            // Only update if state changed (change detection pattern)
+            if (currentIsDay != lastIsDayState || currentIsPaused != lastPauseState)
+            {
+                lastIsDayState = currentIsDay;
+                lastPauseState = currentIsPaused;
+                
+                bool canMove = currentIsDay && !currentIsPaused;
+                moveButton.interactable = canMove;
+            }
             
             // Let Unity's Button component handle the visual disabled state
             // (uses the Button's Color Tint settings in the Inspector)

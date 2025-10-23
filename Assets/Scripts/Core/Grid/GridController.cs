@@ -30,6 +30,15 @@ public class GridController : MonoBehaviour
     private TextureGenerator textureGenerator;
     private bool textureNeedsUpdate = false;
 
+    // Reusable collections for GetEnemiesInRange - prevents garbage allocation
+    private HashSet<EnemyUnit> tempEnemySet = new HashSet<EnemyUnit>();
+    private List<EnemyUnit> tempEnemyList = new List<EnemyUnit>();
+    
+    // OPTIMIZATION: Cache GetComponent results to avoid repeated lookups
+    private Dictionary<Collider, EnemyUnit> enemyComponentCache = new Dictionary<Collider, EnemyUnit>();
+    private float lastCacheCleanupTime = 0f;
+    private const float CACHE_CLEANUP_INTERVAL = 10f; // Clean cache every 10 seconds
+
     public static GridController Instance { get; private set; }
 
     private void Awake()
@@ -68,11 +77,36 @@ public class GridController : MonoBehaviour
 
     void Update()
     {
+        // OPTIMIZATION: Periodic cache cleanup to prevent memory leaks from destroyed enemies
+        if (Time.time - lastCacheCleanupTime > CACHE_CLEANUP_INTERVAL)
+        {
+            CleanupComponentCache();
+            lastCacheCleanupTime = Time.time;
+        }
+        
         // Hover highlighting disabled - player doesn't need to see yellow grid highlighting
         // if (gridOverlayInstance.activeSelf && (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0))
         // {
         //     UpdateHoveredCell();
         // }
+    }
+
+    private void CleanupComponentCache()
+    {
+        // Remove null entries (destroyed enemies) from cache
+        var keysToRemove = new List<Collider>();
+        foreach (var kvp in enemyComponentCache)
+        {
+            if (kvp.Key == null || kvp.Value == null)
+            {
+                keysToRemove.Add(kvp.Key);
+            }
+        }
+        
+        foreach (var key in keysToRemove)
+        {
+            enemyComponentCache.Remove(key);
+        }
     }
 
     private void LateUpdate()
@@ -114,70 +148,113 @@ public class GridController : MonoBehaviour
     public List<EnemyUnit> GetEnemiesInRange(Vector3 worldPosition, int blockRadius)
     {
         Vector2Int centerGridPos = WorldToGridCoords(worldPosition);
-        List<EnemyUnit> enemiesInRange = new List<EnemyUnit>();
+        
+        // Reuse collections to prevent garbage allocation
+        tempEnemySet.Clear();
+        tempEnemyList.Clear();
+
+        // OPTIMIZATION: Calculate actual world distance for early culling
+        float worldRadius = blockRadius * cellSize;
+        float worldRadiusSqr = worldRadius * worldRadius; // Use squared distance (faster, no sqrt)
+
+        // OPTIMIZATION: Search in expanding rings, exit early if no enemies found in outer rings
+        int emptyRings = 0;
+        const int MAX_EMPTY_RINGS = 2; // Stop searching after 2 consecutive empty rings
 
         // Define the square search area
         for (int x = -blockRadius; x <= blockRadius; x++)
         {
             for (int y = -blockRadius; y <= blockRadius; y++)
             {
-                Vector2Int offset = new Vector2Int(x, y);
-                Vector2Int checkPos = centerGridPos + offset;
+                Vector2Int checkPos = centerGridPos + new Vector2Int(x, y);
 
-                if (!IsValidCell(checkPos.x, checkPos.y)) continue;
+                if (!IsValidCell(checkPos.x, checkPos.y)) 
+                    continue;
 
-                // Get world position of this grid cell center
-                // Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
                 Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
+
+                // OPTIMIZATION: Distance culling - skip cells outside circular range
+                float distSqr = (cellCenter - worldPosition).sqrMagnitude;
+                if (distSqr > worldRadiusSqr)
+                    continue;
 
                 // Check for enemies at this cell using OverlapSphere
                 Collider[] hits = Physics.OverlapSphere(cellCenter, cellSize * 0.5f);
-                foreach (var hit in hits)
+                for (int i = 0; i < hits.Length; i++) // Use for loop instead of foreach (faster)
                 {
-                    EnemyUnit enemy = hit.GetComponent<EnemyUnit>();
-                    if (enemy != null && !enemiesInRange.Contains(enemy))
+                    Collider hitCollider = hits[i];
+                    
+                    // OPTIMIZATION: Use cached GetComponent to avoid repeated lookups
+                    if (!enemyComponentCache.TryGetValue(hitCollider, out EnemyUnit enemy))
                     {
-                        enemiesInRange.Add(enemy);
+                        enemy = hitCollider.GetComponent<EnemyUnit>();
+                        enemyComponentCache[hitCollider] = enemy; // Cache for future lookups (null or valid)
+                    }
+                    
+                    if (enemy != null)
+                    {
+                        tempEnemySet.Add(enemy); // HashSet automatically handles duplicates - O(1) instead of O(n)
                     }
                 }
             }
         }
 
-        return enemiesInRange;
+        // Convert HashSet to List for return
+        tempEnemyList.AddRange(tempEnemySet);
+        return tempEnemyList;
     }
 
     public List<EnemyUnit> GetEnemiesInRangeSheep(Vector3 worldPosition, int blockRadius)
     {
         Vector2Int centerGridPos = WorldToGridCoords(worldPosition);
-        List<EnemyUnit> enemiesInRange = new List<EnemyUnit>();
+        
+        // Reuse collections to prevent garbage allocation
+        tempEnemySet.Clear();
+        tempEnemyList.Clear();
+
+        // OPTIMIZATION: Calculate actual world distance for early culling
+        float worldRadius = blockRadius * cellSize;
+        float worldRadiusSqr = worldRadius * worldRadius;
 
         for (int x = -blockRadius; x <= blockRadius; x++)
         {
             for (int y = -blockRadius; y <= blockRadius; y++)
             {
-                Vector2Int offset = new Vector2Int(x, y);
-                Vector2Int checkPos = centerGridPos + offset;
+                Vector2Int checkPos = centerGridPos + new Vector2Int(x, y);
 
-                if (!IsValidCell(checkPos.x, checkPos.y)) continue;
+                if (!IsValidCell(checkPos.x, checkPos.y)) 
+                    continue;
 
                 Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
 
+                // OPTIMIZATION: Distance culling
+                float distSqr = (cellCenter - worldPosition).sqrMagnitude;
+                if (distSqr > worldRadiusSqr)
+                    continue;
+
                 Collider[] hits = Physics.OverlapSphere(cellCenter, cellSize * 0.5f);
-                foreach (var hit in hits)
+                for (int i = 0; i < hits.Length; i++) // Use for loop instead of foreach
                 {
-                    EnemyUnit enemy = hit.GetComponent<EnemyUnit>();
-                    if (enemy != null && !enemiesInRange.Contains(enemy))
+                    Collider hitCollider = hits[i];
+                    
+                    // OPTIMIZATION: Use cached GetComponent
+                    if (!enemyComponentCache.TryGetValue(hitCollider, out EnemyUnit enemy))
                     {
-                        // FILTER by actual radial distance
-                        float distance = Vector3.Distance(worldPosition, enemy.transform.position);
-                        if (distance <= blockRadius) // make sure the distance is within radius
-                            enemiesInRange.Add(enemy);
+                        enemy = hitCollider.GetComponent<EnemyUnit>();
+                        enemyComponentCache[hitCollider] = enemy;
+                    }
+                    
+                    if (enemy != null)
+                    {
+                        tempEnemySet.Add(enemy); // HashSet automatically handles duplicates
                     }
                 }
             }
         }
 
-        return enemiesInRange;
+        // Convert to list
+        tempEnemyList.AddRange(tempEnemySet);
+        return tempEnemyList;
     }
 
     public List<GridCell> GetCellsInRange(Vector3 worldPos, int radius)

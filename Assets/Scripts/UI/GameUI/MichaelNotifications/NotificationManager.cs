@@ -16,16 +16,25 @@ public class NotificationManager : MonoBehaviour
         public Color iconColor = Color.white;
         public Sprite iconSprite;
         public AudioClip soundEffect;
+        // Optional per-theme UI click sound (played for Continue button if set)
+        public AudioClip clickSound;
         public float soundVolume = 1f;
     }
 
     [Header("Notification Prefab")]
     public GameObject notificationPrefab;
+    public GameObject blockingNotificationPrefab; // Separate prefab for blocking notifications
     public Transform notificationContainer;
     public Canvas notificationCanvas;
 
     [Header("Audio")]
     public AudioSource audioSource;
+    [Tooltip("Optional click sound to play when notification Continue button is pressed.")]
+    public AudioClip buttonClickSound;
+    [Tooltip("If enabled, generic blocking notifications will use the current season's theme (Spring/Summer/Fall/Winter) instead of the 'Blocking' theme.")]
+    public bool useSeasonThemeForBlocking = true;
+    [Tooltip("Optional dedicated UI audio source. If left empty, a runtime UI audio source will be created that ignores listener pause so notification sounds continue when the game is paused.")]
+    public AudioSource uiAudioSource;
     
     [Header("Themes")]
     public NotificationTheme[] themes = new NotificationTheme[]
@@ -134,6 +143,33 @@ public class NotificationManager : MonoBehaviour
     public Vector2 notificationSize = new Vector2(500f, 150f);
     public Vector2 positionOffset = Vector2.zero;
     
+    [Header("Blocking Notification Overrides")]
+    [Tooltip("If set, blocking notifications will use this size instead of the default notificationSize. If left as (0,0), the blocking prefab's own size will be preserved.")]
+    public Vector2 blockingNotificationSize = Vector2.zero;
+    [Tooltip("If true, blocking notifications will ignore the editor-position offset and preserve their prefab anchored position when possible.")]
+    public bool blockingPreservePrefabPosition = true;
+    [Tooltip("If true, the manager will apply custom anchor/pivot values for blocking notifications.")]
+    public bool blockingUseCustomAnchors = false;
+    [Tooltip("AnchorMin for blocking notifications when blockingUseCustomAnchors is true.")]
+    public Vector2 blockingAnchorMin = new Vector2(0.5f, 0.5f);
+    [Tooltip("AnchorMax for blocking notifications when blockingUseCustomAnchors is true.")]
+    public Vector2 blockingAnchorMax = new Vector2(0.5f, 0.5f);
+    [Tooltip("Pivot for blocking notifications when blockingUseCustomAnchors is true.")]
+    public Vector2 blockingPivot = new Vector2(0.5f, 0.5f);
+
+    [Header("Blocking Visuals")]
+    [Tooltip("If true, blocking notification background Image will be forced fully opaque (alpha = 1)")]
+    public bool forceBlockingOpaque = true;
+    [Range(0f, 1f)]
+    [Tooltip("Backdrop alpha when a blocking notification is shown (0 = transparent, 1 = solid black)")]
+    public float blockingBackdropAlpha = 0.85f;
+    [Tooltip("Optional UI material that performs a blur (e.g. a GrabPass-based blur shader). If left empty no blur is used.")]
+    public Material backdropBlurMaterial;
+    [Tooltip("Blur size/intensity passed to common shader property names (_Size, _Radius, _BlurSize)")]
+    public float backdropBlurSize = 2f;
+    [Tooltip("Fade duration for the blur when a blocking notification appears")]
+    public float backdropBlurFade = 0.25f;
+    
     [Header("Glow Effects")]
     public bool enableGlowEffects = true;
     public float glowIntensity = 2f;
@@ -161,7 +197,77 @@ public class NotificationManager : MonoBehaviour
         public string message;
         public string theme;
         public float duration;
+        public bool pauseOnShow;
         public System.Action onComplete;
+        public Sprite customIcon;
+        // Optional bonus display values that blocking seasonal notifications can show
+        public string bonusText;
+        public Sprite bonusIcon;
+    }
+
+    [System.Serializable]
+    public class SeasonInfo
+    {
+        public int season = 1;
+        public string title = "";
+        [TextArea]
+        public string message = "";
+        [TextArea]
+        public string bonusText = "";
+        public Sprite image;
+        public Sprite bonusIcon;
+        public string theme = "Blocking";
+    }
+
+    // Helper component to track a backdrop GameObject created for a notification
+    private class BackdropHolder : MonoBehaviour
+    {
+        public GameObject backdrop;
+    }
+
+    [Header("Seasonal Blocking Notifications")]
+    public SeasonInfo[] seasonalInfos = new SeasonInfo[0];
+
+    /// <summary>
+    /// Show a blocking season notification using the configured SeasonInfo for the provided season id.
+    /// </summary>
+    public static void ShowSeasonalBlocking(int season)
+    {
+        if (Instance == null) return;
+
+        SeasonInfo info = null;
+        foreach (var s in Instance.seasonalInfos)
+        {
+            if (s != null && s.season == season)
+            {
+                info = s;
+                break;
+            }
+        }
+
+        if (info == null)
+        {
+            // Fallback: generic title
+            ShowBlockingNotification($"Season {season}", "A new season has begun.");
+            return;
+        }
+
+        // Create NotificationData with custom icon and forced blocking theme
+        NotificationData data = new NotificationData
+        {
+            title = info.title ?? $"Season {season}",
+            message = info.message ?? "",
+            theme = info.theme ?? "Blocking",
+            duration = 0f,
+            pauseOnShow = true,
+            onComplete = null,
+            customIcon = info.image,
+            bonusText = info.bonusText,
+            bonusIcon = info.bonusIcon
+        };
+
+        Instance.notificationQueue.Enqueue(data);
+        Instance.ProcessQueue();
     }
 
     private void Awake()
@@ -175,6 +281,28 @@ public class NotificationManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        // If seasonalInfos hasn't been filled in the inspector, provide sensible filler defaults
+        if (seasonalInfos == null || seasonalInfos.Length == 0)
+        {
+            seasonalInfos = new SeasonInfo[4];
+            seasonalInfos[0] = new SeasonInfo { season = 1, title = "Spring Arrives", message = "The fields wake up and new seeds sprout. Time to plant and grow!", bonusText = "Spring Bonus: +10% Crop Growth", theme = "Info" };
+            seasonalInfos[1] = new SeasonInfo { season = 2, title = "Summer Heat", message = "Long sunny days bring plenty of growth and hungry customers.", bonusText = "Summer Bonus: +5% Sales", theme = "Info" };
+            seasonalInfos[2] = new SeasonInfo { season = 3, title = "Autumn Harvest", message = "Leaves fall and the harvest is rich. Prepare for cool nights.", bonusText = "Autumn Bonus: +2 Rare Drops", theme = "Info" };
+            seasonalInfos[3] = new SeasonInfo { season = 4, title = "Winter Chill", message = "Snow blankets the land — take care of your animals and torches.", bonusText = "Winter Bonus: +15% Animal Warmth", theme = "Info" };
+        }
+
+        // Ensure there's a UI audio source that ignores listener pause so modal sounds still play when the game is paused
+        if (uiAudioSource == null)
+        {
+            // Create a child audio source dedicated to UI/notification sounds
+            GameObject go = new GameObject("Notification UI AudioSource");
+            go.transform.SetParent(this.transform, false);
+            uiAudioSource = go.AddComponent<AudioSource>();
+            uiAudioSource.playOnAwake = false;
+            uiAudioSource.ignoreListenerPause = true;
+            uiAudioSource.spatialBlend = 0f; // 2D UI sound
+        }
     }
 
     public static void ShowNotification(string title, string message, string theme = "Info", float duration = 2f, System.Action onComplete = null)
@@ -187,6 +315,45 @@ public class NotificationManager : MonoBehaviour
             message = message,
             theme = theme,
             duration = duration,
+            pauseOnShow = false,
+            onComplete = onComplete
+        };
+
+        Instance.notificationQueue.Enqueue(data);
+        Instance.ProcessQueue();
+    }
+
+    public static void ShowBlockingNotification(string title, string message, string theme = "Blocking", System.Action onComplete = null)
+    {
+        if (Instance == null) return;
+
+        // Determine final theme: prefer caller-specified theme, but if the manager
+        // is configured to use season themes for blocking use the current season's theme.
+        string finalTheme = theme ?? "Blocking";
+        if (Instance.useSeasonThemeForBlocking && (string.IsNullOrEmpty(theme) || theme.Equals("Blocking", System.StringComparison.OrdinalIgnoreCase)))
+        {
+            var night = FindFirstObjectByType<NightManager>();
+            if (night != null)
+            {
+                int season = night.GetCurrentSeason();
+                foreach (var s in Instance.seasonalInfos)
+                {
+                    if (s != null && s.season == season && !string.IsNullOrEmpty(s.theme))
+                    {
+                        finalTheme = s.theme;
+                        break;
+                    }
+                }
+            }
+        }
+
+        NotificationData data = new NotificationData
+        {
+            title = title,
+            message = message,
+            theme = finalTheme,
+            duration = 0f, // Not used for blocking
+            pauseOnShow = true,
             onComplete = onComplete
         };
 
@@ -240,6 +407,32 @@ public class NotificationManager : MonoBehaviour
         ShowNotification("Bear Unlocked!", message, "Bear", duration);
     }
 
+    public static void ShowBlockingSuccess(string title, string message = "")
+    {
+        // Use the modal 'Blocking' theme by default for blocking variants
+        ShowBlockingNotification(title, message, "Blocking");
+    }
+
+    public static void ShowBlockingWarning(string title, string message = "")
+    {
+        ShowBlockingNotification(title, message, "Blocking");
+    }
+
+    public static void ShowBlockingError(string title, string message = "")
+    {
+        ShowBlockingNotification(title, message, "Blocking");
+    }
+
+    public static void ShowBlockingAchievement(string title, string message = "")
+    {
+        ShowBlockingNotification(title, message, "Blocking");
+    }
+
+    public static void ShowBlockingBadge(string title, string message = "")
+    {
+        ShowBlockingNotification(title, message, "Blocking");
+    }
+
     private void ProcessQueue()
     {
         if (isShowingNotification || notificationQueue.Count == 0) return;
@@ -262,6 +455,9 @@ public class NotificationManager : MonoBehaviour
         // Get components
         RectTransform rectTransform = notification.GetComponent<RectTransform>();
         CanvasGroup canvasGroup = notification.GetComponent<CanvasGroup>();
+        Button continueButton = notification.GetComponentInChildren<Button>();
+
+        bool buttonClicked = false;
         
         // Setup initial state for animation - use editor settings
         Vector3 targetPosition = positionOffset; // Use editor offset
@@ -271,11 +467,38 @@ public class NotificationManager : MonoBehaviour
         rectTransform.localScale = Vector3.zero;
         canvasGroup.alpha = 0f;
 
-        // Play sound effect
-        NotificationTheme theme = GetTheme(data.theme);
-        if (theme?.soundEffect != null && audioSource != null)
+    // Play sound effect
+    NotificationTheme theme = GetTheme(data.theme);
+        AudioSource playSource = uiAudioSource != null ? uiAudioSource : audioSource;
+        if (theme?.soundEffect != null && playSource != null)
         {
-            audioSource.PlayOneShot(theme.soundEffect, theme.soundVolume);
+            playSource.PlayOneShot(theme.soundEffect, theme.soundVolume);
+        }
+
+        // Attach click sound + completion handler to the continue button (if present).
+        if (continueButton != null)
+        {
+            continueButton.onClick.AddListener(() =>
+            {
+                AudioSource clickSource = uiAudioSource != null ? uiAudioSource : audioSource;
+                if (clickSource != null)
+                {
+                    if (theme?.clickSound != null)
+                    {
+                        clickSource.PlayOneShot(theme.clickSound, theme.soundVolume);
+                    }
+                    else if (buttonClickSound != null)
+                    {
+                        clickSource.PlayOneShot(buttonClickSound, 1f);
+                    }
+                    else if (theme?.soundEffect != null)
+                    {
+                        clickSource.PlayOneShot(theme.soundEffect, theme.soundVolume);
+                    }
+                }
+
+                buttonClicked = true;
+            });
         }
 
         // === DRAMATIC ENTRANCE ANIMATION ===
@@ -337,7 +560,28 @@ public class NotificationManager : MonoBehaviour
         StartCoroutine(SparkleEffectNoLines(notification, data.duration, isBadge));
 
         // === DISPLAY DURATION ===
-        yield return new WaitForSeconds(data.duration);
+        if (data.pauseOnShow)
+        {
+            // Pause the game
+            PauseManager pauseManager = FindFirstObjectByType<PauseManager>();
+            if (pauseManager != null)
+            {
+                pauseManager.pauseGame();
+            }
+
+            // Wait for button click
+            yield return new WaitUntil(() => buttonClicked);
+
+            // Unpause the game
+            if (pauseManager != null)
+            {
+                pauseManager.playGame();
+            }
+        }
+        else
+        {
+            yield return new WaitForSeconds(data.duration);
+        }
 
         // === EXIT ANIMATION ===
         // Pulse before exit
@@ -367,7 +611,16 @@ public class NotificationManager : MonoBehaviour
 
         // Cleanup
         if (notification != null)
+        {
+            // If we attached a backdrop, destroy it first
+            BackdropHolder holder = notification.GetComponent<BackdropHolder>();
+            if (holder != null && holder.backdrop != null)
+            {
+                Destroy(holder.backdrop);
+            }
+
             Destroy(notification);
+        }
 
         data.onComplete?.Invoke();
         isShowingNotification = false;
@@ -378,7 +631,9 @@ public class NotificationManager : MonoBehaviour
 
     private GameObject CreateNotificationObject(NotificationData data)
     {
-        if (notificationPrefab == null || notificationContainer == null)
+        GameObject prefabToUse = data.pauseOnShow && blockingNotificationPrefab != null ? blockingNotificationPrefab : notificationPrefab;
+        
+        if (prefabToUse == null || notificationContainer == null)
         {
             Debug.LogWarning("NotificationManager: Missing prefab or container!");
             return null;
@@ -387,31 +642,209 @@ public class NotificationManager : MonoBehaviour
         // Debug Canvas setup
         DebugCanvasSetup();
 
-        GameObject notification = Instantiate(notificationPrefab, notificationContainer);
+        GameObject notification = Instantiate(prefabToUse, notificationContainer);
         NotificationTheme theme = GetTheme(data.theme);
+
+        // Safety: Ensure the notification (or its child canvases) has a GraphicRaycaster
+        // and uses a sortable canvas so it receives input in front of other UI.
+        Canvas[] childCanvases = notification.GetComponentsInChildren<Canvas>(true);
+        if (childCanvases == null || childCanvases.Length == 0)
+        {
+            // If the prefab doesn't include a canvas, add a lightweight one on the root.
+            Canvas added = notification.AddComponent<Canvas>();
+            added.renderMode = RenderMode.ScreenSpaceOverlay;
+            added.overrideSorting = true;
+            added.sortingOrder = 1000; // ensure it's on top
+            if (notification.GetComponent<GraphicRaycaster>() == null)
+                notification.AddComponent<GraphicRaycaster>();
+        }
+        else
+        {
+            // Make sure all canvases are configured to receive raycasts and are sorted above other UI
+            foreach (Canvas c in childCanvases)
+            {
+                if (c == null) continue;
+                c.overrideSorting = true;
+                c.sortingOrder = Mathf.Max(c.sortingOrder, 1000);
+                if (c.renderMode == RenderMode.ScreenSpaceCamera && c.worldCamera == null)
+                    c.worldCamera = Camera.main;
+                if (c.GetComponent<GraphicRaycaster>() == null)
+                    c.gameObject.AddComponent<GraphicRaycaster>();
+            }
+        }
+
+        // Ensure any child Button is configured to be interactable and its Image accepts raycasts
+        Button childButton = notification.GetComponentInChildren<Button>(true);
+        if (childButton != null)
+        {
+            childButton.interactable = true;
+            // Ensure target graphic is raycastable
+            var targetImg = childButton.targetGraphic as Image;
+            if (targetImg == null)
+            {
+                targetImg = childButton.GetComponent<Image>() ?? childButton.GetComponentInChildren<Image>();
+            }
+            if (targetImg != null)
+                targetImg.raycastTarget = true;
+        }
+
+        // If this is a blocking notification, create a semi-opaque fullscreen backdrop
+        // so clicks to underlying UI are blocked and the notification feels modal.
+        // The backdrop is added as the first sibling so notification content renders above it.
+        if (data != null && data.pauseOnShow)
+        {
+            // Parent the backdrop to the notification container (or canvas) so it can cover the full area
+            Transform parentForBackdrop = notificationContainer != null ? notificationContainer : notification.transform.parent;
+
+            GameObject backdrop = new GameObject("Backdrop");
+            backdrop.transform.SetParent(parentForBackdrop, false);
+            RectTransform bRect = backdrop.AddComponent<RectTransform>();
+            bRect.anchorMin = Vector2.zero;
+            bRect.anchorMax = Vector2.one;
+            bRect.offsetMin = Vector2.zero;
+            bRect.offsetMax = Vector2.zero;
+            bRect.localScale = Vector3.one;
+
+            // Add CanvasRenderer + Image for raycast-blocking and visual dimming
+            backdrop.AddComponent<CanvasRenderer>();
+
+            // Optional blur layer (behind the dark tint) if material provided
+            GameObject blurGO = null;
+            RawImage blurImage = null;
+            if (backdropBlurMaterial != null)
+            {
+                blurGO = new GameObject("BackdropBlur");
+                blurGO.transform.SetParent(parentForBackdrop, false);
+                RectTransform blurRect = blurGO.AddComponent<RectTransform>();
+                blurRect.anchorMin = Vector2.zero;
+                blurRect.anchorMax = Vector2.one;
+                blurRect.offsetMin = Vector2.zero;
+                blurRect.offsetMax = Vector2.zero;
+                blurRect.localScale = Vector3.one;
+
+                blurGO.AddComponent<CanvasRenderer>();
+                blurImage = blurGO.AddComponent<RawImage>();
+                blurImage.material = backdropBlurMaterial;
+                blurImage.raycastTarget = false;
+
+                // Try common property names for blur size
+                if (backdropBlurSize > 0f)
+                {
+                    if (blurImage.material.HasProperty("_Size")) blurImage.material.SetFloat("_Size", backdropBlurSize);
+                    if (blurImage.material.HasProperty("_Radius")) blurImage.material.SetFloat("_Radius", backdropBlurSize);
+                    if (blurImage.material.HasProperty("_BlurSize")) blurImage.material.SetFloat("_BlurSize", backdropBlurSize);
+                }
+            }
+
+            Image bgImage = backdrop.AddComponent<Image>();
+            bgImage.color = new Color(0f, 0f, 0f, blockingBackdropAlpha);
+            bgImage.raycastTarget = true; // block clicks to background
+
+            // Place backdrop behind the notification in the same parent if possible
+            if (backdrop.transform.parent == notification.transform.parent)
+            {
+                int notifIndex = notification.transform.GetSiblingIndex();
+                // Put backdrop at the same index so it's behind; then push notification to top
+                // If we have a blur object, insert it before the backdrop so blur sits below tint
+                if (blurGO != null)
+                {
+                    blurGO.transform.SetSiblingIndex(Mathf.Max(0, notifIndex));
+                    backdrop.transform.SetSiblingIndex(Mathf.Max(0, notifIndex + 1));
+                }
+                else
+                {
+                    backdrop.transform.SetSiblingIndex(Mathf.Max(0, notifIndex));
+                }
+                notification.transform.SetAsLastSibling();
+            }
+            else
+            {
+                // Otherwise just ensure the backdrop is below other siblings
+                if (blurGO != null)
+                {
+                    blurGO.transform.SetAsFirstSibling();
+                    backdrop.transform.SetAsFirstSibling();
+                }
+                else
+                {
+                    backdrop.transform.SetAsFirstSibling();
+                }
+                notification.transform.SetAsLastSibling();
+            }
+
+            // Attach a BackdropHolder to the notification so we can remove the backdrop when notification closes
+            BackdropHolder holder = notification.GetComponent<BackdropHolder>();
+            if (holder == null) holder = notification.AddComponent<BackdropHolder>();
+            holder.backdrop = backdrop;
+            // Also store blur as a child of the holder for cleanup
+            if (blurImage != null)
+            {
+                // attach blur GameObject as a child of the notification so cleanup is simplified
+                blurGO.transform.SetParent(notification.transform, false);
+                // store original parent as the holder too (we only store the main backdrop in holder.backdrop)
+            }
+
+            // If we created a blur, fade it in
+            if (blurImage != null)
+            {
+                CanvasGroup blurCg = blurGO.GetComponent<CanvasGroup>();
+                if (blurCg == null) blurCg = blurGO.AddComponent<CanvasGroup>();
+                blurCg.alpha = 0f;
+                LeanTween.alphaCanvas(blurCg, 1f, backdropBlurFade);
+            }
+        }
 
         // === EDITOR-CONFIGURABLE POSITIONING & SIZE ===
         RectTransform notificationRect = notification.GetComponent<RectTransform>();
         if (notificationRect != null)
         {
-            // Use editor settings for anchoring
+            // Use editor settings for anchoring unless the prefab wants its own anchors
             Vector2 anchor = new Vector2(anchorX, anchorY);
             notificationRect.anchorMin = anchor;
             notificationRect.anchorMax = anchor;
-            notificationRect.pivot = new Vector2(0.5f, 0.5f); // Always center pivot
-            
-            // Use editor settings for size and position
-            notificationRect.sizeDelta = notificationSize;
-            notificationRect.anchoredPosition = positionOffset;
+            notificationRect.pivot = new Vector2(0.5f, 0.5f); // Default center pivot
+
+            // For blocking notifications, prefer the prefab's size/position unless an override is provided
+            if (data != null && data.pauseOnShow && blockingNotificationPrefab != null)
+            {
+                // Apply custom anchors/pivot if requested
+                if (blockingUseCustomAnchors)
+                {
+                    notificationRect.anchorMin = blockingAnchorMin;
+                    notificationRect.anchorMax = blockingAnchorMax;
+                    notificationRect.pivot = blockingPivot;
+                }
+                if (blockingNotificationSize != Vector2.zero)
+                {
+                    notificationRect.sizeDelta = blockingNotificationSize;
+                }
+                else
+                {
+                    // Preserve prefab's own size by not overwriting sizeDelta
+                }
+
+                if (!blockingPreservePrefabPosition)
+                {
+                    notificationRect.anchoredPosition = positionOffset;
+                }
+            }
+            else
+            {
+                // Use editor settings for size and position
+                notificationRect.sizeDelta = notificationSize;
+                notificationRect.anchoredPosition = positionOffset;
+            }
+
             notificationRect.localScale = Vector3.one;
-            
         }
 
         // Setup text components
         TextMeshProUGUI titleText = notification.transform.Find("titleText")?.GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI messageText = notification.transform.Find("messageText")?.GetComponent<TextMeshProUGUI>();
+    TextMeshProUGUI bonusText = notification.transform.Find("bonusText")?.GetComponent<TextMeshProUGUI>();
         Image backgroundImage = notification.GetComponent<Image>();
         Image iconImage = notification.transform.Find("Icon")?.GetComponent<Image>();
+    Image bonusIconImage = notification.transform.Find("bonusIcon")?.GetComponent<Image>();
         Image borderImage = notification.transform.Find("Border")?.GetComponent<Image>();
 
         if (titleText != null)
@@ -427,19 +860,66 @@ public class NotificationManager : MonoBehaviour
             messageText.gameObject.SetActive(!string.IsNullOrEmpty(data.message));
         }
 
+        if (bonusText != null)
+        {
+            bonusText.text = data.bonusText ?? "";
+            bonusText.color = theme?.textColor ?? Color.white;
+            bonusText.gameObject.SetActive(!string.IsNullOrEmpty(data.bonusText));
+        }
+
         if (backgroundImage != null && theme != null)
             backgroundImage.color = theme.backgroundColor;
 
+        // If this is a blocking notification and we prefer opaque blocking panels, force alpha to 1
+        if (data != null && data.pauseOnShow && forceBlockingOpaque && backgroundImage != null)
+        {
+            Color c = backgroundImage.color;
+            c.a = 1f;
+            backgroundImage.color = c;
+        }
+
         if (iconImage != null && theme != null)
         {
-            if (theme.iconSprite != null)
+            // Prefer a custom icon set on the NotificationData (used for seasonal images)
+            Sprite chosen = null;
+            var dataField = data as object;
+            // We have access to the local 'data' variable in caller scope — prefer customIcon
+            if (data != null && data.customIcon != null)
             {
-                iconImage.sprite = theme.iconSprite;
-                iconImage.color = theme.iconColor;
+                chosen = data.customIcon;
+            }
+            else if (theme.iconSprite != null)
+            {
+                chosen = theme.iconSprite;
+            }
+
+            if (chosen != null)
+            {
+                iconImage.sprite = chosen;
+                iconImage.color = theme?.iconColor ?? Color.white;
+                // Ensure icon doesn't block clicks on the continue button
+                iconImage.raycastTarget = false;
             }
             else
             {
                 iconImage.gameObject.SetActive(false);
+            }
+        }
+
+        if (bonusIconImage != null)
+        {
+            Sprite chosenBonus = data != null ? data.bonusIcon : null;
+            if (chosenBonus != null)
+            {
+                bonusIconImage.sprite = chosenBonus;
+                bonusIconImage.color = theme?.iconColor ?? Color.white;
+                bonusIconImage.gameObject.SetActive(true);
+                // Bonus icon should not intercept pointer events
+                bonusIconImage.raycastTarget = false;
+            }
+            else
+            {
+                bonusIconImage.gameObject.SetActive(false);
             }
         }
 
@@ -455,9 +935,16 @@ public class NotificationManager : MonoBehaviour
             }
         }
 
-        // Add canvas group for fading
-        if (notification.GetComponent<CanvasGroup>() == null)
-            notification.AddComponent<CanvasGroup>();
+        // Add canvas group for fading and ensure it allows interaction/raycasting
+        CanvasGroup cg = notification.GetComponent<CanvasGroup>();
+        if (cg == null)
+            cg = notification.AddComponent<CanvasGroup>();
+        if (cg != null)
+        {
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            cg.ignoreParentGroups = false;
+        }
 
         return notification;
     }

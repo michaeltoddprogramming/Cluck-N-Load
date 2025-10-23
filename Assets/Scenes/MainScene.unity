@@ -2309,9 +2309,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   notificationPrefab: {fileID: 8110142427774818859, guid: 637cc9c3b48130748b50cf70d66bbab1, type: 3}
+  blockingNotificationPrefab: {fileID: 8110142427774818859, guid: 9870fad57a2a2794dafbd5a4efa4978d, type: 3}
   notificationContainer: {fileID: 713383478}
   notificationCanvas: {fileID: 713383481}
   audioSource: {fileID: 145195103}
+  buttonClickSound: {fileID: 8300000, guid: 21a85df303b094b428497b6b4a5ca424, type: 3}
+  useSeasonThemeForBlocking: 1
+  uiAudioSource: {fileID: 775492645}
   themes:
   - themeName: Success
     backgroundColor: {r: 0.2, g: 0.8, b: 0.2, a: 0.9}
@@ -2320,6 +2324,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
     soundEffect: {fileID: 8300000, guid: 1c9a4d1a2d64b4746b9520a29a2495d5, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Warning
     backgroundColor: {r: 1, g: 0.6, b: 0, a: 0.9}
@@ -2328,6 +2333,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 21300000, guid: 21e9ad3e78ca9b240bf4e348dab250a7, type: 3}
     soundEffect: {fileID: 8300000, guid: 167a6b896a2e68642890df834e5267d4, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Error
     backgroundColor: {r: 0.8, g: 0.2, b: 0.2, a: 0.9}
@@ -2336,6 +2342,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 21300000, guid: 242e747119e1e9e489809bd4d1d1fe92, type: 3}
     soundEffect: {fileID: 8300000, guid: dfd3caf3bf2c6a64e8d3f6b63ed46593, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Info
     backgroundColor: {r: 0.2, g: 0.6, b: 1, a: 0.9}
@@ -2344,6 +2351,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 0}
     soundEffect: {fileID: 0}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Achievement
     backgroundColor: {r: 1, g: 0.8, b: 0.2, a: 0.9}
@@ -2352,6 +2360,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 0}
     soundEffect: {fileID: 8300000, guid: 4b892a64117504a43aa04144b9eb40e6, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Badge
     backgroundColor: {r: 1, g: 0, b: 0.94366646, a: 0.9}
@@ -2360,6 +2369,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 0}
     soundEffect: {fileID: 8300000, guid: 68cb735f2c872b743a2f6ef457708f7c, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Racoon
     backgroundColor: {r: 1, g: 0, b: 0.94366646, a: 0.9}
@@ -2368,6 +2378,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 0}
     soundEffect: {fileID: 8300000, guid: 28a4e33e2722c354c9a91387712af94f, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Boar
     backgroundColor: {r: 1, g: 0, b: 0.94366646, a: 0.9}
@@ -2376,6 +2387,7 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 0}
     soundEffect: {fileID: 8300000, guid: af85563e261f0424796f0cf64b7da5f4, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   - themeName: Bear
     backgroundColor: {r: 1, g: 0, b: 0.94366646, a: 0.9}
@@ -2384,6 +2396,52 @@ MonoBehaviour:
     iconColor: {r: 1, g: 1, b: 1, a: 1}
     iconSprite: {fileID: 0}
     soundEffect: {fileID: 8300000, guid: e8b9f90e7be1d2440b5370e31795b9c1, type: 3}
+    clickSound: {fileID: 0}
+    soundVolume: 1
+  - themeName: Blocking
+    backgroundColor: {r: 1, g: 0, b: 0.94366646, a: 0.9}
+    borderColor: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    iconColor: {r: 1, g: 1, b: 1, a: 1}
+    iconSprite: {fileID: 0}
+    soundEffect: {fileID: 8300000, guid: e8b9f90e7be1d2440b5370e31795b9c1, type: 3}
+    clickSound: {fileID: 0}
+    soundVolume: 1
+  - themeName: Spring
+    backgroundColor: {r: 1, g: 0, b: 0.8365736, a: 0.9}
+    borderColor: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    iconColor: {r: 1, g: 1, b: 1, a: 1}
+    iconSprite: {fileID: 21300000, guid: 4683e3cfda12ad64ebc039c1fa3d2a9f, type: 3}
+    soundEffect: {fileID: 8300000, guid: b543c00df8db4274f8ba8bd7c6ccd5a6, type: 3}
+    clickSound: {fileID: 0}
+    soundVolume: 1
+  - themeName: Summer
+    backgroundColor: {r: 1, g: 0.8174672, b: 0, a: 0.9}
+    borderColor: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    iconColor: {r: 1, g: 1, b: 1, a: 1}
+    iconSprite: {fileID: 21300000, guid: d78b14bb1e2a3b443a71929b7551a433, type: 3}
+    soundEffect: {fileID: 8300000, guid: b543c00df8db4274f8ba8bd7c6ccd5a6, type: 3}
+    clickSound: {fileID: 0}
+    soundVolume: 1
+  - themeName: Fall
+    backgroundColor: {r: 1, g: 0.3117892, b: 0, a: 0.9}
+    borderColor: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    iconColor: {r: 1, g: 1, b: 1, a: 1}
+    iconSprite: {fileID: 21300000, guid: 7dc9a05d38d7dc145847e7284a071c23, type: 3}
+    soundEffect: {fileID: 8300000, guid: ad8b8abbd57f34340bec34f7a82cc4b3, type: 3}
+    clickSound: {fileID: 0}
+    soundVolume: 1
+  - themeName: Winter
+    backgroundColor: {r: 0, g: 0.36912823, b: 1, a: 0.9}
+    borderColor: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    iconColor: {r: 1, g: 1, b: 1, a: 1}
+    iconSprite: {fileID: 21300000, guid: cecbd1f9f4a245840a9ae6eb29a6ac2d, type: 3}
+    soundEffect: {fileID: 8300000, guid: 38668472b365ea64b8d585cb06ab755c, type: 3}
+    clickSound: {fileID: 0}
     soundVolume: 1
   slideInDuration: 1.2
   displayDuration: 5
@@ -2394,10 +2452,50 @@ MonoBehaviour:
   anchorY: 0.78
   notificationSize: {x: 1000, y: 260}
   positionOffset: {x: 0, y: 0}
+  blockingNotificationSize: {x: 1000, y: 1000}
+  blockingPreservePrefabPosition: 1
+  blockingUseCustomAnchors: 1
+  blockingAnchorMin: {x: 0.5, y: 0.5}
+  blockingAnchorMax: {x: 0.5, y: 0.5}
+  blockingPivot: {x: 0.5, y: 0.5}
+  forceBlockingOpaque: 1
+  blockingBackdropAlpha: 0.9
+  backdropBlurMaterial: {fileID: 0}
+  backdropBlurSize: 2
+  backdropBlurFade: 0.25
   enableGlowEffects: 0
   glowIntensity: 0
   glowPulseSpeed: 0
   outerGlowSize: 0
+  seasonalInfos:
+  - season: 1
+    title: Spring
+    message: its spring
+    bonusText: 
+    image: {fileID: 21300000, guid: b1a92e94552a5444ba24706da96a5214, type: 3}
+    bonusIcon: {fileID: 0}
+    theme: Spring
+  - season: 2
+    title: Summer
+    message: Summer
+    bonusText: 
+    image: {fileID: 21300000, guid: 242e747119e1e9e489809bd4d1d1fe92, type: 3}
+    bonusIcon: {fileID: 0}
+    theme: Summer
+  - season: 3
+    title: Fall
+    message: its Fall
+    bonusText: 
+    image: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+    bonusIcon: {fileID: 0}
+    theme: Fall
+  - season: 4
+    title: Winter
+    message: Its Winter
+    bonusText: 
+    image: {fileID: 21300000, guid: 0fa950c89ebf8494f88a3990a8c93419, type: 3}
+    bonusIcon: {fileID: 0}
+    theme: Winter
 --- !u!114 &145195102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2416,6 +2514,12 @@ MonoBehaviour:
   testInfo: 0
   testAchievement: 0
   testNew: 0
+  testBlocking: 0
+  testSeason1: 0
+  testSeason2: 0
+  testSeason3: 0
+  testSeason4: 0
+  testBonusIcon: {fileID: 21300000, guid: 9fc92f3c01e45f445b25098affc1a5b6, type: 3}
 --- !u!82 &145195103
 AudioSource:
   m_ObjectHideFlags: 0

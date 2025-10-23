@@ -940,6 +940,19 @@ public class NightManager : MonoBehaviour
         // Update enemy indicator for the new season
         UpdateEnemyIndicatorForSeason(season);
 
+        // Show a seasonal blocking notification (modal) to explain the upcoming season
+        // Only show when this is a real season change (not initial setup) and tutorial isn't active
+        if (!isFirstDay)
+        {
+            if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+            {
+                if (NotificationManager.Instance != null)
+                {
+                    NotificationManager.ShowSeasonalBlocking(season);
+                }
+            }
+        }
+
         // Special-case notification: raccoon unlock on season 2 (Summer)
         if (season == 2 && notifyRaccoonUnlock && !raccoonAnnounced)
         {

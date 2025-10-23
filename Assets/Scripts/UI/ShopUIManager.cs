@@ -393,25 +393,34 @@ public class ShopUIManager : MonoBehaviour
     
         public void UpdateShopButtonStateForTimeControls()
         {
-            // Check tutorial state first - this takes highest priority
-            if (!IsShopAllowedInTutorial())
-            {
-                shopButton.interactable = false;
-                shopIcon.color = nightShop;
-                return;
-            }
-            
-            // If shop is allowed in tutorial (or tutorial not active), handle based on day/night and pause state
-            NightManager nightManager = NightManager.Instance;
-            if (nightManager != null && nightManager.IsDay) // && !nightManager.IsPaused)
-            {
-                shopButton.interactable = true;
-                shopIcon.color = dayShop;
-            }
-            else
-            {
-                shopButton.interactable = false;
-                shopIcon.color = nightShop;
-            }
+                // Check tutorial state first - this takes highest priority
+                if (!IsShopAllowedInTutorial())
+                {
+                    shopButton.interactable = false;
+                    shopIcon.color = nightShop;
+                    return;
+                }
+
+                // If the game is paused (e.g., modal blocking notification), don't enable the shop
+                PauseManager pauseManager = FindFirstObjectByType<PauseManager>();
+                if (pauseManager != null && pauseManager.getIsPaused())
+                {
+                    shopButton.interactable = false;
+                    shopIcon.color = nightShop;
+                    return;
+                }
+
+                // If shop is allowed in tutorial (or tutorial not active), handle based on day/night
+                NightManager nightManager = NightManager.Instance;
+                if (nightManager != null && nightManager.IsDay)
+                {
+                    shopButton.interactable = true;
+                    shopIcon.color = dayShop;
+                }
+                else
+                {
+                    shopButton.interactable = false;
+                    shopIcon.color = nightShop;
+                }
         }
 }

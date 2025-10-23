@@ -499,13 +499,13 @@ public partial class TutorialManager
         steps.Add(recruitSoldiersStep);
 
         // Wall Building Tutorial - Step 1: Learn hay bale placement via chain cancel
-        // This teaches the chain building mechanic: click to start, right-click to cancel (places 1 wall)
+        // This teaches the chain building mechanic: click and drag, right-click to cancel
         // Tutorial trigger fired by CancelDefenceChain() method in BuildController
         var buildFirstHayBaleStep = new TutorialStep
         {
             stepId = "build_first_hay_bale",
             title = "Wall Building Basics",
-            instructionText = "Select <color=yellow>hay bale</color>, <color=cyan><b>CLICK</b></color> to place first one. Then move mouse and <color=orange><b>RIGHT-CLICK</b></color> to cancel (places just that <color=yellow>1 wall</color>).",
+            instructionText = "Select <color=yellow>hay bale</color>, <color=cyan><b>CLICK and DRAG</b></color> to create a chain. <color=orange><b>RIGHT-CLICK</b></color> to cancel (places nothing).",
             triggerToWaitFor = TutorialTrigger.BuiltFirstHayBale,
             uiToHighlight = shopButton
         };
@@ -517,13 +517,13 @@ public partial class TutorialManager
         steps.Add(buildFirstHayBaleStep);
 
         // Wall Building Tutorial - Step 2: Build full wall chains
-        // This teaches full chain building: click to start, move mouse, click again to place all
+        // This teaches full chain building: click and drag, release to place all
         // Tutorial trigger fired by FinalizeDefenceChain() method when total hay bales >= 10
         var buildWallChainStep = new TutorialStep
         {
             stepId = "build_wall_chain",
-            title = "Chain Building (9 More)",
-            instructionText = "<color=green>Great!</color> Build <color=yellow><b>9 more</b></color> hay bales. <color=cyan><b>CLICK</b></color> places first, <color=orange>move mouse</color> to chain, then <color=cyan><b>CLICK again</b></color> to confirm all!",
+            title = "Chain Building (10 Total)",
+            instructionText = "<color=green>Great!</color> Build <color=yellow><b>10 total</b></color> hay bales. <color=cyan><b>CLICK and DRAG</b></color> to create chain, <color=orange><b>RELEASE</b></color> to place them all!",
             triggerToWaitFor = TutorialTrigger.Built10HayBales,
             requiredInputs = new List<KeyCode>(),
             waitForAllInputs = false

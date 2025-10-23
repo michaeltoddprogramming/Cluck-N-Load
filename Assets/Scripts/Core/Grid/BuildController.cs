@@ -77,14 +77,12 @@ public class BuildController : MonoBehaviour
 
     // Defence chain build mode state
     private bool isDefenceChainModeActive = false;
+    private bool isDefenceChainDragging = false; // Track if user is actively dragging
     private Vector2Int initialDefenceCell;
     private Vector2Int lastDefenceHoverCell = Vector2Int.one * -1; // Track last hovered cell
     private List<GameObject> defenceGhostChain = new List<GameObject>();
-    private List<GameObject> ghostPool = new List<GameObject>(); // Pool for reusing ghost objects
     private bool isDefenceTypeSelected = false;
     private bool isDefenceChainFinalized = false;
-    // Track whether the first structure was actually placed when starting a defence chain
-    private bool initialDefencePlaced = false;
 
     [SerializeField] private GridDataGenerator gridDataGenerator;
 
@@ -292,8 +290,8 @@ public class BuildController : MonoBehaviour
             Vector3 currentPosition = currentGhost != null ? currentGhost.transform.position : originalPosition;
             Vector2Int gridCoords = gridController.WorldToGridCoords(currentPosition);
 
-            // Check if current position is valid, if not use original position as fallback
-            if (IsValidPlacement(gridCoords.x, gridCoords.y))
+            // Check if current position is valid (skip money check since we're moving)
+            if (IsValidPlacement(gridCoords.x, gridCoords.y, checkMoney: false))
             {
                 // Place at current ghost position
                 movingStructure.transform.position = currentPosition;
@@ -433,6 +431,17 @@ public class BuildController : MonoBehaviour
             var field = typeof(AnimalStructure).GetField("animalType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             field?.SetValue(ghostAnimal, animal.GetAnimalType);
         }
+        
+        // IMPORTANT: For defense structures, manually unregister from defense registry
+        DefenseStructure defenseStructure = structure.GetComponent<DefenseStructure>();
+        if (defenseStructure != null)
+        {
+            Debug.Log("StartMoveModeForStructure: Unregistering defense structure from registry");
+            var unregisterMethod = typeof(DefenseStructure).GetMethod("UnregisterFromRegistry", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            unregisterMethod?.Invoke(defenseStructure, null);
+        }
+        
         structure.UnregisterFromGrid();
         structure.gameObject.SetActive(false);
         gridController.ShowGrid();
@@ -489,16 +498,38 @@ public class BuildController : MonoBehaviour
             // Handle defense chain mode
             if (isDefenceChainModeActive)
             {
-                // Left click to finalize chain
-                if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                // Mouse button held down = dragging
+                if (Input.GetMouseButton(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
-                    Debug.Log("HandleBuildInput: Left click detected in defense chain mode - calling FinalizeDefenceChain");
-                    FinalizeDefenceChain();
+                    if (!isDefenceChainDragging)
+                    {
+                        // Just started dragging
+                        isDefenceChainDragging = true;
+                    }
                 }
-                // Right click to cancel chain
+                // Mouse button released
+                else if (Input.GetMouseButtonUp(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                {
+                    Debug.Log("HandleBuildInput: Mouse released in defense chain mode");
+                    
+                    // Check if user dragged (creating a chain of 2+) or just clicked (single fence)
+                    if (isDefenceChainDragging && defenceGhostChain.Count >= 2)
+                    {
+                        // User dragged and created a chain - place all
+                        Debug.Log($"Dragged chain with {defenceGhostChain.Count} fences - placing all");
+                        FinalizeDefenceChain();
+                    }
+                    else
+                    {
+                        // Single click (no drag or only 1 fence) - place just one fence at initial position
+                        Debug.Log("Single click - placing one fence");
+                        PlaceSingleDefenceStructure();
+                    }
+                }
+                // Right click to cancel chain (works during drag or before placement)
                 if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
-                    Debug.Log("HandleBuildInput: Right click detected in defense chain mode - calling CancelDefenceChain");
+                    Debug.Log($"HandleBuildInput: Right click detected in defense chain mode (dragging: {isDefenceChainDragging}) - calling CancelDefenceChain");
                     CancelDefenceChain();
                 }
             }
@@ -524,7 +555,7 @@ public class BuildController : MonoBehaviour
                     {
                         Vector2Int hoveredCell = GetGridCellUnderCursor(true);
                         
-                        // Always use chain building for defense structures (including during tutorial)
+                        // Start chain building on mouse down (drag will follow)
                         StartDefenceChain(hoveredCell);
                     }
                     else if (currentBuildTargetPrefab != null)
@@ -622,98 +653,109 @@ public class BuildController : MonoBehaviour
     // Start defence chain mode
     private void StartDefenceChain(Vector2Int startCell)
     {
-        // First, place the initial structure immediately
-        if (IsValidPlacement(startCell.x, startCell.y))
+        Debug.Log($"StartDefenceChain: Starting chain at {startCell}");
+        
+        // Validate the starting cell
+        if (!IsValidPlacement(startCell.x, startCell.y))
         {
-            Debug.Log($"StartDefenceChain: First cell {startCell} is valid for placement");
+            Debug.Log($"StartDefenceChain: Starting cell {startCell} is invalid for placement");
+            return;
+        }
 
-            if (currentStructureData != null && MoneyManager.Instance != null)
+        // Check if player can afford at least one structure
+        if (currentStructureData != null && MoneyManager.Instance != null)
+        {
+            if (!MoneyManager.Instance.CanAfford(currentStructureData.cost))
             {
-                Debug.Log($"StartDefenceChain: Structure cost: {currentStructureData.cost}, Available money: {MoneyManager.Instance.GetCurrentMoney()}");
-
-                if (MoneyManager.Instance.SpendMoney(currentStructureData.cost))
+                Debug.Log("StartDefenceChain: Cannot afford even one structure");
+                // Play insufficient funds sound
+                if (AudioManager.Instance != null)
                 {
-                    Debug.Log($"StartDefenceChain: Successfully spent money for first structure");
-                    PlaceItemWithoutMoneyCheck(startCell.x, startCell.y);
-                    Debug.Log($"StartDefenceChain: First structure placed at {startCell}");
-
-                    // Mark that the initial structure was placed so cancel doesn't duplicate
-                    initialDefencePlaced = true;
-
-                    // Now start chain mode for additional structures
-                    isDefenceChainModeActive = true;
-                    initialDefenceCell = startCell;
-                    lastDefenceHoverCell = Vector2Int.one * -1;
-                    ClearDefenceGhostChain();
-                    if (currentGhost != null) currentGhost.SetActive(false);
-
-                    Debug.Log($"StartDefenceChain: Defense chain mode activated");
+                    AudioManager.Instance.PlayInsufficientFundsSound();
                 }
-                else
-                {
-                    Debug.Log("StartDefenceChain: Failed to spend money for first structure");
-                    // Play insufficient funds sound for defence chain
-                    if (AudioManager.Instance != null)
-                    {
-                        AudioManager.Instance.PlayInsufficientFundsSound();
-                    }
-                }
-            }
-            else
-            {
-                Debug.Log("StartDefenceChain: currentStructureData or MoneyManager is null");
+                return;
             }
         }
-        else
+
+        // Start chain mode
+        isDefenceChainModeActive = true;
+        isDefenceChainDragging = false;
+        initialDefenceCell = startCell;
+        lastDefenceHoverCell = Vector2Int.one * -1;
+        ClearDefenceGhostChain();
+        
+        // Hide the main ghost during chain building
+        if (currentGhost != null) 
         {
-            Debug.Log($"StartDefenceChain: First cell {startCell} is invalid for placement");
+            currentGhost.SetActive(false);
+        }
+
+        Debug.Log($"StartDefenceChain: Defense chain mode activated from {startCell}");
+    }
+
+    // Cancel defence chain mode (don't place anything)
+    private void CancelDefenceChain()
+    {
+        Debug.Log("CancelDefenceChain: Canceling defense chain");
+        
+        isDefenceChainModeActive = false;
+        isDefenceChainDragging = false;
+        ClearDefenceGhostChain();
+        
+        // Restore the main ghost
+        if (currentGhost != null) 
+        {
+            currentGhost.SetActive(true);
         }
     }
 
-    // Cancel defence chain mode (but place the first structure)
-    private void CancelDefenceChain()
+    // Place a single defense structure (for single click without drag)
+    private void PlaceSingleDefenceStructure()
     {
-        Debug.Log("Canceling defense chain");
+        Debug.Log("PlaceSingleDefenceStructure: Placing single fence at initial position");
         
-        // If we already placed the initial structure when starting the chain,
-        // cancel should NOT place an additional structure.
-        if (initialDefencePlaced)
+        if (currentStructureData == null || MoneyManager.Instance == null)
         {
-            Debug.Log("CancelDefenceChain: Initial defence already placed - not placing extra structure on cancel");
-            // Trigger tutorial for the initial placement when the user explicitly cancels
-            HandleChainTutorialTrigger(1, true);
-            // Reset the flag for future chains
-            initialDefencePlaced = false;
+            CancelDefenceChain();
+            return;
+        }
+
+        // Check if player can afford one structure
+        int singleCost = currentStructureData.cost;
+        if (!MoneyManager.Instance.CanAfford(singleCost))
+        {
+            Debug.Log("PlaceSingleDefenceStructure: Cannot afford single structure");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayInsufficientFundsSound();
+            }
+            CancelDefenceChain();
+            return;
+        }
+
+        // Spend money and place at initial cell
+        MoneyManager.Instance.SpendMoney(singleCost);
+        Debug.Log($"Spent {singleCost} for single defense structure");
+
+        if (IsValidPlacementForChain(initialDefenceCell.x, initialDefenceCell.y))
+        {
+            PlaceItemWithoutMoneyCheck(initialDefenceCell.x, initialDefenceCell.y, playSound: true);
+            Debug.Log($"PlaceSingleDefenceStructure: Placed single structure at {initialDefenceCell}");
+
+            // Tutorial trigger for single fence placement
+            HandleChainTutorialTrigger(1, false);
+
+            // Update connectors after placement
+            StartCoroutine(DelayedConnectorRebuild());
         }
         else
         {
-            // Place the first structure if there's at least one ghost in the chain
-            if (defenceGhostChain.Count > 0 && currentStructureData != null)
-            {
-                GameObject firstGhost = defenceGhostChain[0];
-                Vector2Int gridCoords = gridController.WorldToGridCoords(firstGhost.transform.position);
-                
-                // Check if player can afford one structure
-                int singleCost = currentStructureData.cost;
-                if (MoneyManager.Instance != null && MoneyManager.Instance.CanAfford(singleCost))
-                {
-                    MoneyManager.Instance.SpendMoney(singleCost);
-                    Debug.Log($"Spent {singleCost} for canceled chain (single structure)");
-                    
-                    // Place just the first structure
-                    if (IsValidPlacementForChain(gridCoords.x, gridCoords.y))
-                    {
-                        PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y);
-                        Debug.Log($"CancelDefenceChain: Placed single structure at {gridCoords}");
-                        
-                        // Tutorial trigger for single hay bale placement
-                        HandleChainTutorialTrigger(1, true); // 1 structure, was canceled
-                    }
-                }
-            }
+            Debug.LogWarning($"PlaceSingleDefenceStructure: Cannot place at {initialDefenceCell} - invalid position");
         }
 
+        // Clean up chain mode
         isDefenceChainModeActive = false;
+        isDefenceChainDragging = false;
         ClearDefenceGhostChain();
         if (currentGhost != null) currentGhost.SetActive(true);
     }
@@ -765,7 +807,7 @@ public class BuildController : MonoBehaviour
             Debug.Log($"Spent {totalCost} for chain of {defenceGhostChain.Count} structures");
         }
 
-        // Place all structures in the chain
+        // Place all structures in the chain (suppress sound for each individual placement)
         int placedCount = 0;
         foreach (GameObject ghost in defenceGhostChain)
         {
@@ -775,7 +817,7 @@ public class BuildController : MonoBehaviour
             // Check if this position is still valid before placing
             if (IsValidPlacementForChain(gridCoords.x, gridCoords.y))
             {
-                PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y);
+                PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y, playSound: false); // Suppress sound for individual placements
                 placedCount++;
                 Debug.Log($"FinalizeDefenceChain: Successfully placed structure {placedCount} at {gridCoords}");
             }
@@ -786,6 +828,12 @@ public class BuildController : MonoBehaviour
         }
 
         Debug.Log($"FinalizeDefenceChain: Successfully placed {placedCount} out of {defenceGhostChain.Count} structures in chain");
+
+        // Play build sound once after all structures are placed
+        if (placedCount > 0)
+        {
+            AudioManager.Instance?.PlayPlaceSound();
+        }
 
         // Tutorial trigger for chain completion
         if (placedCount > 0)
@@ -846,14 +894,23 @@ public class BuildController : MonoBehaviour
         
         int validGhostCount = 0;
         
-        // Skip the first cell (start) since it's already placed
-        for (int i = 1; i < cellsBetween.Count && i < maxChainLength; i++)
+        // Include ALL cells (including the start cell) since we're now using click-and-drag
+        for (int i = 0; i < cellsBetween.Count && i < maxChainLength; i++)
         {
             Vector2Int cell = cellsBetween[i];
             if (IsValidPlacementForChain(cell.x, cell.y))
             {
                 Vector3 worldPos = gridController.GetCellCenterFromTexture(cell.x, cell.y);
-                GameObject ghost = GetGhostFromPool(worldPos, currentRotation);
+                
+                // Create new ghost object
+                GameObject ghost = Instantiate(currentBuildTargetPrefab, worldPos, currentRotation);
+                
+                // IMPORTANT: Disable DefenseStructure component on ghost chain objects to prevent connector creation
+                DefenseStructure defenseComponent = ghost.GetComponent<DefenseStructure>();
+                if (defenseComponent != null)
+                {
+                    defenseComponent.enabled = false;
+                }
                 
                 // Determine if this ghost is affordable
                 bool isAffordable = validGhostCount < affordableCount;
@@ -886,7 +943,10 @@ public class BuildController : MonoBehaviour
     {
         foreach (GameObject ghost in defenceGhostChain)
         {
-            ReturnGhostToPool(ghost);
+            if (ghost != null)
+            {
+                Destroy(ghost);
+            }
         }
         defenceGhostChain.Clear();
         
@@ -898,56 +958,6 @@ public class BuildController : MonoBehaviour
     }
 
     // Get ghost object from pool or create new one
-    private GameObject GetGhostFromPool(Vector3 position, Quaternion rotation)
-    {
-        GameObject ghost;
-
-        if (ghostPool.Count > 0)
-        {
-            ghost = ghostPool[ghostPool.Count - 1];
-            ghostPool.RemoveAt(ghostPool.Count - 1);
-            ghost.transform.position = position;
-            ghost.transform.rotation = rotation;
-            ghost.SetActive(true);
-        }
-        else
-        {
-            ghost = Instantiate(currentBuildTargetPrefab, position, rotation);
-
-            // IMPORTANT: Disable DefenseStructure component on ghost chain objects to prevent connector creation
-            DefenseStructure defenseComponent = ghost.GetComponent<DefenseStructure>();
-            if (defenseComponent != null)
-            {
-                defenseComponent.enabled = false;
-                Debug.Log("Disabled DefenseStructure component on ghost chain object");
-            }
-
-            ApplyGhostMaterial(ghost);
-        }
-
-        return ghost;
-    }
-
-    // Return ghost object to pool
-    private void ReturnGhostToPool(GameObject ghost)
-    {
-        if (ghost != null)
-        {
-            ghost.SetActive(false);
-            ghostPool.Add(ghost);
-        }
-    }
-
-    // Clear ghost pool when switching build types
-    private void ClearGhostPool()
-    {
-        foreach (GameObject ghost in ghostPool)
-        {
-            if (ghost != null) DestroyImmediate(ghost);
-        }
-        ghostPool.Clear();
-    }
-
     // Stepped diagonal algorithm - moves in staircase pattern
     private List<Vector2Int> GetCellsBetween(Vector2Int start, Vector2Int end)
     {
@@ -1021,6 +1031,16 @@ public class BuildController : MonoBehaviour
         List<Vector2Int> newFootprint = GetStructureFootprint(movingStructure.gameObject);
         foreach (Vector2Int cell in newFootprint) gridController.SetCellOccupied(cell.x, cell.y, true);
         movingStructure.RegisterWithGrid();
+        
+        // IMPORTANT: For defense structures, force re-registration in the defense registry
+        DefenseStructure defenseStructure = movingStructure.GetComponent<DefenseStructure>();
+        if (defenseStructure != null)
+        {
+            // Manually trigger defense structure registration by calling Start via reflection
+            // Or use a coroutine to rebuild connectors after a delay
+            StartCoroutine(DelayedDefenseStructureUpdate(defenseStructure));
+        }
+        
         AudioManager.Instance?.PlayPlaceSound();
         gridController.UpdateGridTexture();
         if (gridMonitor != null && newFootprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(newFootprint, GridChangeType.Structural);
@@ -1044,6 +1064,46 @@ public class BuildController : MonoBehaviour
         currentBuildTargetPrefab = null; // Clear the build target to prevent shop from entering build mode
         currentStructureData = null; // Also clear the structure data
         DisableBuildMode();
+    }
+
+    // Coroutine to handle defense structure re-registration and connector updates after moving
+    private IEnumerator DelayedDefenseStructureUpdate(DefenseStructure defenseStructure)
+    {
+        // Wait a frame to ensure position is finalized
+        yield return null;
+        
+        Debug.Log("DelayedDefenseStructureUpdate: Force re-registering defense structure");
+        
+        // Use reflection to call the private RegisterInRegistry method
+        var registerMethod = typeof(DefenseStructure).GetMethod("RegisterInRegistry", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        if (registerMethod != null)
+        {
+            registerMethod.Invoke(defenseStructure, null);
+            Debug.Log("Successfully re-registered defense structure");
+        }
+        else
+        {
+            Debug.LogError("Could not find RegisterInRegistry method");
+        }
+        
+        // Wait another frame for registration to complete
+        yield return null;
+        
+        // Now rebuild all connectors
+        DefenseStructure.RebuildAllConnectors();
+    }
+
+    // Coroutine to rebuild connectors after moving a fence (ensures proper registration)
+    private IEnumerator DelayedConnectorRebuildAfterMove()
+    {
+        // Wait a couple frames to ensure the moved defense structure is properly registered
+        yield return null;
+        yield return null;
+
+        Debug.Log("DelayedConnectorRebuildAfterMove: Rebuilding all defense structure connectors");
+        DefenseStructure.RebuildAllConnectors();
     }
 
     private void UpdateAllSynergies()
@@ -1592,12 +1652,6 @@ private void ShowCropSynergyPreview()
     {
         if (data == null || data.prefab == null) return;
 
-        // Clear ghost pool when switching build types
-        if (currentBuildTargetPrefab != data.prefab)
-        {
-            ClearGhostPool();
-        }
-
         currentBuildTargetPrefab = data.prefab;
         currentStructureData = data;
         EnableBuildMode();
@@ -1608,12 +1662,6 @@ private void ShowCropSynergyPreview()
     public void SetBuildTarget(GameObject prefab)
     {
         if (prefab == null) return;
-
-        // Clear ghost pool when switching build types
-        if (currentBuildTargetPrefab != prefab)
-        {
-            ClearGhostPool();
-        }
 
         currentBuildTargetPrefab = prefab;
         EnableBuildMode();
@@ -1750,7 +1798,7 @@ private void ShowCropSynergyPreview()
         Debug.Log($"Cached footprint for {currentBuildTargetPrefab.name}: {cachedStructureFootprint.Count} cells");
     }
 
-    bool IsValidPlacement(int x, int y)
+    bool IsValidPlacement(int x, int y, bool checkMoney = true)
     {
         // Add null checks FIRST
         if (gridController == null || gridDataGenerator == null)
@@ -1804,8 +1852,8 @@ private void ShowCropSynergyPreview()
             if (!cell.flags.isOwned) return false;
         }
 
-        // Check money
-        if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost))
+        // Check money only if requested (skip when moving structures)
+        if (checkMoney && currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(currentStructureData.cost))
             return false;
 
         return true;
@@ -1930,7 +1978,7 @@ private void ShowCropSynergyPreview()
     }
 
     // Place item without money check (used for defence chains where money is already spent)
-    private void PlaceItemWithoutMoneyCheck(int x, int y)
+    private void PlaceItemWithoutMoneyCheck(int x, int y, bool playSound = true)
     {
         Debug.Log($"PlaceItemWithoutMoneyCheck at ({x}, {y})");
         
@@ -2008,7 +2056,13 @@ private void ShowCropSynergyPreview()
         {
             gridController.SetCellOccupied(cell.x, cell.y, true);
         }
-        AudioManager.Instance?.PlayPlaceSound();
+        
+        // Only play sound if requested (to avoid multiple sounds in chain building)
+        if (playSound)
+        {
+            AudioManager.Instance?.PlayPlaceSound();
+        }
+        
         gridController.UpdateGridTexture();
         if (gridMonitor != null && footprint.Count > 0) gridMonitor.NotifyMultipleCellsChanged(footprint, GridChangeType.Structural);
 
@@ -2326,14 +2380,15 @@ private void ShowCropSynergyPreview()
         
         Debug.Log($"Total hay bales after chain operation: {totalHayBales}");
         
-        // First hay bale trigger (either single placement via cancel, or first chain)
-        if (!completedSteps.Contains("build_first_hay_bale"))
+        // First hay bale trigger (when user places their first hay bale(s))
+        // With click-and-drag, they'll likely place multiple at once
+        if (!completedSteps.Contains("build_first_hay_bale") && placedCount > 0)
         {
             Debug.Log("Triggering BuiltFirstHayBale from chain operation!");
             TutorialManager.Instance.Trigger(TutorialTrigger.BuiltFirstHayBale);
         }
         // Chain building completion (need 10+ total hay bales)
-        else if (totalHayBales >= 10 && !completedSteps.Contains("build_wall_chain"))
+        if (totalHayBales >= 10 && !completedSteps.Contains("build_wall_chain"))
         {
             Debug.Log($"Tutorial Complete: Built {totalHayBales} hay bales! Triggering Built10HayBales.");
             TutorialManager.Instance.Trigger(TutorialTrigger.Built10HayBales);

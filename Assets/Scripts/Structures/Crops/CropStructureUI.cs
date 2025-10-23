@@ -73,7 +73,7 @@ public class CropStructureUI : BaseStructureUI
         plantCrop(index);
     }
 
-    private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !cropStructure.IsGrowing && !cropStructure.CropReady;
+    private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !nightManager.getIsPaused() && !cropStructure.IsGrowing && !cropStructure.CropReady;
 
     private bool CanHarvestCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && cropStructure.CropReady;
 
@@ -100,7 +100,7 @@ public class CropStructureUI : BaseStructureUI
 
     public void plantCrop(int crop)
     {
-        if (!isCropStructure || cropStructure == null || nightManager?.IsDay != true)
+        if (!isCropStructure || cropStructure == null || nightManager?.IsDay != true || nightManager.getIsPaused())
         {
             PlayErrorSound();
             closeSelectCropPanel();
@@ -255,7 +255,8 @@ public class CropStructureUI : BaseStructureUI
         }
         bool isGrowing = cropStructure.IsGrowing;
         bool cropReady = cropStructure.CropReady;
-        bool canPlant = nightManager.IsDay && !isGrowing && !cropReady;
+        bool isPaused = nightManager.getIsPaused();
+        bool canPlant = nightManager.IsDay && !isPaused && !isGrowing && !cropReady;
 
         if (!canPlant)
         {
@@ -269,13 +270,13 @@ public class CropStructureUI : BaseStructureUI
 
         if (statusText != null)
         {
-            statusText.text = cropReady ? $"{cropStructure.CurrentCropType}: Ready to harvest!" : isGrowing ? "Growing..." : nightManager.IsDay ? "No crop planted" : "Cannot plant at night";
+            statusText.text = cropReady ? $"{cropStructure.CurrentCropType}: Ready to harvest!" : isGrowing ? "Growing..." : isPaused ? "Game paused" : nightManager.IsDay ? "No crop planted" : "Cannot plant at night";
             statusText.color = cropReady ? Color.green : isGrowing ? Color.yellow : nightManager.IsDay ? Color.white : Color.yellow;
         }
         plantSunflowerButton.interactable = canPlant;
         plantWheatButton.interactable = canPlant;
         plantCarrotsButton.interactable = canPlant;
-        harvestButton.interactable = cropReady;
+        harvestButton.interactable = cropReady && !isPaused;
         selectCropPanel.SetActive(canPlant && selectCropPanel.activeSelf);
     }
 

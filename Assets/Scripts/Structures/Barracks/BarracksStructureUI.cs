@@ -78,6 +78,14 @@ public class BarracksStructureUI : BaseStructureUI
 
     // private BarracksStructure barrackStructure;
 
+    public UIHoverManager hoverManager;
+    [SerializeField] public GameObject civilianSection;
+
+    private void Awake()
+    {
+        hoverManager = FindObjectOfType<UIHoverManager>();
+    }
+
     public override void Initialize(Structure structure)
     {
         base.Initialize(structure);
@@ -1980,5 +1988,82 @@ public class BarracksStructureUI : BaseStructureUI
                 AudioManager.Instance.PlayErrorSound();
             }
         }
+    }
+
+    public void OnButtonHoverEnter(GameObject button)
+    {
+        // Debug.Log("Hover enter on button: " + button.name);
+        if(hoverManager != null)
+        {
+            // TextMeshProUGUI feedText = feedButton.GetComponentInChildren<TextMeshProUGUI>();
+
+            //when the new count is 0
+            if(button == recruitButton.gameObject && newAnimalCount == 0)
+            {
+                hoverManager.ShowHover(recruitButton, "Recruiting air?", "Zero doesn’t count!", true, new Vector2(-200, 0), animalCountText.gameObject);
+            }
+            //when they cant afford more
+            else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1))
+            {
+                hoverManager.ShowHover(addAnimal, "Broke!", $"You can only afford {newAnimalCount}.", true, new Vector2(200, 0), costText.gameObject);
+            }
+            //when there isnt more space
+            else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) >= maxAnimalCount)
+            {
+                hoverManager.ShowHover(addAnimal, "Overcrowded!", "No more room for more animals.", true, new Vector2(200, 0), animalCountText.gameObject);
+            }
+            //where there are no civilian animals
+            else if(button == addAnimal.gameObject && !barracksStructure.CanRecruit(newAnimalCount + 1))
+            {
+                hoverManager.ShowHover(addAnimal, "No civilians!", "Buy more civilians to recruit!", true, new Vector2(200, 0), civilianSection);
+            }
+            //when they want less than 0 new animals
+            else if(button == minusAnimal.gameObject && newAnimalCount <= 0)
+            {
+                hoverManager.ShowHover(minusAnimal, "Recruiting air?", "Must recruit at least 1 animal", true, new Vector2(-200, 0), animalCountText.gameObject);
+            }
+            // when they can not place flag cause they have zero animals
+            else if(button == placeFlagButton.gameObject && newAnimalCount <= 0)
+            {
+                hoverManager.ShowHover(placeFlagButton, "No Army!", "Cant place flag with no army!", true, new Vector2(-200, 0), animalCountText.gameObject);
+            }
+
+        }
+    }
+
+    public void OnButtonHoverExit()
+    {
+        if(hoverManager != null)
+        {
+            hoverManager.HideHover();
+        }
+    }
+
+    public void OnButtonClick(GameObject button)
+    {
+        if(button == recruitButton.gameObject && newAnimalCount == 0)
+        {
+            hoverManager.PlayErrorFeedback(false, recruitButton);
+        }
+        //when they cant afford more
+        else if(button == addAnimal.gameObject && !MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()))
+        {
+            hoverManager.PlayErrorFeedback(true, addAnimal);
+        }
+        //when there isnt more space
+        else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) <= maxAnimalCount)
+        {
+            hoverManager.PlayErrorFeedback(false, addAnimal);
+        }
+        //when they want less than 0 new animals
+        else if(button == minusAnimal.gameObject && newAnimalCount <= 0)
+        {
+            hoverManager.PlayErrorFeedback(false, minusAnimal);
+        }
+        // when they can not place flag cause they have zero animals
+        else if(button == placeFlagButton.gameObject && newAnimalCount <= 0)
+        {
+            hoverManager.PlayErrorFeedback(false, placeFlagButton);
+        }  
     }
 }

@@ -493,27 +493,6 @@ public class AnimalStructureUI : BaseStructureUI
                 hoverManager.ShowHover(collectButton, "Not so fast!", "They’re still working… give it a moment!", true, new Vector2(-200, 0), progressBar.gameObject);
             }
         }
-        // if (!repairAllButton.interactable && !isPulsing)
-        // {
-        //     if(uiHover != null)
-        //     {
-        //         if(totalRepairCost == 0)
-        //         {
-        //             uiHover.Show("All set!", "Nothing needs repairing.", repairAllButton.GetComponent<RectTransform>());
-
-        //         }
-        //         else
-        //         {
-        //             uiHover.Show("Broke!", "You can't afford repairs!", repairAllButton.GetComponent<RectTransform>());
-        //             isPulsing = true;
-        //             totalRepairCostText.rectTransform.pivot = new Vector2(0.5f, 0.5f); // ensure pivot center
-        //             LeanTween.scale(totalRepairCostText.gameObject, Vector3.one * pulseScale, pulseDuration)
-        //                 .setEaseInOutSine()
-        //                 .setLoopPingPong();
-        //         }
-        //     }
-
-        // }
     }
 
     public void OnButtonHoverExit()
@@ -522,25 +501,14 @@ public class AnimalStructureUI : BaseStructureUI
         {
             hoverManager.HideHover();
         }
-        // if (isPulsing)
-        // {
-        //     // if(uiHover != null)
-        //     // {
-        //     //     uiHover.Hide();
-        //     // }
-
-        //     isPulsing = false;
-        //     LeanTween.cancel(totalRepairCostText.gameObject);
-        //     totalRepairCostText.transform.localScale = Vector3.one;
-        // }
     }
 
-    public void OnButtonClick(GameObject button = null)
+    public void OnButtonClick(GameObject button)
     {
         // hoverManager.PlayErrorFeedback(false);
         if(button == buyAnimal.gameObject && newAnimalCount == 0)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, buyAnimal);
         }
         //when they cant afford more
         else if(button == addAnimal.gameObject && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal))
@@ -550,37 +518,37 @@ public class AnimalStructureUI : BaseStructureUI
         //when there isnt more space
         else if(button == addAnimal.gameObject && (newAnimalCount + animalStructure.animalCount) >= animalStructure.maxAnimalCount)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, addAnimal);
         }
         //when they want less than 0 new animals
         else if(button == removeAnimal.gameObject && newAnimalCount <= 0)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, removeAnimal);
         }
         // when they have no animals to feed
         else if(button == feedButton.gameObject && !animalStructure.IsProducing && animalStructure.animalCount == 0)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, feedButton);
         }
         //when they have already fed
         else if(button == feedButton.gameObject && animalStructure.IsProducing && animalStructure.animalCount > 0)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, feedButton);
         }
         //when they dont have enough food
         else if(button == feedButton.gameObject && !animalStructure.canFeed() && animalStructure.animalCount > 0)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, feedButton);
         }
         //when need to feed to collect
         else if(button == collectButton.gameObject && !animalStructure.IsProducing && !animalStructure.ProductReady)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, collectButton);
         }
         //when they need to wait before collecting
         else if(button == collectButton.gameObject && animalStructure.IsProducing && !animalStructure.ProductReady)
         {
-            hoverManager.PlayErrorFeedback(false);
+            hoverManager.PlayErrorFeedback(false, collectButton);
         }        
     }
 }

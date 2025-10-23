@@ -92,19 +92,26 @@ public class UIHoverManager : MonoBehaviour
         }
     }
 
-    public void PlayErrorFeedback(bool isMoney, Button button = null)
+    public void PlayErrorFeedback(bool isMoney, Button button)
     {
-        if(!isMoney)
+        if (button == null)
+            return;
+
+            
+        if(!button.interactable)
         {
-            AudioManager.Instance.PlayErrorSound();
-        }
-        else
-        {
-            AudioManager.Instance.PlayErrorSound();
-            if(button != null)
+            if(!isMoney)
             {
-                Debug.Log("it should be playing the money effect");
-                FlyMoney(button.GetComponent<RectTransform>());
+                AudioManager.Instance.PlayErrorSound();
+            }
+            else
+            {
+                AudioManager.Instance.PlayErrorSound();
+                if(button != null)
+                {
+                    Debug.Log("it should be playing the money effect");
+                    FlyMoney(button.GetComponent<RectTransform>());
+                }
             }
         }
     }

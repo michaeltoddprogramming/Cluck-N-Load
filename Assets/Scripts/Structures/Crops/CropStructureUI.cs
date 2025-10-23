@@ -37,9 +37,9 @@ public class CropStructureUI : BaseStructureUI
     // public UIHoverManager hoverManager;
     private float displayedGrowth = 0f;
 
-    private void Awake()
+    private void Start()
     {
-        base.Awake();
+        base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();
     }
 

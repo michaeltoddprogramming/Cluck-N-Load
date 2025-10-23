@@ -86,9 +86,9 @@ public class AnimalStructureUI : BaseStructureUI
     //     }
     // }
 
-    private void Awake()
+    private void Start()
     {
-        base.Awake();
+        base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();
     }
 

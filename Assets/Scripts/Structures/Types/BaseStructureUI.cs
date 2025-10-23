@@ -23,7 +23,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     public UIHoverManager hoverManager; 
 
-    public void Awake()
+    public void Start()
     {
         hoverManager = FindObjectOfType<UIHoverManager>();
     }

@@ -40,7 +40,6 @@ public partial class TutorialManager
         melonyMovementStep.onStepStart.AddListener(() =>
         {
             SpawnMelonyForTask("movement");
-            Debug.Log("Melony Movement Step: Key indicators should now show WASD + Q/E");
         });
         steps.Add(melonyMovementStep);
 
@@ -58,7 +57,6 @@ public partial class TutorialManager
         melonyZoomStep.onStepStart.AddListener(() =>
         {
             SpawnMelonyForTask("zoom");
-            Debug.Log("Melony Zoom Step: Mouse wheel indicators should now show");
         });
         steps.Add(melonyZoomStep);
 
@@ -76,7 +74,6 @@ public partial class TutorialManager
         melonyRotateStep.onStepStart.AddListener(() =>
         {
             SpawnMelonyForTask("rotate");
-            Debug.Log("Melony Rotate Step: Middle mouse button indicator should now show");
         });
         steps.Add(melonyRotateStep);
 
@@ -272,7 +269,6 @@ public partial class TutorialManager
                         child.name == "CloseButton")
                     {
                         closeBtn = child.gameObject;
-                        Debug.Log($"Found close button: {child.name}");
                         break;
                     }
                 }
@@ -287,7 +283,6 @@ public partial class TutorialManager
             if (closeBtn != null)
             {
                 HighlightUI(closeBtn, true);
-                Debug.Log($"Highlighting close button: {closeBtn.name}");
             }
             else
             {
@@ -433,7 +428,6 @@ public partial class TutorialManager
                 {
                     int toAdd = requiredSunflowers - currentSunflowers;
                     InventoryManager.Instance.AddItem("Sunflower", toAdd);
-                    Debug.Log($"Tutorial: Added {toAdd} sunflowers to ensure player can feed chickens");
                 }
             }
             
@@ -464,7 +458,6 @@ public partial class TutorialManager
                     if (!animalStructure.ProductReady && !animalStructure.IsProducing && animalStructure.AnimalCount > 0)
                     {
                         eggAlreadyCollected = true;
-                        Debug.Log("[Tutorial] Detected eggs were already collected - auto-completing step");
                         break;
                     }
                 }
@@ -542,7 +535,7 @@ public partial class TutorialManager
         buildWallChainStep.onStepComplete.AddListener(() =>
         {
             // Exit build mode after completing wall tutorial
-            BuildController buildController = FindObjectOfType<BuildController>();
+            BuildController buildController = FindFirstObjectByType<BuildController>();
             if (buildController != null)
             {
                 buildController.ExitBuildMode();
@@ -705,26 +698,21 @@ public partial class TutorialManager
         if (shopPanel == null)
             yield break;
         int targetTabIndex = -1;
-        string tabName = "";
         switch (buildingName.ToLower())
         {
             case "chickencoop":
                 targetTabIndex = 0;
-                tabName = "Animals";
                 break;
             case "farmhouse":
                 targetTabIndex = 0;
-                tabName = "Animals";
                 break;
             case "silo":
             case "cropplot":
                 targetTabIndex = 2;
-                tabName = "Plants";
                 break;
             case "chickenbarracks":
             case "chickenbarrack":
                 targetTabIndex = 1;
-                tabName = "Army";
                 break;
             case "wall":
             case "fence":
@@ -735,7 +723,6 @@ public partial class TutorialManager
             case "bale":
             case "haybale":
                 targetTabIndex = 3;
-                tabName = "Defense";
                 break;
         }
         if (targetTabIndex >= 0)
@@ -817,7 +804,6 @@ public partial class TutorialManager
                     Button button = text.GetComponentInParent<Button>();
                     if (button != null)
                     {
-                        Debug.Log($"Highlighting item with text: '{text.text}' for search term: '{term}'");
                         HighlightUI(button.gameObject, true);
                         found = true;
                         break;
@@ -908,35 +894,27 @@ public partial class TutorialManager
 
     private void HighlightLastBuiltStructure(string structureType)
     {
-        Debug.Log($"[HighlightStructure] Looking for structure type: {structureType}");
         
         // Log all existing structures first
-        Debug.Log("[HighlightStructure] All existing structures:");
         foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
         {
-            Debug.Log($"  - Name: '{structure.gameObject.name}', Tag: '{structure.gameObject.tag}', Type: {structure.GetType().Name}");
         }
         
         // First try to find by tag
         GameObject[] structures = GameObject.FindGameObjectsWithTag(structureType);
-        Debug.Log($"[HighlightStructure] Found {structures.Length} structures with tag '{structureType}'");
         
         if (structures.Length > 0)
         {
             GameObject targetStructure = structures[structures.Length - 1];
-            Debug.Log($"[HighlightStructure] Highlighting structure with tag: {targetStructure.name} at position {targetStructure.transform.position}");
             HighlightWorldStructure(targetStructure, true);
             return;
         }
         
         // If no tagged structures found, search by name
-        Debug.Log($"[HighlightStructure] No tagged structures found, searching by name containing '{structureType}'");
         foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
         {
-            Debug.Log($"[HighlightStructure] Checking structure: {structure.gameObject.name}");
             if (structure.gameObject.name.ToLower().Contains(structureType.ToLower()))
             {
-                Debug.Log($"[HighlightStructure] Found matching structure by name: {structure.gameObject.name} at position {structure.transform.position}");
                 HighlightWorldStructure(structure.gameObject, true);
                 return;
             }
@@ -945,7 +923,6 @@ public partial class TutorialManager
         // If still not found, try alternative names for chicken coop
         if (structureType.ToLower().Contains("chicken"))
         {
-            Debug.Log("[HighlightStructure] Trying alternative chicken coop names...");
             string[] alternativeNames = { "coop", "chicken", "hen", "poultry" };
             
             foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
@@ -955,7 +932,6 @@ public partial class TutorialManager
                 {
                     if (structureName.Contains(altName))
                     {
-                        Debug.Log($"[HighlightStructure] Found structure with alternative name: {structure.gameObject.name}");
                         HighlightWorldStructure(structure.gameObject, true);
                         return;
                     }
@@ -966,12 +942,10 @@ public partial class TutorialManager
         // Special case: If looking for ChickenCoop, try to find AnimalStructure
         if (structureType == "ChickenCoop")
         {
-            Debug.Log("[HighlightStructure] Looking for AnimalStructure as chicken coop...");
             foreach (Structure structure in FindObjectsByType<Structure>(FindObjectsSortMode.None))
             {
                 if (structure is AnimalStructure)
                 {
-                    Debug.Log($"[HighlightStructure] Found AnimalStructure (chicken coop): {structure.gameObject.name}");
                     HighlightWorldStructure(structure.gameObject, true);
                     return;
                 }
@@ -1018,8 +992,6 @@ public partial class TutorialManager
                               structure.GetComponentInChildren<Canvas>() != null ||
                               structure.GetComponentInChildren<UnityEngine.UI.Button>() != null;
         }
-        
-        Debug.Log($"[StructureHighlight] Structure: {structure.name}, Type: {structureComponent?.GetType().Name}, HasUI: {hasUIComponents}");
         
         if (highlightIndicator == null && enable)
         {
@@ -1365,7 +1337,6 @@ public partial class TutorialManager
         Vector2Int chosenCell = suitableCells[Random.Range(0, suitableCells.Count)];
         Vector3 worldPos = gridController.GetCellCenterFromTexture(chosenCell.x, chosenCell.y);
 
-        Debug.Log($"Melony spawn: Task={task}, GridPos=({chosenCell.x}, {chosenCell.y}), WorldPos={worldPos}, ValidCells={validCells.Count}, SuitableCells={suitableCells.Count}");
 
         // Convert back to world position
         return worldPos;
@@ -1561,7 +1532,6 @@ public partial class TutorialManager
         // Trigger the tutorial step completion
         Trigger(triggerToFire);
 
-        Debug.Log($"Melony found for task: {currentMelonyTask}! Player demonstrated {currentMelonyTask} controls.");
     }
 
     private IEnumerator AutoAdvanceAfterDelay(float delay)

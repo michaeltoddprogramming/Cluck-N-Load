@@ -45,7 +45,6 @@ public partial class TutorialManager
                     if (!detectedMelonyActions.Contains("movement"))
                     {
                         detectedMelonyActions.Add("movement");
-                        Debug.Log("Movement input detected for Melony hunt!");
                     }
                 }
                 break;
@@ -60,7 +59,6 @@ public partial class TutorialManager
                     if (!detectedMelonyActions.Contains("zoom"))
                     {
                         detectedMelonyActions.Add("zoom");
-                        Debug.Log("Zoom input detected for Melony hunt!");
                     }
                 }
                 break;
@@ -74,7 +72,6 @@ public partial class TutorialManager
                     if (!detectedMelonyActions.Contains("rotate"))
                     {
                         detectedMelonyActions.Add("rotate");
-                        Debug.Log("Rotation input detected for Melony hunt!");
                     }
                 }
                 break;

@@ -27,7 +27,6 @@ public class OwnershipController : MonoBehaviour
     [Header("Performance Settings")]
     [SerializeField] private bool enableRealTimeUpdates = true; // Can disable for potato devices
     [SerializeField] private float updateInterval = 0.1f; // Throttle updates
-    [SerializeField] private bool enableGizmos = false; // Disable gizmos by default for performance
     
     [Header("Grid Monitoring")]
     [SerializeField] private GridMonitor gridMonitor;
@@ -161,8 +160,6 @@ public class OwnershipController : MonoBehaviour
         
         // Convert to grid coordinates
         Vector2Int centerCell = gridController.WorldToGridCoords(center);
-        if (logDebugInfo)
-            Debug.Log($"Updating ownership around center: {center}");
             
         int gridWidth = gridDataGenerator.GetGridWidth();
         int gridHeight = gridDataGenerator.GetGridHeight();

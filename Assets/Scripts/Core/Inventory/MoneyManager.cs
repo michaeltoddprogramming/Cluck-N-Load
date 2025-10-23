@@ -56,7 +56,6 @@ public class MoneyManager : MonoBehaviour
         else
         {
             _currentMoney = startingMoney;
-            Debug.Log($"MoneyManager: Using starting money: {_currentMoney}");
         }
             
         // Notify listeners of initial amount
@@ -169,6 +168,5 @@ public class MoneyManager : MonoBehaviour
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);
-        Debug.Log($"MoneyManager: Reset money to starting amount: {_currentMoney}");
     }
 }

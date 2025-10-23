@@ -9,7 +9,6 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Button recruitButton;
     [SerializeField] private Button placeFlagButton;
     [SerializeField] private Button setFlagColorButton;
-    [SerializeField] private int recruitAmount = 1;
     [SerializeField] private GameObject flagPlacementIndicator;
     [SerializeField] private GameObject flagGhostPrefab; // Ghost prefab for flag placement preview
     [SerializeField] private Material flagGhostMaterial; // Optional: Material to apply to ghost flag
@@ -179,7 +178,7 @@ public class BarracksStructureUI : BaseStructureUI
     private float lastUIUpdate;
     private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
 
-    private void Update()
+    protected override void Update()
     {
         // Call base update to handle move button logic
         base.Update();
@@ -876,8 +875,6 @@ public class BarracksStructureUI : BaseStructureUI
         // Update status text
         if (statusText != null)
         {
-            string animalStatus = "";
-
             statusText.text = message;
             statusText.color = Color.yellow;
         }
@@ -1176,7 +1173,7 @@ public class BarracksStructureUI : BaseStructureUI
     // Static method to check if any barracks is placing a flag
     public static bool IsAnyBarracksPlacingFlag()
     {
-        BarracksStructureUI[] allBarracks = FindObjectsOfType<BarracksStructureUI>();
+        BarracksStructureUI[] allBarracks = FindObjectsByType<BarracksStructureUI>(FindObjectsSortMode.None);
         foreach (var barracks in allBarracks)
         {
             if (barracks.isPlacingFlag)

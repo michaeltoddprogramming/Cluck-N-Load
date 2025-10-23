@@ -65,7 +65,6 @@ public class CombatStatistics : MonoBehaviour
 
     public void ResetStats()
     {
-        Debug.Log("[CombatStatistics] Resetting combat stats for new night");
         armyUnitsLost.Clear();
         totalArmyUnitsLost = 0;
         structuresLost.Clear();
@@ -78,7 +77,6 @@ public class CombatStatistics : MonoBehaviour
 
     public void RecordArmyUnitLoss(string unitType)
     {
-        Debug.Log($"[CombatStatistics] Recording army unit loss: {unitType}");
         if (!armyUnitsLost.ContainsKey(unitType))
             armyUnitsLost[unitType] = 0;
         armyUnitsLost[unitType]++;
@@ -179,7 +177,6 @@ public class CombatStatistics : MonoBehaviour
     {
         bool hasActivity = totalArmyUnitsLost > 0 || totalStructuresLost > 0 ||
                           totalDamageDealt > 0 || totalDamageTaken > 0 || totalEnemiesDefeated > 0;
-        Debug.Log($"[CombatStatistics] HasCombatActivity: {hasActivity} (ArmyLost:{totalArmyUnitsLost}, StructuresLost:{totalStructuresLost}, DamageDealt:{totalDamageDealt}, DamageTaken:{totalDamageTaken}, EnemiesDefeated:{totalEnemiesDefeated})");
         return hasActivity;
     }
 }

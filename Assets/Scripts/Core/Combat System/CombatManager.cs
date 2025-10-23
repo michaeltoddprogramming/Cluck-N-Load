@@ -30,12 +30,12 @@ public class CombatManager : MonoBehaviour
         }
         Instance = this;
 
-        spawnUnits = FindObjectOfType<SpawnUnits>();
+        spawnUnits = FindFirstObjectByType<SpawnUnits>();
     }
 
     private void Start()
     {
-        enemyUnit = FindObjectOfType<EnemyUnit>();
+        enemyUnit = FindFirstObjectByType<EnemyUnit>();
         // spawnUnits = FindObjectOfType<SpawnUnits>();
     }
 
@@ -71,7 +71,7 @@ public class CombatManager : MonoBehaviour
         // }
 
 
-        foreach (ArmyUnit armyUnit in FindObjectsOfType<ArmyUnit>())
+        foreach (ArmyUnit armyUnit in FindObjectsByType<ArmyUnit>(FindObjectsSortMode.None))
         {
             List<EnemyUnit> nearbyEnemies = armyUnit.GetNearbyEnemies();
 
@@ -175,7 +175,7 @@ public class CombatManager : MonoBehaviour
     public void StopCombat()
     {
         isNight = false;
-        EnemyUnit[] enemies = FindObjectsOfType<EnemyUnit>();
+        EnemyUnit[] enemies = FindObjectsByType<EnemyUnit>(FindObjectsSortMode.None);
         foreach (EnemyUnit enemy in enemies)
         {
             enemy.stopCombat();
@@ -266,7 +266,6 @@ public class CombatManager : MonoBehaviour
 
     public void SetSeason(int newSeason)
     {
-        Debug.Log($"Setting season to {newSeason}-------------------------------------------------------------------------------------------------------------------------------");
         season = newSeason;
     }
 

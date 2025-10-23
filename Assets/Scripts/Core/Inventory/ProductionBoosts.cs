@@ -27,16 +27,10 @@ public class ProductionBoosts : MonoBehaviour
         productPrices[2] = sheep?.moneyPerProduct ?? 75;   // Sheep fallback
         productPrices[3] = goat?.moneyPerProduct ?? 80;    // Goat fallback
         productPrices[4] = pig?.moneyPerProduct ?? 90;     // Pig fallback
-
-        Debug.Log($"ProductionBoosts initialized - Prices: [{productPrices[0]}, {productPrices[1]}, {productPrices[2]}, {productPrices[3]}, {productPrices[4]}]");
-        Debug.Log($"ProductionBoosts initialized - Boosts: [{productsBoosted[0]}, {productsBoosted[1]}, {productsBoosted[2]}, {productsBoosted[3]}, {productsBoosted[4]}]");
     }
 
     public void SetBoosted(float[] amounts)
     {
-        Debug.Log($"SetBoosted called with amounts: [{amounts[0]}, {amounts[1]}, {amounts[2]}, {amounts[3]}, {amounts[4]}]");
-        Debug.Log($"SetBoosted call stack: {System.Environment.StackTrace}");
-        Debug.Log($"Before SetBoosted - current productsBoosted: [{productsBoosted[0]}, {productsBoosted[1]}, {productsBoosted[2]}, {productsBoosted[3]}, {productsBoosted[4]}]");
         
         isBoosted = true;
 
@@ -70,27 +64,21 @@ public class ProductionBoosts : MonoBehaviour
                 if (amounts[k] > 0)
                 {
                     productsBoosted[k] = amounts[k];
-                    Debug.Log($"Set productsBoosted[{k}] = {amounts[k]}");
                 }
                 else
                 {
                     productsBoosted[k] = 1.0f; // Force normal production instead of zero
-                    Debug.Log($"Forced productsBoosted[{k}] = 1.0f (was {amounts[k]})");
                 }
             }
             else
             {
                 // If amounts array is too short, keep default value of 1
-                Debug.Log($"Keeping default productsBoosted[{k}] = {productsBoosted[k]}");
             }
         }
-
-        Debug.Log($"Final productsBoosted: [{productsBoosted[0]}, {productsBoosted[1]}, {productsBoosted[2]}, {productsBoosted[3]}, {productsBoosted[4]}]");
     }
 
     public float[] GetBoostedProducts()
     {
-        Debug.Log($"GetBoostedProducts called on {this.gameObject.name} - isBoosted: {isBoosted}");
         
         if (!isBoosted)
         {
@@ -99,12 +87,10 @@ public class ProductionBoosts : MonoBehaviour
         }
 
         // Check if array got corrupted somehow
-        bool hasZeros = false;
         for (int i = 0; i < productsBoosted.Length; i++)
         {
             if (productsBoosted[i] == 0)
             {
-                hasZeros = true;
                 productsBoosted[i] = 1.0f; // Fix it immediately
             }
         }

@@ -63,7 +63,6 @@ public class BuildController : MonoBehaviour
     private bool wasShopOpenBeforeGhost = false;
     private bool isHidingShopForGhost = false;
     private Vector3 originalPosition;
-    private bool personallyHidden = false;
     private Quaternion originalRotation;
     private List<Vector2Int> originalFootprint;
     private bool isBuildModeActive;
@@ -81,8 +80,6 @@ public class BuildController : MonoBehaviour
     private Vector2Int initialDefenceCell;
     private Vector2Int lastDefenceHoverCell = Vector2Int.one * -1; // Track last hovered cell
     private List<GameObject> defenceGhostChain = new List<GameObject>();
-    private bool isDefenceTypeSelected = false;
-    private bool isDefenceChainFinalized = false;
 
     [SerializeField] private GridDataGenerator gridDataGenerator;
 
@@ -156,7 +153,6 @@ public class BuildController : MonoBehaviour
         // Prevent infinite loops
         if (isBuildModeActive) return;
 
-        Debug.Log("HandleShopOpened called - showing grid and enabling build mode");
         gridController.ShowGrid();
         EnableBuildMode();
     }
@@ -172,12 +168,10 @@ public class BuildController : MonoBehaviour
         // If we're intentionally hiding the shop for ghost creation, don't disable build mode
         if (isHidingShopForGhost)
         {
-            Debug.Log("HandleShopClosed called - shop hidden for ghost, keeping build mode active");
             isHidingShopForGhost = false;
             return;
         }
 
-        Debug.Log("HandleShopClosed called - disabling build mode and hiding grid");
         DisableBuildMode();
         gridController.HideGrid();
     }
@@ -186,7 +180,6 @@ public class BuildController : MonoBehaviour
     {
         // When a structure is destroyed, recalculate all synergies
         // since distances between remaining structures may have changed
-        Debug.Log($"Structure destroyed: {destroyedStructure.name} - updating synergies");
         UpdateAllSynergies();
     }
 
@@ -195,7 +188,6 @@ public class BuildController : MonoBehaviour
         // Debug: Check if we're getting input but build mode isn't active
         if (Input.GetKey(removeModifierKey) && (!isBuildModeActive && !isMoveModeActive))
         {
-            Debug.Log("Ctrl pressed but build mode is not active. BuildMode: " + isBuildModeActive + ", MoveMode: " + isMoveModeActive);
         }
 
         if (!isBuildModeActive && !isMoveModeActive)
@@ -223,7 +215,6 @@ public class BuildController : MonoBehaviour
         if (deleteKeyPressed != isDeleteModeActive)
         {
             isDeleteModeActive = deleteKeyPressed;
-            Debug.Log($"Delete mode changed to: {isDeleteModeActive}");
             if (isDeleteModeActive)
             {
                 if (currentGhost != null) currentGhost.SetActive(false);
@@ -284,8 +275,6 @@ public class BuildController : MonoBehaviour
         // IMPORTANT: If a structure is being moved, place it immediately at current position
         if (movingStructure != null)
         {
-            Debug.Log($"DisableBuildMode: Force-placing moving structure {movingStructure.name} at current position due to night transition");
-
             // Get current ghost position (where the structure would be placed)
             Vector3 currentPosition = currentGhost != null ? currentGhost.transform.position : originalPosition;
             Vector2Int gridCoords = gridController.WorldToGridCoords(currentPosition);
@@ -369,7 +358,6 @@ public class BuildController : MonoBehaviour
             NightManager nightManager = NightManager.Instance;
             if (nightManager != null && (!nightManager.IsDay || nightManager.getIsPaused()))
             {
-                Debug.Log("Cannot toggle move mode: Game is paused or it's night time");
                 return;
             }
             
@@ -391,7 +379,6 @@ public class BuildController : MonoBehaviour
         NightManager nightManager = NightManager.Instance;
         if (nightManager != null && (!nightManager.IsDay || nightManager.getIsPaused()))
         {
-            Debug.Log("Cannot start move mode: Game is paused or it's night time");
             return;
         }
         
@@ -436,7 +423,6 @@ public class BuildController : MonoBehaviour
         DefenseStructure defenseStructure = structure.GetComponent<DefenseStructure>();
         if (defenseStructure != null)
         {
-            Debug.Log("StartMoveModeForStructure: Unregistering defense structure from registry");
             var unregisterMethod = typeof(DefenseStructure).GetMethod("UnregisterFromRegistry", 
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             unregisterMethod?.Invoke(defenseStructure, null);
@@ -459,7 +445,7 @@ public class BuildController : MonoBehaviour
 
     public void RestoreGhost()
     {
-        isGhostTemporarilyHidden = personallyHidden = false;
+        isGhostTemporarilyHidden = false;
         if (currentGhost != null && !isDeleteModeActive) currentGhost.SetActive(true);
         if (itemDeleteIcon != null && isDeleteModeActive && !isGhostTemporarilyHidden) itemDeleteIcon.gameObject.SetActive(true);
     }
@@ -510,26 +496,22 @@ public class BuildController : MonoBehaviour
                 // Mouse button released
                 else if (Input.GetMouseButtonUp(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
-                    Debug.Log("HandleBuildInput: Mouse released in defense chain mode");
                     
                     // Check if user dragged (creating a chain of 2+) or just clicked (single fence)
                     if (isDefenceChainDragging && defenceGhostChain.Count >= 2)
                     {
                         // User dragged and created a chain - place all
-                        Debug.Log($"Dragged chain with {defenceGhostChain.Count} fences - placing all");
                         FinalizeDefenceChain();
                     }
                     else
                     {
                         // Single click (no drag or only 1 fence) - place just one fence at initial position
-                        Debug.Log("Single click - placing one fence");
                         PlaceSingleDefenceStructure();
                     }
                 }
                 // Right click to cancel chain (works during drag or before placement)
                 if (Input.GetMouseButtonDown(1) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 {
-                    Debug.Log($"HandleBuildInput: Right click detected in defense chain mode (dragging: {isDefenceChainDragging}) - calling CancelDefenceChain");
                     CancelDefenceChain();
                 }
             }
@@ -653,12 +635,10 @@ public class BuildController : MonoBehaviour
     // Start defence chain mode
     private void StartDefenceChain(Vector2Int startCell)
     {
-        Debug.Log($"StartDefenceChain: Starting chain at {startCell}");
         
         // Validate the starting cell
         if (!IsValidPlacement(startCell.x, startCell.y))
         {
-            Debug.Log($"StartDefenceChain: Starting cell {startCell} is invalid for placement");
             return;
         }
 
@@ -667,7 +647,6 @@ public class BuildController : MonoBehaviour
         {
             if (!MoneyManager.Instance.CanAfford(currentStructureData.cost))
             {
-                Debug.Log("StartDefenceChain: Cannot afford even one structure");
                 // Play insufficient funds sound
                 if (AudioManager.Instance != null)
                 {
@@ -689,14 +668,11 @@ public class BuildController : MonoBehaviour
         {
             currentGhost.SetActive(false);
         }
-
-        Debug.Log($"StartDefenceChain: Defense chain mode activated from {startCell}");
     }
 
     // Cancel defence chain mode (don't place anything)
     private void CancelDefenceChain()
     {
-        Debug.Log("CancelDefenceChain: Canceling defense chain");
         
         isDefenceChainModeActive = false;
         isDefenceChainDragging = false;
@@ -712,7 +688,6 @@ public class BuildController : MonoBehaviour
     // Place a single defense structure (for single click without drag)
     private void PlaceSingleDefenceStructure()
     {
-        Debug.Log("PlaceSingleDefenceStructure: Placing single fence at initial position");
         
         if (currentStructureData == null || MoneyManager.Instance == null)
         {
@@ -724,7 +699,6 @@ public class BuildController : MonoBehaviour
         int singleCost = currentStructureData.cost;
         if (!MoneyManager.Instance.CanAfford(singleCost))
         {
-            Debug.Log("PlaceSingleDefenceStructure: Cannot afford single structure");
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.PlayInsufficientFundsSound();
@@ -735,12 +709,10 @@ public class BuildController : MonoBehaviour
 
         // Spend money and place at initial cell
         MoneyManager.Instance.SpendMoney(singleCost);
-        Debug.Log($"Spent {singleCost} for single defense structure");
 
         if (IsValidPlacementForChain(initialDefenceCell.x, initialDefenceCell.y))
         {
             PlaceItemWithoutMoneyCheck(initialDefenceCell.x, initialDefenceCell.y, playSound: true);
-            Debug.Log($"PlaceSingleDefenceStructure: Placed single structure at {initialDefenceCell}");
 
             // Tutorial trigger for single fence placement
             HandleChainTutorialTrigger(1, false);
@@ -765,7 +737,6 @@ public class BuildController : MonoBehaviour
     {
         if (!isDefenceChainModeActive || defenceGhostChain.Count == 0)
         {
-            Debug.Log("Cannot finalize defense chain - no ghost chain or not in chain mode");
             CancelDefenceChain();
             return;
         }
@@ -781,7 +752,6 @@ public class BuildController : MonoBehaviour
                 
                 if (willHave < 10)
                 {
-                    Debug.Log($"Tutorial: Need {10 - currentHayBales} more hay bales total. This chain will give you {willHave}/10.");
                     // Allow it but provide feedback
                 }
             }
@@ -791,7 +761,6 @@ public class BuildController : MonoBehaviour
         int totalCost = defenceGhostChain.Count * (currentStructureData?.cost ?? 0);
         if (currentStructureData != null && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford(totalCost))
         {
-            Debug.Log($"Cannot afford chain of {defenceGhostChain.Count} structures (cost: {totalCost})");
             // Play insufficient funds sound for defence chain
             if (AudioManager.Instance != null)
             {
@@ -804,7 +773,6 @@ public class BuildController : MonoBehaviour
         if (currentStructureData != null && MoneyManager.Instance != null)
         {
             MoneyManager.Instance.SpendMoney(totalCost);
-            Debug.Log($"Spent {totalCost} for chain of {defenceGhostChain.Count} structures");
         }
 
         // Place all structures in the chain (suppress sound for each individual placement)
@@ -812,22 +780,18 @@ public class BuildController : MonoBehaviour
         foreach (GameObject ghost in defenceGhostChain)
         {
             Vector2Int gridCoords = gridController.WorldToGridCoords(ghost.transform.position);
-            Debug.Log($"FinalizeDefenceChain: Attempting to place structure {placedCount + 1} at {gridCoords}");
 
             // Check if this position is still valid before placing
             if (IsValidPlacementForChain(gridCoords.x, gridCoords.y))
             {
                 PlaceItemWithoutMoneyCheck(gridCoords.x, gridCoords.y, playSound: false); // Suppress sound for individual placements
                 placedCount++;
-                Debug.Log($"FinalizeDefenceChain: Successfully placed structure {placedCount} at {gridCoords}");
             }
             else
             {
                 Debug.LogWarning($"FinalizeDefenceChain: Cannot place structure at {gridCoords} - position no longer valid");
             }
         }
-
-        Debug.Log($"FinalizeDefenceChain: Successfully placed {placedCount} out of {defenceGhostChain.Count} structures in chain");
 
         // Play build sound once after all structures are placed
         if (placedCount > 0)
@@ -2253,8 +2217,7 @@ private void ShowCropSynergyPreview()
             return;
         }
         string name = structure.GetStructureName().ToLower();
-        Debug.Log($"HandleTutorialTriggers for structure: '{name}', type: {structure.GetType().Name}");
-        Debug.Log($"Current tutorial step: {TutorialManager.Instance.GetCurrentStepIndex()}, Tutorial active: {TutorialManager.Instance.IsTutorialActive()}");
+
         if (structure is BarracksStructure barracks)
         {
             string targetAnimalType = barracks.TargetAnimalType.ToLower();

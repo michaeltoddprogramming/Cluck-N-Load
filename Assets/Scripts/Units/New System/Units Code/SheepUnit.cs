@@ -89,7 +89,7 @@ public class SheepUnit : ArmyUnit
 #endif
     }
 
-    public void Update()
+    public new void Update()
     {
         base.Update();
 
@@ -250,7 +250,6 @@ public class SheepUnit : ArmyUnit
         if (CameraShake.Instance != null)
         {
             CameraShake.Instance.ShakeAtPosition(transform.position);
-            Debug.Log("CameraShake triggered at position: " + transform.position);
         }
         else
         {
@@ -302,14 +301,12 @@ public class SheepUnit : ArmyUnit
         {
             // Apply impulse force for immediate knockback
             enemyRigidbody.AddForce(knockbackVelocity, ForceMode.Impulse);
-            Debug.Log($"Applied Rigidbody knockback to {enemy.name} with force: {knockbackVelocity}");
         }
         else
         {
             // If no Rigidbody, apply immediate position-based knockback for the final explosion
             // This ensures knockback works even if sheep dies immediately after
             StartCoroutine(KnockbackWithoutRigidbody(enemy, knockbackVelocity));
-            Debug.Log($"Applied coroutine knockback to {enemy.name} with velocity: {knockbackVelocity}");
         }
     }
 
@@ -336,7 +333,7 @@ public class SheepUnit : ArmyUnit
         }
     }
 
-    public void TakeDamage(int damage)
+    public override void TakeDamage(int damage)
     {
         if (currHealth <= 0 || currHealth - damage <= 0)
         {

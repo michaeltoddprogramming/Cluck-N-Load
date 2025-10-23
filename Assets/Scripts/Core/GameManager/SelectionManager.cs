@@ -4,12 +4,17 @@ using UnityEngine.EventSystems;
 public class SelectionManager : MonoBehaviour
 {
     private Structure currentSelectedStructure;
+    private BuildController cachedBuildController;
+
+    private void Awake()
+    {
+        cachedBuildController = FindFirstObjectByType<BuildController>();
+    }
 
     private void Update()
     {
         // Check if BuildController is in delete mode and skip processing
-        BuildController buildController = FindFirstObjectByType<BuildController>();
-        if (buildController != null && buildController.IsDeleteModeActive())
+        if (cachedBuildController != null && cachedBuildController.IsDeleteModeActive())
         {
             return; // Let BuildController handle the input
         }
@@ -33,7 +38,6 @@ public class SelectionManager : MonoBehaviour
             int layerMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast"));
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, layerMask))
             {
-                Debug.Log($"Raycast hit: {hit.transform.name}");
                 Transform hitTransform = hit.transform;
                 while (hitTransform != null)
                 {
@@ -109,7 +113,6 @@ public class SelectionManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("DeselectCurrent called but no structure was selected - this is normal after UI close button");
         }
     }
 

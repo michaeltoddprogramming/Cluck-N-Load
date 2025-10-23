@@ -99,11 +99,9 @@ public class GameLoopManager : MonoBehaviour
         // Debug: Check if there's a leftover SelectedSaveSlot key
         if (PlayerPrefs.HasKey("SelectedSaveSlot"))
         {
-            Debug.Log($"GameLoopManager: Found existing SelectedSaveSlot key with value: {PlayerPrefs.GetInt("SelectedSaveSlot", -1)}");
         }
         else
         {
-            Debug.Log("GameLoopManager: No SelectedSaveSlot key found - this should be a fresh start");
         }
 
         TutorialManager.Instance?.StartTutorial();
@@ -118,7 +116,6 @@ public class GameLoopManager : MonoBehaviour
         if (PlayerPrefs.HasKey("SelectedSaveSlot"))
         {
             int slot = PlayerPrefs.GetInt("SelectedSaveSlot", 0);
-            Debug.Log($"GameLoopManager: Found SelectedSaveSlot key, attempting to load slot {slot}");
             GameSaveData saveData = GameSaveHelper.LoadFromSlot(slot);
 
             if (MoneyManager.Instance != null)
@@ -127,17 +124,14 @@ public class GameLoopManager : MonoBehaviour
                 if (saveData != null)
                 {
                     MoneyManager.Instance.AddMoney(saveData.money - MoneyManager.Instance.GetCurrentMoney());
-                    Debug.Log($"Loaded money from save slot {slot}: {saveData.money}");
 
                     if (TutorialManager.Instance != null)
                     {
-                        Debug.Log("GameLoopManager: Ending tutorial because save data was loaded");
                         TutorialManager.Instance.EndTutorial();
                     }
                 }
                 else
                 {
-                    Debug.Log("GameLoopManager: No save data found, this is a new game - tutorial should continue");
                     // If no save data found, this is effectively a new game, so keep tutorial running
                 }
             }
@@ -177,7 +171,6 @@ public class GameLoopManager : MonoBehaviour
         else
         {
             MoneyManager.Instance?.ResetMoney();
-            Debug.Log("GameLoopManager: Started completely new game, money reset, tutorial should start");
             
             // Initialize announced structures for fresh game
             InitializeAnnouncedStructures();
@@ -256,7 +249,6 @@ public class GameLoopManager : MonoBehaviour
         allStructures.Add(structure);
         totalStructuresBuilt++;
         string structureName = structure != null ? structure.name : "(destroyed object)";
-        Debug.Log($"Structure registered: {structureName}. Total: {allStructures.Count}");
         GameEventManager.Instance?.OnStructurePlaced?.Invoke(structure);
     }
     public void UnregisterStructure(Structure structure)
@@ -270,7 +262,6 @@ public class GameLoopManager : MonoBehaviour
         {
             string structureName = structure != null ? structure.name : "(destroyed object)";
             allStructures.Remove(structure);
-            Debug.Log($"Structure unregistered: {structureName}. Remaining: {allStructures.Count}");
             GameEventManager.Instance?.OnStructureDestroyed?.Invoke(structure);
             CheckGameOverConditions();
         }
@@ -384,8 +375,6 @@ private void CheckGameOverConditions()
         // Reset game over conditions to their default states
         checkFarmHouseDestruction = true; // Enable farmhouse destruction check for new games
         checkAllStructuresDestroyed = true;
-        
-        Debug.Log("GameLoopManager: Game state reset for new game");
     }
     
     // Method to reset game state when returning to main menu
@@ -405,8 +394,6 @@ private void CheckGameOverConditions()
         {
             gameOverPanel.SetActive(false);
         }
-        
-        Debug.Log("GameLoopManager: Fully reset for new game session");
     }
 
     private void OnDestroy()
@@ -444,14 +431,10 @@ private void CheckForNewlyUnlockedStructures(int newDay)
 {
     if (structureDatabase == null || structureDatabase.allStructures == null)
         return;
-    
-    Debug.Log($"Checking for newly unlocked structures on day {newDay}. Already announced: {announcedUnlockedStructures.Count} structures");
-    
     foreach (StructureData structure in structureDatabase.allStructures)
     {
         if (structure.unlockDay == newDay && !announcedUnlockedStructures.Contains(structure.structureName))
         {
-            Debug.Log($"Found newly unlocked structure: {structure.structureName} (unlockDay: {structure.unlockDay})");
             
             // Mark this structure as announced
             announcedUnlockedStructures.Add(structure.structureName);
@@ -474,7 +457,6 @@ private void CheckForNewlyUnlockedStructures(int newDay)
 public void CheckForNewlyUnlockedStructuresMorning()
 {
     int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
-    Debug.Log($"CheckForNewlyUnlockedStructuresMorning called with currentDay = {currentDay}");
     CheckForNewlyUnlockedStructures(currentDay);
 }
 
@@ -491,11 +473,8 @@ private void InitializeAnnouncedStructures()
         if (structure.unlockDay <= currentDay)
         {
             announcedUnlockedStructures.Add(structure.structureName);
-            Debug.Log($"Marked {structure.structureName} as already announced (unlockDay: {structure.unlockDay} <= currentDay: {currentDay})");
         }
     }
-    
-    Debug.Log($"Initialized announced structures: {announcedUnlockedStructures.Count} structures marked as already unlocked for day {currentDay}");
 }
 
     [ContextMenu("Trigger Game Over")]
@@ -504,7 +483,6 @@ private void InitializeAnnouncedStructures()
     [ContextMenu("Print Structure Count")]
     public void Debug_PrintStructureCount()
     {
-        Debug.Log($"Active Structures: {allStructures.Count}, Total Built: {totalStructuresBuilt}");
     }
 
     public void OnGameOverRestart()

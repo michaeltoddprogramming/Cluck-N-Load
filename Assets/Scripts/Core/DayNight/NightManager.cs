@@ -50,8 +50,6 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Gradient nightToMorningGradient;
 
     [Header("Performance Settings")]
-    [SerializeField] private bool enableLightingOptimizations = true;
-    [SerializeField] private float lightingUpdateInterval = 0.2f; // Reduce frequency for potato devices
 
     // Skyboxes
     [Header("Skyboxes")]
@@ -95,9 +93,6 @@ public class NightManager : MonoBehaviour
     [SerializeField] private float speedOfFast = 5f;
 
     [Tooltip("How many in-game minutes per real life second (0.02f -> 1 in-game minute = 0.02 seconds (1 day ≈ 36 minutes))")]
-    [SerializeField] private float inGameMinVSSec = 0.0000000000000001f;
-    [SerializeField] private bool isFast = false;
-    [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private bool isPaused = false;
     public bool IsPaused => isPaused;
 
@@ -205,15 +200,15 @@ public class NightManager : MonoBehaviour
             return;
         }
 
-        combatManager = FindObjectOfType<CombatManager>();
+        combatManager = FindFirstObjectByType<CombatManager>();
         if (combatManager == null)
         {
-            Debug.LogError("CombatManager not found in scene!");
+            // CombatManager not found - combat features will be disabled
         }
 
-        enemyIndicator = FindObjectOfType<EnemyIndicator>();
-        timeIndicator = FindObjectOfType<TimeIndicator>();
-        timeSpeedEffect = FindObjectOfType<TimeSpeedEffect>();
+        enemyIndicator = FindFirstObjectByType<EnemyIndicator>();
+        timeIndicator = FindFirstObjectByType<TimeIndicator>();
+        timeSpeedEffect = FindFirstObjectByType<TimeSpeedEffect>();
 
     }
 
@@ -267,8 +262,7 @@ public class NightManager : MonoBehaviour
         tempSecond += Time.deltaTime * speedUp;
         // tempSecond += Time.deltaTime * inGameMinVSSec * speedUp;
         // Debug.Log("here is the time: " + tempSecond);
-        timeText.text = $"{Hours:D2}:{Minutes:D2}";
-
+        
         // float currentTimeRate = inGameMinVSSec;
         if (tempSecond >= 0.08)
         {
@@ -306,7 +300,6 @@ public class NightManager : MonoBehaviour
         timeIndicator.exchangeTimeIcon("play");
         timeSpeedEffect.StopSpeedEffect();
         isPaused = false;
-        isFast = false;
         speedUp = 1f;
         Time.timeScale = 1f;
 
@@ -335,7 +328,6 @@ public class NightManager : MonoBehaviour
         //     Time.timeScale = 1f;
         // }
 
-        isFast = true;
         isPaused = false;
         Time.timeScale = speedOfFast;
 
@@ -377,7 +369,6 @@ public class NightManager : MonoBehaviour
         // IMPORTANT: Force disable build mode to place any moving structures
         if (buildController != null)
         {
-            Debug.Log("StartNight: Calling DisableBuildMode to force-place any moving structures");
             buildController.DisableBuildMode();
         }
 
@@ -695,27 +686,21 @@ public class NightManager : MonoBehaviour
 
     private void OnDayChange(int value)
     {
-        Debug.Log($"OnDayChange called: value={value}, hours={hours}");
-
         if (value == 0)
         {
-            Debug.Log("Day 0 - setting Spring season");
             setSeason(1);
 
         }
         else if (value == 5 && hours == 5)
         {
-            Debug.Log("Day 5, hour 5 - setting Summer season");
             setSeason(2);
         }
         else if (value == 10 && hours == 5)
         {
-            Debug.Log("Day 10, hour 5 - setting Fall season");
             setSeason(3);
         }
         else if (value == 15 && hours == 5)
         {
-            Debug.Log("Day 15, hour 5 - setting Winter season");
             setSeason(4);
         }
         else if (value == 20 && hours == 5)
@@ -737,7 +722,6 @@ public class NightManager : MonoBehaviour
             minutes = 0;
             YearsChanged = true;
 
-            Debug.Log($"After year transition: years={years}, yearsChanged={YearsChanged} - setting Spring season");
             setSeason(1);
 
             StartDay(0); // force reset to day state
@@ -745,7 +729,6 @@ public class NightManager : MonoBehaviour
         }
         else if (value == 21)
         {
-            Debug.Log("Day 21 - triggering year transition (fallback)");
             years++;
             days = 0;
             hours = 7;
@@ -760,14 +743,9 @@ public class NightManager : MonoBehaviour
 
     public void UpdateEnemyIndicatorForSeason(int season)
     {
-        // Debug logging to track what's happening
-        Debug.Log($"UpdateEnemyIndicatorForSeason called: season={season}, years={years}");
-        Debug.Log($"Enemy indicator instance: {enemyIndicator}");
-        
         // Check if unlock enemy animals cheat is active
         if (CheatManager.Instance != null && CheatManager.Instance.IsUnlockEnemyAnimalsActive())
         {
-            Debug.Log("Cheat active - showing all enemies");
             if (enemyIndicator != null) enemyIndicator.MakeAllEnemiesVisible();
             // If cheat/unlock-all makes enemies visible, ensure notifications are shown
             NotifyRaccoonUnlock();
@@ -795,7 +773,6 @@ public class NightManager : MonoBehaviour
         // }
         
         // First year only: Normal seasonal behavior
-        Debug.Log($"First year seasonal behavior - showing only season {season} enemy");
         if (enemyIndicator != null)
         {
             switch (season)
@@ -822,7 +799,7 @@ public class NightManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Enemy indicator is null!");
+            // Enemy indicator not available
         }
     }
 
@@ -838,7 +815,6 @@ public class NightManager : MonoBehaviour
         {
             GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Raccoon");
         }
-        Debug.Log("NotifyRaccoonUnlock executed: raccoonAnnounced set to true");
     }
 
     private void NotifyBoarUnlock()
@@ -853,7 +829,6 @@ public class NightManager : MonoBehaviour
         {
             GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Boar");
         }
-        Debug.Log("NotifyBoarUnlock executed: boarAnnounced set to true");
     }
 
     private void NotifyBearUnlock()
@@ -868,7 +843,6 @@ public class NightManager : MonoBehaviour
         {
             GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Bear");
         }
-        Debug.Log("NotifyBearUnlock executed: bearAnnounced set to true");
     }
 
     private void UpdateDayCountUI()
@@ -964,7 +938,6 @@ public class NightManager : MonoBehaviour
         combatManager.SetSeason(season);
 
         // Update enemy indicator for the new season
-        Debug.Log($"About to call UpdateEnemyIndicatorForSeason with season={season}, enemyIndicator={enemyIndicator}");
         UpdateEnemyIndicatorForSeason(season);
 
         // Special-case notification: raccoon unlock on season 2 (Summer)
@@ -979,7 +952,6 @@ public class NightManager : MonoBehaviour
             {
                 GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Raccoon");
             }
-            Debug.Log("Raccoon unlock notification triggered.");
         }
 
         // Use Pete for season notifications instead of basic text
@@ -1617,8 +1589,6 @@ public class NightManager : MonoBehaviour
     {
         if (season < 1 || season > 4) return;
 
-        Debug.Log($"Public SetSeason called: season={season} - calling private setSeason method");
-        
         // Call the private setSeason method to ensure all season logic is executed
         setSeason(season);
 
@@ -1627,8 +1597,6 @@ public class NightManager : MonoBehaviour
         {
             GameEventManager.Instance.TriggerSeasonChanged(season);
         }
-
-        Debug.Log($"Season changed to {season}");
     }
 
     public int GetDays() => days;
@@ -1752,7 +1720,5 @@ public class NightManager : MonoBehaviour
         {
             MoneyManager.Instance.AddMoney(SURVIVAL_BONUS, transform.position);
         }
-        
-        Debug.Log($"[NightManager] Awarded ${SURVIVAL_BONUS} survival bonus for day {days}");
     }
 }

@@ -200,7 +200,6 @@ public class GridMonitor : MonoBehaviour
         // Check for changes by comparing against snapshot
         List<Vector2Int> occupiedCells = new List<Vector2Int>();
         List<Vector2Int> clearedCells = new List<Vector2Int>();
-        bool structuralChanges = false;
         
         foreach (Vector2Int cell in changedCells)
         {
@@ -214,8 +213,6 @@ public class GridMonitor : MonoBehaviour
                     occupiedCells.Add(cell);
                 else
                     clearedCells.Add(cell);
-                    
-                structuralChanges = true;
             }
             
             // Update snapshot with current values

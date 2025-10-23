@@ -10,7 +10,7 @@ public class UIButtonSound : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     void Awake()
     {
         if (menuController == null)
-            menuController = FindObjectOfType<MainMenuController>();
+            menuController = FindFirstObjectByType<MainMenuController>();
         originalScale = transform.localScale;
     }
 

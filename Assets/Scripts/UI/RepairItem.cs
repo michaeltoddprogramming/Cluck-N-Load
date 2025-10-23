@@ -33,7 +33,7 @@ public class RepairItem : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
-        uiHover = FindObjectOfType<UIHover>();
+        uiHover = FindFirstObjectByType<UIHover>();
         if (uiHover == null)
             Debug.LogWarning("No UIHover found in the scene!");
     }

@@ -707,6 +707,7 @@ public class CivilianUnit : MonoBehaviour
 
     Vector3 GetRandomPointOnPanel(MeshCollider pane)
     {
+#pragma warning disable 0162 // Unreachable code detected - false positive, loop always returns
         Mesh mesh = pane.sharedMesh;
         Vector3[] verts = mesh.vertices;
         int[] tris = mesh.triangles;
@@ -731,7 +732,9 @@ public class CivilianUnit : MonoBehaviour
             return point;
         }
 
+        // Fallback - should never reach here, but compiler requires it
         return rb.position;
+#pragma warning restore 0162
     }
 
     void PickNewTarget()

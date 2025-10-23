@@ -11,7 +11,7 @@ public partial class TutorialManager
         if (tutorialArrow == null)
         {
             // Find the highest level canvas (usually the main UI canvas)
-            Canvas[] allCanvases = FindObjectsOfType<Canvas>();
+            Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
             Canvas topCanvas = null;
             int highestSortingOrder = -1;
             
@@ -104,8 +104,6 @@ public partial class TutorialManager
             
             // Ensure arrow starts hidden
             tutorialArrow.SetActive(false);
-            
-            Debug.Log($"[TutorialArrow] Created with sorting order: {arrowCanvas.sortingOrder} (base: {highestSortingOrder})");
         }
     }
 
@@ -118,7 +116,7 @@ public partial class TutorialManager
         if (arrowCanvas == null) return;
         
         // Find the current highest sorting order
-        Canvas[] allCanvases = FindObjectsOfType<Canvas>();
+        Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         int highestSortingOrder = -1;
         
         foreach (Canvas canvas in allCanvases)
@@ -134,7 +132,6 @@ public partial class TutorialManager
         if (arrowCanvas.sortingOrder < newSortingOrder)
         {
             arrowCanvas.sortingOrder = newSortingOrder;
-            Debug.Log($"[TutorialArrow] Updated sorting order to: {newSortingOrder} (highest found: {highestSortingOrder})");
         }
     }
 
@@ -177,18 +174,15 @@ public partial class TutorialManager
                     Vector3 bounds = targetRenderer.bounds.center;
                     float structureHeight = targetRenderer.bounds.size.y;
                     targetCenter = bounds + new Vector3(0, structureHeight * 0.7f, 0); // Position above the structure
-                    Debug.Log($"[TutorialArrow] World object with renderer: {target.name}, bounds center: {bounds}, height: {structureHeight}, target center: {targetCenter}");
                 }
                 else
                 {
                     // Fallback to transform position
                     targetCenter = target.transform.position + new Vector3(0, 2f, 0);
-                    Debug.Log($"[TutorialArrow] World object without renderer: {target.name}, transform position: {target.transform.position}, target center: {targetCenter}");
                 }
                 
                 // Convert world position to screen space
                 screenPoint = Camera.main.WorldToScreenPoint(targetCenter);
-                Debug.Log($"[TutorialArrow] Screen point: {screenPoint}, z-depth: {screenPoint.z}");
             }
             
             if (targetRect != null || screenPoint.z > 0) // Ensure world object is in front of camera
@@ -209,8 +203,6 @@ public partial class TutorialManager
                     float yOffset = targetRect != null ? -60 : -80; // Larger offset for world objects
                     Vector2 arrowPosition = localPoint + new Vector2(0, yOffset);
                     arrowRect.anchoredPosition = arrowPosition;
-                    
-                    Debug.Log($"[TutorialArrow] Positioned at: {arrowPosition}, Target: {target.name} (Type: {(targetRect != null ? "UI" : "World")})");
                 }
                 else
                 {
@@ -225,7 +217,6 @@ public partial class TutorialManager
                 
                 // Store the final positioned location AFTER positioning is complete
                 Vector2 finalPos = arrowRect.anchoredPosition;
-                Debug.Log($"[TutorialArrow] Final position for tween: {finalPos}");
                 
                 // Consistent animation parameters
                 LeanTween.scale(tutorialArrow, new Vector3(1.3f, 1.3f, 1.3f), 0.4f).setLoopPingPong().setEase(LeanTweenType.easeInOutBack);

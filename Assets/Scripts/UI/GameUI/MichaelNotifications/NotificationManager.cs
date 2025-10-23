@@ -146,7 +146,7 @@ public class NotificationManager : MonoBehaviour
         get
         {
             if (instance == null)
-                instance = FindObjectOfType<NotificationManager>();
+                instance = FindFirstObjectByType<NotificationManager>();
             return instance;
         }
     }
@@ -169,7 +169,7 @@ public class NotificationManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(transform.root.gameObject);
         }
         else if (instance != this)
         {

@@ -97,10 +97,6 @@ public partial class TutorialManager : MonoBehaviour
             {
                 tutorialPanel.SetActive(false);
             }
-            else
-            {
-                Debug.LogError("TutorialManager: tutorialPanel is not assigned in the Inspector!");
-            }
             mumbleAudioSource = mumbleAudioSource ?? gameObject.AddComponent<AudioSource>();
             effectsAudioSource = gameObject.AddComponent<AudioSource>();
             effectsAudioSource.playOnAwake = false;
@@ -166,7 +162,6 @@ public partial class TutorialManager : MonoBehaviour
         // Check if tutorial was already completed or skipped in this application session
         if (tutorialCompletedThisSession || tutorialSkippedThisSession)
         {
-            Debug.Log("TutorialManager: Tutorial already completed/skipped this session - not starting again");
             if (tutorialPanel != null)
             {
                 tutorialPanel.SetActive(false);
@@ -186,13 +181,11 @@ public partial class TutorialManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Tutorial panel is null - cannot start tutorial");
             return;
         }
         
         if (steps.Count == 0)
         {
-            Debug.LogError("No tutorial steps found - cannot start tutorial");
             return;
         }
         
@@ -453,7 +446,6 @@ public partial class TutorialManager : MonoBehaviour
     {
         // Mark tutorial as completed for this session
         tutorialCompletedThisSession = true;
-        Debug.Log("TutorialManager: Tutorial completed - marked for session");
         
         // Hide tutorial UI
         tutorialPanel.SetActive(false);
@@ -481,15 +473,11 @@ public partial class TutorialManager : MonoBehaviour
         // Prevent double execution - only skip if tutorial is actually active
         if (!IsTutorialActive())
         {
-            Debug.Log("SkipTutorial called but tutorial is not active");
             return;
         }
         
         // Mark tutorial as skipped for this session
         tutorialSkippedThisSession = true;
-        Debug.Log("TutorialManager: Tutorial skipped via UI - marked for session");
-        
-        Debug.Log($"SkipTutorial: Starting skip process. Current step: {currentStepIndex}/{steps.Count}");
         
         // Mark all tutorial steps as completed WITHOUT triggering UI updates for each one
         int completedCount = 0;
@@ -503,8 +491,6 @@ public partial class TutorialManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"SkipTutorial: Marked {completedCount} main steps as complete");
-        
         // Also mark all discovery steps as completed
         int discoveryCompletedCount = 0;
         foreach (var discoveryStep in discoverySteps.Values)
@@ -516,8 +502,6 @@ public partial class TutorialManager : MonoBehaviour
                 discoveryCompletedCount++;
             }
         }
-        
-        Debug.Log($"SkipTutorial: Marked {discoveryCompletedCount} discovery steps as complete");
         
         // Set tutorial as completed
         currentStepIndex = steps.Count;
@@ -546,9 +530,9 @@ public partial class TutorialManager : MonoBehaviour
         {
             UpdateChecklistUI();
         }
-        catch (System.Exception e)
+        catch (System.Exception)
         {
-            Debug.LogError($"Error updating checklist UI during skip: {e.Message}");
+            // Error updating checklist UI during skip
         }
         
         // Reset any inappropriate instant production states since tutorial is being skipped
@@ -558,7 +542,6 @@ public partial class TutorialManager : MonoBehaviour
         NotifyUISystemsOfStepChange();
         
         // Finalize tutorial completion
-        Debug.Log($"SkipTutorial: Calling EndTutorial. Final state: {currentStepIndex}/{steps.Count}, IsActive: {IsTutorialActive()}");
         EndTutorial();
     }
     
@@ -566,7 +549,6 @@ public partial class TutorialManager : MonoBehaviour
     {
         // Mark tutorial as skipped for this session
         tutorialSkippedThisSession = true;
-        Debug.Log("TutorialManager: Tutorial dev-skipped - marked for session");
         
         tutorialPanel.SetActive(false);
         if (nextStepButton != null)

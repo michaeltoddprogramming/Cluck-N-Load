@@ -7,15 +7,7 @@ public class TextureGenerator : MonoBehaviour
     public Color defaultColor = Color.white;
     public Color occupiedColor = Color.red; // Add this
     public Color ownedColor = Color.green;  // Add this
-    [SerializeField] private float gridLineOpacity = 1f; // Ensure this is 1
     [SerializeField] private Color highlightColor = new Color(1, 1, 0, 1); // Ensure alpha is 1
-
-    [Header("Performance Settings")]
-    [SerializeField] private bool enableRealTimeUpdates = false; // Disabled by default for potato performance
-    [SerializeField] private float updateCooldown = 0.5f; // Limit texture updates
-    [SerializeField] private bool useCompressedTextures = true; // Use compressed textures for memory
-    
-    private float lastUpdateTime = 0f;
 
     private Texture2D gridTexture;
     private Material targetMaterial;

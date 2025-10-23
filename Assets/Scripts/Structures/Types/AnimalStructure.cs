@@ -120,7 +120,6 @@ public class AnimalStructure : Structure
 
     private void Update()
     {
-        // Debug.Log("this is the amount of civilian animals we have: " + animalCount + "---------------------------------");
         if (nightManager == null || !isProducing || productReady) return;
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
         float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;
@@ -131,11 +130,8 @@ public class AnimalStructure : Structure
 
     public void Feed()
     {
-        Debug.Log($"[Feed] Attempting to feed {animalType}. Animals: {animalCount}, IsDay: {nightManager?.IsDay}, IsProducing: {isProducing}, ProductReady: {productReady}");
-        
         if (nightManager == null || !nightManager.IsDay || isProducing || productReady || animalCount <= 0) 
         {
-            Debug.Log($"[Feed] Feed cancelled - conditions not met");
             return;
         }
         
@@ -145,11 +141,8 @@ public class AnimalStructure : Structure
             foodRequired = 1;
         }
 
-        Debug.Log($"[Feed] Food required: {foodRequired} {requiredFood}. Player has: {InventoryManager.Instance?.GetItemCount(requiredFood)}");
-
         if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem(requiredFood, foodRequired))
         {
-            Debug.Log($"[Feed] Successfully feeding {animalType}. Removing {foodRequired} {requiredFood} from inventory");
             InventoryManager.Instance.RemoveItem(requiredFood, foodRequired);
             isProducing = true;
             productReady = false;
@@ -158,7 +151,6 @@ public class AnimalStructure : Structure
             
             // Track the animal count when production started
             originalAnimalCountWhenFed = animalCount;
-            Debug.Log($"[{animalType}] Started production with {originalAnimalCountWhenFed} animals");
 
             // Hide indicator during production
             if (readyIndicator != null)
@@ -191,7 +183,6 @@ public class AnimalStructure : Structure
 
     private IEnumerator DelayedInstantCompleteForTutorial()
     {
-        Debug.Log($"[Tutorial] Starting DelayedInstantCompleteForTutorial for {animalType} with {animalCount} animals");
         yield return new WaitForSeconds(1f);
         
         // Only allow instant complete if tutorial is active and feed_chickens step is not completed
@@ -199,21 +190,12 @@ public class AnimalStructure : Structure
             TutorialManager.Instance.IsTutorialActive() && 
             !TutorialManager.Instance.GetCompletedStepIds().Contains("feed_chickens"))
         {
-            Debug.Log("[Tutorial] Starting instant production completion...");
             InstantCompleteProductionForTutorial();
             
             // Brief wait for production completion visual feedback
             yield return new WaitForSeconds(1f);
             
-            Debug.Log("[Tutorial] Triggering FedFirstAnimals trigger after visual feedback");
             TutorialManager.Instance.Trigger(TutorialTrigger.FedFirstAnimals);
-        }
-        else
-        {
-            string reason = TutorialManager.Instance == null ? "TutorialManager is null" :
-                           !TutorialManager.Instance.IsTutorialActive() ? "Tutorial not active" :
-                           "feed_chickens step already completed";
-            Debug.Log($"[Tutorial] DelayedInstantCompleteForTutorial cancelled: {reason}");
         }
     }
 
@@ -231,14 +213,13 @@ public class AnimalStructure : Structure
     public void Collect()
     {
         if (!productReady || nightManager == null || !nightManager.IsDay) return;
-        ProductionBoosts productionBoosts = FindObjectOfType<ProductionBoosts>();
+        ProductionBoosts productionBoosts = FindFirstObjectByType<ProductionBoosts>();
         int productPrice = 0;
         float boostedAmount = 0f;
 
         // Check if ProductionBoosts is found and properly initialized
         if (productionBoosts == null)
         {
-            Debug.LogError("ProductionBoosts not found in scene! Using fallback values.");
             productPrice = baseMoneyPerProduct; // Use base price, seasonal bonuses won't work
             boostedAmount = 1f; // Default multiplier
         }
@@ -246,8 +227,6 @@ public class AnimalStructure : Structure
         {
             int[] prices = productionBoosts.GetProductPrices();
             float[] boosts = productionBoosts.GetBoostedProducts();
-            
-            Debug.Log($"ProductionBoosts - Prices array length: {prices?.Length}, Boosts array length: {boosts?.Length}");
 
             if (animalType == AnimalType.Chicken)
             {
@@ -256,7 +235,6 @@ public class AnimalStructure : Structure
                     productPrice = prices[0]; // This is the base price from StructureData
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts prices array is empty! Using fallback base price.");
                     productPrice = baseMoneyPerProduct; // Use base price, not modified price
                 }
                     
@@ -264,7 +242,6 @@ public class AnimalStructure : Structure
                     boostedAmount = boosts[0];
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts boosts array is empty! Using default multiplier.");
                     boostedAmount = 1f;
                 }
             }
@@ -275,7 +252,6 @@ public class AnimalStructure : Structure
                     productPrice = prices[1]; // This is the base price from StructureData
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts prices array is too short for Cow! Using fallback base price.");
                     productPrice = baseMoneyPerProduct; // Use base price, not modified price
                 }
                     
@@ -283,7 +259,6 @@ public class AnimalStructure : Structure
                     boostedAmount = boosts[1];
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts boosts array is too short for Cow! Using default multiplier.");
                     boostedAmount = 1f;
                 }
             }
@@ -294,7 +269,6 @@ public class AnimalStructure : Structure
                     productPrice = prices[2]; // This is the base price from StructureData
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts prices array is too short for Sheep! Using fallback base price.");
                     productPrice = baseMoneyPerProduct; // Use base price, not modified price
                 }
                     
@@ -302,7 +276,6 @@ public class AnimalStructure : Structure
                     boostedAmount = boosts[2];
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts boosts array is too short for Sheep! Using default multiplier.");
                     boostedAmount = 1f;
                 }
             }
@@ -313,7 +286,6 @@ public class AnimalStructure : Structure
                     productPrice = prices[3]; // This is the base price from StructureData
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts prices array is too short for Goat! Using fallback base price.");
                     productPrice = baseMoneyPerProduct; // Use base price, not modified price
                 }
                     
@@ -321,7 +293,6 @@ public class AnimalStructure : Structure
                     boostedAmount = boosts[3];
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts boosts array is too short for Goat! Using default multiplier.");
                     boostedAmount = 1f;
                 }
             }
@@ -332,7 +303,6 @@ public class AnimalStructure : Structure
                     productPrice = prices[4]; // This is the base price from StructureData
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts prices array is too short for Pig! Using fallback base price.");
                     productPrice = baseMoneyPerProduct; // Use base price, not modified price
                 }
                     
@@ -340,7 +310,6 @@ public class AnimalStructure : Structure
                     boostedAmount = boosts[4];
                 else
                 {
-                    Debug.LogWarning("ProductionBoosts boosts array is too short for Pig! Using default multiplier.");
                     boostedAmount = 1f;
                 }
             }
@@ -350,20 +319,10 @@ public class AnimalStructure : Structure
         int productPerAnimal = (int)(productPrice * boostedAmount);
         int totalMoneyEarned = productPerAnimal * animalCount;
 
-        // Debug collection calculation
-        Debug.Log($"[{animalType}] Collection Debug - productPrice: {productPrice}, boostedAmount: {boostedAmount}, productPerAnimal: {productPerAnimal}, animalCount: {animalCount}, totalMoneyEarned: {totalMoneyEarned}");
-
         // Enhanced logging for production collection
         if (originalAnimalCountWhenFed != animalCount)
         {
             int lostProduction = productPerAnimal * (originalAnimalCountWhenFed - animalCount);
-            Debug.Log($"[{animalType}] Collection - Originally fed {originalAnimalCountWhenFed} animals, now have {animalCount}");
-            Debug.Log($"[{animalType}] Collection - Lost ${lostProduction} due to {originalAnimalCountWhenFed - animalCount} recruited animals");
-            Debug.Log($"[{animalType}] Collection - Earning ${totalMoneyEarned} from {animalCount} remaining animals");
-        }
-        else
-        {
-            Debug.Log($"[{animalType}] Collection - Earning ${totalMoneyEarned} from {animalCount} animals (no animals recruited during production)");
         }
 
         if (MoneyManager.Instance != null)
@@ -374,7 +333,6 @@ public class AnimalStructure : Structure
             if (NotificationManager.Instance != null)
             {
                 string animalName = animalType.ToString();
-                Debug.Log($"[Animal Collection] animalType: {animalType}, animalName: {animalName}, animalCount: {animalCount}");
                 if (string.IsNullOrEmpty(animalName) || animalName == "None")
                 {
                     animalName = "Animal"; // Fallback for uninitialized types
@@ -384,7 +342,6 @@ public class AnimalStructure : Structure
                 string displayName = animalCount == 1 ? animalName : animalName + "s";
                 string baseMessage = $"${totalMoneyEarned} from {animalCount} {displayName}";
                 
-                Debug.Log($"[Animal Collection] Notification: displayName='{displayName}', baseMessage='{baseMessage}'");
                 // Check for production boost
                 if (boostedAmount > 1f)
                 {
@@ -413,14 +370,13 @@ public class AnimalStructure : Structure
                 TutorialManager.Instance.IsTutorialActive() && 
                 !TutorialManager.Instance.GetCompletedStepIds().Contains("collect_eggs"))
             {
-                Debug.Log($"[Tutorial] Triggering CollectedFirstProducts - tutorial step auto-completion will handle timing");
                 // Use immediate trigger since the step's onStepStart now handles early collection
                 TutorialManager.Instance.Trigger(TutorialTrigger.CollectedFirstProducts);
             }
         }
         else
         {
-            Debug.LogError("MoneyManager.Instance is null when trying to collect money!");
+            // MoneyManager is null - cannot add money
         }
         productReady = false;
         isProducing = false;
@@ -446,7 +402,6 @@ public class AnimalStructure : Structure
                 // Only allow buying if we won't exceed 5 animals
                 if (animalCount + amount > 5)
                 {
-                    Debug.Log("Tutorial: Cannot buy more than 5 animals total. You need exactly 5!");
                     return;
                 }
             }
@@ -545,13 +500,10 @@ public class AnimalStructure : Structure
                 
                 if (readyIndicator != null)
                     readyIndicator.HideIndicator();
-                    
-                Debug.Log($"[{animalType}] All animals recruited - production stopped");
             }
             // If some animals remain and production is active, warn about reduced output
             else if (isProducing || productReady)
             {
-                Debug.Log($"[{animalType}] Recruited {amount} animals during production. Production will yield from {animalCount} animals instead of {previousCount}");
                 // Production continues but with reduced animal count for final calculation
             }
             
@@ -563,10 +515,7 @@ public class AnimalStructure : Structure
     {
         if (amount <= 0) return;
         int actualAmountToAdd = Mathf.Min(amount, maxAnimalCount - animalCount);
-        // int newCount = Mathf.Clamp(animalCount + amount, 0, maxAnimalCount);
-        Debug.Log($"Adding {amount} animals. Before: {animalCount}, After: {animalCount + actualAmountToAdd}");
         if (actualAmountToAdd <= 0) return;
-        // if (newCount == animalCount) return;
         animalCount += actualAmountToAdd;
         OnAnimalCountChanged?.Invoke();
     }
@@ -586,13 +535,11 @@ public class AnimalStructure : Structure
             
             if (readyIndicator != null)
                 readyIndicator.HideIndicator();
-                
-            Debug.Log($"[{animalType}] Animal count set to 0 - production stopped");
         }
         // If count changed during production, log the impact
         else if ((isProducing || productReady) && previousCount != animalCount)
         {
-            Debug.Log($"[{animalType}] Animal count changed from {previousCount} to {animalCount} during production. Output will reflect current count.");
+            // Animal count changed during production - output will reflect current count
         }
         
         OnAnimalCountChanged?.Invoke();
@@ -807,7 +754,6 @@ public class AnimalStructure : Structure
                 // This indicates an inappropriate instant production state
                 productReady = false;
                 productionProgress = 0f;
-                Debug.Log($"Reset inappropriate instant production state on {animalType}");
             }
         }
     }
@@ -820,7 +766,6 @@ public class AnimalStructure : Structure
         {
             animal.ResetInstantProductionState();
         }
-        Debug.Log("Reset instant production states for all animals after tutorial ended");
     }
 
     // Get information about recruitment impact on production
@@ -855,16 +800,10 @@ public class AnimalStructure : Structure
     // Helper method to delay tutorial triggers and prevent race conditions (kept for other uses)
     private IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, float delay)
     {
-        Debug.Log($"[Tutorial] DelayedTutorialTrigger waiting {delay}s for {trigger}");
         yield return new WaitForSeconds(delay);
         if (TutorialManager.Instance != null)
         {
-            Debug.Log($"[Tutorial] DelayedTutorialTrigger firing {trigger}");
             TutorialManager.Instance.Trigger(trigger);
-        }
-        else
-        {
-            Debug.LogWarning($"[Tutorial] DelayedTutorialTrigger cancelled - TutorialManager is null");
         }
     }
 }

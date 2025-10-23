@@ -22,9 +22,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public UnityEvent OnShopClosed = new UnityEvent();
 
     [Header("Performance Settings")]
-    [SerializeField] private bool enableAnimations = true; // Can disable for potato devices
-    [SerializeField] private bool poolStructureItems = true; // Object pooling for performance
-    [SerializeField] private int maxVisibleItems = 20; // Limit visible items for performance
 
     private bool isShopOpen = false; // Tracks whether the shop is open
     private BuildController buildController;
@@ -78,7 +75,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
         }
 
-        uiHover = FindObjectOfType<UIHover>();
+        uiHover = FindFirstObjectByType<UIHover>();
         if (uiHover == null)
             Debug.LogWarning("No UIHover found in the scene!");
 
@@ -154,12 +151,9 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
 
-        Debug.Log($"PopulateShop called with display='{display}', tutorial active: {TutorialManager.Instance?.IsTutorialActive()}, current step: {TutorialManager.Instance?.GetCurrentStepId()}");
-
         // Check if shop should be completely empty during current tutorial step
         if (ShouldShopBeEmptyForCurrentTutorialStep())
         {
-            Debug.Log("Shop should be empty for current tutorial step - clearing all items");
             // Clear all items and show empty shop
             foreach (Transform child in contentParent)
             {
@@ -179,8 +173,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             Debug.LogWarning("StructureDatabase is empty. No structures to display.");
             return;
         }
-
-        Debug.Log($"Found {database.allStructures.Count} structures in database");
 
         // Clear previous items
         foreach (Transform child in contentParent)
@@ -221,11 +213,9 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 continue;
             }
 
-            Debug.Log($"[ShopPanelUI] About to call Setup() for {data.structureName}");
             try
             {
                 itemUI.Setup(data);
-                Debug.Log($"[ShopPanelUI] Setup() completed successfully for {data.structureName}");
             }
             catch (System.Exception e)
             {
@@ -233,8 +223,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             }
             itemsAdded++;
         }
-
-        Debug.Log($"PopulateShop completed: {itemsAdded} items added to shop for display '{display}'");
         
         // After populating, highlight the tutorial target building if tutorial is active
         // Only start coroutine if GameObject is active and enabled
@@ -660,7 +648,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OpenShop()
     {
-        Debug.Log("ShopPanelUI.OpenShop called");
         isShopOpen = true;
         
         // Just trigger events and setup - DON'T call HandleShopOpened here
@@ -684,7 +671,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void CloseShop()
     {
-        Debug.Log("ShopPanelUI.CloseShop called");
         isShopOpen = false;
 
         // Clear tutorial highlights when shop closes
@@ -770,7 +756,6 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         
         if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) 
         {
-            Debug.Log($"Tutorial not active, allowing all structures");
             return true; // Allow all if tutorial not active
         }
 

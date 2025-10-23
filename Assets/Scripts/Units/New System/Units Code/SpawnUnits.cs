@@ -22,7 +22,7 @@ public class SpawnUnits : MonoBehaviour
 
     private void Awake()
     {
-        _gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+        _gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
 
         maxSpawnAmount = wolf.maxSpawnAmount;
         minSpawnAmount = wolf.minSpawnAmount;
@@ -45,7 +45,6 @@ public class SpawnUnits : MonoBehaviour
 
     public void SpawnEnemies(int season)
     {
-        Debug.Log("this si the current season :" + season + "uaeydefgwoeuirygyihuofreiygufreigferwighuyfrewghifrewahgifdshgfdshgkfsdhjgfdshjgfds");
         if (wolf == null || _gridDataGenerator == null || racoon == null || bear == null || boar == null)
         {
             Debug.LogWarning("Missing EnemyData or GridDataGenerator!");
@@ -66,7 +65,6 @@ public class SpawnUnits : MonoBehaviour
         if (unlockAllEnemies || postFirstYear)
         {
             // Spawn all enemy types when cheat is active OR after first year completion
-            Debug.Log($"Spawning all enemy types - cheat: {unlockAllEnemies}, postFirstYear: {postFirstYear}");
             SpawnAllEnemyTypes();
             return;
         }
@@ -164,7 +162,6 @@ public class SpawnUnits : MonoBehaviour
                     {
                         Vector3 spawnPosition = GetRandomOutsidePosition();
                         GameObject enemyInstance = Instantiate(racoon.Prefab, spawnPosition, Quaternion.identity);
-                        Debug.Log("We spawned a racoon: " + enemyInstance + "-------------------------------------------------------");
                         EnemyUnit enemyUnit = enemyInstance.GetComponent<EnemyUnit>();
                         if (enemyUnit != null)
                         {
@@ -285,7 +282,6 @@ public class SpawnUnits : MonoBehaviour
     
     private void SpawnAllEnemyTypes()
     {
-        Debug.Log("Spawning all enemy types due to unlock cheat");
         
         // Spawn wolves
         int spawnCount = Random.Range(minSpawnAmount, maxSpawnAmount + 1);
@@ -402,7 +398,6 @@ public class SpawnUnits : MonoBehaviour
             CombatManager.Instance.RegisterUnit(enemyUnit);
         }
 
-        Debug.Log($"Debug spawned {randomEnemyData.name} at position {spawnPosition}");
     }
 
     // private Vector3 GetRandomOutsidePosition()
@@ -546,8 +541,6 @@ public class SpawnUnits : MonoBehaviour
     {
         maxSpawnAmount += nightlySpawnMultiplier;
         // minSpawnAmount += nightlySpawnMultiplier;
-        Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}************************************************");
-
     }
     public void increaseAfterSeason()
     {
@@ -556,7 +549,6 @@ public class SpawnUnits : MonoBehaviour
         // Debug.Log($"max: {maxSpawnAmount} min: {minSpawnAmount}===============================================");
 
         nightlySpawnMultiplier = Mathf.CeilToInt(nightlySpawnMultiplier * seasonSpawnMultiplier);
-        Debug.Log($"nightly things: {nightlySpawnMultiplier}=====================================================");
     }
 
 

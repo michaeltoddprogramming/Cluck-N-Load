@@ -55,7 +55,6 @@ public class PricePanelUI : MonoBehaviour
     {
         if (structure == null)
         {
-            Debug.LogError("PricePanelUI: SetAnimalStructure called with null!");
             return;
         }
         animalStructure = structure;
@@ -66,7 +65,7 @@ public class PricePanelUI : MonoBehaviour
         cropAmounts = new int[crops.Length];
         produceAmounts = new int[animals.Length];
         boostedProducts = new float[5];
-        productionBoosts = FindObjectOfType<ProductionBoosts>();
+        productionBoosts = FindFirstObjectByType<ProductionBoosts>();
 
         inventoryManager = FindFirstObjectByType<InventoryManager>();
         animalStructure = FindFirstObjectByType<AnimalStructure>();
@@ -149,7 +148,6 @@ public class PricePanelUI : MonoBehaviour
             inventoryManager = FindFirstObjectByType<InventoryManager>();
             if (inventoryManager == null)
             {
-                Debug.LogError("InventoryManager not found in scene!");
                 return;
             }
         }
@@ -159,7 +157,6 @@ public class PricePanelUI : MonoBehaviour
             productionBoosts = FindFirstObjectByType<ProductionBoosts>();
             if (productionBoosts == null)
             {
-                Debug.LogError("ProductionBoosts not found in scene!");
                 return;
             }
         }
@@ -174,10 +171,9 @@ public class PricePanelUI : MonoBehaviour
         // Safe debug logging with null and bounds checking
         if (boostedProducts != null)
         {
-            Debug.Log($"These are the products boosted: {boostedProducts.Length}");
             if (boostedProducts.Length >= 5)
             {
-                Debug.Log($"These are the products boosted: {boostedProducts[0]}, {boostedProducts[1]}, {boostedProducts[2]}, {boostedProducts[3]}, {boostedProducts[4]}");
+                // Products boosted data available
             }
         }
 
@@ -262,7 +258,6 @@ public class PricePanelUI : MonoBehaviour
         // Check if price panel is allowed during tutorial
         if (!IsPricePanelAllowedInTutorial())
         {
-            Debug.Log("Price panel access blocked - not at correct tutorial step");
             return;
         }
 

@@ -111,7 +111,8 @@ public class SoundLimiter : MonoBehaviour
             case "Death": currentDeathSounds = Mathf.Max(0, currentDeathSounds - 1); break;
         }
 
-        if (tempSource != null)
+        // Only destroy temp source for non-Death sounds (Death sounds are auto-destroyed by Destroy(tempGO, clip.length))
+        if (tempSource != null && type != "Death")
             Destroy(tempSource.gameObject);
     }
 }

@@ -9,7 +9,7 @@ public class TooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private void Start()
     {
-        tooltip = FindObjectOfType<HoverToolTip>();
+        tooltip = FindFirstObjectByType<HoverToolTip>();
     }
 
     public void OnPointerEnter(PointerEventData eventData)

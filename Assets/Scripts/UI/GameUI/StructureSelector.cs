@@ -6,7 +6,6 @@ using System.Collections;
 public class StructureSelector : MonoBehaviour
 {
     private Structure lastSelectedStructure;
-    private bool isProcessingClick = false;
 
     // DISABLED: Update method commented out to prevent conflicts with SelectionManager
     // void Update()
@@ -19,13 +18,11 @@ public class StructureSelector : MonoBehaviour
 
     private IEnumerator ProcessClick()
     {
-        isProcessingClick = true;
         yield return null; // Wait one frame to clear input state
 
-        BuildController buildController = FindObjectOfType<BuildController>();
+        BuildController buildController = FindFirstObjectByType<BuildController>();
         if (buildController != null && buildController.IsDeleteModeActive())
         {
-            isProcessingClick = false;
             yield break;
         }
 
@@ -33,7 +30,6 @@ public class StructureSelector : MonoBehaviour
                        UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
         if (isOverUI)
         {
-            isProcessingClick = false;
             yield break;
         }
 
@@ -96,7 +92,6 @@ public class StructureSelector : MonoBehaviour
                             StructureUIManager.Instance?.ShowStructureUI(structure);
                             lastSelectedStructure = structure;
                         }
-                        isProcessingClick = false;
                         yield break;
                     }
                 }
@@ -118,6 +113,5 @@ public class StructureSelector : MonoBehaviour
                 lastSelectedStructure = null;
             }
         }
-        isProcessingClick = false;
     }
 }

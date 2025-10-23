@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class ArmyUnit : BaseUnit
 {
     [SerializeField] private ArmyData data;
-    [SerializeField] private float recoilForce = 20f;
     private float roamRadius;
     private float roamInterval;
     protected int currHealth;
@@ -32,9 +31,6 @@ public class ArmyUnit : BaseUnit
 
     private bool hasReachedDestination = false;
 
-    private bool isReturningToFlag = false;
-    [SerializeField] private bool Recoil = false;
-    private bool isReturningAfterAttack = false;
     private Vector3 roamCenter;
     private bool isRoaming = false;
     private Coroutine roamingRoutine = null;
@@ -517,7 +513,6 @@ public class ArmyUnit : BaseUnit
         yield return new WaitForSeconds(0.5f);
 
         // Start moving back to flag using NavMesh
-        isReturningAfterAttack = true;
         targetPosition = guardPosition;
         isMoving = true;
 
@@ -562,7 +557,6 @@ public class ArmyUnit : BaseUnit
         // agent.ResetPath();
         // }
         isMoving = false;
-        isReturningAfterAttack = false;
         canShoot = true;
     }
 
@@ -577,10 +571,8 @@ public class ArmyUnit : BaseUnit
 
     private IEnumerator ReturnToFlagAfterRecoil(float delay)
     {
-        isReturningToFlag = true;
         yield return new WaitForSeconds(delay);
         MoveToFlag();
-        isReturningToFlag = false;
     }
 
     private float lastNearbyCheckTime = 0f;

@@ -776,11 +776,6 @@ public class EnemyUnit : BaseUnit
     private float stoppingDistance;
     private UnityEngine.AI.NavMeshAgent agent;
     private Vector3 currentAttackPosition;
-    private bool hasAttackPosition = false;
-    private float attackPositionUpdateThreshold = 0.3f;
-    private float targetSearchCooldown = 0.5f;
-    private float lastTargetSearchTime = 0f;
-    private bool hasNoTarget = false;
 
     [SerializeField] private GameObject healthBarPrefab;
     private GameObject healthBarInstance;
@@ -795,7 +790,6 @@ public class EnemyUnit : BaseUnit
     private Vector3 destination;
 
     // Jumping
-    [SerializeField] private float jumpCheckDistance = 1.5f;
     [SerializeField] private float jumpHeight = 20f;
     [SerializeField] private float jumpDuration = 0.5f;
     
@@ -819,7 +813,7 @@ public class EnemyUnit : BaseUnit
         }
 
         currHealth = data.Health;
-        _gridDataGenerator = FindObjectOfType<GridDataGenerator>();
+        _gridDataGenerator = FindFirstObjectByType<GridDataGenerator>();
 
         // Apply movement values from data
         agent.speed = data.MovementSpeed;
@@ -900,13 +894,13 @@ public class EnemyUnit : BaseUnit
     private void CacheAllTargets()
     {
         allTargets.Clear();
-        allTargets.AddRange(FindObjectsOfType<ArmyUnit>());
-        allTargets.AddRange(FindObjectsOfType<CropStructure>());
-        allTargets.AddRange(FindObjectsOfType<SiloStructure>());
-        allTargets.AddRange(FindObjectsOfType<DefenseStructure>());
-        allTargets.AddRange(FindObjectsOfType<BarracksStructure>());
-        allTargets.AddRange(FindObjectsOfType<AnimalStructure>());
-        allTargets.AddRange(FindObjectsOfType<Structure>());
+        allTargets.AddRange(FindObjectsByType<ArmyUnit>(FindObjectsSortMode.None));
+        allTargets.AddRange(FindObjectsByType<CropStructure>(FindObjectsSortMode.None));
+        allTargets.AddRange(FindObjectsByType<SiloStructure>(FindObjectsSortMode.None));
+        allTargets.AddRange(FindObjectsByType<DefenseStructure>(FindObjectsSortMode.None));
+        allTargets.AddRange(FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None));
+        allTargets.AddRange(FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None));
+        allTargets.AddRange(FindObjectsByType<Structure>(FindObjectsSortMode.None));
     }
 
     protected override UnitData GetData() => data;

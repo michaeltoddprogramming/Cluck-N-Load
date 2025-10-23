@@ -94,7 +94,6 @@ public class AudioManager : MonoBehaviour
 
     public void PlayErrorSound()
     {
-        // Debug.Log("[AudioManager] PlayErrorSound called from: " + System.Environment.StackTrace);
         if (errorSound != null)
         {
             errorSound.Play();
@@ -103,7 +102,7 @@ public class AudioManager : MonoBehaviour
 
     public void PauseGameAudio()
     {
-        allAudioSources = FindObjectsOfType<AudioSource>();
+        allAudioSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
         foreach (var source in allAudioSources)
         {
             if (System.Array.IndexOf(exceptions, source) < 0 && source != null)

@@ -26,7 +26,7 @@ public class TextController : MonoBehaviour
         wasPaused = false;
 
         // Find NightManager from the scene
-        nightManager = FindObjectOfType<NightManager>();
+        nightManager = FindFirstObjectByType<NightManager>();
         if (nightManager == null)
         {
             Debug.LogWarning("TextController: NightManager not found in scene!");

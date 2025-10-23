@@ -126,7 +126,7 @@ public class StructureUIManager : MonoBehaviour
 
     public void ShowStructureUI(Structure structure)
     {
-        BuildController buildController = FindObjectOfType<BuildController>();
+        BuildController buildController = FindFirstObjectByType<BuildController>();
         if (buildController != null && buildController.IsDeleteModeActive())
         {
             Debug.Log("UI not shown because delete mode is active.");

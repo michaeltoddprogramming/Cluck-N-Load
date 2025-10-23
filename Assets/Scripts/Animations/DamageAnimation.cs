@@ -1,5 +1,4 @@
 using UnityEngine;
-//random comment, lol
 public class DamageAnimation : MonoBehaviour
 {
     public AudioClip hitSound;
@@ -9,6 +8,10 @@ public class DamageAnimation : MonoBehaviour
     private Color originalSpriteColor;
     private Color originalMeshColor;
     private bool hasInitializedColors = false;
+    
+    // Cached component references for performance
+    private SpriteRenderer spriteRenderer;
+    private MeshRenderer meshRenderer;
 
     private void Awake()
     {
@@ -64,6 +67,10 @@ public class DamageAnimation : MonoBehaviour
 
         // Assign the clip only once, after hitSound is loaded/set
         damageAudioSource.clip = hitSound;
+        
+        // Cache component references for performance
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        meshRenderer = GetComponent<MeshRenderer>();
     }
 
     public void PlayDamageHitEffect()
@@ -72,35 +79,32 @@ public class DamageAnimation : MonoBehaviour
 
         transform.localScale = Vector3.one;
 
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        MeshRenderer mr = GetComponent<MeshRenderer>();
-
         if (!hasInitializedColors)
         {
-            if (sr != null)
+            if (spriteRenderer != null)
             {
-                originalSpriteColor = sr.color;
+                originalSpriteColor = spriteRenderer.color;
             }
-            else if (mr != null && mr.material != null)
+            else if (meshRenderer != null && meshRenderer.material != null)
             {
-                originalMeshColor = mr.material.color;
+                originalMeshColor = meshRenderer.material.color;
             }
             hasInitializedColors = true;
         }
 
         CancelInvoke("RestoreOriginalColor");
 
-        if (sr != null)
+        if (spriteRenderer != null)
         {
-            if (sr.color != Color.red)
+            if (spriteRenderer.color != Color.red)
             {
-                originalSpriteColor = sr.color;
+                originalSpriteColor = spriteRenderer.color;
             }
-            sr.color = Color.red;
+            spriteRenderer.color = Color.red;
         }
-        else if (mr != null)
+        else if (meshRenderer != null)
         {
-            Material mat = mr.material;
+            Material mat = meshRenderer.material;
             if (mat.color != Color.red)
             {
                 originalMeshColor = mat.color;
@@ -132,16 +136,13 @@ public class DamageAnimation : MonoBehaviour
 
     private void RestoreOriginalColor()
     {
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        MeshRenderer mr = GetComponent<MeshRenderer>();
-
-        if (sr != null)
+        if (spriteRenderer != null)
         {
-            sr.color = originalSpriteColor;
+            spriteRenderer.color = originalSpriteColor;
         }
-        else if (mr != null && mr.material != null)
+        else if (meshRenderer != null && meshRenderer.material != null)
         {
-            mr.material.color = originalMeshColor;
+            meshRenderer.material.color = originalMeshColor;
         }
     }
 }

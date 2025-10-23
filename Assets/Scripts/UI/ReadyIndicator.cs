@@ -40,7 +40,7 @@ public class ReadyIndicator : MonoBehaviour
         timeOffset = UnityEngine.Random.Range(0f, 2f * Mathf.PI); // Random animation offset
         
         // Find or create world space canvas
-        worldCanvas = FindObjectOfType<Canvas>();
+        worldCanvas = FindFirstObjectByType<Canvas>();
         if (worldCanvas == null || worldCanvas.renderMode != RenderMode.WorldSpace)
         {
             CreateWorldCanvas();
@@ -135,8 +135,6 @@ public class ReadyIndicator : MonoBehaviour
         
         // Add GraphicRaycaster for click detection
         canvasGO.AddComponent<GraphicRaycaster>();
-        
-        Debug.Log("Created world space canvas for indicators");
     }
     
     private void SetupClickable(GameObject indicator, IndicatorType type)

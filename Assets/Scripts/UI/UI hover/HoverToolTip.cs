@@ -28,8 +28,6 @@ public class HoverToolTip : MonoBehaviour
                 description = $"Sunflowers\t\t{crops[0]}\nWheat\t\t\t{crops[1]}\nCarrots\t\t\t{crops[2]}";
                 break;
 
-                // description = string.Format(description, $"Sunflowers:\t\t{crops[0]}\nWheat:\t\t{crops[1]}\nCarrots:\t\t{crops[2]}");
-                break;
             case TooltipType.enemies:
                 offset.x = 0;
                 string season = NightManager.Instance.GetSeason();

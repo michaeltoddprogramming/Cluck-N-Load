@@ -45,7 +45,6 @@ public class LoadingScreenController : MonoBehaviour
     private AsyncOperation sceneLoadOperation;
     private float displayedProgress = 0f;
     private float timeElapsed = 0f;
-    private bool isSceneReady = false;
     private bool waitingForKeyPress = false;
     private int assetsLoaded = 0;
     private int totalAssetsToLoad = 0;
@@ -136,7 +135,6 @@ public class LoadingScreenController : MonoBehaviour
             UpdateProgress(sceneProgress);
             if (sceneProgress >= 1f)
             {
-                isSceneReady = true;
                 break;
             }
             yield return null;

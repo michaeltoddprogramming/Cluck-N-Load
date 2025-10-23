@@ -34,7 +34,6 @@ public partial class TutorialManager
         if (string.IsNullOrEmpty(stepId) || completedStepIds.Contains(stepId))
             return;
 
-        Debug.Log($"MarkStepComplete: Completed step '{stepId}'");
         completedStepIds.Add(stepId);
         CheckCategoryProgress();
         UpdateChecklistUI();
@@ -49,7 +48,6 @@ public partial class TutorialManager
 
     private void CheckCategoryProgress()
     {
-        Debug.Log($"CheckCategoryProgress: Current category = '{currentCategory}', Completed steps = [{string.Join(", ", completedStepIds)}]");
         
         if (!categories.TryGetValue(currentCategory, out string[] steps))
         {
@@ -86,7 +84,6 @@ public partial class TutorialManager
 
     private void UpdateChecklistUI()
     {
-        Debug.Log($"UpdateChecklistUI: Current category = '{currentCategory}'");
         
         foreach (Transform child in checklistContainer)
             Destroy(child.gameObject);
@@ -120,18 +117,15 @@ public partial class TutorialManager
             Debug.LogWarning($"No steps found for category: {currentCategory}");
             return;
         }
-        Debug.Log($"AddCategorySteps for '{currentCategory}': [{string.Join(", ", stepIds)}]");
 
         foreach (string stepId in stepIds)
         {
-            Debug.Log($"Looking for step with ID: {stepId}");
             TutorialStep step = steps.Find(s => s.stepId == stepId);
             if (step == null)
             {
                 Debug.LogWarning($"Could not find step with ID: {stepId}");
                 continue;
             }
-            Debug.Log($"Found step: {step.stepId} - {step.title}");
 
             GameObject itemObj = Instantiate(checklistItemPrefab, checklistContainer);
             TextMeshProUGUI itemText = itemObj.GetComponentInChildren<TextMeshProUGUI>();

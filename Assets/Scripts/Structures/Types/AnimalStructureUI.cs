@@ -32,7 +32,7 @@ public class AnimalStructureUI : BaseStructureUI
     private int newAnimalCount;
     private AnimalStructure animalStructure;
     private bool isAnimalStructure;
-    private NightManager nightManager;
+    private new NightManager nightManager;
     private bool lastPauseState = false; // Track pause state changes
 
     private float lastUIUpdate;
@@ -84,7 +84,7 @@ public class AnimalStructureUI : BaseStructureUI
     //     }
     // }
 
-    private void Update()
+    protected override void Update()
     {
         // Call base update to handle move button logic
         base.Update();

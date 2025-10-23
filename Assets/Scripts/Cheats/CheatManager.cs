@@ -104,12 +104,10 @@ public class CheatManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            Debug.Log("CheatManager: Initialized explicitly");
             // Don't use DontDestroyOnLoad to avoid conflicts with scene management
         }
         else
         {
-            Debug.Log("CheatManager: Duplicate instance destroyed");
             Destroy(gameObject);
             return;
         }

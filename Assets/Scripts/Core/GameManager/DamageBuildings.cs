@@ -14,7 +14,7 @@ public class DamageBuildings : MonoBehaviour
 
     private void DamageAllBuildings()
     {
-        Structure[] allBuildings = FindObjectsOfType<Structure>();
+        Structure[] allBuildings = FindObjectsByType<Structure>(FindObjectsSortMode.None);
         foreach (Structure structure in allBuildings)
         {
             if (structure != null)

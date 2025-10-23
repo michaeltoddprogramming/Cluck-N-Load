@@ -1,4 +1,3 @@
-// Add this script to a GameObject in your hierarchy (like UIManager)
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,18 +19,24 @@ public class CoinAnimation : MonoBehaviour
     private Vector3 originalUIScale = Vector3.one; // Store original scale to prevent accumulation
     private bool isPulsing = false; // Track if UI is currently pulsing
     
+    private Camera mainCamera;
+    private Sprite cachedCoinSprite;
+    
     void Awake()
     {
         Instance = this;
-        Debug.Log("CoinAnimation initialized");
         
-        // Automatic reference finding if not assigned
+        mainCamera = Camera.main;
+        
+        cachedCoinSprite = Resources.Load<Sprite>("Coin") ?? 
+                          Resources.Load<Sprite>("UI/Coin") ?? 
+                          Resources.Load<Sprite>("Icons/Coin");
+        
         if (mainCanvas == null)
-            mainCanvas = FindObjectOfType<Canvas>();
+            mainCanvas = FindFirstObjectByType<Canvas>();
             
         if (coinTargetTransform == null)
         {
-            // Try to find the gold UI element by name or tag
             var goldTextObj = GameObject.Find("GoldText") ?? GameObject.Find("MoneyText");
             if (goldTextObj)
                 coinTargetTransform = goldTextObj.transform;
@@ -40,31 +45,22 @@ public class CoinAnimation : MonoBehaviour
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
             
-        // Create a basic coin prefab if missing
         if (coinPrefab == null)
             CreateBasicCoinPrefab();
             
-        Debug.Log($"Coin animation setup: Prefab={coinPrefab!=null}, Target={coinTargetTransform!=null}, Canvas={mainCanvas!=null}");
-        
-        // Store original UI scale to prevent accumulation
         if (coinTargetTransform != null)
             originalUIScale = coinTargetTransform.localScale;
     }
     
     public void PlayCoinAnimation(Vector3 worldPos, int amount)
     {
-        Debug.Log($"PlayCoinAnimation called: pos={worldPos}, amount={amount}");
-        
-        if (coinPrefab == null || mainCanvas == null || coinTargetTransform == null)
+        if (coinPrefab == null || mainCanvas == null || coinTargetTransform == null || mainCamera == null)
         {
-            Debug.LogError($"Missing references: Prefab={coinPrefab!=null}, Target={coinTargetTransform!=null}, Canvas={mainCanvas!=null}");
             return;
         }
         
-        // Convert world to screen position
-        Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
+        Vector3 screenPos = mainCamera.WorldToScreenPoint(worldPos);
         
-        // Play sound
         if (coinSound && audioSource)
             audioSource.PlayOneShot(coinSound);
         
@@ -80,21 +76,16 @@ public class CoinAnimation : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         
-        // Create coin
         GameObject coin = Instantiate(coinPrefab, startPos, Quaternion.identity, mainCanvas.transform);
         RectTransform rt = coin.GetComponent<RectTransform>();
         
-        // Make sure it's properly positioned
         rt.anchoredPosition = startPos;
         
-        // Make sure coin is visible and sized properly
         coin.SetActive(true);
         rt.localScale = Vector3.one * 0.5f;
         
-        // Target position (UI element)
         Vector3 targetPos = coinTargetTransform.position;
         
-        // Animate using direct manipulation since LeanTween might be missing
         float startTime = Time.time;
         Vector3 midPoint = Vector3.Lerp(startPos, targetPos, 0.5f);
         midPoint.y += Random.Range(50f, 150f);
@@ -116,10 +107,8 @@ public class CoinAnimation : MonoBehaviour
             yield return null;
         }
         
-        // Ensure it reaches final position
         rt.position = targetPos;
         
-        // Scale down and destroy
         float scaleTime = 0.2f;
         float scaleStart = Time.time;
         while (Time.time < scaleStart + scaleTime)
@@ -131,7 +120,6 @@ public class CoinAnimation : MonoBehaviour
         
         Destroy(coin);
         
-        // Make UI element pulse (use static scale to prevent accumulation)
         StartCoroutine(PulseUI());
     }
     
@@ -145,7 +133,6 @@ public class CoinAnimation : MonoBehaviour
         float pulseTime = 0.15f;
         float pulseStart = Time.time;
         
-        // Pulse up
         while (Time.time < pulseStart + pulseTime)
         {
             float t = (Time.time - pulseStart) / pulseTime;
@@ -153,7 +140,6 @@ public class CoinAnimation : MonoBehaviour
             yield return null;
         }
         
-        // Pulse down
         pulseStart = Time.time;
         while (Time.time < pulseStart + pulseTime)
         {
@@ -162,29 +148,21 @@ public class CoinAnimation : MonoBehaviour
             yield return null;
         }
         
-        // Ensure it returns to exactly original scale
         uiElement.localScale = originalUIScale;
         isPulsing = false;
     }
     
-    // Creates a basic coin if prefab is missing
-    private void CreateBasicCoinPrefab()
+   private void CreateBasicCoinPrefab()
     {
         GameObject tempCoin = new GameObject("CoinTemp");
         
-        // Add image component
         Image img = tempCoin.AddComponent<Image>();
         
-        // Try to find a coin sprite
-        Sprite coinSprite = Resources.Load<Sprite>("Coin") ?? 
-                            Resources.Load<Sprite>("UI/Coin") ?? 
-                            Resources.Load<Sprite>("Icons/Coin");
+        Sprite coinSprite = cachedCoinSprite;
         
-        // If no sprite found, create a yellow circle
         if (coinSprite == null)
         {
             img.color = Color.yellow;
-            // Make circular mask
             tempCoin.AddComponent<Mask>().showMaskGraphic = true;
         }
         else
@@ -192,15 +170,11 @@ public class CoinAnimation : MonoBehaviour
             img.sprite = coinSprite;
         }
         
-        // Set size
         RectTransform rt = tempCoin.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(40, 40);
         
-        // Save as prefab in memory
         coinPrefab = tempCoin;
         tempCoin.SetActive(false);
         DontDestroyOnLoad(tempCoin);
-        
-        Debug.Log("Created basic coin prefab");
     }
 }

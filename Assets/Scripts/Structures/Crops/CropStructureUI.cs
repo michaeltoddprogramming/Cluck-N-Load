@@ -32,6 +32,10 @@ public class CropStructureUI : BaseStructureUI
     private CropStructure cropStructure;
     private bool isCropStructure;
     private char currCrop = 'N';
+    
+    // UI update optimization
+    private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
+    private float lastUIUpdate;
 
     public override void Initialize(Structure structure)
     {
@@ -236,17 +240,21 @@ public class CropStructureUI : BaseStructureUI
         return amount * baseValue;
     }
 
-    private void Update()
+    protected override void Update()
     {
         // Call base update to handle move button logic
         base.Update();
-        UpdateUI();
+        
+        // Regular UI updates at intervals
+        if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
+        {
+            UpdateUI();
+            lastUIUpdate = Time.time;
+        }
     }
 
     private void UpdateUI()
     {
-        // UpdateHealthBar();
-        statusText.text = "slieduhrfehgfsiuedhfiusehfiuhref";
         setCropImage();
         if (!isCropStructure || cropStructure == null || nightManager == null)
         {

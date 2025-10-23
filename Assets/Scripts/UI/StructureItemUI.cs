@@ -13,6 +13,9 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public GameObject lockedOverlay;
     public NightManager nightManager;
     public UIHoverManager hoverManager;
+    public Image moneyOverlay;
+
+    public float magnatude = 7.5f;
 
 
     private StructureData data;
@@ -200,6 +203,20 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if(!MoneyManager.Instance.CanAfford(data.cost))
         {
+            ShakeCamera(magnatude, 0.2f);
+
+            // Fade the money overlay in and out
+            if (moneyOverlay != null)
+            {
+                moneyOverlay.gameObject.SetActive(true);
+                moneyOverlay.canvasRenderer.SetAlpha(0f); // start invisible
+                moneyOverlay.CrossFadeAlpha(1f, 0.25f, false); // fade in
+                LeanTween.delayedCall(0.5f, () =>
+                {
+                    moneyOverlay.CrossFadeAlpha(0f, 0.25f, false); // fade out
+                });
+            }
+
             hoverManager.PlayErrorFeedbackForGameObject(true, this.gameObject);
             return;
         }
@@ -279,4 +296,48 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             AudioManager.Instance.PlayErrorSound();
         }
     }
+
+    // public IEnumerator ShakeCameraCoroutine(float magnitude = 0.1f, float duration = 0.2f)
+    // {
+    //     Camera cam = Camera.main;
+    //     if (cam == null) yield break;
+
+    //     Vector3 originalPos = cam.transform.position;
+    //     float elapsed = 0f;
+
+    //     while (elapsed < duration)
+    //     {
+    //         float x = Random.Range(-magnitude, magnitude);
+    //         float y = Random.Range(-magnitude, magnitude);
+
+    //         cam.transform.position = originalPos + new Vector3(x, y, 0);
+
+    //         elapsed += Time.deltaTime;
+    //         yield return null;
+    //     }
+
+    //     cam.transform.position = originalPos; // restore
+    // }
+
+    public void ShakeCamera(float magnitude = 0.1f, float duration = 0.2f)
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        Vector3 originalPos = cam.transform.position;
+
+        LeanTween.value(cam.gameObject, 0f, 1f, duration)
+            .setEase(LeanTweenType.easeShake)
+            .setOnUpdate((float val) =>
+            {
+                float x = Random.Range(-magnitude, magnitude) * val;
+                float y = Random.Range(-magnitude, magnitude) * val;
+                cam.transform.position = originalPos + new Vector3(x, y, 0);
+            })
+            .setOnComplete(() =>
+            {
+                cam.transform.position = originalPos; // restore
+            });
+    }
+
 }

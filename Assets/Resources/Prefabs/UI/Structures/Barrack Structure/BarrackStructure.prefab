@@ -4110,6 +4110,7 @@ MonoBehaviour:
   moveButton: {fileID: 7187152402759942526}
   healthBarSlider: {fileID: 9032342705502018393}
   healthBarFill: {fileID: 2108091619259164905}
+  hoverManager: {fileID: 0}
   statusText: {fileID: 7640425539373355090}
   armyCountText: {fileID: 651393596630771197}
   recruitButton: {fileID: 5766103617999440168}
@@ -4170,7 +4171,6 @@ MonoBehaviour:
   - {fileID: 5862690410047162375}
   - {fileID: 5237487616416528366}
   - {fileID: 5267034003274791377}
-  hoverManager: {fileID: 0}
   civilianSection: {fileID: 8078169136502588099}
 --- !u!114 &1870193486873066752
 MonoBehaviour:
@@ -9334,6 +9334,7 @@ GameObject:
   - component: {fileID: 1339710856414563803}
   - component: {fileID: 6369650276820535218}
   - component: {fileID: 7187152402759942526}
+  - component: {fileID: 8173051746182436797}
   m_Layer: 0
   m_Name: Move
   m_TagString: Untagged
@@ -9455,6 +9456,67 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &8173051746182436797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8553102441679511588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -8090860008486070274}
+          m_TargetAssemblyTypeName: BaseStructureUI, Assembly-CSharp
+          m_MethodName: OnMoveButtonHoverEnter
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 8553102441679511588}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -8090860008486070274}
+          m_TargetAssemblyTypeName: BaseStructureUI, Assembly-CSharp
+          m_MethodName: OnMoveButtonHoverExit
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 2
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -8090860008486070274}
+          m_TargetAssemblyTypeName: BaseStructureUI, Assembly-CSharp
+          m_MethodName: OnMoveButtonClick
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 8553102441679511588}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &8700787673547781156
 GameObject:
   m_ObjectHideFlags: 0

@@ -1727,6 +1727,7 @@ GameObject:
   - component: {fileID: 5266538800470498572}
   - component: {fileID: 7139274963832356881}
   - component: {fileID: 8139076553006227311}
+  - component: {fileID: 2628044539463904636}
   m_Layer: 0
   m_Name: Move
   m_TagString: Untagged
@@ -1837,6 +1838,67 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2628044539463904636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5926932805800733856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5769591348378681628}
+          m_TargetAssemblyTypeName: BaseStructureUI, Assembly-CSharp
+          m_MethodName: OnMoveButtonHoverEnter
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 5926932805800733856}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5769591348378681628}
+          m_TargetAssemblyTypeName: BaseStructureUI, Assembly-CSharp
+          m_MethodName: OnMoveButtonHoverExit
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 2
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5769591348378681628}
+          m_TargetAssemblyTypeName: BaseStructureUI, Assembly-CSharp
+          m_MethodName: OnMoveButtonClick
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 5926932805800733856}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &6252559455895368259
 GameObject:
   m_ObjectHideFlags: 0
@@ -3076,10 +3138,13 @@ MonoBehaviour:
   moveButton: {fileID: 8139076553006227311}
   healthBarSlider: {fileID: 1413383283712594828}
   healthBarFill: {fileID: 5290784139653610822}
+  hoverManager: {fileID: 0}
   sunflowerAmount: {fileID: 177469168778043422}
   wheatAmount: {fileID: 5636216496011561921}
   carrotAmount: {fileID: 3060926439798721999}
   storageAmount: {fileID: 3280664263634641895}
+  storageBarSlider: {fileID: 0}
+  storageBarFill: {fileID: 0}
 --- !u!82 &3566458536473318795
 AudioSource:
   m_ObjectHideFlags: 0

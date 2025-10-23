@@ -139,6 +139,11 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
             {
                 hoverManager.ShowHover(moveButton, "Sleeping!", $"Buildings can’t be moved at night!", true, new Vector2(200, 0));
             }
+            //when they try to move when paused 
+            if(button == moveButton.gameObject && nightManager.getIsPaused())
+            {
+                hoverManager.ShowHover(moveButton, "Freeze!", $"Buildings don’t move while time’s stopped!", true, new Vector2(200, 0));
+            }
         }
     }
 
@@ -154,6 +159,11 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     {
         //when they try to move at night 
         if(button == moveButton.gameObject && !nightManager.IsDay)
+        {
+            hoverManager.PlayErrorFeedback(false, moveButton);
+        }
+        //when they try to move when paused 
+        if(button == moveButton.gameObject && nightManager.getIsPaused())
         {
             hoverManager.PlayErrorFeedback(false, moveButton);
         }

@@ -577,15 +577,29 @@ public class ArmyUnit : BaseUnit
     private void Start()
     {
         PlayBackgroundSound(data.backgroundSound);
-        nearbyCheckInterval = Mathf.Max(0.05f, 0.2f / (data.AttackRange / 10f)); // Shorter interval for larger ranges
+        // OPTIMIZATION FIX: Larger ranges should check LESS frequently (was backwards!)
+        // Small range (5) = 0.2s, Large range (20) = 0.8s
+        nearbyCheckInterval = Mathf.Max(0.2f, 0.05f * (data.AttackRange / 5f));
     }
 
     public List<EnemyUnit> GetNearbyEnemies()
     {
         if (Time.time - lastNearbyCheckTime > nearbyCheckInterval)
         {
+            // OPTIMIZATION: Scale check interval based on whether enemies exist nearby
+            // If no enemies found, increase interval to reduce unnecessary checks
             cachedNearbyEnemies = GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
-            lastNearbyCheckTime = Time.time;
+            
+            // Adaptive throttling: if no enemies found, wait longer before next check
+            if (cachedNearbyEnemies.Count == 0)
+            {
+                // No enemies: wait 3x longer before checking again
+                lastNearbyCheckTime = Time.time + (nearbyCheckInterval * 2f);
+            }
+            else
+            {
+                lastNearbyCheckTime = Time.time;
+            }
         }
         return cachedNearbyEnemies;
     }
@@ -638,6 +652,30 @@ public class ArmyUnit : BaseUnit
     public bool IsDead()
     {
         return currHealth <= 0;
+    }
+
+    // OPTIMIZATION: Properly cleanup NavMeshAgent when unit is pooled
+    public void DisableNavMeshAgent()
+    {
+        if (agent != null)
+        {
+            // Stop any ongoing movement
+            if (agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+            }
+            // Disable the agent to free NavMesh resources
+            agent.enabled = false;
+        }
+    }
+
+    // OPTIMIZATION: Re-enable NavMeshAgent when unit is deployed from pool
+    public void EnableNavMeshAgent()
+    {
+        if (agent != null)
+        {
+            agent.enabled = true;
+        }
     }
 
     public void SetBarracks(BarracksStructure source)

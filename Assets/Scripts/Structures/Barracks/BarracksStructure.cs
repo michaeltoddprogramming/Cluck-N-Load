@@ -136,6 +136,8 @@ public class BarracksStructure : Structure
 
                 if (unit != null)
                 {
+                    // CRITICAL: Re-enable NavMeshAgent after bringing unit out of pool
+                    unit.EnableNavMeshAgent();
                     unit.SetTimeOfDay(true);
                     unit.MoveToFlag();
                 }
@@ -180,6 +182,13 @@ public class BarracksStructure : Structure
         {
             if (armyAnimal != null)
             {
+                // CRITICAL: Disable NavMeshAgent BEFORE deactivating to prevent NavMesh resource leaks
+                ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
+                if (unit != null)
+                {
+                    unit.DisableNavMeshAgent(); // Properly cleanup navigation resources
+                }
+                
                 // Move to inactive pool (out of scene hierarchy)
                 armyAnimal.transform.SetParent(inactiveUnitsPool.transform);
                 armyAnimal.SetActive(false);
@@ -390,6 +399,9 @@ public class BarracksStructure : Structure
                     // unit.SetTimeOfDay(isNightTime);
                     if (!isNightTime)
                     {
+                        // OPTIMIZATION: Move to pool immediately during daytime recruitment
+                        EnsureInactivePoolExists();
+                        armyAnimal.transform.SetParent(inactiveUnitsPool.transform);
                         armyAnimal.SetActive(false);
                     }
                     else
@@ -404,6 +416,9 @@ public class BarracksStructure : Structure
                     unit.SetTimeOfDay(isNightTime);
                     if (!isNightTime)
                     {
+                        // OPTIMIZATION: Move to pool immediately during daytime recruitment
+                        EnsureInactivePoolExists();
+                        armyAnimal.transform.SetParent(inactiveUnitsPool.transform);
                         armyAnimal.SetActive(false);
                     }
                     else

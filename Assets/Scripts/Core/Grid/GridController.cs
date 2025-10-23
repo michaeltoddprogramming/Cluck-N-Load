@@ -33,6 +33,11 @@ public class GridController : MonoBehaviour
     // Reusable collections for GetEnemiesInRange - prevents garbage allocation
     private HashSet<EnemyUnit> tempEnemySet = new HashSet<EnemyUnit>();
     private List<EnemyUnit> tempEnemyList = new List<EnemyUnit>();
+    
+    // OPTIMIZATION: Cache GetComponent results to avoid repeated lookups
+    private Dictionary<Collider, EnemyUnit> enemyComponentCache = new Dictionary<Collider, EnemyUnit>();
+    private float lastCacheCleanupTime = 0f;
+    private const float CACHE_CLEANUP_INTERVAL = 10f; // Clean cache every 10 seconds
 
     public static GridController Instance { get; private set; }
 
@@ -72,11 +77,36 @@ public class GridController : MonoBehaviour
 
     void Update()
     {
+        // OPTIMIZATION: Periodic cache cleanup to prevent memory leaks from destroyed enemies
+        if (Time.time - lastCacheCleanupTime > CACHE_CLEANUP_INTERVAL)
+        {
+            CleanupComponentCache();
+            lastCacheCleanupTime = Time.time;
+        }
+        
         // Hover highlighting disabled - player doesn't need to see yellow grid highlighting
         // if (gridOverlayInstance.activeSelf && (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0))
         // {
         //     UpdateHoveredCell();
         // }
+    }
+
+    private void CleanupComponentCache()
+    {
+        // Remove null entries (destroyed enemies) from cache
+        var keysToRemove = new List<Collider>();
+        foreach (var kvp in enemyComponentCache)
+        {
+            if (kvp.Key == null || kvp.Value == null)
+            {
+                keysToRemove.Add(kvp.Key);
+            }
+        }
+        
+        foreach (var key in keysToRemove)
+        {
+            enemyComponentCache.Remove(key);
+        }
     }
 
     private void LateUpdate()
@@ -123,6 +153,14 @@ public class GridController : MonoBehaviour
         tempEnemySet.Clear();
         tempEnemyList.Clear();
 
+        // OPTIMIZATION: Calculate actual world distance for early culling
+        float worldRadius = blockRadius * cellSize;
+        float worldRadiusSqr = worldRadius * worldRadius; // Use squared distance (faster, no sqrt)
+
+        // OPTIMIZATION: Search in expanding rings, exit early if no enemies found in outer rings
+        int emptyRings = 0;
+        const int MAX_EMPTY_RINGS = 2; // Stop searching after 2 consecutive empty rings
+
         // Define the square search area
         for (int x = -blockRadius; x <= blockRadius; x++)
         {
@@ -135,11 +173,24 @@ public class GridController : MonoBehaviour
 
                 Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
 
+                // OPTIMIZATION: Distance culling - skip cells outside circular range
+                float distSqr = (cellCenter - worldPosition).sqrMagnitude;
+                if (distSqr > worldRadiusSqr)
+                    continue;
+
                 // Check for enemies at this cell using OverlapSphere
                 Collider[] hits = Physics.OverlapSphere(cellCenter, cellSize * 0.5f);
                 for (int i = 0; i < hits.Length; i++) // Use for loop instead of foreach (faster)
                 {
-                    EnemyUnit enemy = hits[i].GetComponent<EnemyUnit>();
+                    Collider hitCollider = hits[i];
+                    
+                    // OPTIMIZATION: Use cached GetComponent to avoid repeated lookups
+                    if (!enemyComponentCache.TryGetValue(hitCollider, out EnemyUnit enemy))
+                    {
+                        enemy = hitCollider.GetComponent<EnemyUnit>();
+                        enemyComponentCache[hitCollider] = enemy; // Cache for future lookups (null or valid)
+                    }
+                    
                     if (enemy != null)
                     {
                         tempEnemySet.Add(enemy); // HashSet automatically handles duplicates - O(1) instead of O(n)
@@ -161,6 +212,10 @@ public class GridController : MonoBehaviour
         tempEnemySet.Clear();
         tempEnemyList.Clear();
 
+        // OPTIMIZATION: Calculate actual world distance for early culling
+        float worldRadius = blockRadius * cellSize;
+        float worldRadiusSqr = worldRadius * worldRadius;
+
         for (int x = -blockRadius; x <= blockRadius; x++)
         {
             for (int y = -blockRadius; y <= blockRadius; y++)
@@ -172,10 +227,23 @@ public class GridController : MonoBehaviour
 
                 Vector3 cellCenter = gridDataGenerator.GetWorldPositionFromGridCoords(checkPos);
 
+                // OPTIMIZATION: Distance culling
+                float distSqr = (cellCenter - worldPosition).sqrMagnitude;
+                if (distSqr > worldRadiusSqr)
+                    continue;
+
                 Collider[] hits = Physics.OverlapSphere(cellCenter, cellSize * 0.5f);
                 for (int i = 0; i < hits.Length; i++) // Use for loop instead of foreach
                 {
-                    EnemyUnit enemy = hits[i].GetComponent<EnemyUnit>();
+                    Collider hitCollider = hits[i];
+                    
+                    // OPTIMIZATION: Use cached GetComponent
+                    if (!enemyComponentCache.TryGetValue(hitCollider, out EnemyUnit enemy))
+                    {
+                        enemy = hitCollider.GetComponent<EnemyUnit>();
+                        enemyComponentCache[hitCollider] = enemy;
+                    }
+                    
                     if (enemy != null)
                     {
                         tempEnemySet.Add(enemy); // HashSet automatically handles duplicates

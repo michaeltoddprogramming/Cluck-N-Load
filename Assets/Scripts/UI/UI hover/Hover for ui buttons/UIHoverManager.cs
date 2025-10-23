@@ -141,6 +141,50 @@ public class UIHoverManager : MonoBehaviour
     }
 
 // This is perfect ------------------------------------------------------------------------------
+// public void FlyMoney(RectTransform targetButton)
+// {
+//     if (moneyUI == null || targetButton == null)
+//     {
+//         Debug.LogWarning("FlyMoney: moneyUI or targetButton is null");
+//         return;
+//     }
+
+//     // Make sure it's rendered above everything
+//     moneyUI.SetAsLastSibling();
+
+//     // Force start at anchored original
+//     moneyUI.anchoredPosition = moneyOriginalPos;
+//     Debug.Log($"FlyMoney: Starting at {moneyOriginalPos}");
+
+//     // Get target button's world position
+//     Vector3 buttonWorldPos = targetButton.position;
+
+//     // Convert target to local (works perfectly)
+//     Vector3 localTargetPos = moneyUI.parent.InverseTransformPoint(buttonWorldPos);
+//     Debug.Log($"FlyMoney: Target button = {targetButton.name}, localTargetPos = {localTargetPos}");
+
+//     // Convert the original anchored position to local position for the return trip
+//     Vector3 originalWorldPos = moneyUI.TransformPoint(Vector3.zero);
+//     Vector3 originalLocalPos = moneyUI.parent.InverseTransformPoint(originalWorldPos);
+
+//     // Animate to button
+//     LeanTween.moveLocal(moneyUI.gameObject, localTargetPos, duration)
+//         .setEase(LeanTweenType.easeInOutSine)
+//         .setOnComplete(() =>
+//         {
+//             Debug.Log("FlyMoney: Reached button, moving back to original position");
+
+//             // Animate back using proper local position
+//             LeanTween.moveLocal(moneyUI.gameObject, originalLocalPos, duration)
+//                 .setEase(LeanTweenType.easeInOutSine)
+//                 .setOnComplete(() =>
+//                 {
+//                     moneyUI.anchoredPosition = moneyOriginalPos;
+//                     Debug.Log("FlyMoney: Returned to exact original position");
+//                 });
+//         });
+// }
+
 public void FlyMoney(RectTransform targetButton)
 {
     if (moneyUI == null || targetButton == null)
@@ -149,7 +193,15 @@ public void FlyMoney(RectTransform targetButton)
         return;
     }
 
-    // Make sure it's rendered above everything
+    // Ensure the money UI is in a top-level overlay Canvas to be on top of everything
+    Canvas canvas = moneyUI.GetComponentInParent<Canvas>();
+    if (canvas != null)
+    {
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 9999; // very high so it's on top of everything
+    }
+
+    // Make sure it's rendered above all siblings in this Canvas
     moneyUI.SetAsLastSibling();
 
     // Force start at anchored original
@@ -184,9 +236,6 @@ public void FlyMoney(RectTransform targetButton)
                 });
         });
 }
-
-
-
 
 
 

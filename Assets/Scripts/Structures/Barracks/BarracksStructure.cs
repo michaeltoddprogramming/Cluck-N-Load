@@ -31,6 +31,15 @@ public class BarracksStructure : Structure
     private bool isNightTime;
     private float nextStructureCheckTime;
     private float lastDayNightChangeTime;
+    
+    // OPTIMIZATION: Object pooling - keep units in memory but out of active hierarchy
+    private static GameObject inactiveUnitsPool;
+    private const string POOL_NAME = "[Inactive Army Units Pool]";
+    
+    // OPTIMIZATION: Cache GridController and throttle cost updates
+    private GridController cachedGridController;
+    private float lastCostUpdateTime = 0f;
+    private const float COST_UPDATE_INTERVAL = 1.0f; // Update once per second (was 60/sec!)
 
     public string TargetAnimalType => targetAnimalType;
     public int ArmyAnimalCount => armyAnimals.Count;
@@ -54,6 +63,10 @@ public class BarracksStructure : Structure
     protected override void Start()
     {
         base.Start();
+        
+        // OPTIMIZATION: Create inactive pool if it doesn't exist
+        EnsureInactivePoolExists();
+        
         if (structureData != null)
         {
             targetAnimalType = structureData.targetAnimalType ?? "Chicken";
@@ -89,7 +102,14 @@ public class BarracksStructure : Structure
             FindTargetAnimalStructure();
             nextStructureCheckTime = Time.time + structureCheckInterval;
         }
-        UpdateRecruitmentCostByDistance();
+        
+        // OPTIMIZATION: Throttle cost updates to once per second instead of 60/sec
+        // Recruitment cost rarely changes (only when structures move)
+        if (Time.time - lastCostUpdateTime >= COST_UPDATE_INTERVAL)
+        {
+            UpdateRecruitmentCostByDistance();
+            lastCostUpdateTime = Time.time;
+        }
     }
 
     public void OnDayNightChanged(bool isNight)
@@ -107,7 +127,10 @@ public class BarracksStructure : Structure
         {
             if (armyAnimal != null)
             {
+                // OPTIMIZATION: Move unit back from pool to active scene
+                armyAnimal.transform.SetParent(null); // Remove from pool, back to root
                 armyAnimal.SetActive(true);
+                
                 // ArmyAnimal animalScript = armyAnimal.GetComponent<ArmyAnimal>();
                 ArmyUnit unit = armyAnimal.GetComponent<ArmyUnit>();
 
@@ -149,11 +172,32 @@ public class BarracksStructure : Structure
 
     public void AfterBackToBarracks()
     {
+        // OPTIMIZATION: Move units to inactive pool instead of just SetActive(false)
+        // This removes them from the active scene hierarchy, dramatically reducing overhead
+        EnsureInactivePoolExists();
+        
         foreach (GameObject armyAnimal in armyAnimals)
         {
             if (armyAnimal != null)
             {
+                // Move to inactive pool (out of scene hierarchy)
+                armyAnimal.transform.SetParent(inactiveUnitsPool.transform);
                 armyAnimal.SetActive(false);
+            }
+        }
+    }
+    
+    // OPTIMIZATION: Ensure the inactive pool exists
+    private static void EnsureInactivePoolExists()
+    {
+        if (inactiveUnitsPool == null)
+        {
+            inactiveUnitsPool = GameObject.Find(POOL_NAME);
+            if (inactiveUnitsPool == null)
+            {
+                inactiveUnitsPool = new GameObject(POOL_NAME);
+                inactiveUnitsPool.SetActive(false); // Inactive parent = all children ignored by Unity!
+                DontDestroyOnLoad(inactiveUnitsPool); // Persist across scenes
             }
         }
     }
@@ -668,15 +712,21 @@ public class BarracksStructure : Structure
         return;
     }
 
-    GridController gridController = FindFirstObjectByType<GridController>();
-    if (gridController == null)
+    // OPTIMIZATION: Cache GridController to avoid expensive FindFirstObjectByType every call
+    // GridController is a singleton that never changes, so find once and reuse
+    if (cachedGridController == null)
+    {
+        cachedGridController = FindFirstObjectByType<GridController>();
+    }
+    
+    if (cachedGridController == null)
     {
         recruitmentCostPerAnimal = baseCost;
         return;
     }
 
-    Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
-    Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+    Vector2Int barracksCell = cachedGridController.WorldToGridCoords(transform.position);
+    Vector2Int animalCell = cachedGridController.WorldToGridCoords(targetAnimalStructure.transform.position);
     int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
 
     // Apply discount only if distance is within min and max

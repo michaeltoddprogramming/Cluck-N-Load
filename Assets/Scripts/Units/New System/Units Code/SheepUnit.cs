@@ -34,6 +34,11 @@ public class SheepUnit : ArmyUnit
 
     private int lastBeepStage = 0;
 
+    // OPTIMIZATION: Cache enemy proximity checks to reduce physics queries
+    private float enemyCheckInterval = 0.3f; // Check for nearby enemies every 0.3 seconds instead of every frame
+    private float lastEnemyCheckTime = 0f;
+    private List<EnemyUnit> cachedExplosionEnemies = new List<EnemyUnit>(); // Renamed to avoid conflict with ArmyUnit.cachedNearbyEnemies
+
     public bool doIt = false;
     protected override void Awake()
     {
@@ -114,15 +119,19 @@ public class SheepUnit : ArmyUnit
             }
         }
 
-        List<EnemyUnit> enemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
+        // OPTIMIZATION: Only check for nearby enemies every 0.3 seconds instead of every frame
+        // This reduces physics queries from 600/sec to ~33/sec for 10 sheep
+        if (Time.time - lastEnemyCheckTime > enemyCheckInterval)
+        {
+            cachedExplosionEnemies = GridController.Instance.GetEnemiesInRangeSheep(transform.position, explosionRadius);
+            lastEnemyCheckTime = Time.time;
+        }
 
-        int count = enemies.Count;
+        int count = cachedExplosionEnemies.Count;
         if (GetTimeOfDay() == false)  // If it's night
         {
             count = 0;
             lastBeepStage = 0;
-            // Optional: Disable sheep activity at night
-            // e.g., Stop any ongoing actions or animations
         }
 
         if (count >= 1 && lastBeepStage < 1)

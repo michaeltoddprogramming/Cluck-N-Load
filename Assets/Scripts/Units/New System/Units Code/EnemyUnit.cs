@@ -801,6 +801,10 @@ public class EnemyUnit : BaseUnit
 
     private List<MonoBehaviour> allTargets = new List<MonoBehaviour>();
 
+    // OPTIMIZATION: Throttle target rechecking to reduce CPU usage
+    private float targetRecheckInterval = 0.2f; // Check target validity every 0.2 seconds instead of every frame
+    private float lastTargetRecheckTime = 0f;
+
     protected override void Awake()
     {
         base.Awake();
@@ -874,10 +878,14 @@ public class EnemyUnit : BaseUnit
             return;
         }
 
-        // Update target if dead or null
-        if (currentTarget == null || IsTargetDead(currentTarget))
+        // Update target if dead or null - but not every frame (optimization)
+        if (Time.time - lastTargetRecheckTime > targetRecheckInterval)
         {
-            currentTarget = GetNearestAggroTargetOptimized();
+            if (currentTarget == null || IsTargetDead(currentTarget))
+            {
+                currentTarget = GetNearestAggroTargetOptimized();
+            }
+            lastTargetRecheckTime = Time.time;
         }
 
         // No target found
@@ -893,14 +901,19 @@ public class EnemyUnit : BaseUnit
 
     private void CacheAllTargets()
     {
-        allTargets.Clear();
-        allTargets.AddRange(FindObjectsByType<ArmyUnit>(FindObjectsSortMode.None));
-        allTargets.AddRange(FindObjectsByType<CropStructure>(FindObjectsSortMode.None));
-        allTargets.AddRange(FindObjectsByType<SiloStructure>(FindObjectsSortMode.None));
-        allTargets.AddRange(FindObjectsByType<DefenseStructure>(FindObjectsSortMode.None));
-        allTargets.AddRange(FindObjectsByType<BarracksStructure>(FindObjectsSortMode.None));
-        allTargets.AddRange(FindObjectsByType<AnimalStructure>(FindObjectsSortMode.None));
-        allTargets.AddRange(FindObjectsByType<Structure>(FindObjectsSortMode.None));
+        // OPTIMIZATION: Use TargetManager instead of FindObjectsByType
+        // This eliminates 7 expensive scene scans per enemy spawn
+        // Old code was causing 350+ scene scans when 50 enemies spawned!
+        
+        if (TargetManager.Instance != null)
+        {
+            allTargets.Clear();
+            allTargets.AddRange(TargetManager.Instance.GetAllTargets());
+        }
+        else
+        {
+            Debug.LogWarning("TargetManager not found - enemy targeting may not work correctly");
+        }
     }
 
     protected override UnitData GetData() => data;
@@ -1108,7 +1121,8 @@ public class EnemyUnit : BaseUnit
             return null;
         }
         
-        return TargetManager.Instance.GetNearestAggroTargetOptimized(data, transform.position);
+        // Pass instance ID for caching optimization
+        return TargetManager.Instance.GetNearestAggroTargetOptimized(data, transform.position, GetInstanceID());
     }
 
     private void UpdateHealthBar()

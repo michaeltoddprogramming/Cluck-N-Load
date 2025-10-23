@@ -41,6 +41,9 @@ public class ArmyUnit : BaseUnit
     private TextMeshProUGUI healthBarText;
     private CanvasGroup healthBarCanvasGroup;
 
+    // Health bar optimization - only update when health changes
+    private int lastDisplayedHealth = -1;
+
     public bool shoot = false;
     [SerializeField] private float recoilDistance = 2f;  // how far back it moves
     [SerializeField] private float recoilTime = 0.2f;    // how fast it moves back
@@ -53,6 +56,7 @@ public class ArmyUnit : BaseUnit
     {
         base.Awake();
         TargetManager.Instance.RegisterTarget(this);
+        CombatManager.Instance?.RegisterUnit(this); // Register with CombatManager for optimized combat checks
         currHealth = data.Health;
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
 
@@ -82,10 +86,17 @@ public class ArmyUnit : BaseUnit
 
     protected void UpdateHealthBar()
     {
+        // Only update if health actually changed - prevents unnecessary UI updates
+        if (currHealth == lastDisplayedHealth)
+            return;
+            
+        lastDisplayedHealth = currHealth;
+
         if (healthBarSlider != null)
         {
             float pct = Mathf.Clamp01((float)currHealth / data.Health);
             healthBarSlider.value = pct;
+            
             if (healthBarText != null)
                 healthBarText.text = $"{currHealth} / {data.Health}";
 
@@ -96,55 +107,39 @@ public class ArmyUnit : BaseUnit
                 healthBarCanvasGroup.interactable = showBar;
                 healthBarCanvasGroup.blocksRaycasts = showBar;
             }
+            
             if (healthBarInstance != null)
                 healthBarInstance.SetActive(showBar);
-
         }
     }
 
     public void Update()
     {
         lastAttackTime += Time.deltaTime;
+        
+        // Attack flag system (triggered by CombatManager)
         if (attackNow)
         {
             Attack();
             attackNow = false;
         }
 
+        // Face target if one exists
         if (currentTarget != null)
         {
             FaceTarget();
         }
-        // if (shoot)
-        // {
-        // playVFX();
-        // ShootingVFX shootingVFX = GetComponent<ShootingVFX>();
-        // Vector3 here = new Vector3(0f, 3f, 0f);
-        // shootingVFX.Shoot(here);
-        // shoot = false;
-        // }
-        // if (Recoil)
-        // {
-        //     ApplyRecoil();
-        //     Recoil = false;
-        // }
-        // Debug.Log($"{agent.velocity.sqrMagnitude} -------------------------------------------------------------------------------------------------------------------------");
+
+        // Animation speed - cache velocity to avoid multiple property accesses
         if (!isRecoiling)
         {
-            if (agent.velocity.sqrMagnitude > 0.1f)
-            {
-                SetFloat("speed", 1f);
-            }
-            else
-            {
-                SetFloat("speed", 0f);
-            }
+            float velocitySqr = agent.velocity.sqrMagnitude;
+            SetFloat("speed", velocitySqr > 0.1f ? 1f : 0f);
         }
-
 
         if (HasNotReachedDestination())
         {
-            // Debug.Log("Army unit is still on its way to the barracks.____________++++++++++++++++++===============================");
+            // Army unit is still on its way to the barracks
         }
 
         if (isMoving)
@@ -153,7 +148,7 @@ public class ArmyUnit : BaseUnit
         }
 
         // Start roaming if idle, not moving, it's night, and no target
-        if (!isMoving && isNightTime && currentTarget == null && roamingRoutine == null)
+        if (!isMoving && currentTarget == null && roamingRoutine == null && isNightTime)
         {
             roamCenter = guardPosition;
             roamingRoutine = StartCoroutine(RoamAroundFlag());
@@ -635,6 +630,7 @@ public class ArmyUnit : BaseUnit
         }
 
         TargetManager.Instance.UnregisterTarget(this);
+        CombatManager.Instance?.UnregisterUnit(this); // Unregister from combat manager
 
         Die();
     }

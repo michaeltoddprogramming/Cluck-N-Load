@@ -88,7 +88,7 @@ public class CropStructure : Structure
 
     public void Plant(CropType cropType)
     {
-        if (cropType == CropType.None || isGrowing || cropReady) return;
+        if (cropType == CropType.None || cropReady) return;
         currentCropType = cropType;
         updateCropAmounts();
         isGrowing = true;

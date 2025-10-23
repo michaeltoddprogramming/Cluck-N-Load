@@ -37,6 +37,11 @@ public class CropStructureUI : BaseStructureUI
     public UIHoverManager hoverManager;
     private float displayedGrowth = 0f;
 
+    private void Awake()
+    {
+        hoverManager = FindObjectOfType<UIHoverManager>();
+    }
+
     public override void Initialize(Structure structure)
     {
         // statusText.gameObject.SetActive(false);
@@ -77,7 +82,8 @@ public class CropStructureUI : BaseStructureUI
         plantCrop(index);
     }
 
-    private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !cropStructure.IsGrowing && !cropStructure.CropReady;
+    // private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !cropStructure.IsGrowing && !cropStructure.CropReady;
+    private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !cropStructure.CropReady;
 
     private bool CanHarvestCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && cropStructure.CropReady;
 
@@ -327,7 +333,7 @@ private bool wasGrowing = false;
         }
         bool isGrowing = cropStructure.IsGrowing;
         bool cropReady = cropStructure.CropReady;
-        bool canPlant = nightManager.IsDay && !isGrowing && !cropReady;
+        bool canPlant = nightManager.IsDay && !cropReady;
 
         if (!canPlant)
         {
@@ -392,36 +398,15 @@ private bool wasGrowing = false;
         if(hoverManager != null)
         {
             //when it is planed but not ready for harvest
-            // if(button == harvestButton.gameObject && isGrowing &&!cropStructure.CropReady)
-            // {
-            //     hoverManager.ShowHover(harvestButton, "Patience, Farmer!", "Give it more time to grow!", true, new Vector2(-200, 0), progressBar.gameObject);
-            // }
-            // //when they cant afford more
-            // else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) < maxAnimalCount && MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()) && barracksStructure.CanRecruit(newAnimalCount + 1))
-            // {
-            //     hoverManager.ShowHover(addAnimal, "Broke!", $"You can only afford {newAnimalCount}.", true, new Vector2(200, 0), costText.gameObject);
-            // }
-            // //when there isnt more space
-            // else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) >= maxAnimalCount)
-            // {
-            //     hoverManager.ShowHover(addAnimal, "Overcrowded!", "No more room for more animals.", true, new Vector2(200, 0), animalCountText.gameObject);
-            // }
-            // //where there are no civilian animals
-            // else if(button == addAnimal.gameObject && !barracksStructure.CanRecruit(newAnimalCount + 1))
-            // {
-            //     hoverManager.ShowHover(addAnimal, "No civilians!", "Buy more civilians to recruit!", true, new Vector2(200, 0), civilianSection);
-            // }
-            // //when they want less than 0 new animals
-            // else if(button == minusAnimal.gameObject && newAnimalCount <= 0)
-            // {
-            //     hoverManager.ShowHover(minusAnimal, "Recruiting air?", "Must recruit at least 1 animal", true, new Vector2(-200, 0), animalCountText.gameObject);
-            // }
-            // // when they can not place flag cause they have zero animals
-            // else if(button == placeFlagButton.gameObject && newAnimalCount <= 0)
-            // {
-            //     hoverManager.ShowHover(placeFlagButton, "No Army!", "Cant place flag with no army!", true, new Vector2(-200, 0), animalCountText.gameObject);
-            // }
-
+            if(button == harvestButton.gameObject && cropStructure.IsGrowing && !cropStructure.CropReady)
+            {
+                hoverManager.ShowHover(harvestButton, "Patience, Farmer!", "Give it more time to grow!", true, new Vector2(-200, 0), cropGrowthBar.gameObject);
+            }
+            //when they have not planted yet
+            else if(button == harvestButton.gameObject && !cropStructure.IsGrowing && !cropStructure.CropReady)
+            {
+                hoverManager.ShowHover(harvestButton, "Barren Land!", $"Plant something first!", true, new Vector2(200, 0), plantButton.gameObject);
+            }
         }
     }
 
@@ -435,29 +420,17 @@ private bool wasGrowing = false;
 
     public void OnButtonClick(GameObject button)
     {
-        // if(button == recruitButton.gameObject && newAnimalCount == 0)
-        // {
-        //     hoverManager.PlayErrorFeedback(false, recruitButton);
-        // }
-        // //when they cant afford more
-        // else if(button == addAnimal.gameObject && !MoneyManager.Instance.CanAfford(newAnimalCount + 1 * barracksStructure.GetAnimalRecruitPrice()))
-        // {
-        //     hoverManager.PlayErrorFeedback(true, addAnimal);
-        // }
-        // //when there isnt more space
-        // else if(button == addAnimal.gameObject && (newAnimalCount + animalCount) <= maxAnimalCount)
-        // {
-        //     hoverManager.PlayErrorFeedback(false, addAnimal);
-        // }
-        // //when they want less than 0 new animals
-        // else if(button == minusAnimal.gameObject && newAnimalCount <= 0)
-        // {
-        //     hoverManager.PlayErrorFeedback(false, minusAnimal);
-        // }
-        // // when they can not place flag cause they have zero animals
-        // else if(button == placeFlagButton.gameObject && newAnimalCount <= 0)
-        // {
-        //     hoverManager.PlayErrorFeedback(false, placeFlagButton);
-        // }  
+        //when it is planed but not ready for harvest
+        if(button == harvestButton.gameObject && cropStructure.IsGrowing && !cropStructure.CropReady)
+        {
+            Debug.Log("i am plaing sound here 1!");
+            hoverManager.PlayErrorFeedback(false, harvestButton);
+        }
+        //when they have not planted yet
+        else if(button == harvestButton.gameObject && !cropStructure.IsGrowing &&!cropStructure.CropReady)
+        {
+            Debug.Log("i am plaing sound here 2!");
+            hoverManager.PlayErrorFeedback(false, harvestButton);
+        }
     }
 }

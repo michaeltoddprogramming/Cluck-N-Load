@@ -58,9 +58,17 @@ public class InventoryManager : MonoBehaviour
         if (wheatText != null) itemTextComponents["Wheat"] = wheatText;
         if (carrotsText != null) itemTextComponents["Carrots"] = carrotsText;
 
-        CropStructure.UpdateAllCropSynergies();
+        // Delay synergy updates to avoid hitching on startup
+        StartCoroutine(DelayedSynergyUpdate());
 
         UpdateAllUI();
+    }
+    
+    private System.Collections.IEnumerator DelayedSynergyUpdate()
+    {
+        // Wait a few frames to let everything initialize
+        yield return new WaitForSeconds(0.5f);
+        CropStructure.UpdateAllCropSynergies();
     }
 
     // --- Silo Management ---

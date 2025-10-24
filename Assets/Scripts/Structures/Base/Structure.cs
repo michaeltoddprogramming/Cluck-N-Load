@@ -48,6 +48,10 @@ public class Structure : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private GameObject healthBarPrefab;
+    [Tooltip("Extra vertical offset applied to health bar for crop structures (in local units).")]
+    [SerializeField] private float cropHealthBarExtraHeight = 5.5f;
+    [Tooltip("Extra vertical offset applied to health bar for non-crop structures.")]
+    [SerializeField] private float defaultHealthBarExtraHeight = 1.5f;
     private GameObject healthBarInstance;
     private Slider healthBarSlider;
     private TextMeshProUGUI healthBarText;
@@ -198,7 +202,12 @@ public class Structure : MonoBehaviour
             if (rect != null)
             {
                 float structureHeight = GetStructureHeight();
-                rect.localPosition = new Vector3(0, structureHeight + 1.5f, 0); // Add 1.5f buffer above structure
+                
+                // Add extra height for crop structures since they're low to the ground
+                bool isCropStructure = this is CropStructure;
+                float extraHeight = isCropStructure ? cropHealthBarExtraHeight : defaultHealthBarExtraHeight;
+                
+                rect.localPosition = new Vector3(0, structureHeight + extraHeight, 0);
             }
             healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
             healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();

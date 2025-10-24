@@ -6,8 +6,8 @@ using System;
 public class ReadyIndicator : MonoBehaviour
 {
     [Header("Prefab Settings")]
-    [SerializeField] private GameObject harvestIndicatorPrefab; // Prefab for crop harvesting
-    [SerializeField] private GameObject collectIndicatorPrefab; // Prefab for animal collection
+    public static GameObject harvestIndicatorPrefab; // Prefab for crop harvesting
+    public static GameObject collectIndicatorPrefab; // Prefab for animal collection
     
     [Header("Visual Settings")]
     [SerializeField] private Vector3 hoverOffset = new Vector3(0, 2f, 0);
@@ -24,13 +24,9 @@ public class ReadyIndicator : MonoBehaviour
     private Vector3 basePosition;
     private float timeOffset;
     private Camera mainCamera;
-    private Canvas worldCanvas;
+    private static Canvas worldCanvas;
     private IndicatorType currentType;
     private bool isClickable = true;
-    
-    // Events for click handling
-    public event Action OnHarvestClicked;
-    public event Action OnCollectClicked;
     
     public enum IndicatorType { Harvest, Collect, Default }
     
@@ -39,11 +35,14 @@ public class ReadyIndicator : MonoBehaviour
         mainCamera = Camera.main;
         timeOffset = UnityEngine.Random.Range(0f, 2f * Mathf.PI); // Random animation offset
         
-        // Find or create world space canvas
-        worldCanvas = FindFirstObjectByType<Canvas>();
-        if (worldCanvas == null || worldCanvas.renderMode != RenderMode.WorldSpace)
+        // Find or create world space canvas (only once across all instances)
+        if (worldCanvas == null)
         {
-            CreateWorldCanvas();
+            worldCanvas = FindFirstObjectByType<Canvas>();
+            if (worldCanvas == null || worldCanvas.renderMode != RenderMode.WorldSpace)
+            {
+                CreateWorldCanvas();
+            }
         }
     }
     
@@ -56,9 +55,9 @@ public class ReadyIndicator : MonoBehaviour
         // Choose the appropriate prefab
         GameObject prefabToUse = type switch
         {
-            IndicatorType.Harvest => harvestIndicatorPrefab ?? collectIndicatorPrefab,
-            IndicatorType.Collect => collectIndicatorPrefab,
-            _ => harvestIndicatorPrefab ?? collectIndicatorPrefab // Default fallback
+            IndicatorType.Harvest => harvestIndicatorPrefab ?? CreateDefaultIndicator(Color.yellow, "Harvest"),
+            IndicatorType.Collect => collectIndicatorPrefab ?? CreateDefaultIndicator(Color.green, "Collect"),
+            _ => harvestIndicatorPrefab ?? collectIndicatorPrefab ?? CreateDefaultIndicator(Color.white, "Ready") // Default fallback
         };
         
         if (prefabToUse == null)
@@ -74,7 +73,15 @@ public class ReadyIndicator : MonoBehaviour
         SetupClickable(currentIndicator, type);
         
         // Position above structure
-        basePosition = transform.position + hoverOffset;
+        // Calculate height of the structure to position indicator above it
+        float structureHeight = GetStructureHeight();
+        
+        // Add extra height for crop structures since they're typically low to the ground
+        bool isCropStructure = GetComponent<CropStructure>() != null;
+        float extraHeight = isCropStructure ? 2.0f : 0.5f; // Much higher for crops
+        
+        Vector3 dynamicHoverOffset = new Vector3(0, structureHeight + extraHeight, 0);
+        basePosition = transform.position + dynamicHoverOffset;
         currentIndicator.transform.position = basePosition;
         
         // Make sure it faces camera
@@ -94,6 +101,26 @@ public class ReadyIndicator : MonoBehaviour
             Destroy(currentIndicator);
             currentIndicator = null;
         }
+    }
+    
+    private float GetStructureHeight()
+    {
+        // Try to get height from collider first
+        Collider collider = GetComponent<Collider>();
+        if (collider != null)
+        {
+            return collider.bounds.size.y;
+        }
+        
+        // Fallback to renderer bounds
+        Renderer renderer = GetComponentInChildren<Renderer>();
+        if (renderer != null)
+        {
+            return renderer.bounds.size.y;
+        }
+        
+        // Default height if nothing found
+        return 1f;
     }
     
     void Update()
@@ -135,6 +162,9 @@ public class ReadyIndicator : MonoBehaviour
         
         // Add GraphicRaycaster for click detection
         canvasGO.AddComponent<GraphicRaycaster>();
+
+        // Scale down the canvas so indicators appear appropriately sized in world space
+        canvasGO.transform.localScale = new Vector3(0.020f, 0.020f, 0.020f);
     }
     
     private void SetupClickable(GameObject indicator, IndicatorType type)
@@ -186,43 +216,62 @@ public class ReadyIndicator : MonoBehaviour
         // Play click animation
         StartCoroutine(ClickAnimation());
         
-        // Trigger appropriate action
+        // Trigger appropriate action and only hide if successful
+        bool actionSuccessful = false;
         switch (type)
         {
             case IndicatorType.Harvest:
-                OnHarvestClicked?.Invoke();
-                TriggerHarvest();
+                actionSuccessful = TriggerHarvest();
                 break;
             case IndicatorType.Collect:
-                OnCollectClicked?.Invoke();
-                TriggerCollect();
+                actionSuccessful = TriggerCollect();
                 break;
         }
         
-        // Hide indicator after successful click
-        HideIndicator();
-    }
-    
-    private void TriggerHarvest()
-    {
-        // Try to harvest crop
-        CropStructure cropStructure = GetComponent<CropStructure>();
-        if (cropStructure != null && cropStructure.CropReady)
+        // Only hide indicator if the action was successful
+        if (actionSuccessful)
         {
-            cropStructure.Harvest();
-            Debug.Log($"[ReadyIndicator] Auto-harvested crop on {gameObject.name}");
+            HideIndicator();
         }
     }
     
-    private void TriggerCollect()
+    private bool TriggerHarvest()
     {
-        // Try to collect from animal
+        // Just delegate to the structure's harvest method - it handles everything
+        CropStructure cropStructure = GetComponent<CropStructure>();
+        if (cropStructure != null && cropStructure.CropReady)
+        {
+            string result = cropStructure.Harvest();
+            bool success = result == "yes";
+            
+            // Play harvest audio if successful (matching UI behavior)
+            if (success && AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayHarvestClip();
+            }
+            
+            return success;
+        }
+        return false;
+    }
+    
+    private bool TriggerCollect()
+    {
+        // Just delegate to the structure's collect method - it handles everything  
         AnimalStructure animalStructure = GetComponent<AnimalStructure>();
         if (animalStructure != null && animalStructure.ProductReady)
         {
             animalStructure.Collect();
-            Debug.Log($"[ReadyIndicator] Auto-collected from animal on {gameObject.name}");
+            
+            // Play collect audio (matching UI behavior)
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayCollectClip();
+            }
+            
+            return true; // Collect doesn't return status, assume success if we got here
         }
+        return false;
     }
     
     private System.Collections.IEnumerator ClickAnimation()
@@ -236,7 +285,7 @@ public class ReadyIndicator : MonoBehaviour
         Vector3 targetScale = originalScale * clickScaleEffect;
         
         float elapsed = 0f;
-        while (elapsed < clickEffectDuration / 2f)
+        while (elapsed < clickEffectDuration / 2f && currentIndicator != null)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / (clickEffectDuration / 2f);
@@ -246,7 +295,7 @@ public class ReadyIndicator : MonoBehaviour
         
         // Scale back down
         elapsed = 0f;
-        while (elapsed < clickEffectDuration / 2f)
+        while (elapsed < clickEffectDuration / 2f && currentIndicator != null)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / (clickEffectDuration / 2f);
@@ -254,12 +303,27 @@ public class ReadyIndicator : MonoBehaviour
             yield return null;
         }
         
-        currentIndicator.transform.localScale = originalScale;
+        if (currentIndicator != null)
+        {
+            currentIndicator.transform.localScale = originalScale;
+        }
         isClickable = true;
     }
     
-    void OnDestroy()
+    private GameObject CreateDefaultIndicator(Color color, string label)
     {
-        HideIndicator();
+        GameObject indicator = new GameObject($"Default{label}Indicator");
+        
+        // Add RectTransform
+        RectTransform rect = indicator.AddComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(60, 60);
+        
+        // Add Image for icon
+        Image img = indicator.AddComponent<Image>();
+        img.color = color;
+        
+        // Simple circle shape (you can replace with actual sprites)
+        
+        return indicator;
     }
 }

@@ -22,6 +22,10 @@ public class AudioManager : MonoBehaviour
 
     private AudioSource audioSource;
 
+    [Header("One-shot SFX")]
+    [SerializeField] private AudioClip harvestClip;
+    [SerializeField] private AudioClip collectClip;
+
     [Header("Sound muting settings for paused")]
     [SerializeField] private AudioSource[] exceptions;
     private AudioSource[] allAudioSources;
@@ -129,5 +133,37 @@ public class AudioManager : MonoBehaviour
         {
             repairSFX.Play();
         }
+    }
+
+    // Play a one-shot clip at given volume
+    public void PlayOneShotClip(AudioClip clip, float vol = 1f)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip, vol);
+        }
+    }
+
+    // Convenience wrappers so callers don't need to know which clip is assigned
+    public void PlayHarvestClip()
+    {
+        if (harvestClip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(harvestClip, volume);
+            return;
+        }
+        // Fallback to place sound if no harvest clip assigned
+        PlayPlaceSound();
+    }
+
+    public void PlayCollectClip()
+    {
+        if (collectClip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(collectClip, volume);
+            return;
+        }
+        // No explicit collect clip: use select sound if available
+        PlayMoneySpendSound();
     }
 }

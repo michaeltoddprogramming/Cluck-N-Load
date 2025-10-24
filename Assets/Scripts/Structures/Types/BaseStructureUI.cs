@@ -44,14 +44,12 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
         if (structureNameText != null) structureNameText.text = structure.GetStructureName();
         UpdateHealthDisplay();
-        UpdateHealthBar();
 
         if (description != null) description.text = structure.GetDescription();
 
         if (structure != null)
         {
             structure.OnHealthChanged += UpdateHealthDisplay;
-            structure.OnHealthChanged += UpdateHealthBar;
         }
 
         closeButton?.onClick.AddListener(() =>
@@ -123,20 +121,6 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
         // FIX: Changed from UnityEvent syntax to standard C# event syntax
         if (structure != null)
             structure.OnHealthChanged -= UpdateHealthDisplay;
-    }
-
-    protected void UpdateHealthBar()
-    {
-        // Debug.Log("it is calleing why not showing===================================");
-        if (structure == null || healthBarSlider == null) return;
-
-        // Debug.Log("it is calleing why not showing===================================");
-
-        float healthPercent = (float)structure.GetCurrentHealth() / structure.GetMaxHealth();
-        healthBarSlider.value = healthPercent;
-
-        if (healthBarFill != null)
-            healthBarFill.color = healthPercent > 0.6f ? healthyColor : healthPercent > 0.3f ? midColor : dangerColor;
     }
 
      public void OnMoveButtonHoverEnter(GameObject button)

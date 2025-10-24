@@ -386,6 +386,7 @@ public class AnimalStructure : Structure
         // Hide ready indicator after collection
         if (readyIndicator != null)
             readyIndicator.HideIndicator();
+        
         lastCheckedHour = nightManager.Hours + (nightManager.Minutes / 60f);
     }
 

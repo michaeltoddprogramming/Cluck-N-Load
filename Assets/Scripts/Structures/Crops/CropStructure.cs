@@ -120,7 +120,7 @@ public class CropStructure : Structure
             
             // Show ready indicator
             if (readyIndicator != null)
-                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
+                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Harvest);
         }
     }
 
@@ -365,7 +365,7 @@ public class CropStructure : Structure
             
             // Show ready indicator for harvest
             if (readyIndicator != null)
-                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
+                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Harvest);
                 
         }
     }

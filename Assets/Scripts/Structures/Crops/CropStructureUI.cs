@@ -264,120 +264,32 @@ public class CropStructureUI : BaseStructureUI
         }
 
         if (cropStructure == null || nightManager == null || cropGrowthBar == null)
-    {
-        if (cropGrowthBar != null)
+        {
+            if (cropGrowthBar != null)
+            {
+                cropGrowthBar.value = 0f;
+                cropGrowthBar.gameObject.SetActive(false);
+            }
+            return;
+        }
+
+        // Just update the UI display - DON'T call TrackGrowth every frame!
+        // The CropStructure handles its own growth tracking internally.
+        if (cropStructure.CropReady)
+        {
+            cropGrowthBar.value = 1f;
+            cropGrowthBar.gameObject.SetActive(true);
+        }
+        else if (cropStructure.IsGrowing)
+        {
+            cropGrowthBar.value = cropStructure.GetGrowthProgress();
+            cropGrowthBar.gameObject.SetActive(true);
+        }
+        else
         {
             cropGrowthBar.value = 0f;
             cropGrowthBar.gameObject.SetActive(false);
         }
-        return;
-    }
-
-    // Let the crop handle its growth
-    cropStructure.TrackGrowth(nightManager);
-
-    if (cropStructure.CropReady)
-    {
-        cropGrowthBar.value = 1f;
-        cropGrowthBar.gameObject.SetActive(true);
-    }
-    else if (cropStructure.IsGrowing)
-    {
-        cropGrowthBar.value = cropStructure.GetGrowthProgress();
-        cropGrowthBar.gameObject.SetActive(true);
-    }
-    else
-    {
-        cropGrowthBar.value = 0f;
-        cropGrowthBar.gameObject.SetActive(false);
-    }
-
-
-        //this does work
-        //  if (cropStructure == null || nightManager == null)
-        // {
-        //     if (cropGrowthBar != null)
-        //     {
-        //         cropGrowthBar.value = 0f;
-        //         cropGrowthBar.gameObject.SetActive(false);
-        //     }
-        //     return;
-        // }
-
-        // bool isGrowing = cropStructure.IsGrowing;
-        // bool cropReady = cropStructure.CropReady;
-
-        // // Detect when crop is newly planted
-        // if (isGrowing && !wasGrowing)
-        // {
-        //     // Crop just got planted - record the time
-        //     plantedAtHour = nightManager.Hours + (nightManager.Minutes / 60f);
-        //     cropGrowthProgress = 0f;
-        // }
-
-        // // Reset when crop is harvested or no longer growing
-        // if (!isGrowing && wasGrowing)
-        // {
-        //     plantedAtHour = -1f;
-        //     cropGrowthProgress = 0f;
-        // }
-
-        // wasGrowing = isGrowing;
-
-        // // Update the progress bar
-        // if (cropGrowthBar != null)
-        // {
-        //     if (cropReady)
-        //     {
-        //         // Crop is ready - show full bar
-        //         cropGrowthBar.value = 1f;
-        //         cropGrowthBar.gameObject.SetActive(true);
-        //     }
-        //     else if (isGrowing && plantedAtHour >= 0)
-        //     {
-        //         // Calculate current hour
-        //         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
-                
-        //         // Calculate hours elapsed since planting
-        //         float hoursElapsed;
-        //         if (currentHour >= plantedAtHour)
-        //         {
-        //             hoursElapsed = currentHour - plantedAtHour;
-        //         }
-        //         else
-        //         {
-        //             // Handle day wrap (planted late, now early next day)
-        //             hoursElapsed = (24f - plantedAtHour) + currentHour;
-        //         }
-
-        //         // Crops grow from planting until 5 AM (start of day)
-        //         // Calculate total hours needed based on when planted
-        //         float targetHour = 5f; // 5 AM when day starts
-        //         float totalHoursNeeded;
-                
-        //         if (plantedAtHour <= targetHour)
-        //         {
-        //             // Planted in morning, needs to grow until next morning
-        //             totalHoursNeeded = (24f - plantedAtHour) + targetHour;
-        //         }
-        //         else
-        //         {
-        //             // Planted in afternoon/evening, grows until next morning
-        //             totalHoursNeeded = (24f - plantedAtHour) + targetHour;
-        //         }
-
-        //         // Calculate progress as percentage
-        //         float growthFraction = Mathf.Clamp01(hoursElapsed / totalHoursNeeded);
-        //         cropGrowthBar.value = growthFraction;
-        //         cropGrowthBar.gameObject.SetActive(true);
-        //     }
-        //     else
-        //     {
-        //         // No crop or not growing
-        //         cropGrowthBar.value = 0f;
-        //         cropGrowthBar.gameObject.SetActive(false);
-        //     }
-        // }
     }
 
     private void UpdateUI()

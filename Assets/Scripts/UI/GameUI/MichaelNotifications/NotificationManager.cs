@@ -203,6 +203,8 @@ public class NotificationManager : MonoBehaviour
         // Optional bonus display values that blocking seasonal notifications can show
         public string bonusText;
         public Sprite bonusIcon;
+        // Optional unlocks text (designer-populated per-season)
+        public string unlocksText;
     }
 
     [System.Serializable]
@@ -214,6 +216,8 @@ public class NotificationManager : MonoBehaviour
         public string message = "";
         [TextArea]
         public string bonusText = "";
+        [TextArea]
+        public string unlocksText = "";
         public Sprite image;
         public Sprite bonusIcon;
         public string theme = "Blocking";
@@ -231,7 +235,7 @@ public class NotificationManager : MonoBehaviour
     /// <summary>
     /// Show a blocking season notification using the configured SeasonInfo for the provided season id.
     /// </summary>
-    public static void ShowSeasonalBlocking(int season)
+    public static void ShowSeasonalBlocking(int season, string unlocksText = null)
     {
         if (Instance == null) return;
 
@@ -265,6 +269,9 @@ public class NotificationManager : MonoBehaviour
             bonusText = info.bonusText,
             bonusIcon = info.bonusIcon
         };
+
+        // Carry over any designer-provided unlocks text for this season, or use the passed unlocksText
+        data.unlocksText = unlocksText ?? info.unlocksText;
 
         Instance.notificationQueue.Enqueue(data);
         Instance.ProcessQueue();
@@ -865,6 +872,71 @@ public class NotificationManager : MonoBehaviour
             bonusText.text = data.bonusText ?? "";
             bonusText.color = theme?.textColor ?? Color.white;
             bonusText.gameObject.SetActive(!string.IsNullOrEmpty(data.bonusText));
+        }
+
+        // Designer-authored unlocks text (multi-line).
+        // Preferred: child TextMeshProUGUI named "unlocksText". But be tolerant of slightly different naming
+        // and also support legacy UnityEngine.UI.Text fields.
+        TextMeshProUGUI unlocksTMP = notification.transform.Find("unlocksText")?.GetComponent<TextMeshProUGUI>();
+        UnityEngine.UI.Text unlocksUIText = null;
+
+        if (unlocksTMP == null)
+        {
+            // Fallback: search all TMP children for a name that contains "unlock"
+            var allTmps = notification.GetComponentsInChildren<TextMeshProUGUI>(true);
+            foreach (var t in allTmps)
+            {
+                if (t == null) continue;
+                string n = t.gameObject.name.ToLowerInvariant();
+                if (n.Contains("unlock") || n.Contains("unlocks"))
+                {
+                    unlocksTMP = t;
+                    break;
+                }
+            }
+        }
+
+        // If no TMP found, try classic UI.Text components (some prefabs may still use them)
+        if (unlocksTMP == null)
+        {
+            var allTexts = notification.GetComponentsInChildren<UnityEngine.UI.Text>(true);
+            foreach (var t in allTexts)
+            {
+                if (t == null) continue;
+                string n = t.gameObject.name.ToLowerInvariant();
+                if (n.Contains("unlock") || n.Contains("unlocks"))
+                {
+                    unlocksUIText = t;
+                    break;
+                }
+            }
+        }
+
+        if (unlocksTMP != null)
+        {
+            unlocksTMP.text = string.IsNullOrEmpty(data.unlocksText) ? "" : data.unlocksText;
+            unlocksTMP.color = theme?.textColor ?? Color.white;
+            unlocksTMP.gameObject.SetActive(!string.IsNullOrEmpty(data.unlocksText));
+        }
+        else if (unlocksUIText != null)
+        {
+            unlocksUIText.text = string.IsNullOrEmpty(data.unlocksText) ? "" : data.unlocksText;
+            unlocksUIText.color = theme?.textColor ?? Color.white;
+            unlocksUIText.gameObject.SetActive(!string.IsNullOrEmpty(data.unlocksText));
+        }
+        else
+        {
+            // Helpful debug if designer forgot to include a field in the prefab
+            if (!string.IsNullOrEmpty(data.unlocksText))
+            {
+                // Log available TMP/Text child names for easier debugging
+                var tmps = notification.GetComponentsInChildren<TextMeshProUGUI>(true);
+                var texts = notification.GetComponentsInChildren<UnityEngine.UI.Text>(true);
+                string found = "";
+                foreach (var t in tmps) found += "TMP:" + t.gameObject.name + "; ";
+                foreach (var t in texts) found += "Text:" + t.gameObject.name + "; ";
+                Debug.LogWarning($"NotificationManager: Blocking notification prefab is missing an unlocks field. Expected child named 'unlocksText' (TextMeshProUGUI) or similar. Unlocks text: {data.unlocksText}. Found children: {found}");
+            }
         }
 
         if (backgroundImage != null && theme != null)

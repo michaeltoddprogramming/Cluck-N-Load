@@ -460,6 +460,34 @@ public void CheckForNewlyUnlockedStructuresMorning()
     CheckForNewlyUnlockedStructures(currentDay);
 }
 
+/// <summary>
+/// Return the list of structures that unlock on the supplied day and mark them as announced.
+/// This does NOT show per-structure badge notifications (useful for consolidating them into a seasonal modal).
+/// </summary>
+public string[] GetAndMarkNewlyUnlockedStructures(int day)
+{
+    var list = new System.Collections.Generic.List<string>();
+    if (structureDatabase == null || structureDatabase.allStructures == null)
+        return list.ToArray();
+
+    foreach (StructureData structure in structureDatabase.allStructures)
+    {
+        if (structure.unlockDay == day && !announcedUnlockedStructures.Contains(structure.structureName))
+        {
+            announcedUnlockedStructures.Add(structure.structureName);
+            list.Add(structure.structureName);
+
+            // trigger feature unlocked event for analytics/telemetry
+            if (GameEventManager.Instance != null)
+            {
+                GameEventManager.Instance.TriggerFeatureUnlocked($"Structure: {structure.structureName}");
+            }
+        }
+    }
+
+    return list.ToArray();
+}
+
 private void InitializeAnnouncedStructures()
 {
     if (structureDatabase == null || structureDatabase.allStructures == null)

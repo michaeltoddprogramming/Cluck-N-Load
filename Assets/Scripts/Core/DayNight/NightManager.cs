@@ -948,7 +948,24 @@ public class NightManager : MonoBehaviour
             {
                 if (NotificationManager.Instance != null)
                 {
-                    NotificationManager.ShowSeasonalBlocking(season);
+                    // Gather newly unlocked structures for today and include them in the seasonal blocking modal
+                    string unlocksText = null;
+                    if (GameLoopManager.Instance != null)
+                    {
+                        string[] newStructs = GameLoopManager.Instance.GetAndMarkNewlyUnlockedStructures(Days);
+                        if (newStructs != null && newStructs.Length > 0)
+                        {
+                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                            sb.AppendLine("New Structures Unlocked:");
+                            foreach (var sname in newStructs)
+                            {
+                                sb.AppendLine($"• {sname}");
+                            }
+                            unlocksText = sb.ToString();
+                        }
+                    }
+
+                    NotificationManager.ShowSeasonalBlocking(season, unlocksText);
                 }
             }
         }

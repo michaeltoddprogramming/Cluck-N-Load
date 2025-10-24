@@ -158,8 +158,8 @@ public class GridController : MonoBehaviour
         float worldRadiusSqr = worldRadius * worldRadius; // Use squared distance (faster, no sqrt)
 
         // OPTIMIZATION: Search in expanding rings, exit early if no enemies found in outer rings
-        int emptyRings = 0;
-        const int MAX_EMPTY_RINGS = 2; // Stop searching after 2 consecutive empty rings
+        // int emptyRings = 0;
+        // const int MAX_EMPTY_RINGS = 2; // Stop searching after 2 consecutive empty rings
 
         // Define the square search area
         for (int x = -blockRadius; x <= blockRadius; x++)

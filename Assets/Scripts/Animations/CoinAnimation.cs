@@ -19,6 +19,8 @@ public class CoinAnimation : MonoBehaviour
     private AudioSource audioSource;
     private Vector3 originalUIScale = Vector3.one; // Store original scale to prevent accumulation
     private bool isPulsing = false; // Track if UI is currently pulsing
+
+    private int amountOfMoney = 0;
     
     void Awake()
     {
@@ -53,6 +55,8 @@ public class CoinAnimation : MonoBehaviour
     
     public void PlayCoinAnimation(Vector3 worldPos, int amount)
     {
+        amountOfMoney = amount;
+
         Debug.Log($"PlayCoinAnimation called: pos={worldPos}, amount={amount}");
         
         if (coinPrefab == null || mainCanvas == null || coinTargetTransform == null)
@@ -133,6 +137,11 @@ public class CoinAnimation : MonoBehaviour
         
         // Make UI element pulse (use static scale to prevent accumulation)
         StartCoroutine(PulseUI());
+
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.addMoneyAfterCoinAnimation(amountOfMoney);
+        }
     }
     
     private System.Collections.IEnumerator PulseUI()

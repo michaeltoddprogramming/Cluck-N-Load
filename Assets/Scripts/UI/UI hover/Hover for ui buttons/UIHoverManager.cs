@@ -75,6 +75,50 @@ public class UIHoverManager : MonoBehaviour
         }
     }
 
+    public void ShowHoverOnGameObject(GameObject button, string title, string description, bool newScale = false, Vector2? newOffset = null, GameObject pulseTarget = null)
+    {
+        if (uiHover == null || button == null)
+            return;
+
+        // if (!button.)
+        // {
+            uiHover.Show(title, description, button.GetComponent<RectTransform>(), newScale, newOffset);
+
+            // Pulse the text if provided and can't afford
+            if (pulseTarget != null && !isPulsing)
+            {
+                Vector3 targetScale = pulseTarget.transform.localScale;
+                if (Mathf.Approximately(targetScale.x, 0.25f) &&
+                    Mathf.Approximately(targetScale.y, 0.25f) &&
+                    Mathf.Approximately(targetScale.z, 0.25f))
+                {
+                    Debug.Log("it is the progress bar");
+                    pulseScale = smallPulseScale;
+                }
+                else
+                {
+                    Debug.Log("it is not the progress bar");
+                    pulseScale = 1.2f;
+                }
+
+
+                currentPulseTarget = pulseTarget;
+                isPulsing = true;
+
+                RectTransform rt = currentPulseTarget.GetComponent<RectTransform>();
+                if (rt != null)
+                    rt.pivot = new Vector2(0.5f, 0.5f);
+
+                originalScale = currentPulseTarget.transform.localScale;
+
+                // start LeanTween pulse (loops ping-pong)
+                LeanTween.scale(currentPulseTarget, Vector3.one * pulseScale, pulseDuration)
+                    .setEaseInOutSine()
+                    .setLoopPingPong(); // infinite ping-pong until canceled
+            }
+        // }
+    }
+
     public void HideHover()
     {
         if (uiHover != null)

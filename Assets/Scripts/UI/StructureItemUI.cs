@@ -352,7 +352,11 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void onHover()
     {
-        if (!MoneyManager.Instance.CanAfford(data.cost) && costText != null && !isPulsing)
+        if(nightManager.getIsPaused())
+        {
+            hoverManager.ShowHoverOnGameObject(this.gameObject, "Freeze!", "Can’t build while the game’s paused.", false, new Vector2(0, 270));
+        }
+        else if (!MoneyManager.Instance.CanAfford(data.cost) && costText != null && !isPulsing)
         {
             isPulsing = true;
 
@@ -368,7 +372,11 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void onHoverExit()
     {
-        if (costText != null && isPulsing)
+        if(nightManager.getIsPaused())
+        {
+            hoverManager.HideHover();
+        }
+        else if (costText != null && isPulsing)
         {
             LeanTween.cancel(costText.gameObject);      // stop the animation
             costText.transform.localScale = Vector3.one; // reset scale

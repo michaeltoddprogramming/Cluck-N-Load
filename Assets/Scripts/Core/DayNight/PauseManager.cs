@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class PauseManager : MonoBehaviour
 {
     [SerializeField] private ShopUIManager shopManager;
+    [SerializeField] private AudioSource timeSounds;
     private NightManager nightManager;
     // private ItemHoverPanel itemHoverPanel;
     private bool isPaused = false;
@@ -22,19 +23,30 @@ public class PauseManager : MonoBehaviour
     {
         if (Input.GetButtonDown("Pause"))
         {
-            if (isPaused)
+            if (OptionsMenuController.Instance != null)
             {
-                playGame();
-                // shopManager.enableShop();
-                if (OptionsMenuController.Instance != null)
-                    OptionsMenuController.Instance.HideMenu();
-            }
-            else
-            {
-                pauseGame();
-                // shopManager.disableShop();
-                if (OptionsMenuController.Instance != null)
-                    OptionsMenuController.Instance.ShowMenu();
+                bool menuOpen = OptionsMenuController.Instance.gameObject.activeSelf;
+                if (isPaused && !menuOpen)
+                {
+                    if (OptionsMenuController.Instance != null)
+                        OptionsMenuController.Instance.ShowMenu();
+                    // shopManager.enableShop();
+                    pauseGame();
+                }
+                else if(isPaused && menuOpen)
+                {
+                    playGame();
+
+                    if (OptionsMenuController.Instance != null)
+                        OptionsMenuController.Instance.HideMenu();
+                }
+                else
+                {
+                    pauseGame();
+
+                    if (OptionsMenuController.Instance != null)
+                        OptionsMenuController.Instance.ShowMenu();
+                }
             }
         }
 
@@ -62,8 +74,9 @@ public class PauseManager : MonoBehaviour
     {
         if (!isPaused)
         {
+            timeSounds.Play();
             nightManager.pauseTime();
-            shopManager.disableShop();
+            // shopManager.disableShop();
             // itemHoverPanel.HideImmediate();
             // ItemHoverPanel.Instance.HideImmediate(); // Removed to allow hovering while paused
             
@@ -82,6 +95,7 @@ public class PauseManager : MonoBehaviour
     {
         if (isPaused)
         {
+            timeSounds.Play();
             nightManager.playTime();
             nightManager.PlayEnableShop();
             isPaused = false;

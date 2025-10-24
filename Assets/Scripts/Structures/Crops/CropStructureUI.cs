@@ -38,6 +38,13 @@ public class CropStructureUI : BaseStructureUI
     // private float displayedGrowth = 0f; // Unused field
 
     private new void Start()
+    
+    [Header("Synergy indicator")]
+    [SerializeField] private Image synergyIndicator;
+    [SerializeField] private Sprite siloSynergyGood;
+    [SerializeField] private Sprite siloSynergyBad;
+
+    private void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();
@@ -50,11 +57,11 @@ public class CropStructureUI : BaseStructureUI
     public override void Initialize(Structure structure)
     {
         // statusText.gameObject.SetActive(false);
+        base.Initialize(structure);
         plantButton.interactable = true;
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.volume = soundVolume;
-        base.Initialize(structure);
 
         isCropStructure = structure is CropStructure;
         if (isCropStructure) cropStructure = (CropStructure)structure;
@@ -275,6 +282,9 @@ public class CropStructureUI : BaseStructureUI
 
         // Just update the UI display - DON'T call TrackGrowth every frame!
         // The CropStructure handles its own growth tracking internally.
+        // Let the crop handle its growth
+        cropStructure.TrackGrowth(nightManager);
+
         if (cropStructure.CropReady)
         {
             cropGrowthBar.value = 1f;
@@ -305,6 +315,8 @@ public class CropStructureUI : BaseStructureUI
         bool isPaused = nightManager.getIsPaused();
         bool canPlant = nightManager.IsDay && !isPaused && !cropReady;
 
+        updateSynergyIndicator();
+
         if (!canPlant)
         {
             plantButton.interactable = false;
@@ -330,6 +342,14 @@ public class CropStructureUI : BaseStructureUI
     private void setCropImage()
     {
         currCrop = cropStructure.GetCurrCrop();
+        if(currCrop == 'N')
+        {
+            CropImage.enabled = false;
+        }
+        else
+        {
+            CropImage.enabled = true;
+        }
         CropImage.sprite = currCrop switch
         {
             'S' => SunflowerIcon,
@@ -398,6 +418,16 @@ public class CropStructureUI : BaseStructureUI
             {
                 hoverManager.ShowHover(moveButton, "Sleeping!", $"Buildings can’t be moved at night!", true, new Vector2(200, 0));
             }
+            //when the silo synergy is active
+            else if(button == synergyIndicator.gameObject && cropStructure.isSynergyActive())
+            {
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Harvest Boost!", $"Close to silo! Harvest yields more crops!", true, new Vector2(200, 0));
+            }
+            //when the silo synergy is not active
+            else if(button == synergyIndicator.gameObject && !cropStructure.isSynergyActive())
+            {
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Plain Harvest!", $"Too far from silo. Harvest yields are standard.", true, new Vector2(200, 0));
+            }
         }
     }
 
@@ -430,6 +460,35 @@ public class CropStructureUI : BaseStructureUI
         else if(button == moveButton.gameObject && !nightManager.IsDay)
         {
             hoverManager.PlayErrorFeedback(false, moveButton);
+        }
+    }
+
+    private void updateSynergyIndicator()
+    {
+        if (cropStructure == null || synergyIndicator == null) return;
+
+        // Check if this structure currently has an active synergy
+        if (cropStructure.isSynergyActive())
+        {
+            synergyIndicator.sprite = siloSynergyGood;
+
+            // Set the sprite based on food type
+            // switch (cropStructure.GetCurrCrop())
+            // {
+            //     case 'S':
+            //         synergyIndicator.sprite = sunflowerSynergyGood;
+            //         break;
+            //     case 'W':
+            //         synergyIndicator.sprite = wheatSynergyGood;
+            //         break;
+            //     case 'C':
+            //         synergyIndicator.sprite = carrotSynergyGood;
+            //         break;
+            // }
+        }
+        else
+        {
+            synergyIndicator.sprite = siloSynergyBad;
         }
     }
 }

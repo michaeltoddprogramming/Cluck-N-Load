@@ -126,25 +126,42 @@ public class MoneyManager : MonoBehaviour
     // Update MoneyManager.AddMoney
     public void AddMoney(int amount, Vector3? collectionPosition = null)
     {
+        if(collectionPosition != null)
+        {
+            // Debug coin animation
+            if (collectionPosition.HasValue) {
+                Debug.Log($"AddMoney with position: {amount} at {collectionPosition.Value}");
+                
+                if (CoinAnimation.Instance != null) {
+                    CoinAnimation.Instance.PlayCoinAnimation(collectionPosition.Value, amount);
+                }
+                else {
+                    Debug.LogWarning("CoinAnimation.Instance is null! Make sure it's in the scene.");
+                }
+            }
+        }
+        else
+        {
+            int previousMoney = _currentMoney;
+            _currentMoney += amount;
+            
+            // Debug.Log($"MoneyManager.AddMoney: Adding {amount} money. Previous: {previousMoney}, New: {_currentMoney}");
+            
+            UpdateMoneyUI();
+            SaveMoney();
+            OnMoneyChanged?.Invoke(_currentMoney);
+        }        
+    }
+
+    public void addMoneyAfterCoinAnimation(int amount)
+    {
+        Debug.Log("I am adding the money to the bank now: " + amount);
         int previousMoney = _currentMoney;
         _currentMoney += amount;
-        
-        
+
         UpdateMoneyUI();
         SaveMoney();
         OnMoneyChanged?.Invoke(_currentMoney);
-        
-        // Debug coin animation
-        if (collectionPosition.HasValue) {
-            
-            
-            if (CoinAnimation.Instance != null) {
-                CoinAnimation.Instance.PlayCoinAnimation(collectionPosition.Value, amount);
-            }
-            else {
-                Debug.LogWarning("CoinAnimation.Instance is null! Make sure it's in the scene.");
-            }
-        }
     }
     // Keep cheat method separate
     public void CheatSetMoney(int amount)

@@ -67,6 +67,7 @@ public class AnimalStructure : Structure
     [SerializeField] public float foodMultiplier = 1f;
     [SerializeField] public int baseMoneyPerProduct = 50;
     [SerializeField] public int baseProductMultiplier = 1;
+    private bool activeSynergy = false;
 
     StructureData data;
 
@@ -574,7 +575,9 @@ public class AnimalStructure : Structure
             foodMultiplier = normalFoodRequired;
             return;
         }
+
         Vector2Int animalCell = gridController.WorldToGridCoords(transform.position);
+
         foreach (SiloStructure silo in silos)
         {
             Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
@@ -583,10 +586,24 @@ public class AnimalStructure : Structure
         }
         
         float oldMultiplier = foodMultiplier;
+        if(minGridDistance <= siloSynergyRange)
+        {
+            activeSynergy = true;
+        }
+        else
+        {
+            activeSynergy = false;
+        }
+
         foodMultiplier = minGridDistance <= siloSynergyRange ? synergyFoodRequired : normalFoodRequired;
         
         // REMOVED: Synergy notifications are now shown in collection notifications instead
         // This avoids temporary/spam notifications
+    }
+
+    public bool isSynergyActive()
+    {
+        return activeSynergy;
     }
 
     public static void UpdateAllAnimalSynergies()
@@ -807,4 +824,51 @@ public class AnimalStructure : Structure
             TutorialManager.Instance.Trigger(trigger);
         }
     }
+
+    private float plantedAtHour = -1f; 
+    private float cropGrowthProgress = 0f; 
+    private bool wasGrowing = false;
+
+    public void TrackGrowth(NightManager nightManager)
+    {
+        if (!isProducing) 
+        {
+            cropGrowthProgress = productReady ? 1f : 0f;
+            plantedAtHour = -1f;
+            wasGrowing = false;
+            return;
+        }
+
+        float currentHour = nightManager.Hours + nightManager.Minutes / 60f;
+
+        // Detect newly planted crop
+        if (!wasGrowing)
+        {
+            plantedAtHour = currentHour;
+            cropGrowthProgress = 0f;
+        }
+
+        wasGrowing = true;
+
+        // Calculate hours elapsed
+        float hoursElapsed = currentHour >= plantedAtHour 
+            ? currentHour - plantedAtHour 
+            : (24f - plantedAtHour) + currentHour;
+
+        // Crops grow until 5 AM next day
+        float totalHoursNeeded = (24f - plantedAtHour) + 5f; 
+
+        cropGrowthProgress = Mathf.Clamp01(hoursElapsed / totalHoursNeeded);
+
+        // Automatically mark ready if fully grown
+        if (cropGrowthProgress >= 1f)
+        {
+            productReady = true;
+            isProducing = false;
+            cropGrowthProgress = 1f;
+        }
+    }
+
+    public float GetGrowthProgress() => cropGrowthProgress; // 0..1
+
 }

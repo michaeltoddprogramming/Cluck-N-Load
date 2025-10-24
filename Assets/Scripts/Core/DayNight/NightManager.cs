@@ -897,6 +897,7 @@ private void OnDayChange(int value)
             animalStructure.resetAnimalProductionAmount();
         }
 
+        //bonus falls on the same product
         if (sameProduct <= 0.05f)
         {
             string animal = determineAnimalProduct(product1);
@@ -954,7 +955,9 @@ private void OnDayChange(int value)
                 NotificationManager.ShowAchievement("Double Production!", $"{fullAnimalName} earning 100% more! (Lasts entire season)");
             }
 
+            AnimalProductionIndicator.Instance.oneProductionBonus(animal);
         }
+        //bonus falls different products
         else
         {
             if (product1 == product2)
@@ -1037,6 +1040,13 @@ private void OnDayChange(int value)
                 {
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
+                StartProductionNotification(message, 5);
+                AnimalProductionIndicator.Instance.twoProductionBonuses(animal1, animal2);
+
+                // if (doubleProductionSource != null)
+                // {
+                //     doubleProductionSource.Play();
+                // }
             }
             else
             {
@@ -1130,6 +1140,14 @@ private void OnDayChange(int value)
                 {
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
+                AnimalProductionIndicator.Instance.twoProductionBonuses(animal1, animal2);
+                
+                StartProductionNotification(message, 5);
+
+                // if (doubleProductionSource != null)
+                // {
+                //     doubleProductionSource.Play();
+                // }
             }
         }
     }

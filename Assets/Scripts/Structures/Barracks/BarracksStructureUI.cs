@@ -84,6 +84,20 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] public GameObject civilianSection;
 
     private new void Start()
+    [Header("Synergy indicator")]
+    [SerializeField] private Image synergyIndicator;
+    [SerializeField] private Sprite chickenSynergyGood;
+    [SerializeField] private Sprite chickenSynergyBad;
+    [SerializeField] private Sprite pigSynergyGood;
+    [SerializeField] private Sprite pigSynergyBad;
+    [SerializeField] private Sprite cowSynergyGood;
+    [SerializeField] private Sprite cowSynergyBad;
+    [SerializeField] private Sprite goatSynergyGood;
+    [SerializeField] private Sprite goatSynergyBad;
+    [SerializeField] private Sprite sheepSynergyGood;
+    [SerializeField] private Sprite sheepSynergyBad;
+
+    private void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();
@@ -541,6 +555,8 @@ public class BarracksStructureUI : BaseStructureUI
     private void UpdateUI()
     {
         if (!isBarracksStructure || barracksStructure == null) return;
+
+        updateSynergyIndicator();
 
         animalCountText.text = $"{newAnimalCount}";
 
@@ -2025,6 +2041,23 @@ public class BarracksStructureUI : BaseStructureUI
             {
                 hoverManager.ShowHover(placeFlagButton, "No Army!", "Cant place flag with no army!", true, new Vector2(-200, 0), animalCountText.gameObject);
             }
+            //when the synergy indicator is active
+            else if(button == synergyIndicator.gameObject && barracksStructure.isSynergyActive())
+            {
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Nice & Cheap!", "Perfect distance from pen! Recruiting costs less!", true, new Vector2(200, 0));
+            }
+            //when the synergy indicator is not active
+            else if(button == synergyIndicator.gameObject && !barracksStructure.isSynergyActive())
+            {
+                if(barracksStructure.IsToFar())
+                {
+                    hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Too Far!", "Too far from pen - No discount!", true, new Vector2(200, 0));
+                }
+                else
+                {
+                    hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Too Close!", "Too close to pen - No discount!", true, new Vector2(200, 0));
+                }
+            }
 
         }
     }
@@ -2063,5 +2096,64 @@ public class BarracksStructureUI : BaseStructureUI
         {
             hoverManager.PlayErrorFeedback(false, placeFlagButton);
         }  
+    }
+
+    private void updateSynergyIndicator()
+    {
+        if (barracksStructure == null || synergyIndicator == null) return;
+
+        // Check if this structure currently has an active synergy
+        if (barracksStructure.isSynergyActive())
+        {
+            // Show the indicator
+            // synergyIndicator.gameObject.SetActive(true);
+
+            // Set the sprite based on food type
+            if (barracksStructure.GetAnimalType() == "Cow")
+            {
+                synergyIndicator.sprite = cowSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                synergyIndicator.sprite = chickenSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                synergyIndicator.sprite = goatSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                synergyIndicator.sprite = pigSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                synergyIndicator.sprite = sheepSynergyGood;
+            }
+        }
+        else
+        {
+            if (barracksStructure.GetAnimalType() == "Cow")
+            {
+                synergyIndicator.sprite = cowSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                synergyIndicator.sprite = chickenSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                synergyIndicator.sprite = goatSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                synergyIndicator.sprite = pigSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                synergyIndicator.sprite = sheepSynergyBad;
+            }
+            // Hide the indicator if no synergy is active
+            // synergyIndicator.gameObject.SetActive(false);
+        }
     }
 }

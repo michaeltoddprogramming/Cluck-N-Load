@@ -60,6 +60,9 @@ public class BarracksStructure : Structure
     private List<GameObject> sheepFlags = new List<GameObject>();
     // private List<GameObject> sheep = new List<GameObject>();
 
+    private bool synergyActive = false;
+    private bool isToFar = false;
+
     protected override void Start()
     {
         base.Start();
@@ -719,12 +722,45 @@ public class BarracksStructure : Structure
     // }
 
     private void UpdateRecruitmentCostByDistance()
-{
-    int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
-    if (targetAnimalStructure == null)
     {
-        recruitmentCostPerAnimal = baseCost;
-        return;
+        int baseCost = structureData != null ? structureData.recruitmentCostPerAnimal : 50;
+        if (targetAnimalStructure == null)
+        {
+            recruitmentCostPerAnimal = baseCost;
+            return;
+        }
+
+        GridController gridController = FindFirstObjectByType<GridController>();
+        if (gridController == null)
+        {
+            recruitmentCostPerAnimal = baseCost;
+            return;
+        }
+
+        Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
+        Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+        int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
+
+        // Apply discount only if distance is within min and max
+        if (gridDist >= synergyMinDist && gridDist <= synergyMaxDist)
+        {
+            synergyActive = true;
+            recruitmentCostPerAnimal = (int)(baseCost * synergyDiscount);
+        }
+        else
+        {
+            synergyActive = false;
+            recruitmentCostPerAnimal = baseCost;
+        }
+
+        if(!synergyActive && gridDist < synergyMinDist)
+        {
+            isToFar = false;
+        }
+        else if(!synergyActive && gridDist > synergyMaxDist)
+        {
+            isToFar = true;
+        }
     }
 
     // OPTIMIZATION: Cache GridController to avoid expensive FindFirstObjectByType every call
@@ -735,25 +771,20 @@ public class BarracksStructure : Structure
     }
     
     if (cachedGridController == null)
+    public bool isSynergyActive()
     {
-        recruitmentCostPerAnimal = baseCost;
-        return;
+        return synergyActive;
+    }
+
+    public bool IsToFar()
+    {
+        return isToFar;
     }
 
     Vector2Int barracksCell = cachedGridController.WorldToGridCoords(transform.position);
     Vector2Int animalCell = cachedGridController.WorldToGridCoords(targetAnimalStructure.transform.position);
     int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
 
-    // Apply discount only if distance is within min and max
-    if (gridDist >= synergyMinDist && gridDist <= synergyMaxDist)
-    {
-        recruitmentCostPerAnimal = (int)(baseCost * synergyDiscount);
-    }
-    else
-    {
-        recruitmentCostPerAnimal = baseCost;
-    }
-}
 
 
     public int GetMaxAnimalCount() => maxArmyAnimals;

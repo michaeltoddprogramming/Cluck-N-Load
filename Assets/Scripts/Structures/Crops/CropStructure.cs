@@ -51,6 +51,8 @@ public class CropStructure : Structure
     public CropType CurrentCropType => currentCropType;
     StructureData data;
 
+    private bool synergyActive = false;
+
     protected override void Start()
     {
         base.Start();
@@ -278,10 +280,25 @@ public class CropStructure : Structure
         }
         
         float oldMultiplier = cropHarvestMultiplier;
+
+        if(minGridDistance <= multiplierRange)
+        {
+            synergyActive = true;
+        }
+        else 
+        {
+            synergyActive = false;
+        }
+
         cropHarvestMultiplier = minGridDistance <= multiplierRange ? cropHarvestMultiplierIncrease : 1f;
         
         // REMOVED: Synergy notifications are now shown in harvest notifications instead
         // This avoids temporary/spam notifications
+    }
+
+    public bool isSynergyActive()
+    {
+        return synergyActive;
     }
 
     public static float[] GetAllCropHarvestMultipliers(string[] cropTypes)

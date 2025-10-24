@@ -1234,6 +1234,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void SetLayoutForRepair()
     {
         showAll = true;
+        showCurrentFilter();
+
         onShop = false;
         if(scrollViewParent != null)
         {

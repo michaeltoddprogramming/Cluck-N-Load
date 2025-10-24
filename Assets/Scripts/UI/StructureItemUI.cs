@@ -9,9 +9,18 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI costText;
     public TextMeshProUGUI descriptionText;
-    public Button selectButton;
+    // public Button selectButton;
     public GameObject lockedOverlay;
     public NightManager nightManager;
+    public UIHoverManager hoverManager;
+    public Image moneyOverlay;
+
+    public float magnatude = 7.5f;
+
+    private float pulseScale = 1.2f;       // same scale as progress bar
+    private float pulseDuration = 0.5f;    // ping-pong duration
+    private bool isPulsing = false;
+
 
     private StructureData data;
     private BuildController buildController;
@@ -28,10 +37,12 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         buildController = FindFirstObjectByType<BuildController>();
         nightManager = FindFirstObjectByType<NightManager>();
+        hoverManager = FindObjectOfType<UIHoverManager>();
     }
 
     private void Update()
     {
+        // UpdateAffordability();
         // Dynamically update lock state in case cheat is toggled
         if (data != null)
         {
@@ -84,15 +95,16 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 // Restore normal color when not paused
                 UpdateAffordability(); // This will set the correct color based on affordability
             }
+                 // This will set the correct color based on affordability
         }
 
         // Button interactability considers day lock, affordability, and pause state
-        if (selectButton != null)
-        {
-            bool isPaused = nightManager != null && nightManager.getIsPaused();
-            selectButton.interactable = !isLockedByDay && !isPaused &&
-                (MoneyManager.Instance?.CanAfford(data?.cost ?? 0) ?? false);
-        }
+        // if (selectButton != null)
+        // {
+        //     bool isPaused = nightManager != null && nightManager.getIsPaused();
+        //     selectButton.interactable = !isLockedByDay && !isPaused &&
+        //         (MoneyManager.Instance?.CanAfford(data?.cost ?? 0) ?? false);
+        // }
     }
 
     public void Setup(StructureData structure)
@@ -112,7 +124,19 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             nameText.text = structure.structureName;
 
         if (costText != null)
-            costText.text = $"{structure.cost}";
+        {
+            if(!MoneyManager.Instance.CanAfford(structure.cost))
+            {
+                costText.color = Color.red;
+                costText.text = $"{structure.cost}";
+            }
+            else
+            {
+                costText.color = Color.white;
+                costText.text = $"{structure.cost}";
+            }
+                // costText.text = $"{structure.cost}";
+        }
 
         if (descriptionText != null)
             descriptionText.text = structure.description;
@@ -135,8 +159,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (isLockedByDay)
         {
-            if (selectButton != null)
-                selectButton.interactable = false;
+            // if (selectButton != null)
+            //     selectButton.interactable = false;
             if (icon != null)
                 icon.color = new Color(0.7f, 0.7f, 0.7f, 0.5f);
 
@@ -149,11 +173,11 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
-        if (selectButton != null)
-        {
-            selectButton.onClick.RemoveAllListeners();
-            selectButton.onClick.AddListener(SelectStructure);
-        }
+        // if (selectButton != null)
+        // {
+        //     selectButton.onClick.RemoveAllListeners();
+        //     selectButton.onClick.AddListener(SelectStructure);
+        // }
 
         UpdateAffordability();
 
@@ -182,6 +206,26 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
+        if(!MoneyManager.Instance.CanAfford(data.cost))
+        {
+            ShakeCamera(magnatude, 0.2f);
+
+            // Fade the money overlay in and out
+            if (moneyOverlay != null)
+            {
+                moneyOverlay.gameObject.SetActive(true);
+                moneyOverlay.canvasRenderer.SetAlpha(0f); // start invisible
+                moneyOverlay.CrossFadeAlpha(1f, 0.25f, false); // fade in
+                LeanTween.delayedCall(0.5f, () =>
+                {
+                    moneyOverlay.CrossFadeAlpha(0f, 0.25f, false); // fade out
+                });
+            }
+
+            hoverManager.PlayErrorFeedbackForGameObject(true, this.gameObject);
+            return;
+        }
+
         // Success - play select sound and proceed
         PlaySelectSound();
         
@@ -192,8 +236,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void OnDestroy()
     {
-        if (selectButton != null)
-            selectButton.onClick.RemoveAllListeners();
+        // if (selectButton != null)
+        //     selectButton.onClick.RemoveAllListeners();
 
         if (MoneyManager.Instance != null)
             MoneyManager.Instance.OnMoneyChanged -= OnMoneyChanged;
@@ -203,19 +247,24 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void UpdateAffordability()
     {
-        if (data == null || selectButton == null || MoneyManager.Instance == null)
+        // if (data == null || selectButton == null || MoneyManager.Instance == null)
+        if (data == null || MoneyManager.Instance == null)
+        {
+            // Debug.Log("here is the info after testing the affordability: " + data + selectButton + MoneyManager.Instance);
+            Debug.Log("here is the info after testing the affordability: " + data + MoneyManager.Instance);
             return;
+        }
 
         bool canAfford = MoneyManager.Instance.CanAfford(data.cost);
         bool isPaused = nightManager != null && nightManager.getIsPaused();
 
         // Button interactability considers affordability, day lock, and pause state
-        selectButton.interactable = canAfford && !isLockedByDay && !isPaused;
+        // selectButton.interactable = canAfford && !isLockedByDay && !isPaused;
 
         if (costText != null)
         {
             costText.color = canAfford ? Color.white : Color.red;
-            costText.text = canAfford ? $"{data.cost}" : $"{data.cost} (Cannot Afford!)";
+            costText.text = $"{data.cost}";
         }
 
         // Only update icon color if not paused (pause effects are handled in Update)
@@ -233,12 +282,16 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Show(data);
+
+        onHover();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
+
+        onHoverExit();
     }
 
     private void PlaySelectSound()
@@ -257,4 +310,82 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             AudioManager.Instance.PlayErrorSound();
         }
     }
+
+    // public IEnumerator ShakeCameraCoroutine(float magnitude = 0.1f, float duration = 0.2f)
+    // {
+    //     Camera cam = Camera.main;
+    //     if (cam == null) yield break;
+
+    //     Vector3 originalPos = cam.transform.position;
+    //     float elapsed = 0f;
+
+    //     while (elapsed < duration)
+    //     {
+    //         float x = Random.Range(-magnitude, magnitude);
+    //         float y = Random.Range(-magnitude, magnitude);
+
+    //         cam.transform.position = originalPos + new Vector3(x, y, 0);
+
+    //         elapsed += Time.deltaTime;
+    //         yield return null;
+    //     }
+
+    //     cam.transform.position = originalPos; // restore
+    // }
+
+    public void ShakeCamera(float magnitude = 0.1f, float duration = 0.2f)
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        Vector3 originalPos = cam.transform.position;
+
+        LeanTween.value(cam.gameObject, 0f, 1f, duration)
+            .setEase(LeanTweenType.easeShake)
+            .setOnUpdate((float val) =>
+            {
+                float x = Random.Range(-magnitude, magnitude) * val;
+                float y = Random.Range(-magnitude, magnitude) * val;
+                cam.transform.position = originalPos + new Vector3(x, y, 0);
+            })
+            .setOnComplete(() =>
+            {
+                cam.transform.position = originalPos; // restore
+            });
+    }
+
+    public void onHover()
+    {
+        if(nightManager.getIsPaused())
+        {
+            hoverManager.ShowHoverOnGameObject(this.gameObject, "Freeze!", "Can’t build while the game’s paused.", false, new Vector2(0, 270));
+        }
+        else if (!MoneyManager.Instance.CanAfford(data.cost) && costText != null && !isPulsing)
+        {
+            isPulsing = true;
+
+            RectTransform rt = costText.GetComponent<RectTransform>();
+            if (rt != null)
+                rt.pivot = new Vector2(0.5f, 0.5f);
+
+            LeanTween.scale(costText.gameObject, Vector3.one * pulseScale, pulseDuration)
+                .setEaseInOutSine()
+                .setLoopPingPong();
+        }
+    }
+
+    public void onHoverExit()
+    {
+        if(nightManager.getIsPaused())
+        {
+            hoverManager.HideHover();
+        }
+        else if (costText != null && isPulsing)
+        {
+            LeanTween.cancel(costText.gameObject);      // stop the animation
+            costText.transform.localScale = Vector3.one; // reset scale
+            isPulsing = false;
+        }
+    }
+
 }

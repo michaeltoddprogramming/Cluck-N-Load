@@ -20,6 +20,7 @@ public class CropStructureUI : BaseStructureUI
     [SerializeField] private Sprite WheatIcon;
     [SerializeField] private Sprite carrotIcon;
     [SerializeField] private Sprite defaultIcon;
+    [SerializeField] private Slider cropGrowthBar;
 
     [Header("Audio")]
     [SerializeField] private AudioClip errorSound;
@@ -32,6 +33,15 @@ public class CropStructureUI : BaseStructureUI
     private CropStructure cropStructure;
     private bool isCropStructure;
     private char currCrop = 'N';
+
+    // public UIHoverManager hoverManager;
+    private float displayedGrowth = 0f;
+
+    private void Start()
+    {
+        base.Start();
+        // hoverManager = FindObjectOfType<UIHoverManager>();
+    }
     
     // UI update optimization
     private const float UI_UPDATE_INTERVAL = 0.5f; // Update UI twice per second
@@ -77,7 +87,8 @@ public class CropStructureUI : BaseStructureUI
         plantCrop(index);
     }
 
-    private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !nightManager.getIsPaused() && !cropStructure.IsGrowing && !cropStructure.CropReady;
+    // private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !cropStructure.IsGrowing && !cropStructure.CropReady;
+    private bool CanPlantCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && !cropStructure.CropReady;
 
     private bool CanHarvestCrops() => isCropStructure && cropStructure != null && nightManager?.IsDay == true && cropStructure.CropReady;
 
@@ -239,6 +250,10 @@ public class CropStructureUI : BaseStructureUI
 
         return amount * baseValue;
     }
+private float lastCheckedHour = 0f;
+private float cropGrowthProgress = 0f;
+private float plantedAtHour = -1f; // Track when crop was planted
+private bool wasGrowing = false;
 
     protected override void Update()
     {
@@ -251,6 +266,122 @@ public class CropStructureUI : BaseStructureUI
             UpdateUI();
             lastUIUpdate = Time.time;
         }
+
+        if (cropStructure == null || nightManager == null || cropGrowthBar == null)
+    {
+        if (cropGrowthBar != null)
+        {
+            cropGrowthBar.value = 0f;
+            cropGrowthBar.gameObject.SetActive(false);
+        }
+        return;
+    }
+
+    // Let the crop handle its growth
+    cropStructure.TrackGrowth(nightManager);
+
+    if (cropStructure.CropReady)
+    {
+        cropGrowthBar.value = 1f;
+        cropGrowthBar.gameObject.SetActive(true);
+    }
+    else if (cropStructure.IsGrowing)
+    {
+        cropGrowthBar.value = cropStructure.GetGrowthProgress();
+        cropGrowthBar.gameObject.SetActive(true);
+    }
+    else
+    {
+        cropGrowthBar.value = 0f;
+        cropGrowthBar.gameObject.SetActive(false);
+    }
+
+
+        //this does work
+        //  if (cropStructure == null || nightManager == null)
+        // {
+        //     if (cropGrowthBar != null)
+        //     {
+        //         cropGrowthBar.value = 0f;
+        //         cropGrowthBar.gameObject.SetActive(false);
+        //     }
+        //     return;
+        // }
+
+        // bool isGrowing = cropStructure.IsGrowing;
+        // bool cropReady = cropStructure.CropReady;
+
+        // // Detect when crop is newly planted
+        // if (isGrowing && !wasGrowing)
+        // {
+        //     // Crop just got planted - record the time
+        //     plantedAtHour = nightManager.Hours + (nightManager.Minutes / 60f);
+        //     cropGrowthProgress = 0f;
+        // }
+
+        // // Reset when crop is harvested or no longer growing
+        // if (!isGrowing && wasGrowing)
+        // {
+        //     plantedAtHour = -1f;
+        //     cropGrowthProgress = 0f;
+        // }
+
+        // wasGrowing = isGrowing;
+
+        // // Update the progress bar
+        // if (cropGrowthBar != null)
+        // {
+        //     if (cropReady)
+        //     {
+        //         // Crop is ready - show full bar
+        //         cropGrowthBar.value = 1f;
+        //         cropGrowthBar.gameObject.SetActive(true);
+        //     }
+        //     else if (isGrowing && plantedAtHour >= 0)
+        //     {
+        //         // Calculate current hour
+        //         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
+                
+        //         // Calculate hours elapsed since planting
+        //         float hoursElapsed;
+        //         if (currentHour >= plantedAtHour)
+        //         {
+        //             hoursElapsed = currentHour - plantedAtHour;
+        //         }
+        //         else
+        //         {
+        //             // Handle day wrap (planted late, now early next day)
+        //             hoursElapsed = (24f - plantedAtHour) + currentHour;
+        //         }
+
+        //         // Crops grow from planting until 5 AM (start of day)
+        //         // Calculate total hours needed based on when planted
+        //         float targetHour = 5f; // 5 AM when day starts
+        //         float totalHoursNeeded;
+                
+        //         if (plantedAtHour <= targetHour)
+        //         {
+        //             // Planted in morning, needs to grow until next morning
+        //             totalHoursNeeded = (24f - plantedAtHour) + targetHour;
+        //         }
+        //         else
+        //         {
+        //             // Planted in afternoon/evening, grows until next morning
+        //             totalHoursNeeded = (24f - plantedAtHour) + targetHour;
+        //         }
+
+        //         // Calculate progress as percentage
+        //         float growthFraction = Mathf.Clamp01(hoursElapsed / totalHoursNeeded);
+        //         cropGrowthBar.value = growthFraction;
+        //         cropGrowthBar.gameObject.SetActive(true);
+        //     }
+        //     else
+        //     {
+        //         // No crop or not growing
+        //         cropGrowthBar.value = 0f;
+        //         cropGrowthBar.gameObject.SetActive(false);
+        //     }
+        // }
     }
 
     private void UpdateUI()
@@ -264,7 +395,7 @@ public class CropStructureUI : BaseStructureUI
         bool isGrowing = cropStructure.IsGrowing;
         bool cropReady = cropStructure.CropReady;
         bool isPaused = nightManager.getIsPaused();
-        bool canPlant = nightManager.IsDay && !isPaused && !isGrowing && !cropReady;
+        bool canPlant = nightManager.IsDay && !isPaused && !cropReady;
 
         if (!canPlant)
         {
@@ -332,5 +463,65 @@ public class CropStructureUI : BaseStructureUI
             CropStructure.CropType.Carrots => "Carrot",
             _ => "Crop"
         };
+    }
+
+    public void OnButtonHoverEnter(GameObject button)
+    {
+        // Debug.Log("Hover enter on button: " + button.name);
+        if(hoverManager != null)
+        {
+            //when it is planed but not ready for harvest
+            if(button == harvestButton.gameObject && cropStructure.IsGrowing && !cropStructure.CropReady)
+            {
+                hoverManager.ShowHover(harvestButton, "Patience, Farmer!", "Give it more time to grow!", true, new Vector2(-200, 0), cropGrowthBar.gameObject);
+            }
+            //when they have not planted yet
+            else if(button == harvestButton.gameObject && !cropStructure.IsGrowing && !cropStructure.CropReady)
+            {
+                hoverManager.ShowHover(harvestButton, "Barren Land!", "Plant something first!", true, new Vector2(200, 0), plantButton.gameObject);
+            }
+            //when it is night and they can not plant
+            else if(button == plantButton.gameObject && !nightManager.IsDay)
+            {
+                hoverManager.ShowHover(harvestButton, "Night Shift!", $"Farmer is asleep, try in the morning!", true, new Vector2(200, 0));
+            }
+            //when they try to move at night 
+            else if(button == moveButton.gameObject && !nightManager.IsDay)
+            {
+                hoverManager.ShowHover(moveButton, "Sleeping!", $"Buildings can’t be moved at night!", true, new Vector2(200, 0));
+            }
+        }
+    }
+
+    public void OnButtonHoverExit()
+    {
+        if(hoverManager != null)
+        {
+            hoverManager.HideHover();
+        }
+    }
+
+    public void OnButtonClick(GameObject button)
+    {
+        //when it is planed but not ready for harvest
+        if(button == harvestButton.gameObject && cropStructure.IsGrowing && !cropStructure.CropReady)
+        {
+            hoverManager.PlayErrorFeedback(false, harvestButton);
+        }
+        //when they have not planted yet
+        else if(button == harvestButton.gameObject && !cropStructure.IsGrowing &&!cropStructure.CropReady)
+        {
+            hoverManager.PlayErrorFeedback(false, harvestButton);
+        }
+        //when it is night and they can not plant
+        else if(button == plantButton.gameObject && !nightManager.IsDay)
+        {
+            hoverManager.PlayErrorFeedback(false, plantButton);
+        }
+        //when they try to move at night 
+        else if(button == moveButton.gameObject && !nightManager.IsDay)
+        {
+            hoverManager.PlayErrorFeedback(false, moveButton);
+        }
     }
 }

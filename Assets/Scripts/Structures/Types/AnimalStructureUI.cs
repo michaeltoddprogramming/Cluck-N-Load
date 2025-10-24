@@ -57,6 +57,8 @@ public class AnimalStructureUI : BaseStructureUI
     
     private System.Action pendingAction;
 
+    // public UIHoverManager hoverManager;
+
 
 
 
@@ -83,6 +85,12 @@ public class AnimalStructureUI : BaseStructureUI
     //         UpdateHealthBar();
     //     }
     // }
+
+    private void Start()
+    {
+        base.Start();
+        // hoverManager = FindObjectOfType<UIHoverManager>();
+    }
 
     protected override void Update()
     {
@@ -172,6 +180,7 @@ public class AnimalStructureUI : BaseStructureUI
         int animalCount = animalStructure.AnimalCount;
         int maxAnimalCount = animalStructure.MaxAnimalCount;
         bool isPaused = nightManager.getIsPaused();
+        Debug.Log($"[AnimalStructureUI] UpdateUI called - isPaused: {isPaused}");
         bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
         bool canCollect = productReady && nightManager.IsDay && !isPaused;
         // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")
@@ -431,5 +440,116 @@ public class AnimalStructureUI : BaseStructureUI
         {
             BuyAnimals(); // No warning needed
         }
+    }
+
+    public void OnButtonHoverEnter(GameObject button)
+    {
+        // Debug.Log("Hover enter on button: " + button.name);
+        if(hoverManager != null)
+        {
+            TextMeshProUGUI feedText = feedButton.GetComponentInChildren<TextMeshProUGUI>();
+            //when the new count is 0
+            if(button == buyAnimal.gameObject && newAnimalCount == 0)
+            {
+                hoverManager.ShowHover(buyAnimal, "Buying air?", "Zero doesn’t count!", true, new Vector2(-200, 0), newAnimalAmount.gameObject);
+            }
+            //when they cant afford more
+            else if(button == addAnimal.gameObject && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal))
+            {
+                hoverManager.ShowHover(addAnimal, "Broke!", $"You can only afford {newAnimalCount}.", true, new Vector2(200, 0), costText.gameObject);
+            }
+            //when there isnt more space
+            else if(button == addAnimal.gameObject && (newAnimalCount + animalStructure.animalCount) >= animalStructure.maxAnimalCount)
+            {
+                hoverManager.ShowHover(addAnimal, "Overcrowded!", "No more room for more animals.", true, new Vector2(200, 0), newAnimalAmount.gameObject);
+            }
+            //when they want less than 0 new animals
+            else if(button == removeAnimal.gameObject && newAnimalCount <= 0)
+            {
+                hoverManager.ShowHover(removeAnimal, "Buying air?", "Must buy at least 1 animal", true, new Vector2(-200, 0), newAnimalAmount.gameObject);
+            }
+            // when they have no animals to feed
+            else if(button == feedButton.gameObject && !animalStructure.IsProducing && animalStructure.animalCount == 0)
+            {
+                hoverManager.ShowHover(feedButton, "Empty pen!", "No animals to feed!", true, new Vector2(-200, 0), animalAmountText.gameObject);
+            }
+            //when they have already fed
+            else if(button == feedButton.gameObject && animalStructure.IsProducing && animalStructure.animalCount > 0)
+            {
+                hoverManager.ShowHover(feedButton, "Full bellies!", "No more food for now – let them cook!", true, new Vector2(-200, 0), progressBar.gameObject);
+            }
+            //when they dont have enough food
+            else if(button == feedButton.gameObject && !animalStructure.canFeed() && animalStructure.animalCount > 0)
+            {
+                hoverManager.ShowHover(feedButton, "Food Shortage!", "You don’t have enough food!", true, new Vector2(-200, 0), feedText.gameObject);
+            }
+            //when need to feed to collect
+            else if(button == collectButton.gameObject && !animalStructure.IsProducing && !animalStructure.ProductReady)
+            {
+                hoverManager.ShowHover(collectButton, "Hungry Herd!", "They need feeding before collecting!", true, new Vector2(-200, 0));
+            }
+            //when they need to wait before collecting
+            else if(button == collectButton.gameObject && animalStructure.IsProducing && !animalStructure.ProductReady)
+            {
+                hoverManager.ShowHover(collectButton, "Not so fast!", "They’re still working… give it a moment!", true, new Vector2(-200, 0), progressBar.gameObject);
+            }
+        }
+    }
+
+    public void OnButtonHoverExit()
+    {
+        if(hoverManager != null)
+        {
+            hoverManager.HideHover();
+        }
+    }
+
+    public void OnButtonClick(GameObject button)
+    {
+        // hoverManager.PlayErrorFeedback(false);
+        if(button == buyAnimal.gameObject && newAnimalCount == 0)
+        {
+            hoverManager.PlayErrorFeedback(false, buyAnimal);
+        }
+        //when they cant afford more
+        else if(button == addAnimal.gameObject && MoneyManager.Instance != null && !MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal))
+        {
+            hoverManager.PlayErrorFeedback(true, addAnimal);
+        }
+        //when there isnt more space
+        else if(button == addAnimal.gameObject && (newAnimalCount + animalStructure.animalCount) >= animalStructure.maxAnimalCount)
+        {
+            hoverManager.PlayErrorFeedback(false, addAnimal);
+        }
+        //when they want less than 0 new animals
+        else if(button == removeAnimal.gameObject && newAnimalCount <= 0)
+        {
+            hoverManager.PlayErrorFeedback(false, removeAnimal);
+        }
+        // when they have no animals to feed
+        else if(button == feedButton.gameObject && !animalStructure.IsProducing && animalStructure.animalCount == 0)
+        {
+            hoverManager.PlayErrorFeedback(false, feedButton);
+        }
+        //when they have already fed
+        else if(button == feedButton.gameObject && animalStructure.IsProducing && animalStructure.animalCount > 0)
+        {
+            hoverManager.PlayErrorFeedback(false, feedButton);
+        }
+        //when they dont have enough food
+        else if(button == feedButton.gameObject && !animalStructure.canFeed() && animalStructure.animalCount > 0)
+        {
+            hoverManager.PlayErrorFeedback(false, feedButton);
+        }
+        //when need to feed to collect
+        else if(button == collectButton.gameObject && !animalStructure.IsProducing && !animalStructure.ProductReady)
+        {
+            hoverManager.PlayErrorFeedback(false, collectButton);
+        }
+        //when they need to wait before collecting
+        else if(button == collectButton.gameObject && animalStructure.IsProducing && !animalStructure.ProductReady)
+        {
+            hoverManager.PlayErrorFeedback(false, collectButton);
+        }        
     }
 }

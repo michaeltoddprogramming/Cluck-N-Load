@@ -744,7 +744,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7828470899526751895, guid: 41beb33a04587e14eb7085e63334aadc, type: 3}
       propertyPath: m_Shadows.m_Type
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7828470899526751895, guid: 41beb33a04587e14eb7085e63334aadc, type: 3}
       propertyPath: m_Shadows.m_Resolution
@@ -790,7 +790,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3075431950119428657, guid: ca0f6cca753093b4aaf92e6d25838bc8, type: 3}
       propertyPath: m_Shadows.m_Type
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3075431950119428657, guid: ca0f6cca753093b4aaf92e6d25838bc8, type: 3}
       propertyPath: m_Shadows.m_Resolution
@@ -952,7 +952,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7828470899526751895, guid: 41beb33a04587e14eb7085e63334aadc, type: 3}
       propertyPath: m_Shadows.m_Type
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7828470899526751895, guid: 41beb33a04587e14eb7085e63334aadc, type: 3}
       propertyPath: m_ColorTemperature

@@ -1187,6 +1187,7 @@ private void OnDayChange(int value)
             animalStructure.resetAnimalProductionAmount();
         }
 
+        //bonus falls on the same product
         if (sameProduct <= 0.05f)
         {
             string animal = determineAnimalProduct(product1);
@@ -1239,7 +1240,9 @@ private void OnDayChange(int value)
             }
             StartProductionNotification(message, 5);
 
+            AnimalProductionIndicator.Instance.oneProductionBonus(animal);
         }
+        //bonus falls different products
         else
         {
             if (product1 == product2)
@@ -1317,6 +1320,7 @@ private void OnDayChange(int value)
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
                 StartProductionNotification(message, 5);
+                AnimalProductionIndicator.Instance.twoProductionBonuses(animal1, animal2);
 
                 // if (doubleProductionSource != null)
                 // {
@@ -1409,6 +1413,8 @@ private void OnDayChange(int value)
 
                 string message = $"Animal production increased for <b>{fullAnimalName1}</b> by <b>{(increasePercent * 100) / 3}%</b> and <b>{fullAnimalName2}</b> by <b>{(increasePercent * 100) / 3}%</b>!";
 
+                AnimalProductionIndicator.Instance.twoProductionBonuses(animal1, animal2);
+                
                 StartProductionNotification(message, 5);
 
                 // if (doubleProductionSource != null)

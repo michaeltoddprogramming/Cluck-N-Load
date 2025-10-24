@@ -19,5 +19,6 @@ public enum TooltipType
     season,
     time,
     crops,
-    pricePanel
+    pricePanel,
+    animals,
 }

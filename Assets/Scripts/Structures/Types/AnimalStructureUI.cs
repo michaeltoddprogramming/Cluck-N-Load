@@ -57,6 +57,15 @@ public class AnimalStructureUI : BaseStructureUI
     
     private System.Action pendingAction;
 
+    [Header("Synergy indicator")]
+    [SerializeField] private Image synergyIndicator;
+    [SerializeField] private Sprite sunflowerSynergyGood;
+    [SerializeField] private Sprite sunflowerSynergyBad;
+    [SerializeField] private Sprite wheatSynergyGood;
+    [SerializeField] private Sprite wheatSynergyBad;
+    [SerializeField] private Sprite carrotSynergyGood;
+    [SerializeField] private Sprite carrotSynergyBad;
+
     // public UIHoverManager hoverManager;
 
 
@@ -172,6 +181,8 @@ public class AnimalStructureUI : BaseStructureUI
 
         // UpdateHealthBar();
         updateStatusBar();
+
+        updateSynergyIndicator();
 
         foodNeededText.text = $"{animalStructure.foodRequired}";
 
@@ -493,6 +504,18 @@ public class AnimalStructureUI : BaseStructureUI
             {
                 hoverManager.ShowHover(collectButton, "Not so fast!", "They’re still working… give it a moment!", true, new Vector2(-200, 0), progressBar.gameObject);
             }
+            //when the synergy indicator is active
+            else if(button == synergyIndicator.gameObject && animalStructure.isSynergyActive())
+            {
+                Debug.Log("it should be showing the active tooltip");
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Silo Bonus!", "Silo nearby – animals eat less!", true, new Vector2(200, 0));
+            }
+            //when the synergy indicator is not active
+            else if(button == synergyIndicator.gameObject && !animalStructure.isSynergyActive())
+            {
+                Debug.Log("it should be showing the inactive tooltip");
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "No Silo Bonus!", "No silo nearby – normal food needed.", true, new Vector2(200, 0));
+            }
         }
     }
 
@@ -551,5 +574,48 @@ public class AnimalStructureUI : BaseStructureUI
         {
             hoverManager.PlayErrorFeedback(false, collectButton);
         }        
+    }
+
+    private void updateSynergyIndicator()
+    {
+        if (animalStructure == null || synergyIndicator == null) return;
+
+        // Check if this structure currently has an active synergy
+        if (animalStructure.isSynergyActive())
+        {
+            // Show the indicator
+            // synergyIndicator.gameObject.SetActive(true);
+
+            // Set the sprite based on food type
+            switch (animalStructure.RequiredFood)
+            {
+                case "Sunflower":
+                    synergyIndicator.sprite = sunflowerSynergyGood;
+                    break;
+                case "Wheat":
+                    synergyIndicator.sprite = wheatSynergyGood;
+                    break;
+                case "Carrot":
+                    synergyIndicator.sprite = carrotSynergyGood;
+                    break;
+            }
+        }
+        else
+        {
+            switch (animalStructure.RequiredFood)
+            {
+                case "Sunflower":
+                    synergyIndicator.sprite = sunflowerSynergyBad;
+                    break;
+                case "Wheat":
+                    synergyIndicator.sprite = wheatSynergyBad;
+                    break;
+                case "Carrot":
+                    synergyIndicator.sprite = carrotSynergyBad;
+                    break;
+            }
+            // Hide the indicator if no synergy is active
+            // synergyIndicator.gameObject.SetActive(false);
+        }
     }
 }

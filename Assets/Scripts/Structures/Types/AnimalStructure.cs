@@ -67,6 +67,7 @@ public class AnimalStructure : Structure
     [SerializeField] public float foodMultiplier = 1f;
     [SerializeField] public int baseMoneyPerProduct = 50;
     [SerializeField] public int baseProductMultiplier = 1;
+    private bool activeSynergy = false;
 
     StructureData data;
 
@@ -588,14 +589,31 @@ public class AnimalStructure : Structure
             foodMultiplier = normalFoodRequired;
             return;
         }
+
         Vector2Int animalCell = gridController.WorldToGridCoords(transform.position);
+
         foreach (SiloStructure silo in silos)
         {
             Vector2Int siloCell = gridController.WorldToGridCoords(silo.transform.position);
             float gridDistance = Vector2Int.Distance(animalCell, siloCell);
             minGridDistance = Mathf.Min(minGridDistance, gridDistance);
         }
+        if(minGridDistance <= siloSynergyRange)
+        {
+            activeSynergy = true;
+        }
+        else
+        {
+            activeSynergy = false;
+            
+        }
+        
         foodMultiplier = minGridDistance <= siloSynergyRange ? synergyFoodRequired : normalFoodRequired;
+    }
+
+    public bool isSynergyActive()
+    {
+        return activeSynergy;
     }
 
     public static void UpdateAllAnimalSynergies()

@@ -81,6 +81,19 @@ public class BarracksStructureUI : BaseStructureUI
     // public UIHoverManager hoverManager;
     [SerializeField] public GameObject civilianSection;
 
+    [Header("Synergy indicator")]
+    [SerializeField] private Image synergyIndicator;
+    [SerializeField] private Sprite chickenSynergyGood;
+    [SerializeField] private Sprite chickenSynergyBad;
+    [SerializeField] private Sprite pigSynergyGood;
+    [SerializeField] private Sprite pigSynergyBad;
+    [SerializeField] private Sprite cowSynergyGood;
+    [SerializeField] private Sprite cowSynergyBad;
+    [SerializeField] private Sprite goatSynergyGood;
+    [SerializeField] private Sprite goatSynergyBad;
+    [SerializeField] private Sprite sheepSynergyGood;
+    [SerializeField] private Sprite sheepSynergyBad;
+
     private void Start()
     {
         base.Start();
@@ -2030,6 +2043,23 @@ public class BarracksStructureUI : BaseStructureUI
             {
                 hoverManager.ShowHover(placeFlagButton, "No Army!", "Cant place flag with no army!", true, new Vector2(-200, 0), animalCountText.gameObject);
             }
+            //when the synergy indicator is active
+            else if(button == synergyIndicator.gameObject && barracksStructure.isSynergyActive())
+            {
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Nice & Cheap!", "Perfect distance from pen! Recruiting costs less!", true, new Vector2(200, 0));
+            }
+            //when the synergy indicator is not active
+            else if(button == synergyIndicator.gameObject && !barracksStructure.isSynergyActive())
+            {
+                if(barracksStructure.IsToFar())
+                {
+                    hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Too Far!", "Too far from pen - No discount!", true, new Vector2(200, 0));
+                }
+                else
+                {
+                    hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Too Close!", "Too close to pen - No discount!", true, new Vector2(200, 0));
+                }
+            }
 
         }
     }
@@ -2072,41 +2102,57 @@ public class BarracksStructureUI : BaseStructureUI
 
     private void updateSynergyIndicator()
     {
-        if (barrackStructure == null || synergyIndicator == null) return;
+        if (barracksStructure == null || synergyIndicator == null) return;
 
         // Check if this structure currently has an active synergy
-        if (animalStructure.isSynergyActive())
+        if (barracksStructure.isSynergyActive())
         {
             // Show the indicator
             // synergyIndicator.gameObject.SetActive(true);
 
             // Set the sprite based on food type
-            switch (animalStructure.RequiredFood)
+            if (barracksStructure.GetAnimalType() == "Cow")
             {
-                case "Sunflower":
-                    synergyIndicator.sprite = sunflowerSynergyGood;
-                    break;
-                case "Wheat":
-                    synergyIndicator.sprite = wheatSynergyGood;
-                    break;
-                case "Carrot":
-                    synergyIndicator.sprite = carrotSynergyGood;
-                    break;
+                synergyIndicator.sprite = cowSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                synergyIndicator.sprite = chickenSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                synergyIndicator.sprite = goatSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                synergyIndicator.sprite = pigSynergyGood;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                synergyIndicator.sprite = sheepSynergyGood;
             }
         }
         else
         {
-            switch (animalStructure.RequiredFood)
+            if (barracksStructure.GetAnimalType() == "Cow")
             {
-                case "Sunflower":
-                    synergyIndicator.sprite = sunflowerSynergyBad;
-                    break;
-                case "Wheat":
-                    synergyIndicator.sprite = wheatSynergyBad;
-                    break;
-                case "Carrot":
-                    synergyIndicator.sprite = carrotSynergyBad;
-                    break;
+                synergyIndicator.sprite = cowSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Chicken")
+            {
+                synergyIndicator.sprite = chickenSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Goat")
+            {
+                synergyIndicator.sprite = goatSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Pig")
+            {
+                synergyIndicator.sprite = pigSynergyBad;
+            }
+            else if (barracksStructure.GetAnimalType() == "Sheep")
+            {
+                synergyIndicator.sprite = sheepSynergyBad;
             }
             // Hide the indicator if no synergy is active
             // synergyIndicator.gameObject.SetActive(false);

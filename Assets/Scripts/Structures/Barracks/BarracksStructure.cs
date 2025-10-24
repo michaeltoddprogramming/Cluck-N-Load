@@ -52,6 +52,7 @@ public class BarracksStructure : Structure
     // private List<GameObject> sheep = new List<GameObject>();
 
     private bool synergyActive = false;
+    private bool isToFar = false;
 
     protected override void Start()
     {
@@ -694,11 +695,25 @@ public class BarracksStructure : Structure
             synergyActive = false;
             recruitmentCostPerAnimal = baseCost;
         }
+
+        if(!synergyActive && gridDist < synergyMinDist)
+        {
+            isToFar = false;
+        }
+        else if(!synergyActive && gridDist > synergyMaxDist)
+        {
+            isToFar = true;
+        }
     }
 
     public bool isSynergyActive()
     {
         return synergyActive;
+    }
+
+    public bool IsToFar()
+    {
+        return isToFar;
     }
 
 

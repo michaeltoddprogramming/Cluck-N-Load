@@ -4172,6 +4172,17 @@ MonoBehaviour:
   - {fileID: 5237487616416528366}
   - {fileID: 5267034003274791377}
   civilianSection: {fileID: 8078169136502588099}
+  synergyIndicator: {fileID: 602229643113781084}
+  chickenSynergyGood: {fileID: 21300000, guid: f6fb7465959aacb4f9d06ecf4db86805, type: 3}
+  chickenSynergyBad: {fileID: 21300000, guid: eb7028122349ff0469c04316de4bfea3, type: 3}
+  pigSynergyGood: {fileID: 21300000, guid: 5c15f70290765484d9babc9e806cf97a, type: 3}
+  pigSynergyBad: {fileID: 21300000, guid: 4f2dacd0c0d82d2469475a8b72eb1b2e, type: 3}
+  cowSynergyGood: {fileID: 21300000, guid: 7c6f80093bf117944a85ab93a7bf7d75, type: 3}
+  cowSynergyBad: {fileID: 21300000, guid: 03bf2a8762844ab429546cc0127984c1, type: 3}
+  goatSynergyGood: {fileID: 21300000, guid: 013937ffaa84aa74abb07cd9c6b6e1d9, type: 3}
+  goatSynergyBad: {fileID: 21300000, guid: 449ce66c1f6692641a6f153a968c967b, type: 3}
+  sheepSynergyGood: {fileID: 21300000, guid: b05284bbe7318bd4b8a49a6c14c3c337, type: 3}
+  sheepSynergyBad: {fileID: 21300000, guid: d609ba2a4238ac24ebcec8a48852b584, type: 3}
 --- !u!114 &1870193486873066752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6585,6 +6596,127 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1 &5835359818368855273
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2063473554221281035}
+  - component: {fileID: 4634845485021051502}
+  - component: {fileID: 602229643113781084}
+  - component: {fileID: 8716545417850029186}
+  m_Layer: 0
+  m_Name: synergy Infocator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2063473554221281035
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835359818368855273}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6804944802546997937}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -328, y: 2}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &4634845485021051502
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835359818368855273}
+  m_CullTransparentMesh: 1
+--- !u!114 &602229643113781084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835359818368855273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 7c6f80093bf117944a85ab93a7bf7d75, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8716545417850029186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835359818368855273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -8090860008486070274}
+          m_TargetAssemblyTypeName: BarracksStructureUI, Assembly-CSharp
+          m_MethodName: OnButtonHoverEnter
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 5835359818368855273}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -8090860008486070274}
+          m_TargetAssemblyTypeName: BarracksStructureUI, Assembly-CSharp
+          m_MethodName: OnButtonHoverExit
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &5862690410047162375
 GameObject:
   m_ObjectHideFlags: 0
@@ -6725,7 +6857,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Cicken Coop
+  m_text: Chicken Barrack
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 26507f248a46cbf4fa958167f580e2ce, type: 2}
   m_sharedMaterial: {fileID: -5660775149628104760, guid: 26507f248a46cbf4fa958167f580e2ce, type: 2}
@@ -6752,10 +6884,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 96
+  m_fontSize: 92.25
   m_fontSizeBase: 96
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 250
   m_fontStyle: 0
@@ -6790,7 +6922,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -125.11023, y: 0, z: -126.654785, w: 0}
+  m_margin: {x: 0.30358887, y: 0, z: -126.654785, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -9548,6 +9680,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3667276092914892194}
+  - {fileID: 2063473554221281035}
   m_Father: {fileID: 2896016361190151464}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}

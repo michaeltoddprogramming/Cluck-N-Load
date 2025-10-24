@@ -282,12 +282,16 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Show(data);
+
+        onHover();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
+
+        onHoverExit();
     }
 
     private void PlaySelectSound()

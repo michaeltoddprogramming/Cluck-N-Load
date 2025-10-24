@@ -57,7 +57,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private UIHover uiHover;
 
     private bool onShop = true;
-    private bool showAll = false;
+    private bool showAll = true; 
 
 
     private void Awake()
@@ -1250,6 +1250,9 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void SetLayoutForRepair()
     {
+        showAll = true;
+        showCurrentFilter();
+
         onShop = false;
         if(scrollViewParent != null)
         {

@@ -129,7 +129,7 @@ public class NightManager : MonoBehaviour
         }
     }
 
-    private int lastSurvivalRewardDay = -1;
+    private int daysThisYear = 0;
 
     [SerializeField] private int years;
     public int Years
@@ -684,62 +684,260 @@ public class NightManager : MonoBehaviour
         }
     }
 
-    private void OnDayChange(int value)
+    // private void OnDayChange(int value)
+    // {
+    //     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
+
+    //     if (value == 0)
+    //     {
+    //         Debug.Log("Day 0 - setting Spring season");
+    //         setSeason(1);
+
+    //     }
+    //     else if (value == 5 && hours == 5)
+    //     {
+    //         Debug.Log("Day 5, hour 5 - setting Summer season");
+    //         setSeason(2);
+    //     }
+    //     else if (value == 10 && hours == 5)
+    //     {
+    //         Debug.Log("Day 10, hour 5 - setting Fall season");
+    //         setSeason(3);
+    //     }
+    //     else if (value == 15 && hours == 5)
+    //     {
+    //         Debug.Log("Day 15, hour 5 - setting Winter season");
+    //         setSeason(4);
+    //     }
+    //     else if (value == 20 && hours == 5)
+    //     {
+    //         // print("CRITICAL: Year transition triggered at Day 20, Hour 5");
+    //         // UnityEngine.Debug.LogError($"YEAR TRANSITION: Day 20, hour 5 detected! About to increment year from {years} to {years + 1}");
+    //         // Debug.Log("Day 20, hour 5 - triggering year transition");
+    //         // Debug.Log($"Before year transition: years={years}, days={days}, hours={hours}");
+    //         // StartNotification("Night starting soon!!", 5f);
+
+    //         if (yearAudioSource != null)
+    //         {
+    //             yearAudioSource.Play();
+    //         }
+
+    //         years++;
+    //         // days = 0;
+    //         hours = 7;
+    //         minutes = 0;
+    //         YearsChanged = true;
+
+    //         Debug.Log($"After year transition: years={years}, yearsChanged={YearsChanged} - setting Spring season");
+    //         setSeason(1);
+
+    //         StartDay(0); // force reset to day state
+    //         // setSeason(1); // reset season if needed
+    //     }
+    //     else if (value == 21)
+    //     {
+    //         Debug.Log("Day 21 - triggering year transition (fallback)");
+    //         years++;
+    //         // days = 0;
+    //         hours = 7;
+    //         minutes = 0;
+
+    //         StartDay(0); // force reset to day state
+    //         setSeason(1); // reset season if needed
+    //     }
+
+    //     UpdateDayCountUI();
+    // }
+
+
+// private void OnDayChange(int value)
+// {
+//     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
+
+//     // Season logic based on day modulo 20, so it repeats every 20 days
+//     // int dayInCycle = value % 20;
+
+//     // if (dayInCycle == 0)
+//     // {
+//     //     Debug.Log("Day 0 in cycle - setting Spring season");
+//     //     setSeason(1);
+//     // }
+//     // else if (dayInCycle == 5 && hours == 5)
+//     // {
+//     //     Debug.Log("Day 5 in cycle, hour 5 - setting Summer season");
+//     //     setSeason(2);
+//     // }
+//     // else if (dayInCycle == 10 && hours == 5)
+//     // {
+//     //     Debug.Log("Day 10 in cycle, hour 5 - setting Fall season");
+//     //     setSeason(3);
+//     // }
+//     // else if (dayInCycle == 15 && hours == 5)
+//     // {
+//     //     Debug.Log("Day 15 in cycle, hour 5 - setting Winter season");
+//     //     setSeason(4);
+//     // }
+//     int dayInCycle = value % 20;
+
+// if (dayInCycle == 0)
+// {
+//     setSeason(1); // Spring
+// }
+// else if (dayInCycle == 5 && hours == 5)
+// {
+//     setSeason(2); // Summer
+// }
+// else if (dayInCycle == 10 && hours == 5)
+// {
+//     setSeason(3); // Fall
+// }
+// else if (dayInCycle == 15 && hours == 5)
+// {
+//     setSeason(4); // Winter
+// }
+//     else if (dayInCycle == 20 && hours == 5)
+//     {
+//         // Year transition event (optional audio, etc.)
+//         if (yearAudioSource != null)
+//         {
+//             yearAudioSource.Play();
+//         }
+
+//         years++;
+//         hours = 7;
+//         minutes = 0;
+//         YearsChanged = true;
+
+//         Debug.Log($"After year transition: years={years}, YearsChanged={YearsChanged} - setting Spring season");
+//         setSeason(1);
+
+//         StartDay(value); // Keep the day count intact
+//     }
+
+//     UpdateDayCountUI();
+// }
+
+// private void OnDayChange(int value)
+// {
+//     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
+
+//     int dayInCycle = value % 20;
+
+//     // Seasons
+//     if (dayInCycle == 0)
+//     {
+//         setSeason(1); // Spring
+//     }
+//     else if (dayInCycle == 5 && hours == 5)
+//     {
+//         setSeason(2); // Summer
+//     }
+//     else if (dayInCycle == 10 && hours == 5)
+//     {
+//         setSeason(3); // Fall
+//     }
+//     else if (dayInCycle == 15 && hours == 5)
+//     {
+//         setSeason(4); // Winter
+//     }
+
+//     // Year increment at day 20, hour 5 (exactly like your old code)
+//     if (value % 20 == 0 && value != 0 && hours == 5)
+//     {
+//         if (yearAudioSource != null)
+//             yearAudioSource.Play();
+
+//         years++;
+//         hours = 5;
+//         minutes = 0;
+//         YearsChanged = true;
+
+//         Debug.Log($"Year incremented: years={years}");
+//     }
+
+//     UpdateDayCountUI();
+// }
+
+// private void OnDayChange(int value)
+// {
+//     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
+
+//     int dayInCycle = value % 20;
+
+//     // Seasons - ignore hours, just base on dayInCycle
+//     switch (dayInCycle)
+//     {
+//         case 0:
+//             setSeason(1); // Spring
+//             break;
+//         case 5:
+//             setSeason(2); // Summer
+//             break;
+//         case 10:
+//             setSeason(3); // Fall
+//             break;
+//         case 15:
+//             setSeason(4); // Winter
+//             break;
+//     }
+
+//     // Year increment at multiples of 20 days (optional)
+//     if (dayInCycle == 0 && value != 0) 
+//     {
+//         if (yearAudioSource != null)
+//             yearAudioSource.Play();
+
+//         years++;
+//         YearsChanged = true;
+//         Debug.Log($"Year incremented: years={years}");
+//     }
+
+//     UpdateDayCountUI();
+// }
+
+private void OnDayChange(int value)
+{
+    Debug.Log($"OnDayChange called: value={value}, hours={hours}");
+
+    int dayInCycle = value % 20;
+
+    // Seasons change **only at 5 AM**
+    if (hours == 5)
     {
-        if (value == 0)
+        switch (dayInCycle)
         {
-            setSeason(1);
-
+            case 0:
+                setSeason(1); // Spring
+                break;
+            case 5:
+                setSeason(2); // Summer
+                break;
+            case 10:
+                setSeason(3); // Fall
+                break;
+            case 15:
+                setSeason(4); // Winter
+                break;
         }
-        else if (value == 5 && hours == 5)
-        {
-            setSeason(2);
-        }
-        else if (value == 10 && hours == 5)
-        {
-            setSeason(3);
-        }
-        else if (value == 15 && hours == 5)
-        {
-            setSeason(4);
-        }
-        else if (value == 20 && hours == 5)
-        {
-            // print("CRITICAL: Year transition triggered at Day 20, Hour 5");
-            // UnityEngine.Debug.LogError($"YEAR TRANSITION: Day 20, hour 5 detected! About to increment year from {years} to {years + 1}");
-            // Debug.Log("Day 20, hour 5 - triggering year transition");
-            // Debug.Log($"Before year transition: years={years}, days={days}, hours={hours}");
-            // StartNotification("Night starting soon!!", 5f);
-
-            if (yearAudioSource != null)
-            {
-                yearAudioSource.Play();
-            }
-
-            years++;
-            days = 0;
-            hours = 7;
-            minutes = 0;
-            YearsChanged = true;
-
-            setSeason(1);
-
-            StartDay(0); // force reset to day state
-            // setSeason(1); // reset season if needed
-        }
-        else if (value == 21)
-        {
-            years++;
-            days = 0;
-            hours = 7;
-            minutes = 0;
-
-            StartDay(0); // force reset to day state
-            setSeason(1); // reset season if needed
-        }
-
-        UpdateDayCountUI();
     }
+
+    // Year increment at multiples of 20 days (optional)
+    if (dayInCycle == 0 && value != 0 && hours == 5) 
+    {
+        if (yearAudioSource != null)
+            yearAudioSource.Play();
+
+        years++;
+        YearsChanged = true;
+        Debug.Log($"Year incremented: years={years}");
+    }
+
+    UpdateDayCountUI();
+}
+
+
+
+
 
     public void UpdateEnemyIndicatorForSeason(int season)
     {

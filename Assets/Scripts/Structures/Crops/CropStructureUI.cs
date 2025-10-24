@@ -370,6 +370,14 @@ private bool wasGrowing = false;
     private void setCropImage()
     {
         currCrop = cropStructure.GetCurrCrop();
+        if(currCrop == 'N')
+        {
+            CropImage.enabled = false;
+        }
+        else
+        {
+            CropImage.enabled = true;
+        }
         CropImage.sprite = currCrop switch
         {
             'S' => SunflowerIcon,

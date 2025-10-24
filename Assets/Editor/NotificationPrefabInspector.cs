@@ -8,7 +8,7 @@ public static class NotificationPrefabInspector
     [MenuItem("Tools/Debug Notification Prefab")] 
     public static void DebugNotificationPrefabs()
     {
-        var mgr = Object.FindObjectOfType<NotificationManager>();
+        var mgr = Object.FindFirstObjectByType<NotificationManager>();
         if (mgr == null)
         {
             Debug.LogWarning("NotificationPrefabInspector: No NotificationManager found in the open scenes.");

@@ -581,6 +581,7 @@ public partial class TutorialManager : MonoBehaviour
 
     private void ShowDiscoveryPopup(TutorialStep discoveryStep)
     {
+        Debug.Log($"ShowDiscoveryPopup called on {gameObject.name}. isShowingDiscovery={isShowingDiscovery}, step={discoveryStep?.stepId}");
         if (isShowingDiscovery)
             return;
 
@@ -595,6 +596,10 @@ public partial class TutorialManager : MonoBehaviour
             UpdateCharacterPortrait(discoveryStep);
         }
 
+        // Hide next button during discoveries
+        if (nextStepButton != null)
+            nextStepButton.gameObject.SetActive(false);
+
         // Show close button for discoveries
         if (discoveryCloseButton != null)
         {
@@ -603,8 +608,9 @@ public partial class TutorialManager : MonoBehaviour
             discoveryCloseButton.onClick.AddListener(CloseDiscoveryPopup);
         }
 
-        isShowingDiscovery = true;
-        currentDiscoveryStep = discoveryStep;
+    isShowingDiscovery = true;
+    currentDiscoveryStep = discoveryStep;
+    Debug.Log($"ShowDiscoveryPopup finished on {gameObject.name}. tutorialPanel active: {tutorialPanel?.activeInHierarchy}, discoveryCloseButton active: {discoveryCloseButton?.gameObject.activeInHierarchy}");
 
         // Mark this discovery as processed
         StartCoroutine(MarkDiscoveryComplete());
@@ -707,8 +713,20 @@ public partial class TutorialManager : MonoBehaviour
 
     private void CloseDiscoveryPopup()
     {
-        HighlightUI(currentDiscoveryStep.uiToHighlight, false);
-        tutorialPanel.SetActive(false);
+        Debug.Log($"CloseDiscoveryPopup called on {gameObject.name}. currentDiscoveryStep={(currentDiscoveryStep==null?"null":currentDiscoveryStep.stepId)}, isShowingDiscovery={isShowingDiscovery}");
+
+        // Log state before changing
+        Debug.Log($"Before close: tutorialPanel active={tutorialPanel?.activeInHierarchy}, nextButton active={nextStepButton?.gameObject.activeInHierarchy}");
+
+        // If we still have a discovery step, remove any highlight for it
+        if (currentDiscoveryStep != null)
+            HighlightUI(currentDiscoveryStep.uiToHighlight, false);
+
+        // Always hide the tutorial panel when close is pressed (even if the discovery step was already cleared)
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(false);
+
+        Debug.Log($"After SetActive(false): tutorialPanel active={tutorialPanel?.activeInHierarchy}");
 
         if (checklistPanel != null)
             checklistPanel.SetActive(true);

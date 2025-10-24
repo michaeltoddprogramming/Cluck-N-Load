@@ -227,10 +227,6 @@ public class BarracksStructureUI : BaseStructureUI
         // Handle sheep flag movement input first (takes priority)
         if (isMovingSheepFlag)
         {
-            if (Time.frameCount % 60 == 0) // Log every 60 frames to avoid spam
-            {
-                Debug.Log($"[SHEEP FLAG] Update - Moving sheep flag {selectedSheepFlagIndex}, isPlacingFlag: {isPlacingFlag}");
-            }
             HandleSheepFlagMovementInput();
             UpdateSheepFlagMovementIndicator();
         }
@@ -408,7 +404,6 @@ public class BarracksStructureUI : BaseStructureUI
             NightManager nightManager = NightManager.Instance;
             if (nightManager != null && !nightManager.IsDay)
             {
-                Debug.Log("Cancelling flag placement - night started for sheep");
                 // Play error sound for night cancellation
                 if (AudioManager.Instance != null)
                 {
@@ -426,7 +421,6 @@ public class BarracksStructureUI : BaseStructureUI
         }
         else if (Input.GetMouseButtonDown(1)) // Right click to cancel
         {
-            Debug.Log("Right mouse button pressed during flag placement");
             CancelFlagPlacement("Flag placement cancelled");
         }
     }
@@ -652,7 +646,6 @@ public class BarracksStructureUI : BaseStructureUI
                     if (newAnimalCount >= maxCanRecruit)
                     {
                         tutorialAddRestriction = true;
-                        Debug.Log($"Tutorial: Add restricted - can only recruit {maxCanRecruit} more animals. Currently selected: {newAnimalCount}");
                     }
                 }
             }
@@ -692,7 +685,6 @@ public class BarracksStructureUI : BaseStructureUI
                     if (currentArmyCount >= 3)
                     {
                         tutorialRecruitRestriction = true;
-                        Debug.Log($"Tutorial: Recruit restricted - already own 3 army animals. Current owned: {currentArmyCount}");
                     }
                 }
             }
@@ -717,7 +709,6 @@ public class BarracksStructureUI : BaseStructureUI
         if (barracksStructure.GetAnimalType() == "Sheep")
         {
             bool isDay = nightManager != null ? nightManager.IsDay : true;
-            Debug.Log($"[Sheep Barracks UI] IsDay: {isDay}, HasArmy: {hasArmy}");  // Debug log to check values
 
             if (placeFlagButton != null)
             {
@@ -730,7 +721,6 @@ public class BarracksStructureUI : BaseStructureUI
                 }
                 
                 placeFlagButton.interactable = canPlaceFlags && !isPaused;
-                Debug.Log($"[Sheep Barracks UI] PlaceFlagButton interactable: {placeFlagButton.interactable} (canPlaceFlags: {canPlaceFlags}, isPaused: {isPaused})");  // Debug log for button state
 
                 if (isPaused && statusText != null)
                 {
@@ -882,7 +872,6 @@ public class BarracksStructureUI : BaseStructureUI
         // Don't override status text if we're moving a sheep flag
         if (isMovingSheepFlag)
         {
-            Debug.Log($"[SHEEP FLAG] Ignoring status text update '{message}' during sheep flag movement");
             return;
         }
         
@@ -1415,7 +1404,6 @@ public class BarracksStructureUI : BaseStructureUI
             if (sheepFlagManagementPanel != null)
             {
                 sheepFlagManagementPanel.SetActive(true);
-                Debug.Log("[SHEEP FLAG] Panel opened - forcing immediate refresh");
                 
                 // Force immediate refresh
                 RefreshSheepFlagList();
@@ -1462,8 +1450,6 @@ public class BarracksStructureUI : BaseStructureUI
                 // Keep scrolling enabled but hide scrollbars
                 scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
                 scrollRect.horizontalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
-                
-                Debug.Log("[SHEEP FLAG] Hidden scrollbars while keeping scroll functionality");
             }
             
             // Add VerticalLayoutGroup if it doesn't exist
@@ -1477,7 +1463,6 @@ public class BarracksStructureUI : BaseStructureUI
                 layoutGroup.childForceExpandWidth = true;
                 layoutGroup.spacing = 0f; // No spacing between items
                 layoutGroup.padding = new RectOffset(0, 0, 0, 0); // No padding
-                Debug.Log("[SHEEP FLAG] Added VerticalLayoutGroup to prevent overflow");
             }
             else
             {
@@ -1493,7 +1478,6 @@ public class BarracksStructureUI : BaseStructureUI
                 contentSizeFitter = sheepFlagListParent.gameObject.AddComponent<ContentSizeFitter>();
                 contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                 contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-                Debug.Log("[SHEEP FLAG] Added ContentSizeFitter to manage content size");
             }
         }
         
@@ -1517,12 +1501,7 @@ public class BarracksStructureUI : BaseStructureUI
         // Only refresh if the panel is currently open
         if (isManagingSheepFlags && sheepFlagManagementPanel != null && sheepFlagManagementPanel.activeInHierarchy)
         {
-            Debug.Log("[SHEEP FLAG] Auto-refreshing sheep flag panel");
             RefreshSheepFlagList();
-        }
-        else if (isManagingSheepFlags)
-        {
-            Debug.Log($"[SHEEP FLAG] Panel should be open but isn't - isManagingSheepFlags: {isManagingSheepFlags}, panel active: {sheepFlagManagementPanel?.activeInHierarchy}");
         }
     }
     
@@ -1590,8 +1569,6 @@ public class BarracksStructureUI : BaseStructureUI
                 
                 // Set the content size to fit all items
                 parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, totalHeight);
-                
-                Debug.Log($"[SHEEP FLAG] Adjusted content size: {itemCount} items, height: {totalHeight}");
             }
         }
     }

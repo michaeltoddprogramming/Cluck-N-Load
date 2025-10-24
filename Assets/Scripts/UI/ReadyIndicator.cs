@@ -56,9 +56,9 @@ public class ReadyIndicator : MonoBehaviour
         // Choose the appropriate prefab
         GameObject prefabToUse = type switch
         {
-            IndicatorType.Harvest => harvestIndicatorPrefab,
+            IndicatorType.Harvest => harvestIndicatorPrefab ?? collectIndicatorPrefab,
             IndicatorType.Collect => collectIndicatorPrefab,
-            _ => harvestIndicatorPrefab // Default fallback
+            _ => harvestIndicatorPrefab ?? collectIndicatorPrefab // Default fallback
         };
         
         if (prefabToUse == null)

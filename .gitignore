@@ -73,3 +73,8 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Ignore specific files requested by the user
+/Assets/Portrait.renderTexture
+/Assets/Resources/Skyboxes/Skybox.mat
+/Assets/Resources/Prefabs/Structures/Flag/Flags/Flag_Ghost.prefab

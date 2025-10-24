@@ -32,6 +32,8 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     {
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null) canvas.sortingOrder = 1;
+        this.transform.SetAsFirstSibling();
+        // if (canvas != null) canvas.sortingOrder = -1000000;
         this.structure = structure;
 
 

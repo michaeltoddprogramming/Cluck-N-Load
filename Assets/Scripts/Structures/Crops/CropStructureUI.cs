@@ -52,11 +52,11 @@ public class CropStructureUI : BaseStructureUI
     public override void Initialize(Structure structure)
     {
         // statusText.gameObject.SetActive(false);
+        base.Initialize(structure);
         plantButton.interactable = true;
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.volume = soundVolume;
-        base.Initialize(structure);
 
         isCropStructure = structure is CropStructure;
         if (isCropStructure) cropStructure = (CropStructure)structure;

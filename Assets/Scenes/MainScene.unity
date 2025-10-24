@@ -5026,7 +5026,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Animals\t\tAttackType
 
-    Wolves\t\tAnimals\n'
+    Wolves\t\tAnimals\nRacoons\t\tResources\nBoars\t\tWalls\nBears\t\tBuildings\n'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d86e933e6ca983a45ad912f7d7fa9882, type: 2}
   m_sharedMaterial: {fileID: -5660775149628104760, guid: d86e933e6ca983a45ad912f7d7fa9882, type: 2}
@@ -5053,7 +5053,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26
+  m_fontSize: 19.85
   m_fontSizeBase: 28.6
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -6416,7 +6416,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3724273108228962489, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4875622262517869169, guid: f672b7aa3574d6a419d86071a75dad2a, type: 3}
       propertyPath: m_text

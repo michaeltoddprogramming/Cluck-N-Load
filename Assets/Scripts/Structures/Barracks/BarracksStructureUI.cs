@@ -538,6 +538,8 @@ public class BarracksStructureUI : BaseStructureUI
     {
         if (!isBarracksStructure || barracksStructure == null) return;
 
+        updateSynergyIndicator();
+
         animalCountText.text = $"{newAnimalCount}";
 
         animalCount = barracksStructure.GetAnimalCount();
@@ -2066,5 +2068,48 @@ public class BarracksStructureUI : BaseStructureUI
         {
             hoverManager.PlayErrorFeedback(false, placeFlagButton);
         }  
+    }
+
+    private void updateSynergyIndicator()
+    {
+        if (barrackStructure == null || synergyIndicator == null) return;
+
+        // Check if this structure currently has an active synergy
+        if (animalStructure.isSynergyActive())
+        {
+            // Show the indicator
+            // synergyIndicator.gameObject.SetActive(true);
+
+            // Set the sprite based on food type
+            switch (animalStructure.RequiredFood)
+            {
+                case "Sunflower":
+                    synergyIndicator.sprite = sunflowerSynergyGood;
+                    break;
+                case "Wheat":
+                    synergyIndicator.sprite = wheatSynergyGood;
+                    break;
+                case "Carrot":
+                    synergyIndicator.sprite = carrotSynergyGood;
+                    break;
+            }
+        }
+        else
+        {
+            switch (animalStructure.RequiredFood)
+            {
+                case "Sunflower":
+                    synergyIndicator.sprite = sunflowerSynergyBad;
+                    break;
+                case "Wheat":
+                    synergyIndicator.sprite = wheatSynergyBad;
+                    break;
+                case "Carrot":
+                    synergyIndicator.sprite = carrotSynergyBad;
+                    break;
+            }
+            // Hide the indicator if no synergy is active
+            // synergyIndicator.gameObject.SetActive(false);
+        }
     }
 }

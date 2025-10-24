@@ -118,6 +118,35 @@ public class AnimalStructureUI : BaseStructureUI
                 return;
             }
         }
+
+        if (animalStructure == null || nightManager == null || progressBar == null)
+        {
+            if (progressBar != null)
+            {
+                progressBar.value = 0f;
+                progressBar.gameObject.SetActive(false);
+            }
+            return;
+        }
+
+        // Let the crop handle its growth
+        animalStructure.TrackGrowth(nightManager);
+
+        if (animalStructure.ProductReady)
+        {
+            progressBar.value = 1f;
+            progressBar.gameObject.SetActive(true);
+        }
+        else if (animalStructure.IsProducing)
+        {
+            progressBar.value = animalStructure.GetGrowthProgress();
+            progressBar.gameObject.SetActive(true);
+        }
+        else
+        {
+            progressBar.value = 0f;
+            progressBar.gameObject.SetActive(false);
+        }
         
         // Regular UI updates
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)

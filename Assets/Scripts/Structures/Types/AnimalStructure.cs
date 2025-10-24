@@ -841,4 +841,51 @@ public class AnimalStructure : Structure
             Debug.LogWarning($"[Tutorial] DelayedTutorialTrigger cancelled - TutorialManager is null");
         }
     }
+
+    private float plantedAtHour = -1f; 
+    private float cropGrowthProgress = 0f; 
+    private bool wasGrowing = false;
+
+    public void TrackGrowth(NightManager nightManager)
+    {
+        if (!isProducing) 
+        {
+            cropGrowthProgress = productReady ? 1f : 0f;
+            plantedAtHour = -1f;
+            wasGrowing = false;
+            return;
+        }
+
+        float currentHour = nightManager.Hours + nightManager.Minutes / 60f;
+
+        // Detect newly planted crop
+        if (!wasGrowing)
+        {
+            plantedAtHour = currentHour;
+            cropGrowthProgress = 0f;
+        }
+
+        wasGrowing = true;
+
+        // Calculate hours elapsed
+        float hoursElapsed = currentHour >= plantedAtHour 
+            ? currentHour - plantedAtHour 
+            : (24f - plantedAtHour) + currentHour;
+
+        // Crops grow until 5 AM next day
+        float totalHoursNeeded = (24f - plantedAtHour) + 5f; 
+
+        cropGrowthProgress = Mathf.Clamp01(hoursElapsed / totalHoursNeeded);
+
+        // Automatically mark ready if fully grown
+        if (cropGrowthProgress >= 1f)
+        {
+            productReady = true;
+            isProducing = false;
+            cropGrowthProgress = 1f;
+        }
+    }
+
+    public float GetGrowthProgress() => cropGrowthProgress; // 0..1
+
 }

@@ -212,33 +212,33 @@ private bool wasGrowing = false;
         UpdateUI();
 
         if (cropStructure == null || nightManager == null || cropGrowthBar == null)
-    {
-        if (cropGrowthBar != null)
+        {
+            if (cropGrowthBar != null)
+            {
+                cropGrowthBar.value = 0f;
+                cropGrowthBar.gameObject.SetActive(false);
+            }
+            return;
+        }
+
+        // Let the crop handle its growth
+        cropStructure.TrackGrowth(nightManager);
+
+        if (cropStructure.CropReady)
+        {
+            cropGrowthBar.value = 1f;
+            cropGrowthBar.gameObject.SetActive(true);
+        }
+        else if (cropStructure.IsGrowing)
+        {
+            cropGrowthBar.value = cropStructure.GetGrowthProgress();
+            cropGrowthBar.gameObject.SetActive(true);
+        }
+        else
         {
             cropGrowthBar.value = 0f;
             cropGrowthBar.gameObject.SetActive(false);
         }
-        return;
-    }
-
-    // Let the crop handle its growth
-    cropStructure.TrackGrowth(nightManager);
-
-    if (cropStructure.CropReady)
-    {
-        cropGrowthBar.value = 1f;
-        cropGrowthBar.gameObject.SetActive(true);
-    }
-    else if (cropStructure.IsGrowing)
-    {
-        cropGrowthBar.value = cropStructure.GetGrowthProgress();
-        cropGrowthBar.gameObject.SetActive(true);
-    }
-    else
-    {
-        cropGrowthBar.value = 0f;
-        cropGrowthBar.gameObject.SetActive(false);
-    }
 
 
         //this does work

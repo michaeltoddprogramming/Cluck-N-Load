@@ -51,6 +51,8 @@ public class CropStructure : Structure
     public CropType CurrentCropType => currentCropType;
     StructureData data;
 
+    private bool synergyActive = false;
+
     protected override void Start()
     {
         base.Start();
@@ -290,7 +292,22 @@ public class CropStructure : Structure
             float gridDistance = Vector2Int.Distance(cropCell, siloCell);
             minGridDistance = Mathf.Min(minGridDistance, gridDistance);
         }
+
+        if(minGridDistance <= multiplierRange)
+        {
+            synergyActive = true;
+        }
+        else 
+        {
+            synergyActive = false;
+        }
+
         cropHarvestMultiplier = minGridDistance <= multiplierRange ? cropHarvestMultiplierIncrease : 1f;
+    }
+
+    public bool isSynergyActive()
+    {
+        return synergyActive;
     }
 
     public static float[] GetAllCropHarvestMultipliers(string[] cropTypes)

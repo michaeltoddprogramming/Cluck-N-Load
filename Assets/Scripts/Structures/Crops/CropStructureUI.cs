@@ -37,6 +37,12 @@ public class CropStructureUI : BaseStructureUI
     // public UIHoverManager hoverManager;
     private float displayedGrowth = 0f;
 
+    
+    [Header("Synergy indicator")]
+    [SerializeField] private Image synergyIndicator;
+    [SerializeField] private Sprite siloSynergyGood;
+    [SerializeField] private Sprite siloSynergyBad;
+
     private void Start()
     {
         base.Start();
@@ -325,7 +331,7 @@ private bool wasGrowing = false;
     private void UpdateUI()
     {
         // UpdateHealthBar();
-        statusText.text = "slieduhrfehgfsiuedhfiusehfiuhref";
+        // statusText.text = "slieduhrfehgfsiuedhfiusehfiuhref";
         setCropImage();
         if (!isCropStructure || cropStructure == null || nightManager == null)
         {
@@ -336,6 +342,8 @@ private bool wasGrowing = false;
         bool cropReady = cropStructure.CropReady;
         bool isPaused = nightManager.getIsPaused();
         bool canPlant = nightManager.IsDay && !isPaused && !cropReady;
+
+        updateSynergyIndicator();
 
         if (!canPlant)
         {
@@ -419,6 +427,16 @@ private bool wasGrowing = false;
             {
                 hoverManager.ShowHover(moveButton, "Sleeping!", $"Buildings can’t be moved at night!", true, new Vector2(200, 0));
             }
+            //when the silo synergy is active
+            else if(button == synergyIndicator.gameObject && cropStructure.isSynergyActive())
+            {
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Harvest Boost!", $"Close to silo! Harvest yields more crops!", true, new Vector2(200, 0));
+            }
+            //when the silo synergy is not active
+            else if(button == synergyIndicator.gameObject && !cropStructure.isSynergyActive())
+            {
+                hoverManager.ShowHoverOnGameObject(synergyIndicator.gameObject, "Plain Harvest!", $"Too far from silo. Harvest yields are standard.", true, new Vector2(200, 0));
+            }
         }
     }
 
@@ -451,6 +469,35 @@ private bool wasGrowing = false;
         else if(button == moveButton.gameObject && !nightManager.IsDay)
         {
             hoverManager.PlayErrorFeedback(false, moveButton);
+        }
+    }
+
+    private void updateSynergyIndicator()
+    {
+        if (cropStructure == null || synergyIndicator == null) return;
+
+        // Check if this structure currently has an active synergy
+        if (cropStructure.isSynergyActive())
+        {
+            synergyIndicator.sprite = siloSynergyGood;
+
+            // Set the sprite based on food type
+            // switch (cropStructure.GetCurrCrop())
+            // {
+            //     case 'S':
+            //         synergyIndicator.sprite = sunflowerSynergyGood;
+            //         break;
+            //     case 'W':
+            //         synergyIndicator.sprite = wheatSynergyGood;
+            //         break;
+            //     case 'C':
+            //         synergyIndicator.sprite = carrotSynergyGood;
+            //         break;
+            // }
+        }
+        else
+        {
+            synergyIndicator.sprite = siloSynergyBad;
         }
     }
 }

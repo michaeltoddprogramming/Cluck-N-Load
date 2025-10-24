@@ -605,9 +605,8 @@ public class AnimalStructure : Structure
         else
         {
             activeSynergy = false;
-            
         }
-        
+
         foodMultiplier = minGridDistance <= siloSynergyRange ? synergyFoodRequired : normalFoodRequired;
     }
 

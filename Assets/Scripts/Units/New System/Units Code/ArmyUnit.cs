@@ -455,7 +455,6 @@ public class ArmyUnit : BaseUnit
             }
             else
             {
-                Debug.LogWarning($"{gameObject.name} agent not on NavMesh during return to flag");
                 yield break; // stop coroutine if agent can't move
             }
 
@@ -743,7 +742,6 @@ public class ArmyUnit : BaseUnit
         // if (isNightTime) return;
         if (barracks == null)
         {
-            Debug.LogWarning("No barracks set for this unit.");
             return;
         }
 
@@ -767,7 +765,6 @@ public class ArmyUnit : BaseUnit
 
         if (!agent.isOnNavMesh)
         {
-            Debug.LogWarning("Army unit not on NavMesh.");
             isMoving = false;
             return;
         }
@@ -881,8 +878,6 @@ public class ArmyUnit : BaseUnit
             // Check if agent is valid before setting destination
             if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
             {
-                Debug.LogWarning($"The agent is null: {agent == null} and the is activeis: {agent.isActiveAndEnabled}");
-                Debug.LogWarning($"NavMeshAgent invalid in RoamAroundFlag for {gameObject.name}");
                 isRoaming = false;
                 roamingRoutine = null;
                 yield break;
@@ -957,7 +952,6 @@ public class ArmyUnit : BaseUnit
         // Check if target is valid before playing VFX
         if (currentTarget == null || !currentTarget.gameObject || !currentTarget.gameObject.activeInHierarchy)
         {
-            Debug.LogWarning($"Skipping VFX for {gameObject.name} - target is invalid");
             return;
         }
 

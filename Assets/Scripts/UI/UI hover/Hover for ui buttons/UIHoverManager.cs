@@ -18,14 +18,13 @@ public class UIHoverManager : MonoBehaviour
     [Header("Money flying animation")]
     [SerializeField] private RectTransform moneyUI;
     [SerializeField] float duration = 0.5f;
-    [SerializeField] float delay = 0f;
 
     private bool isPulsing = false;
 
     private void Awake()
     {
         if (uiHover == null)
-            uiHover = FindObjectOfType<UIHover>();
+            uiHover = FindFirstObjectByType<UIHover>();
 
         if (moneyUI != null)
             moneyOriginalPos = moneyUI.anchoredPosition;
@@ -48,12 +47,10 @@ public class UIHoverManager : MonoBehaviour
                     Mathf.Approximately(targetScale.y, 0.25f) &&
                     Mathf.Approximately(targetScale.z, 0.25f))
                 {
-                    Debug.Log("it is the progress bar");
                     pulseScale = smallPulseScale;
                 }
                 else
                 {
-                    Debug.Log("it is not the progress bar");
                     pulseScale = 1.2f;
                 }
 
@@ -92,12 +89,10 @@ public class UIHoverManager : MonoBehaviour
                     Mathf.Approximately(targetScale.y, 0.25f) &&
                     Mathf.Approximately(targetScale.z, 0.25f))
                 {
-                    Debug.Log("it is the progress bar");
                     pulseScale = smallPulseScale;
                 }
                 else
                 {
-                    Debug.Log("it is not the progress bar");
                     pulseScale = 1.2f;
                 }
 
@@ -153,7 +148,6 @@ public class UIHoverManager : MonoBehaviour
                 AudioManager.Instance.PlayInsufficientFundsSound();
                 if(button != null)
                 {
-                    Debug.Log("it should be playing the money effect");
                     FlyMoney(button.GetComponent<RectTransform>());
                 }
             }
@@ -177,7 +171,6 @@ public class UIHoverManager : MonoBehaviour
                 AudioManager.Instance.PlayInsufficientFundsSound();
                 if(button != null)
                 {
-                    Debug.Log("it should be playing the money effect");
                     FlyMoney(button.GetComponent<RectTransform>());
                 }
             }
@@ -250,14 +243,12 @@ public class UIHoverManager : MonoBehaviour
 
         // Force start at anchored original
         moneyUI.anchoredPosition = moneyOriginalPos;
-        Debug.Log($"FlyMoney: Starting at {moneyOriginalPos}");
 
         // Get target button's world position
         Vector3 buttonWorldPos = targetButton.position;
 
         // Convert target to local (works perfectly)
         Vector3 localTargetPos = moneyUI.parent.InverseTransformPoint(buttonWorldPos);
-        Debug.Log($"FlyMoney: Target button = {targetButton.name}, localTargetPos = {localTargetPos}");
 
         // Convert the original anchored position to local position for the return trip
         Vector3 originalWorldPos = moneyUI.TransformPoint(Vector3.zero);
@@ -268,7 +259,6 @@ public class UIHoverManager : MonoBehaviour
             .setEase(LeanTweenType.easeInOutSine)
             .setOnComplete(() =>
             {
-                Debug.Log("FlyMoney: Reached button, moving back to original position");
 
                 // Animate back using proper local position
                 LeanTween.moveLocal(moneyUI.gameObject, originalLocalPos, duration)
@@ -276,7 +266,6 @@ public class UIHoverManager : MonoBehaviour
                     .setOnComplete(() =>
                     {
                         moneyUI.anchoredPosition = moneyOriginalPos;
-                        Debug.Log("FlyMoney: Returned to exact original position");
                     });
             });
     }

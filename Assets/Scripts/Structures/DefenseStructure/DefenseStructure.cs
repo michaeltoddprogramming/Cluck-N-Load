@@ -155,7 +155,6 @@ public class DefenseStructure : Structure
     {
         if (isRegistered)
         {
-            Debug.Log($"Unregistering DefenseStructure at grid position: {myGridPosition}");
             
             // Clean up connectors
             ClearAllConnectors();
@@ -167,7 +166,6 @@ public class DefenseStructure : Structure
             // Update only immediate neighbors
             UpdateImmediateNeighbors();
             
-            Debug.Log($"Successfully unregistered. Remaining structures: {defenseRegistry.Count}");
         }
     }
 

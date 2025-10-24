@@ -36,7 +36,6 @@ public class UIHover : MonoBehaviour
 
 
         offset = newOffset ?? new Vector2(0, 100);
-        Debug.Log($"this is the offset: {offset}");
 
         if(scalePanel)
         {

@@ -37,7 +37,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         buildController = FindFirstObjectByType<BuildController>();
         nightManager = FindFirstObjectByType<NightManager>();
-        hoverManager = FindObjectOfType<UIHoverManager>();
+        hoverManager = FindFirstObjectByType<UIHoverManager>();
     }
 
     private void Update()

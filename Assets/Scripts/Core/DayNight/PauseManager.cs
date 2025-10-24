@@ -60,7 +60,6 @@ public class PauseManager : MonoBehaviour
 
     public void pauseGame()
     {
-        Debug.Log("Pausing game...");
         if (!isPaused)
         {
             nightManager.pauseTime();
@@ -81,7 +80,6 @@ public class PauseManager : MonoBehaviour
 
     public void playGame()
     {
-        Debug.Log("Resuming game...");
         if (isPaused)
         {
             nightManager.playTime();
@@ -98,7 +96,6 @@ public class PauseManager : MonoBehaviour
 
     public bool getIsPaused()
     {
-        Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IsPaused called, returning: " + isPaused);
         return isPaused;
     }
 

@@ -83,7 +83,7 @@ public class BarracksStructureUI : BaseStructureUI
     // public UIHoverManager hoverManager;
     [SerializeField] public GameObject civilianSection;
 
-    private void Start()
+    private new void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();
@@ -207,7 +207,6 @@ public class BarracksStructureUI : BaseStructureUI
             if (currentPauseState != lastPauseState)
             {
                 lastPauseState = currentPauseState;
-                Debug.Log($"[BarracksStructureUI] Pause state changed to: {currentPauseState}");
                 UpdateUI(); // Update immediately when pause state changes
             }
         }

@@ -4,43 +4,17 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Linq;
-// Force recompile - COMPILATION FORCED!
-
 public class NightManager : MonoBehaviour
 {
     public static NightManager Instance { get; private set; }
     private int currentSeason = 1;
     public event System.Action<int> OnDayChanged;
 
-    [Header("Enemy Unlock Notifications")]
-    [Tooltip("Enable a special badge notification when Raccoons become available (season 2)")]
-    public bool notifyRaccoonUnlock = true;
-    public string raccoonUnlockTitle = "Raccoons Unlocked!";
-    [TextArea]
-    public string raccoonUnlockMessage = "Raccoons will now appear during this season. Stay alert!";
-    private bool raccoonAnnounced = false;
-
-    [Tooltip("Enable a special badge notification when Boars become available (season 3)")]
-    public bool notifyBoarUnlock = true;
-    public string boarUnlockTitle = "Boars Unlocked!";
-    [TextArea]
-    public string boarUnlockMessage = "Boars will now appear during this season. They're tougher than other enemies!";
-    private bool boarAnnounced = false;
-
-    [Tooltip("Enable a special badge notification when Bears become available (season 4)")]
-    public bool notifyBearUnlock = true;
-    public string bearUnlockTitle = "Bears Unlocked!";
-    [TextArea]
-    public string bearUnlockMessage = "Bears will now appear during this season. The most dangerous enemy yet!";
-    private bool bearAnnounced = false;
-
-    // Start night button
     [Header("Start NIght button")]
     [SerializeField] private Button startNightButton;
     [SerializeField] private TextMeshProUGUI buttonText;
     [SerializeField] private TextMeshProUGUI dayCountText;
 
-    // Light
     [Header("Lighting stuff")]
     [SerializeField] private Light sceneLight;
     [SerializeField] private Color color = new Color32(0xAA, 0xBB, 0xDD, 0xFF);
@@ -49,31 +23,21 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Gradient AfternoonToNightGradient;
     [SerializeField] private Gradient nightToMorningGradient;
 
-    [Header("Performance Settings")]
-
-    // Skyboxes
     [Header("Skyboxes")]
     [SerializeField] private Texture2D skyboxMorning;
     [SerializeField] private Texture2D skyboxDay;
     [SerializeField] private Texture2D skyboxAfternoon;
     [SerializeField] private Texture2D skyboxNight;
 
-    // Time indicator icons
     [Header("Time Indicator")]
     [SerializeField] private Image timeOfDayIcon;
-    // [SerializeField] private Sprite dayIcon;
-    // [SerializeField] private Sprite nightIcon;
 
-    // Songs
     private AudioSource source1;
     private AudioSource source2;
 
-    // Is day bool
     private bool isDay = true;
     public bool IsDay => isDay; // For CropStructureUI
 
-
-    // Shop stuff
     [Header("Shop Stuff")]
     [SerializeField] private Button shopButton;
     private Color dayShop = Color.white;
@@ -81,11 +45,9 @@ public class NightManager : MonoBehaviour
     public Image shopIcon;
     [SerializeField] public ShopUIManager shopManager;
 
-    // Item delete icon
     [Header("Delete Icon")]
     [SerializeField] private BuildController buildController;
 
-    // Time management
     [Header("Time Management")]
     [SerializeField] private TextMeshProUGUI seasonNotification;
     [SerializeField] private TextMeshProUGUI productionNotification;
@@ -96,7 +58,6 @@ public class NightManager : MonoBehaviour
     [SerializeField] private bool isPaused = false;
     public bool IsPaused => isPaused;
 
-    // Time
     [Header("Time")]
     [Header("Year Change Sounds")]
     private AudioSource yearAudioSource;
@@ -129,7 +90,8 @@ public class NightManager : MonoBehaviour
         }
     }
 
-    private int daysThisYear = 0;
+    // private int daysThisYear = 0; // Unused field
+    private int lastSurvivalRewardDay = -1;
 
     [SerializeField] private int years;
     public int Years
@@ -145,7 +107,6 @@ public class NightManager : MonoBehaviour
     private float tempSecond;
     private bool yearsChanged = false;
 
-    // Season icons
     [Header("Season Icons")]
     [SerializeField] private Image seasonIcon;
     [SerializeField] private Sprite summer;
@@ -153,22 +114,18 @@ public class NightManager : MonoBehaviour
     [SerializeField] private Sprite spring;
     [SerializeField] private Sprite fall;
 
-    // Fog density
     [Header("Fog stuff")]
     [SerializeField] private float morningFog = 0.005f;
     [SerializeField] private float dayFog = 0.003f;
     [SerializeField] private float nightFog = 0.009f;
 
-    // Light intensity
     [Header("Light intensity")]
     [SerializeField] private float nightIntensity = 0.03f;
     [SerializeField] private float dayIntensity = 2f;
 
-    // Pause game manager
     [Header("Pause Game Manager")]
     [SerializeField] private PauseManager pauseManager;
 
-    // Structures
     private List<AnimalStructure> animalStructures = new List<AnimalStructure>();
     private List<BarracksStructure> barracksStructures = new List<BarracksStructure>();
     private List<FarmHouseStructure> farmHouseStructures = new List<FarmHouseStructure>();
@@ -178,17 +135,14 @@ public class NightManager : MonoBehaviour
     // private Coroutine wolfSpawnCoroutine = null;
     private List<Coroutine> skyboxCoroutines = new List<Coroutine>();
     private List<Coroutine> lightingCoroutines = new List<Coroutine>();
-
     private CombatManager combatManager;
     private bool isFirstDay = true;
     private EnemyIndicator enemyIndicator;
     private TimeIndicator timeIndicator;
     private TimeSpeedEffect timeSpeedEffect;
 
-
     private void Awake()
     {
-        // Singleton setup
         if (Instance == null)
         {
             Instance = this;
@@ -205,11 +159,9 @@ public class NightManager : MonoBehaviour
         {
             // CombatManager not found - combat features will be disabled
         }
-
         enemyIndicator = FindFirstObjectByType<EnemyIndicator>();
         timeIndicator = FindFirstObjectByType<TimeIndicator>();
         timeSpeedEffect = FindFirstObjectByType<TimeSpeedEffect>();
-
     }
 
     private void Start()
@@ -225,7 +177,6 @@ public class NightManager : MonoBehaviour
             doubleProductionSource = sources[5];
         }
 
-        //preload the audio samples
         if (source1 != null)
         {
             source1.Play();
@@ -248,8 +199,6 @@ public class NightManager : MonoBehaviour
         else setSeason(currentSeason);
 
         // NOTE: setSeason already calls combatManager.SetSeason, so no need for duplicate call
-        // combatManager.SetSeason(currentSeason);
-        // chooseAnimalProductForSeason();
     }
 
     private void Update()
@@ -269,8 +218,6 @@ public class NightManager : MonoBehaviour
             Minutes += 1;
             tempSecond = 0;
         }
-
-        //rotate daynight icon
         rotateDayNightIcon();
     }
 
@@ -360,13 +307,9 @@ public class NightManager : MonoBehaviour
     private void StartNight(int flag)
     {
         isFirstDay = false;
-
         combatManager.StartCombat();
-
-        // Disable shop for night
         shopManager.disableShop();
 
-        // IMPORTANT: Force disable build mode to place any moving structures
         if (buildController != null)
         {
             buildController.DisableBuildMode();
@@ -376,7 +319,6 @@ public class NightManager : MonoBehaviour
         if (ItemHoverPanel.Instance != null)
             ItemHoverPanel.Instance.Hide();
 
-        // Advance crops to stage 1
         cropGrowthOnAll(1);
 
         shopButton.interactable = false;
@@ -384,10 +326,8 @@ public class NightManager : MonoBehaviour
         isDay = false;
         buttonText.text = "End Night";
 
-        // Set weather for night: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
         {
-            // Don't allow rain during tutorial
             if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
                 WeatherManager.Instance.ClearWeather();
@@ -407,23 +347,6 @@ public class NightManager : MonoBehaviour
             }
         }
 
-        // Start wolf spawning when night begins
-        // if (unitSpawner != null)
-        // {
-        //     // Stop only wolf spawning coroutine if active
-        //     if (wolfSpawnCoroutine != null)
-        //     {
-        //         StopCoroutine(wolfSpawnCoroutine);
-        //     }
-
-        //     wolfSpawnCoroutine = StartCoroutine(SpawnWolvesOverTime());
-        // }
-        // else
-        // {
-        //     Debug.LogError("UnitSpawner reference missing in NightManager!");
-        // }
-
-        // Manage skybox coroutines
         Coroutine skyboxCor = StartCoroutine(Skybox(skyboxDay, skyboxNight, 5f));
         skyboxCoroutines.Add(skyboxCor);
 
@@ -432,9 +355,7 @@ public class NightManager : MonoBehaviour
 
         sceneLight.intensity = nightIntensity;
         RenderSettings.fogDensity = nightFog;
-        // timeOfDayIcon.sprite = nightIcon;
 
-        // Notify barracks of night
         foreach (BarracksStructure barracks in barracksStructures)
         {
             if (barracks != null)
@@ -450,7 +371,6 @@ public class NightManager : MonoBehaviour
         isDay = true;
         buttonText.text = "End Day";
 
-        // Use shop manager to properly handle tutorial state
         if (!isPaused)
         {
             shopManager.enableShop();
@@ -470,17 +390,6 @@ public class NightManager : MonoBehaviour
             combatManager.scaleTimeNightly();
             combatManager.increaseAfterNight();
         }
-        // Destroy all remaining wolves when day starts
-        // foreach (Wolf wolf in activeWolves.ToList())
-        // {
-        //     if (wolf != null)
-        //     {
-        //         wolf.OnDayNightChanged(false); // This should trigger the wolf to destroy itself
-        //     }
-        // }
-        // activeWolves.Clear();
-
-        // Notify animal structures
         foreach (AnimalStructure structure in animalStructures)
         {
             if (structure != null)
@@ -488,8 +397,6 @@ public class NightManager : MonoBehaviour
                 structure.OnNewDay();
             }
         }
-
-        // Notify barracks of day
         foreach (BarracksStructure barracks in barracksStructures)
         {
             if (barracks != null)
@@ -497,11 +404,8 @@ public class NightManager : MonoBehaviour
                 barracks.OnDayNightChanged(false);
             }
         }
-
-        // Set weather for day: randomly rain, only snow in winter
         if (WeatherManager.Instance != null)
         {
-            // Don't allow rain during tutorial
             if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
                 WeatherManager.Instance.ClearWeather();
@@ -521,19 +425,14 @@ public class NightManager : MonoBehaviour
             }
         }
 
-        // Advance growing crops to stage 2, preserve ready-to-harvest crops
         cropGrowthOnAll(2);
-
         isDay = true;
         buttonText.text = "Start Night";
-
-        // Use shop manager to properly handle tutorial state
         if (shopManager != null)
         {
             shopManager.UpdateShopButtonStateForTimeControls();
         }
 
-        // Manage skybox coroutines
         Coroutine skyboxCor = StartCoroutine(Skybox(skyboxNight, skyboxDay, flag == 0 ? 0f : 5f));
         skyboxCoroutines.Add(skyboxCor);
 
@@ -542,7 +441,6 @@ public class NightManager : MonoBehaviour
 
         sceneLight.intensity = dayIntensity;
         RenderSettings.fogDensity = dayFog;
-        // timeOfDayIcon.sprite = dayIcon;
     }
 
     private IEnumerator LightingChanges(Gradient lightGradient, float time)
@@ -645,7 +543,6 @@ public class NightManager : MonoBehaviour
 
             // StartNotification("Night starting soon!!", 5f);
             
-            // NEW: Add modern warning notification for night approaching
             if (NotificationManager.Instance != null)
             {
                 NotificationManager.ShowWarning("Night Approaching!", "Prepare defenses • Enemies spawn soon");
@@ -684,220 +581,8 @@ public class NightManager : MonoBehaviour
         }
     }
 
-    // private void OnDayChange(int value)
-    // {
-    //     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
-
-    //     if (value == 0)
-    //     {
-    //         Debug.Log("Day 0 - setting Spring season");
-    //         setSeason(1);
-
-    //     }
-    //     else if (value == 5 && hours == 5)
-    //     {
-    //         Debug.Log("Day 5, hour 5 - setting Summer season");
-    //         setSeason(2);
-    //     }
-    //     else if (value == 10 && hours == 5)
-    //     {
-    //         Debug.Log("Day 10, hour 5 - setting Fall season");
-    //         setSeason(3);
-    //     }
-    //     else if (value == 15 && hours == 5)
-    //     {
-    //         Debug.Log("Day 15, hour 5 - setting Winter season");
-    //         setSeason(4);
-    //     }
-    //     else if (value == 20 && hours == 5)
-    //     {
-    //         // print("CRITICAL: Year transition triggered at Day 20, Hour 5");
-    //         // UnityEngine.Debug.LogError($"YEAR TRANSITION: Day 20, hour 5 detected! About to increment year from {years} to {years + 1}");
-    //         // Debug.Log("Day 20, hour 5 - triggering year transition");
-    //         // Debug.Log($"Before year transition: years={years}, days={days}, hours={hours}");
-    //         // StartNotification("Night starting soon!!", 5f);
-
-    //         if (yearAudioSource != null)
-    //         {
-    //             yearAudioSource.Play();
-    //         }
-
-    //         years++;
-    //         // days = 0;
-    //         hours = 7;
-    //         minutes = 0;
-    //         YearsChanged = true;
-
-    //         Debug.Log($"After year transition: years={years}, yearsChanged={YearsChanged} - setting Spring season");
-    //         setSeason(1);
-
-    //         StartDay(0); // force reset to day state
-    //         // setSeason(1); // reset season if needed
-    //     }
-    //     else if (value == 21)
-    //     {
-    //         Debug.Log("Day 21 - triggering year transition (fallback)");
-    //         years++;
-    //         // days = 0;
-    //         hours = 7;
-    //         minutes = 0;
-
-    //         StartDay(0); // force reset to day state
-    //         setSeason(1); // reset season if needed
-    //     }
-
-    //     UpdateDayCountUI();
-    // }
-
-
-// private void OnDayChange(int value)
-// {
-//     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
-
-//     // Season logic based on day modulo 20, so it repeats every 20 days
-//     // int dayInCycle = value % 20;
-
-//     // if (dayInCycle == 0)
-//     // {
-//     //     Debug.Log("Day 0 in cycle - setting Spring season");
-//     //     setSeason(1);
-//     // }
-//     // else if (dayInCycle == 5 && hours == 5)
-//     // {
-//     //     Debug.Log("Day 5 in cycle, hour 5 - setting Summer season");
-//     //     setSeason(2);
-//     // }
-//     // else if (dayInCycle == 10 && hours == 5)
-//     // {
-//     //     Debug.Log("Day 10 in cycle, hour 5 - setting Fall season");
-//     //     setSeason(3);
-//     // }
-//     // else if (dayInCycle == 15 && hours == 5)
-//     // {
-//     //     Debug.Log("Day 15 in cycle, hour 5 - setting Winter season");
-//     //     setSeason(4);
-//     // }
-//     int dayInCycle = value % 20;
-
-// if (dayInCycle == 0)
-// {
-//     setSeason(1); // Spring
-// }
-// else if (dayInCycle == 5 && hours == 5)
-// {
-//     setSeason(2); // Summer
-// }
-// else if (dayInCycle == 10 && hours == 5)
-// {
-//     setSeason(3); // Fall
-// }
-// else if (dayInCycle == 15 && hours == 5)
-// {
-//     setSeason(4); // Winter
-// }
-//     else if (dayInCycle == 20 && hours == 5)
-//     {
-//         // Year transition event (optional audio, etc.)
-//         if (yearAudioSource != null)
-//         {
-//             yearAudioSource.Play();
-//         }
-
-//         years++;
-//         hours = 7;
-//         minutes = 0;
-//         YearsChanged = true;
-
-//         Debug.Log($"After year transition: years={years}, YearsChanged={YearsChanged} - setting Spring season");
-//         setSeason(1);
-
-//         StartDay(value); // Keep the day count intact
-//     }
-
-//     UpdateDayCountUI();
-// }
-
-// private void OnDayChange(int value)
-// {
-//     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
-
-//     int dayInCycle = value % 20;
-
-//     // Seasons
-//     if (dayInCycle == 0)
-//     {
-//         setSeason(1); // Spring
-//     }
-//     else if (dayInCycle == 5 && hours == 5)
-//     {
-//         setSeason(2); // Summer
-//     }
-//     else if (dayInCycle == 10 && hours == 5)
-//     {
-//         setSeason(3); // Fall
-//     }
-//     else if (dayInCycle == 15 && hours == 5)
-//     {
-//         setSeason(4); // Winter
-//     }
-
-//     // Year increment at day 20, hour 5 (exactly like your old code)
-//     if (value % 20 == 0 && value != 0 && hours == 5)
-//     {
-//         if (yearAudioSource != null)
-//             yearAudioSource.Play();
-
-//         years++;
-//         hours = 5;
-//         minutes = 0;
-//         YearsChanged = true;
-
-//         Debug.Log($"Year incremented: years={years}");
-//     }
-
-//     UpdateDayCountUI();
-// }
-
-// private void OnDayChange(int value)
-// {
-//     Debug.Log($"OnDayChange called: value={value}, hours={hours}");
-
-//     int dayInCycle = value % 20;
-
-//     // Seasons - ignore hours, just base on dayInCycle
-//     switch (dayInCycle)
-//     {
-//         case 0:
-//             setSeason(1); // Spring
-//             break;
-//         case 5:
-//             setSeason(2); // Summer
-//             break;
-//         case 10:
-//             setSeason(3); // Fall
-//             break;
-//         case 15:
-//             setSeason(4); // Winter
-//             break;
-//     }
-
-//     // Year increment at multiples of 20 days (optional)
-//     if (dayInCycle == 0 && value != 0) 
-//     {
-//         if (yearAudioSource != null)
-//             yearAudioSource.Play();
-
-//         years++;
-//         YearsChanged = true;
-//         Debug.Log($"Year incremented: years={years}");
-//     }
-
-//     UpdateDayCountUI();
-// }
-
 private void OnDayChange(int value)
 {
-    Debug.Log($"OnDayChange called: value={value}, hours={hours}");
 
     int dayInCycle = value % 20;
 
@@ -929,7 +614,6 @@ private void OnDayChange(int value)
 
         years++;
         YearsChanged = true;
-        Debug.Log($"Year incremented: years={years}");
     }
 
     UpdateDayCountUI();
@@ -939,38 +623,14 @@ private void OnDayChange(int value)
 
 
 
+
     public void UpdateEnemyIndicatorForSeason(int season)
     {
-        // Check if unlock enemy animals cheat is active
         if (CheatManager.Instance != null && CheatManager.Instance.IsUnlockEnemyAnimalsActive())
         {
             if (enemyIndicator != null) enemyIndicator.MakeAllEnemiesVisible();
-            // If cheat/unlock-all makes enemies visible, ensure notifications are shown
-            NotifyRaccoonUnlock();
-            NotifyBoarUnlock();
-            NotifyBearUnlock();
             return;
         }
-        
-        // After completing the first year (year 2+), all enemy types should be available
-        // if (years >= 2)
-        // {
-            // print($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
-            // Debug.LogError($"CRITICAL: Post-first-year condition met (years={years}) - showing all enemies");
-            // if (enemyIndicator != null) 
-            // {
-                // enemyIndicator.MakeAllEnemiesVisible();
-                // print("Called MakeAllEnemiesVisible()");
-                // Debug.LogError("Called MakeAllEnemiesVisible()");
-            // }
-            // else
-            // {
-                // Debug.LogError("Enemy indicator is null!");
-            // }
-            // return;
-        // }
-        
-        // First year only: Normal seasonal behavior
         if (enemyIndicator != null)
         {
             switch (season)
@@ -980,73 +640,25 @@ private void OnDayChange(int value)
                     break;
                 case 2:
                     enemyIndicator.MakeRacoonVisible();
-                    // Ensure raccoon notification appears when season switches to raccoon season
-                    NotifyRaccoonUnlock();
                     break;
                 case 3:
                     enemyIndicator.MakeBoarVisible();
-                    // Ensure boar notification appears when season switches to boar season
-                    NotifyBoarUnlock();
                     break;
                 case 4:
                     enemyIndicator.MakeBearVisible();
-                    // Ensure bear notification appears when season switches to bear season
-                    NotifyBearUnlock();
                     break;
             }
         }
-        else
-        {
-            // Enemy indicator not available
-        }
-    }
-
-    private void NotifyRaccoonUnlock()
-    {
-        if (!notifyRaccoonUnlock || raccoonAnnounced) return;
-        raccoonAnnounced = true;
-        if (NotificationManager.Instance != null)
-        {
-            NotificationManager.ShowRaccoon(raccoonUnlockMessage, 5f);
-        }
-        if (GameEventManager.Instance != null)
-        {
-            GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Raccoon");
-        }
-    }
-
-    private void NotifyBoarUnlock()
-    {
-        if (!notifyBoarUnlock || boarAnnounced) return;
-        boarAnnounced = true;
-        if (NotificationManager.Instance != null)
-        {
-            NotificationManager.ShowBoar(boarUnlockMessage, 5f);
-        }
-        if (GameEventManager.Instance != null)
-        {
-            GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Boar");
-        }
-    }
-
-    private void NotifyBearUnlock()
-    {
-        if (!notifyBearUnlock || bearAnnounced) return;
-        bearAnnounced = true;
-        if (NotificationManager.Instance != null)
-        {
-            NotificationManager.ShowBear(bearUnlockMessage, 5f);
-        }
-        if (GameEventManager.Instance != null)
-        {
-            GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Bear");
-        }
+        // else: Enemy indicator not available
     }
 
     private void UpdateDayCountUI()
     {
-        if (dayCountText != null)
+        if (dayCountText != null) {
             dayCountText.text = $"Day {Days}";
+
+        }
+            
     }
 
     private IEnumerator Skybox(Texture2D a, Texture2D b, float time)
@@ -1075,49 +687,35 @@ private void OnDayChange(int value)
                 {
                     text = $"Year {Years} done!!\nSpring!!!!";
                     seasonIcon.sprite = spring;
-                   // if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                   //     TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
                 }
                 else
                 {
                     text = "Spring!!";
                     seasonIcon.sprite = spring;
-                    //if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                    //    TutorialManager.Instance.Trigger(TutorialTrigger.SpringSeason);
                 }
                 break;
             case 2:
                 YearsChanged = false;
                 text = "Summer!!";
                 seasonIcon.sprite = summer;
-                // REMOVED: Summer season notification no longer needed
-                // if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                //     TutorialManager.Instance.Trigger(TutorialTrigger.SummerSeason);
                 break;
             case 3:
                 text = "Fall!!";
                 seasonIcon.sprite = fall;
-                //if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                //    TutorialManager.Instance.Trigger(TutorialTrigger.FallSeason);
                 break;
             case 4:
                 text = "Winter!!";
                 seasonIcon.sprite = winter;
-                //if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-                //    TutorialManager.Instance.Trigger(TutorialTrigger.WinterSeason);
                 break;
             default:
                 text = "";
                 break;
         }
 
-        // Set weather for season change
         SetSeasonWeather();
 
-        // Always call chooseAnimalProductForSeason (it will handle tutorial appropriately now)
         chooseAnimalProductForSeason();
 
-        // Heal all farm houses to full HP at the start of a new season
         foreach (FarmHouseStructure farmHouse in farmHouseStructures)
         {
             if (farmHouse != null)
@@ -1126,7 +724,6 @@ private void OnDayChange(int value)
             }
         }
 
-        // Debug log removed: Setting season to ...
         if (!isFirstDay)
         {
             combatManager.increaseAfterSeason();
@@ -1135,18 +732,14 @@ private void OnDayChange(int value)
 
         combatManager.SetSeason(season);
 
-        // Update enemy indicator for the new season
         UpdateEnemyIndicatorForSeason(season);
 
-        // Show a seasonal blocking notification (modal) to explain the upcoming season
-        // Only show when this is a real season change (not initial setup) and tutorial isn't active
         if (!isFirstDay)
         {
             if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
             {
                 if (NotificationManager.Instance != null)
                 {
-                    // Gather newly unlocked structures for today and include them in the seasonal blocking modal
                     string unlocksText = null;
                     if (GameLoopManager.Instance != null)
                     {
@@ -1168,35 +761,13 @@ private void OnDayChange(int value)
             }
         }
 
-        // Special-case notification: raccoon unlock on season 2 (Summer)
-        if (season == 2 && notifyRaccoonUnlock && !raccoonAnnounced)
-        {
-            raccoonAnnounced = true;
-            if (NotificationManager.Instance != null)
-            {
-                NotificationManager.ShowRaccoon(raccoonUnlockMessage, 5f);
-            }
-            if (GameEventManager.Instance != null)
-            {
-                GameEventManager.Instance.TriggerFeatureUnlocked("Enemy: Raccoon");
-            }
-        }
 
-        // Use Pete for season notifications instead of basic text
-        // DISABLED: Now using modern notification system instead to avoid duplicate notifications
-        // if (TutorialManager.Instance != null && !TutorialManager.Instance.IsTutorialActive())
-        // {
-        //     ShowPeteSeasonNotification(season);
-        // }
-        
-        // Season change notifications removed - players will learn about seasons through gameplay
     }
 
     private void SetSeasonWeather()
     {
         if (WeatherManager.Instance != null)
         {
-            // Don't allow rain during tutorial
             if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
             {
                 WeatherManager.Instance.ClearWeather();
@@ -1218,14 +789,12 @@ private void OnDayChange(int value)
     }
     private void StartNotification(string message, float duration)
     {
-        // Stop any existing notification first
         if (seasonNotificationCoroutine != null)
         {
             StopCoroutine(seasonNotificationCoroutine);
             seasonNotification.gameObject.SetActive(false);
         }
 
-        // Start new notification
         seasonNotificationCoroutine = StartCoroutine(showText(message, duration));
     }
 
@@ -1238,17 +807,14 @@ private void OnDayChange(int value)
         seasonNotificationCoroutine = null;
     }
 
-    // New method to properly manage production notification coroutines
     private void StartProductionNotification(string message, float duration)
     {
-        // Stop any existing notification first
         if (productionNotificationCoroutine != null)
         {
             StopCoroutine(productionNotificationCoroutine);
             productionNotification.gameObject.SetActive(false);
         }
 
-        // Start new notification
         productionNotificationCoroutine = StartCoroutine(showProductionText(message, duration));
     }
 
@@ -1383,7 +949,6 @@ private void OnDayChange(int value)
             }
             // StartProductionNotification(message, 5);
             
-            // NEW: Add modern notification for production boost
             if (NotificationManager.Instance != null)
             {
                 NotificationManager.ShowAchievement("Double Production!", $"{fullAnimalName} earning 100% more! (Lasts entire season)");
@@ -1468,16 +1033,10 @@ private void OnDayChange(int value)
 
                 // StartProductionNotification(message, 5);
                 
-                // NEW: Add modern notification for dual production boost
                 if (NotificationManager.Instance != null)
                 {
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
-
-                // if (doubleProductionSource != null)
-                // {
-                //     doubleProductionSource.Play();
-                // }
             }
             else
             {
@@ -1567,38 +1126,26 @@ private void OnDayChange(int value)
 
                 // StartProductionNotification(message, 5);
                 
-                // NEW: Add modern notification for dual production boost
                 if (NotificationManager.Instance != null)
                 {
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
-
-                // if (doubleProductionSource != null)
-                // {
-                //     doubleProductionSource.Play();
-                // }
             }
         }
     }
 
-    // New helper method to show simplified tutorial explanation
     public void ShowSimplifiedTutorialSeasonBonus()
     {
-        // During tutorial, we'll just show a message explaining the concept
         string tutorialMessage = "Each season brings special bonuses to your farm animals! You can see which animals produce more by checking the price panel.";
 
-        // Use the new notification system instead of the old text display
         if (NotificationManager.Instance != null)
         {
             NotificationManager.ShowNotification("Seasonal Bonuses", tutorialMessage, "Info", 4f);
         }
 
-        // Apply normal seasonal bonuses during tutorial (allow players to see them working)
         ProductionBoosts productionBoostsManager = FindFirstObjectByType<ProductionBoosts>();
         if (productionBoostsManager != null)
         {
-            // Let the normal seasonal bonus system work during tutorial
-            // This will call chooseAnimalProductForSeason() which will apply random bonuses
             chooseAnimalProductForSeason();
         }
     }
@@ -1610,7 +1157,6 @@ private void OnDayChange(int value)
         string seasonName = GetSeasonName(season);
         string peteMessage = GetPeteSeasonMessage(season);
 
-        // Create a Pete notification using the tutorial system
         var seasonStep = new TutorialStep
         {
             stepId = $"pete_season_{season}",
@@ -1619,7 +1165,6 @@ private void OnDayChange(int value)
             triggerToWaitFor = TutorialTrigger.None
         };
 
-        // Show Pete's season notification as a discovery popup
         TutorialManager.Instance.ShowPeteSeasonNotification(seasonStep);
     }
 
@@ -1735,49 +1280,12 @@ private void OnDayChange(int value)
         productionNotificationCoroutine = null;
     }
 
-    /// <summary>
-    /// Check if we're currently in tutorial mode and should use extended day timing
-    /// </summary>
     private bool IsInTutorialMode()
     {
         return TutorialManager.Instance != null &&
                TutorialManager.Instance.IsTutorialActive() &&
                TutorialManager.Instance.enabled;
     }
-
-
-    // private void rotateDayNightIcon()
-    // {
-    //     // Day: 7:00 to 18:00 (11 hours, 660 minutes)
-    //     // Night: 18:00 to next 7:00 (13 hours, 780 minutes)
-    //     float totalMinutes = Hours * 60 + Minutes;
-    //     float rotation = 0f;
-
-    //     if (Hours >= 5 && Hours < 20)
-    //     {
-    //         // Daytime: 7:00 (0 min) to 18:00 (660 min)
-    //         float dayMinutes = totalMinutes - (5 * 60);
-    //         rotation = Mathf.Clamp01(dayMinutes / 780f) * 180f;
-    //     }
-    //     else
-    //     {
-    //         // Nighttime: 18:00 (1080 min) to next 7:00 (420 min, but next day)
-    //         float nightMinutes;
-    //         if (Hours >= 20)
-    //         {
-    //             // 20:00 to 24:00
-    //             nightMinutes = totalMinutes - (20 * 60);
-    //         }
-    //         else
-    //         {
-    //             // 0:00 to 7:00
-    //             nightMinutes = (totalMinutes + (6 * 60)); // (0:00 is 0, 7:00 is 420)
-    //         }
-    //         rotation = 180f + Mathf.Clamp01(nightMinutes / 660f) * 180f;
-    //     }
-
-    //     timeOfDayIcon.rectTransform.localRotation = Quaternion.Euler(0, 0, -rotation);
-    // }
 
     private void rotateDayNightIcon()
     {
@@ -1817,10 +1325,8 @@ private void OnDayChange(int value)
     {
         if (season < 1 || season > 4) return;
 
-        // Call the private setSeason method to ensure all season logic is executed
         setSeason(season);
 
-        // Trigger season change events
         if (GameEventManager.Instance != null)
         {
             GameEventManager.Instance.TriggerSeasonChanged(season);
@@ -1873,7 +1379,6 @@ private void OnDayChange(int value)
 
     private void OnDestroy()
     {
-        // FIXED COMPILATION FORCED - Clean up any remaining coroutines on destroy
         if (seasonNotificationCoroutine != null)
         {
             StopCoroutine(seasonNotificationCoroutine);
@@ -1885,7 +1390,6 @@ private void OnDayChange(int value)
             productionNotificationCoroutine = null;
         }
         
-        // Safely stop skybox coroutines
         if (skyboxCoroutines != null)
         {
             foreach (Coroutine cor in skyboxCoroutines)
@@ -1898,7 +1402,6 @@ private void OnDayChange(int value)
             skyboxCoroutines.Clear();
         }
         
-        // Safely stop lighting coroutines
         foreach (Coroutine cor in lightingCoroutines)
         {
             if (cor != null)
@@ -1917,7 +1420,6 @@ private void OnDayChange(int value)
     {
         const int SURVIVAL_BONUS = 100;
         
-        // Show achievement notification with random funny message first
         if (NotificationManager.Instance != null)
         {
             string[] funnyMessages = {
@@ -1939,11 +1441,9 @@ private void OnDayChange(int value)
             };
             
             string randomMessage = funnyMessages[Random.Range(0, funnyMessages.Length)];
-            // Longer duration for important daily achievement
             NotificationManager.ShowAchievement($"Day {days} Survived!", randomMessage, 4f);
         }
         
-        // Add money with coin animation at NightManager position after notification
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(SURVIVAL_BONUS, transform.position);

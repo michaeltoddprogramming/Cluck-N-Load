@@ -65,14 +65,12 @@ public class SelectionManager : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             bool isOverUI = EventSystem.current.IsPointerOverGameObject();
-            Debug.Log($"Right-click detected - Over UI: {isOverUI}");
             if (!isOverUI)
             {
                 DeselectCurrent();
             }
             else
             {
-                Debug.Log("Right-click deselection blocked: Pointer over UI");
             }
         }
     }

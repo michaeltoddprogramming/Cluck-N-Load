@@ -808,7 +808,6 @@ public class BuildController : MonoBehaviour
         // Update connectors for all defense structures after chain placement
         if (placedCount > 0)
         {
-            Debug.Log("FinalizeDefenceChain: Updating connectors for all defense structures in chain");
             // Start coroutine to rebuild connectors after a short delay
             StartCoroutine(DelayedConnectorRebuild());
         }
@@ -825,7 +824,6 @@ public class BuildController : MonoBehaviour
         yield return null;
         yield return null;
 
-        Debug.Log("DelayedConnectorRebuild: Rebuilding all defense structure connectors");
         DefenseStructure.RebuildAllConnectors();
     }
 
@@ -1036,7 +1034,6 @@ public class BuildController : MonoBehaviour
         // Wait a frame to ensure position is finalized
         yield return null;
         
-        Debug.Log("DelayedDefenseStructureUpdate: Force re-registering defense structure");
         
         // Use reflection to call the private RegisterInRegistry method
         var registerMethod = typeof(DefenseStructure).GetMethod("RegisterInRegistry", 
@@ -1045,7 +1042,6 @@ public class BuildController : MonoBehaviour
         if (registerMethod != null)
         {
             registerMethod.Invoke(defenseStructure, null);
-            Debug.Log("Successfully re-registered defense structure");
         }
         else
         {
@@ -1066,7 +1062,6 @@ public class BuildController : MonoBehaviour
         yield return null;
         yield return null;
 
-        Debug.Log("DelayedConnectorRebuildAfterMove: Rebuilding all defense structure connectors");
         DefenseStructure.RebuildAllConnectors();
     }
 
@@ -1561,7 +1556,6 @@ private void ShowCropSynergyPreview()
         if (defenseComponent != null)
         {
             defenseComponent.enabled = false;
-            Debug.Log("Disabled DefenseStructure component on ghost object");
         }
 
         ApplyGhostMaterial(currentGhost);
@@ -1943,7 +1937,6 @@ private void ShowCropSynergyPreview()
     // Place item without money check (used for defence chains where money is already spent)
     private void PlaceItemWithoutMoneyCheck(int x, int y, bool playSound = true)
     {
-        Debug.Log($"PlaceItemWithoutMoneyCheck at ({x}, {y})");
         
         if (currentBuildTargetPrefab == null)
         {
@@ -1958,7 +1951,7 @@ private void ShowCropSynergyPreview()
             return;
         }
 
-        Debug.Log($"PlaceItemWithoutMoneyCheck: Position ({x}, {y}) is valid, proceeding with placement");
+        
 
         // Prevent placing more than one farmhouse
         if (currentStructureData != null && currentStructureData.structureName.ToLower().Contains("farm house"))
@@ -2232,7 +2225,6 @@ private void ShowCropSynergyPreview()
             // Only trigger if the step isn't already completed (prevents reset on movement)
             if (barracksType != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{targetAnimalType}_barracks"))
             {
-                Debug.Log($"Triggering barracks tutorial step: build_{targetAnimalType}_barracks");
                 StartCoroutine(DelayedTutorialTrigger(barracksType, $"build_{targetAnimalType}_barracks", 0.1f));
             }
             // Trigger re-search for all barracks when a new barracks is built
@@ -2269,7 +2261,6 @@ private void ShowCropSynergyPreview()
             
             if (name.Contains("hay") || name.Contains("bale"))
             {
-                Debug.Log($"Hay bale placed via HandleTutorialTriggers: '{name}' - Chain tutorial logic should handle triggers");
                 // No longer fire tutorial triggers here - chain methods handle this
             }
             else
@@ -2338,25 +2329,21 @@ private void ShowCropSynergyPreview()
         var completedSteps = TutorialManager.Instance.GetCompletedStepIds();
         int totalHayBales = CountHayBales();
         
-        Debug.Log($"Total hay bales after chain operation: {totalHayBales}");
         
         // First hay bale trigger (when user places their first hay bale(s))
         // With click-and-drag, they'll likely place multiple at once
         if (!completedSteps.Contains("build_first_hay_bale") && placedCount > 0)
         {
-            Debug.Log("Triggering BuiltFirstHayBale from chain operation!");
             TutorialManager.Instance.Trigger(TutorialTrigger.BuiltFirstHayBale);
         }
         // Chain building completion (need 10+ total hay bales)
         if (totalHayBales >= 10 && !completedSteps.Contains("build_wall_chain"))
         {
-            Debug.Log($"Tutorial Complete: Built {totalHayBales} hay bales! Triggering Built10HayBales.");
             TutorialManager.Instance.Trigger(TutorialTrigger.Built10HayBales);
         }
         else if (!completedSteps.Contains("build_wall_chain"))
         {
             int needed = 10 - totalHayBales;
-            Debug.Log($"Tutorial Progress: {totalHayBales}/10 hay bales built. Need {needed} more to complete wall tutorial.");
         }
     }
 

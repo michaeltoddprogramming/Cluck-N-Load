@@ -57,36 +57,7 @@ public class AnimalStructureUI : BaseStructureUI
     
     private System.Action pendingAction;
 
-    // public UIHoverManager hoverManager;
-
-
-
-
-    // void Start()
-    // {
-    //     // Instantiate health bar if prefab is assigned
-    //     if (healthBarPrefab != null && healthBarInstance == null)
-    //     {
-    //         healthBarInstance = Instantiate(healthBarPrefab, transform);
-
-    //         // Position the health bar above the structure based on its height
-    //         var rect = healthBarInstance.GetComponent<RectTransform>();
-    //         // if (rect != null)
-    //         // {
-    //         // float structureHeight = GetStructureHeight();
-    //         // rect.localPosition = new Vector3(0, structureHeight + 1.5f, 0); // Add 1.5f buffer above structure
-    //         // }
-    //         healthBarSlider = healthBarInstance.GetComponentInChildren<Slider>();
-    //         healthBarText = healthBarInstance.GetComponentInChildren<TextMeshProUGUI>();
-    //         // healthBarCanvasGroup = healthBarInstance.GetComponentInChildren<CanvasGroup>();
-    //         healthBarInstance.SetActive(false); // Start hidden
-
-    //         // Set initial visibility based on current health and time of day
-    //         UpdateHealthBar();
-    //     }
-    // }
-
-    private void Start()
+    private new void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();
@@ -104,7 +75,6 @@ public class AnimalStructureUI : BaseStructureUI
             if (currentPauseState != lastPauseState)
             {
                 lastPauseState = currentPauseState;
-                Debug.Log($"[AnimalStructureUI] Pause state changed to: {currentPauseState}");
                 UpdateUI(); // Update immediately when pause state changes
                 return;
             }
@@ -180,7 +150,6 @@ public class AnimalStructureUI : BaseStructureUI
         int animalCount = animalStructure.AnimalCount;
         int maxAnimalCount = animalStructure.MaxAnimalCount;
         bool isPaused = nightManager.getIsPaused();
-        Debug.Log($"[AnimalStructureUI] UpdateUI called - isPaused: {isPaused}");
         bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
         bool canCollect = productReady && nightManager.IsDay && !isPaused;
         // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")
@@ -206,7 +175,6 @@ public class AnimalStructureUI : BaseStructureUI
                 if (animalCount >= 5)
                 {
                     tutorialBuyRestriction = true;
-                    Debug.Log($"Tutorial: Buy restricted - already own 5 animals. Current owned: {animalCount}");
                 }
             }
         }
@@ -225,7 +193,6 @@ public class AnimalStructureUI : BaseStructureUI
                 if (newAnimalCount >= maxCanBuy)
                 {
                     tutorialAddRestriction = true;
-                    Debug.Log($"Tutorial: Add restricted - can only buy {maxCanBuy} more animals. Currently selected: {newAnimalCount}");
                 }
             }
         }

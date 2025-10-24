@@ -584,12 +584,23 @@ public partial class TutorialManager : MonoBehaviour
         if (isShowingDiscovery)
             return;
 
-        // Use the new notification system for discoveries
-        if (NotificationManager.Instance != null)
+        // Show discovery on the tutorial panel instead of notifications
+        if (tutorialPanel != null)
         {
-            string theme = GetDiscoveryTheme(discoveryStep);
-            string cleanMessage = StripRichText(discoveryStep.instructionText);
-            NotificationManager.ShowNotification(discoveryStep.title, cleanMessage, theme, 4f);
+            tutorialPanel.SetActive(true);
+            titleText.text = discoveryStep.title;
+            if (typingCoroutine != null)
+                StopCoroutine(typingCoroutine);
+            typingCoroutine = StartCoroutine(TypeTextWithMumble(discoveryStep.instructionText));
+            UpdateCharacterPortrait(discoveryStep);
+        }
+
+        // Show close button for discoveries
+        if (discoveryCloseButton != null)
+        {
+            discoveryCloseButton.gameObject.SetActive(true);
+            discoveryCloseButton.onClick.RemoveAllListeners();
+            discoveryCloseButton.onClick.AddListener(CloseDiscoveryPopup);
         }
 
         isShowingDiscovery = true;

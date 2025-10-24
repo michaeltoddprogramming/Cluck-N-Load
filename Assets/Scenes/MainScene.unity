@@ -33,7 +33,7 @@ RenderSettings:
   m_HaloTexture: {fileID: 0}
   m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
   m_DefaultReflectionMode: 0
-  m_DefaultReflectionResolution: 128
+  m_DefaultReflectionResolution: 32
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: bbf92febd37eec24fa8da21f59ace918, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -29995,17 +29995,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a6e7214bc5483d4c82fd99f4ac2e0f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  notifyRaccoonUnlock: 1
-  raccoonUnlockTitle: Raccoons Unlocked!
-  raccoonUnlockMessage: Raccoons will now appear during this season. Stay alert!
-  notifyBoarUnlock: 1
-  boarUnlockTitle: Boars Unlocked!
-  boarUnlockMessage: Boars will now appear during this season. They're tougher than
-    other enemies!
-  notifyBearUnlock: 1
-  bearUnlockTitle: Bears Unlocked!
-  bearUnlockMessage: Bears will now appear during this season. The most dangerous
-    enemy yet!
   startNightButton: {fileID: 1847462730}
   buttonText: {fileID: 890192120}
   dayCountText: {fileID: 1394218313}
@@ -31006,7 +30995,6 @@ MonoBehaviour:
   pulseDuration: 0.5
   moneyUI: {fileID: 2084042127}
   duration: 0.5
-  delay: 0
 --- !u!1 &1632586687
 GameObject:
   m_ObjectHideFlags: 0
@@ -40968,6 +40956,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 143287335834993283, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
+      propertyPath: m_ShadowCastingMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 143287335834993283, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
       propertyPath: m_TreeCrossFadeLength
       value: 11.9
       objectReference: {fileID: 0}
@@ -40982,6 +40974,10 @@ PrefabInstance:
     - target: {fileID: 143287335834993283, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
       propertyPath: m_TreeMaximumFullLODCount
       value: 130
+      objectReference: {fileID: 0}
+    - target: {fileID: 143287335834993283, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
+      propertyPath: m_EnableHeightmapRayTracing
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1108532387992617657, guid: c3a166127a7496e40a018077d1a28ee7, type: 3}
       propertyPath: m_LocalScale.x

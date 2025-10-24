@@ -29,7 +29,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     public void Start()
     {
-        hoverManager = FindObjectOfType<UIHoverManager>();
+    hoverManager = FindFirstObjectByType<UIHoverManager>();
     }
 
     public virtual void Initialize(Structure structure)

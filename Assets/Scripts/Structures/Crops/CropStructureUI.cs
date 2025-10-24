@@ -35,9 +35,9 @@ public class CropStructureUI : BaseStructureUI
     private char currCrop = 'N';
 
     // public UIHoverManager hoverManager;
-    private float displayedGrowth = 0f;
+    // private float displayedGrowth = 0f; // Unused field
 
-    private void Start()
+    private new void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();
@@ -250,10 +250,6 @@ public class CropStructureUI : BaseStructureUI
 
         return amount * baseValue;
     }
-private float lastCheckedHour = 0f;
-private float cropGrowthProgress = 0f;
-private float plantedAtHour = -1f; // Track when crop was planted
-private bool wasGrowing = false;
 
     protected override void Update()
     {

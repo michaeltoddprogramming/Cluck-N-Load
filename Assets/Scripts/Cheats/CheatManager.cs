@@ -391,21 +391,10 @@ public class CheatManager : MonoBehaviour
             
             Debug.Log($"SkipDay: Current day {currentDays} -> Next day {newDay}");
             
-            // Handle year overflow (day 20 -> day 0 of next year)
-            if (newDay >= 20)
-            {
-                // For day 20+, set to day 20 with hour 5 to trigger year transition
-                NightManager.Instance.Hours = 5;
-                NightManager.Instance.Minutes = 0;
-                NightManager.Instance.CheatSetDays(20);
-                
-                Debug.Log($"Year transition triggered: Day {currentDays} -> Day 20 (hour 5)");
-                RefreshDebugInfo();
-                return;
-            }
-            
-            // Check if this new day is a season change day (5, 10, 15)
-            bool isSeasonChangeDay = (newDay == 5 || newDay == 10 || newDay == 15);
+            // Check if this new day is a season change day using NightManager's logic
+            // Seasons change on days where (day % 20) equals: 0, 5, 10, 15
+            int dayInCycle = newDay % 20;
+            bool isSeasonChangeDay = (dayInCycle == 0 || dayInCycle == 5 || dayInCycle == 10 || dayInCycle == 15);
             
             if (isSeasonChangeDay)
             {
@@ -414,11 +403,20 @@ public class CheatManager : MonoBehaviour
                 NightManager.Instance.Minutes = 0;
                 NightManager.Instance.CheatSetDays(newDay);
                 
-                string seasonName = newDay switch
+                int seasonNumber = dayInCycle switch
                 {
-                    5 => "Summer",
-                    10 => "Fall", 
-                    15 => "Winter",
+                    0 => 1,   // Spring (day 20, 40, 60, etc.)
+                    5 => 2,   // Summer (day 5, 25, 45, etc.)
+                    10 => 3,  // Fall (day 10, 30, 50, etc.)
+                    15 => 4,  // Winter (day 15, 35, 55, etc.)
+                    _ => 1    // Default to Spring
+                };
+                string seasonName = seasonNumber switch
+                {
+                    1 => "Spring",
+                    2 => "Summer",
+                    3 => "Fall", 
+                    4 => "Winter",
                     _ => "Unknown"
                 };
                 Debug.Log($"Skipped to day {newDay} (hour 5) - Season change to {seasonName}");
@@ -1026,14 +1024,20 @@ public class CheatManager : MonoBehaviour
         var nightManager = NightManager.Instance;
         if (nightManager == null) return;
         
-        // Set the appropriate day for season transition
+        int currentDays = nightManager.GetDays();
+        int currentYear = nightManager.Years;
+        
+        // Calculate what day we should be on for this season in the current cycle
+        int dayInCurrentCycle = currentDays % 20;
+        int cycleStart = currentDays - dayInCurrentCycle;
+        
         int targetDay = targetSeason switch
         {
-            1 => 0,   // Spring starts at day 0
-            2 => 5,   // Summer starts at day 5  
-            3 => 10,  // Fall starts at day 10
-            4 => 15,  // Winter starts at day 15
-            _ => 0
+            1 => cycleStart + 20, // Spring starts on day where (day % 20 == 0), so day 20, 40, 60, etc.
+            2 => cycleStart + 5,  // Summer starts on day where (day % 20 == 5), so day 5, 25, 45, etc.
+            3 => cycleStart + 10, // Fall starts on day where (day % 20 == 10), so day 10, 30, 50, etc.
+            4 => cycleStart + 15, // Winter starts on day where (day % 20 == 15), so day 15, 35, 55, etc.
+            _ => cycleStart + 20
         };
         
         // First set hour to 5 (season change condition)
@@ -1052,15 +1056,18 @@ public class CheatManager : MonoBehaviour
         var nightManager = NightManager.Instance;
         if (nightManager == null) return;
         
-        // Trigger year transition by setting to day 20 with hour 5
-        // This should trigger the year end logic in OnDayChange
-        nightManager.Hours = 5;
-        nightManager.CheatSetDays(20);
+        int currentDays = nightManager.GetDays();
         
-        // The OnDayChange(20) with hours == 5 should trigger:
-        // - Year increment
-        // - Reset to day 0  
-        // - Reset to Spring
+        // Jump to the next multiple of 20 to trigger year transition
+        int nextYearDay = ((currentDays / 20) + 1) * 20;
+        
+        // Trigger year transition by setting to the next year day with hour 5
+        nightManager.Hours = 5;
+        nightManager.CheatSetDays(nextYearDay);
+        
+        // The OnDayChange(nextYearDay) with hours == 5 should trigger:
+        // - Year increment (since nextYearDay % 20 == 0)
+        // - Season change to Spring (since it's the start of a new cycle)
         // - All the year transition effects
     }
     

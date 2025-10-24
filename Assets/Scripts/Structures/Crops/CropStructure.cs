@@ -59,14 +59,10 @@ public class CropStructure : Structure
         if (currentCropType == CropType.Carrots)
         {
             baseCropHarvestAmount = data.carrotsBaseHarvestAmount;
-            Debug.Log($"database carrot {data.carrotsBaseHarvestAmount}");
-            Debug.Log($"Base carrot harvest amount set to {baseCropHarvestAmount}");
         }
         else if (currentCropType == CropType.Sunflower)
         {
             baseCropHarvestAmount = data.sunflowerBaseHarvestAmount;
-            Debug.Log($"database sunflower {data.sunflowerBaseHarvestAmount}");
-            Debug.Log($"Base sunflower harvest amount set to {baseCropHarvestAmount}");
         }
         else
         {
@@ -133,8 +129,6 @@ public class CropStructure : Structure
         if (currentCropType == CropType.Carrots)
         {
             baseCropHarvestAmount = data.carrotsBaseHarvestAmount;
-            Debug.Log($"database carrot {data.carrotsBaseHarvestAmount}");
-            Debug.Log($"Base carrot harvest amount set to {baseCropHarvestAmount}");
         }
         else if (currentCropType == CropType.Sunflower)
         {
@@ -150,9 +144,7 @@ public class CropStructure : Structure
     {
         if (!cropReady) return "ready";
 
-        Debug.Log($"Base amount: {baseCropHarvestAmount}, Multiplier: {cropHarvestMultiplier}");
         int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
-        Debug.Log($"Total crops calculated: {totalCrops}");
         string cropName = currentCropType.ToString();
 
         // Crops give inventory items only - money comes from selling products
@@ -375,7 +367,6 @@ public class CropStructure : Structure
             if (readyIndicator != null)
                 readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
                 
-            Debug.Log($"[Cheat] Instantly grew {currentCropType} crop to ready state");
         }
     }
 

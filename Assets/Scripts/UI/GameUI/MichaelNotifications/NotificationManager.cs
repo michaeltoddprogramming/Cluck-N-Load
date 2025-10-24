@@ -514,23 +514,61 @@ public class NotificationManager : MonoBehaviour
         // Start with a flash effect (more intense for badges)
         StartCoroutine(FlashEffect(notification, theme, isBadge));
         
-        // Slide in from right - FASTER and more forceful for badges
+        // Entrance animation
         float slideDuration = isBadge ? slideInDuration * 0.6f : slideInDuration;
-        LeanTween.moveX(rectTransform, targetPosition.x, slideDuration)
-            .setEase(isBadge ? LeanTweenType.easeOutBack : LeanTweenType.easeOutQuart)
-            .setDelay(isBadge ? 0f : 0.1f);
+        bool isBlocking = data != null && data.pauseOnShow;
 
-        // Scale up - BIGGER bounce for badges
-        float scaleDuration = isBadge ? slideDuration * 0.7f : slideDuration * 0.8f;
-        float maxScale = isBadge ? 1.2f : 1.0f;
-        LeanTween.scale(notification, Vector3.one * maxScale, scaleDuration)
-            .setEase(isBadge ? LeanTweenType.easeOutBack : LeanTweenType.easeOutQuart)
-            .setDelay(isBadge ? 0.05f : 0.2f);
+        if (isBlocking)
+        {
+            // For blocking (seasonal) notifications, zoom in from center for more 'pizazz'
+            rectTransform.anchoredPosition = targetPosition;
+            rectTransform.localScale = Vector3.zero;
 
-        // Fade in - faster for badges
-        float fadeDelay = isBadge ? 0.05f : 0.15f;
-        LeanTween.alphaCanvas(canvasGroup, 1f, slideDuration * 0.5f)
-            .setDelay(fadeDelay);
+            // Scale in with an overshoot
+            LeanTween.scale(notification, Vector3.one * (isBadge ? 1.2f : 1.05f), slideDuration)
+                .setEase(isBadge ? LeanTweenType.easeOutBack : LeanTweenType.easeOutQuart)
+                .setOnComplete(() =>
+                {
+                    // settle to final scale
+                    LeanTween.scale(notification, Vector3.one, 0.25f).setEase(LeanTweenType.easeOutBounce);
+                });
+
+            // Begin global blur via BlurHelper (Option A). Map backdropBlurSize to a 0..1 strength.
+            try
+            {
+                if (BlurHelper.Instance != null)
+                {
+                    float targetStrength = Mathf.Clamp01(backdropBlurSize / 4f);
+                    BlurHelper.Instance.PlayBlur(targetStrength, backdropBlurFade);
+                }
+            }
+            catch (System.Exception)
+            {
+                // swallow - BlurHelper may not be present at runtime in some test scenes
+            }
+
+            // Fade in
+            LeanTween.alphaCanvas(canvasGroup, 1f, slideDuration * 0.5f).setDelay(0.02f);
+        }
+        else
+        {
+            // Slide in from right - FASTER and more forceful for badges
+            LeanTween.moveX(rectTransform, targetPosition.x, slideDuration)
+                .setEase(isBadge ? LeanTweenType.easeOutBack : LeanTweenType.easeOutQuart)
+                .setDelay(isBadge ? 0f : 0.1f);
+
+            // Scale up - BIGGER bounce for badges
+            float scaleDuration = isBadge ? slideDuration * 0.7f : slideDuration * 0.8f;
+            float maxScale = isBadge ? 1.2f : 1.0f;
+            LeanTween.scale(notification, Vector3.one * maxScale, scaleDuration)
+                .setEase(isBadge ? LeanTweenType.easeOutBack : LeanTweenType.easeOutQuart)
+                .setDelay(isBadge ? 0.05f : 0.2f);
+
+            // Fade in - faster for badges
+            float fadeDelay = isBadge ? 0.05f : 0.15f;
+            LeanTween.alphaCanvas(canvasGroup, 1f, slideDuration * 0.5f)
+                .setDelay(fadeDelay);
+        }
 
         // Settle effect - more dramatic bounce for badges
         yield return new WaitForSeconds(slideDuration * 0.8f);
@@ -591,6 +629,20 @@ public class NotificationManager : MonoBehaviour
         }
 
         // === EXIT ANIMATION ===
+        // If this was a blocking notification, animate the global blur back to 0
+        if (isBlocking)
+        {
+            try
+            {
+                if (BlurHelper.Instance != null)
+                {
+                    BlurHelper.Instance.PlayBlur(0f, backdropBlurFade);
+                }
+            }
+            catch (System.Exception)
+            {
+            }
+        }
         // Pulse before exit
         LeanTween.scale(notification, Vector3.one * 0.95f, 0.15f)
             .setEase(LeanTweenType.easeInOutQuad)
@@ -700,8 +752,9 @@ public class NotificationManager : MonoBehaviour
         // The backdrop is added as the first sibling so notification content renders above it.
         if (data != null && data.pauseOnShow)
         {
-            // Parent the backdrop to the notification container (or canvas) so it can cover the full area
-            Transform parentForBackdrop = notificationContainer != null ? notificationContainer : notification.transform.parent;
+            // Parent the backdrop to the notification canvas (preferred) so it can cover the full screen.
+            // Fallback to notificationContainer or notification's parent if canvas not assigned.
+            Transform parentForBackdrop = notificationCanvas != null ? notificationCanvas.transform : (notificationContainer != null ? notificationContainer : notification.transform.parent);
 
             GameObject backdrop = new GameObject("Backdrop");
             backdrop.transform.SetParent(parentForBackdrop, false);
@@ -715,9 +768,12 @@ public class NotificationManager : MonoBehaviour
             // Add CanvasRenderer + Image for raycast-blocking and visual dimming
             backdrop.AddComponent<CanvasRenderer>();
 
+            // Helpful debug: log where the backdrop was created so orphaned grey blocks are easy to find in Hierarchy
+            Debug.Log($"NotificationManager: Created backdrop under '{parentForBackdrop?.name ?? "null"}' (container: '{notificationContainer?.name ?? "null"}', canvas: '{notificationCanvas?.name ?? "null"}')");
+
             // Optional blur layer (behind the dark tint) if material provided
             GameObject blurGO = null;
-            RawImage blurImage = null;
+            UnityEngine.UI.Graphic blurGraphic = null;
             if (backdropBlurMaterial != null)
             {
                 blurGO = new GameObject("BackdropBlur");
@@ -730,16 +786,20 @@ public class NotificationManager : MonoBehaviour
                 blurRect.localScale = Vector3.one;
 
                 blurGO.AddComponent<CanvasRenderer>();
-                blurImage = blurGO.AddComponent<RawImage>();
-                blurImage.material = backdropBlurMaterial;
-                blurImage.raycastTarget = false;
+                // Use Image + material for blur effect.
+                Image addedImage = blurGO.AddComponent<Image>();
+                Material instMat = new Material(backdropBlurMaterial);
+                addedImage.material = instMat;
+                addedImage.raycastTarget = false;
 
-                // Try common property names for blur size
-                if (backdropBlurSize > 0f)
+                blurGraphic = addedImage;
+
+                if (instMat != null && backdropBlurSize > 0f)
                 {
-                    if (blurImage.material.HasProperty("_Size")) blurImage.material.SetFloat("_Size", backdropBlurSize);
-                    if (blurImage.material.HasProperty("_Radius")) blurImage.material.SetFloat("_Radius", backdropBlurSize);
-                    if (blurImage.material.HasProperty("_BlurSize")) blurImage.material.SetFloat("_BlurSize", backdropBlurSize);
+                    if (instMat.HasProperty("_Size")) instMat.SetFloat("_Size", 0f);
+                    if (instMat.HasProperty("_Radius")) instMat.SetFloat("_Radius", 0f);
+                    if (instMat.HasProperty("_BlurSize")) instMat.SetFloat("_BlurSize", 0f);
+                    if (instMat.HasProperty("_Strength")) instMat.SetFloat("_Strength", 0f);
                 }
             }
 
@@ -784,7 +844,7 @@ public class NotificationManager : MonoBehaviour
             if (holder == null) holder = notification.AddComponent<BackdropHolder>();
             holder.backdrop = backdrop;
             // Also store blur as a child of the holder for cleanup
-            if (blurImage != null)
+            if (blurGraphic != null)
             {
                 // attach blur GameObject as a child of the notification so cleanup is simplified
                 blurGO.transform.SetParent(notification.transform, false);
@@ -792,12 +852,27 @@ public class NotificationManager : MonoBehaviour
             }
 
             // If we created a blur, fade it in
-            if (blurImage != null)
+            if (blurGraphic != null)
             {
                 CanvasGroup blurCg = blurGO.GetComponent<CanvasGroup>();
                 if (blurCg == null) blurCg = blurGO.AddComponent<CanvasGroup>();
                 blurCg.alpha = 0f;
                 LeanTween.alphaCanvas(blurCg, 1f, backdropBlurFade);
+                // Animate blur strength from 0 -> backdropBlurSize for available properties
+                if (backdropBlurSize > 0f)
+                {
+                    var mat = blurGraphic.material;
+                    if (mat != null)
+                    {
+                        if (mat.HasProperty("_Size"))
+                            LeanTween.value(blurGO, 0f, backdropBlurSize, backdropBlurFade).setOnUpdate((float v) => mat.SetFloat("_Size", v));
+                        if (mat.HasProperty("_Radius"))
+                            LeanTween.value(blurGO, 0f, backdropBlurSize, backdropBlurFade).setOnUpdate((float v) => mat.SetFloat("_Radius", v));
+                        if (mat.HasProperty("_BlurSize"))
+                            LeanTween.value(blurGO, 0f, backdropBlurSize, backdropBlurFade).setOnUpdate((float v) => mat.SetFloat("_BlurSize", v));
+                        if (mat.HasProperty("_BlurSize") == false && mat.HasProperty("_BlurSize")) { }
+                    }
+                }
             }
         }
 

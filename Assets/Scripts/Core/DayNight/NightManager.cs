@@ -244,8 +244,16 @@ public class NightManager : MonoBehaviour
             AudioManager.Instance.ResumeGameAudio();
         }
 
-        timeIndicator.exchangeTimeIcon("play");
-        timeSpeedEffect.StopSpeedEffect();
+        if (timeIndicator != null)
+        {
+            timeIndicator.exchangeTimeIcon("play");
+        }
+        
+        if (timeSpeedEffect != null)
+        {
+            timeSpeedEffect.StopSpeedEffect();
+        }
+        
         isPaused = false;
         speedUp = 1f;
         Time.timeScale = 1f;

@@ -771,21 +771,44 @@ public class ArmyUnit : BaseUnit
 
         float distance = Vector3.Distance(transform.position, targetPosition);
 
-        if (distance < agent.stoppingDistance + 1.5f)
+        if(targetPosition == barracks.transform.position)
         {
-            if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            if (distance < agent.stoppingDistance + 3f)
             {
-                agent.ResetPath();
+                if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                }
+                isMoving = false;
+                SetFloat("speed", 0f);
+                if (!isNightTime)
+                {
+                    barracks.AfterBackToBarracks();
+                    gameObject.SetActive(false);
+                }
+                return;
             }
-            isMoving = false;
-            SetFloat("speed", 0f);
-            if (!isNightTime)
-            {
-                barracks.AfterBackToBarracks();
-                gameObject.SetActive(false);
-            }
-            return;
+
         }
+        else
+        {
+            if (distance < agent.stoppingDistance + 1.5f)
+            {
+                if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                }
+                isMoving = false;
+                SetFloat("speed", 0f);
+                if (!isNightTime)
+                {
+                    barracks.AfterBackToBarracks();
+                    gameObject.SetActive(false);
+                }
+                return;
+            }
+        }
+
 
         if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
         {
@@ -849,8 +872,12 @@ public class ArmyUnit : BaseUnit
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(guardPosition, roamRadius);
 
-        Gizmos.color = Color.white;
-        Gizmos.DrawWireSphere(agent.transform.position, agent.stoppingDistance + 1f);
+        if(agent != null)
+        {
+            Gizmos.color = Color.white;
+            Gizmos.DrawWireSphere(agent.transform.position, agent.stoppingDistance + 1f);
+        }
+
 #endif
     }
 

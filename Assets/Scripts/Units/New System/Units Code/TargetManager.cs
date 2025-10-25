@@ -101,7 +101,11 @@ public class TargetManager : MonoBehaviour
         // Check cache first (if enemy provides unique ID)
         if (enemyID != 0 && targetCache.TryGetValue(enemyID, out CachedTargetResult cached))
         {
-            if (Time.time - cached.timestamp < CACHE_DURATION && 
+            if (cached.target == null || IsTargetDead(cached.target))
+            {
+                targetCache.Remove(enemyID); // Invalidate cache immediately
+            }
+            else if (Time.time - cached.timestamp < CACHE_DURATION && 
                 cached.target != null && 
                 !IsTargetDead(cached.target))
             {

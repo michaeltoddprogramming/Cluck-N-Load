@@ -83,7 +83,6 @@ public class BarracksStructureUI : BaseStructureUI
     // public UIHoverManager hoverManager;
     [SerializeField] public GameObject civilianSection;
 
-    private new void Start()
     [Header("Synergy indicator")]
     [SerializeField] private Image synergyIndicator;
     [SerializeField] private Sprite chickenSynergyGood;
@@ -97,7 +96,7 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Sprite sheepSynergyGood;
     [SerializeField] private Sprite sheepSynergyBad;
 
-    private void Start()
+    private new void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();

@@ -730,15 +730,21 @@ public class BarracksStructure : Structure
             return;
         }
 
-        GridController gridController = FindFirstObjectByType<GridController>();
-        if (gridController == null)
+        // OPTIMIZATION: Cache GridController to avoid expensive FindFirstObjectByType every call
+        // GridController is a singleton that never changes, so find once and reuse
+        if (cachedGridController == null)
+        {
+            cachedGridController = FindFirstObjectByType<GridController>();
+        }
+        
+        if (cachedGridController == null)
         {
             recruitmentCostPerAnimal = baseCost;
             return;
         }
 
-        Vector2Int barracksCell = gridController.WorldToGridCoords(transform.position);
-        Vector2Int animalCell = gridController.WorldToGridCoords(targetAnimalStructure.transform.position);
+        Vector2Int barracksCell = cachedGridController.WorldToGridCoords(transform.position);
+        Vector2Int animalCell = cachedGridController.WorldToGridCoords(targetAnimalStructure.transform.position);
         int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
 
         // Apply discount only if distance is within min and max
@@ -763,14 +769,6 @@ public class BarracksStructure : Structure
         }
     }
 
-    // OPTIMIZATION: Cache GridController to avoid expensive FindFirstObjectByType every call
-    // GridController is a singleton that never changes, so find once and reuse
-    if (cachedGridController == null)
-    {
-        cachedGridController = FindFirstObjectByType<GridController>();
-    }
-    
-    if (cachedGridController == null)
     public bool isSynergyActive()
     {
         return synergyActive;
@@ -780,12 +778,6 @@ public class BarracksStructure : Structure
     {
         return isToFar;
     }
-
-    Vector2Int barracksCell = cachedGridController.WorldToGridCoords(transform.position);
-    Vector2Int animalCell = cachedGridController.WorldToGridCoords(targetAnimalStructure.transform.position);
-    int gridDist = (int)Vector2Int.Distance(barracksCell, animalCell);
-
-
 
     public int GetMaxAnimalCount() => maxArmyAnimals;
     public int GetAnimalCount() => ArmyAnimalCount;

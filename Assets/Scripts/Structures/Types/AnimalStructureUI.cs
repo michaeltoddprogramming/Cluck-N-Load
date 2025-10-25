@@ -57,7 +57,6 @@ public class AnimalStructureUI : BaseStructureUI
     
     private System.Action pendingAction;
 
-    private new void Start()
     [Header("Synergy indicator")]
     [SerializeField] private Image synergyIndicator;
     [SerializeField] private Sprite sunflowerSynergyGood;
@@ -96,7 +95,7 @@ public class AnimalStructureUI : BaseStructureUI
     //     }
     // }
 
-    private void Start()
+    private new void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();

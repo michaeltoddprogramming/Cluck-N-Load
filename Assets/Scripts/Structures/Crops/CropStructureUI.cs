@@ -37,14 +37,12 @@ public class CropStructureUI : BaseStructureUI
     // public UIHoverManager hoverManager;
     // private float displayedGrowth = 0f; // Unused field
 
-    private new void Start()
-    
     [Header("Synergy indicator")]
     [SerializeField] private Image synergyIndicator;
     [SerializeField] private Sprite siloSynergyGood;
     [SerializeField] private Sprite siloSynergyBad;
 
-    private void Start()
+    private new void Start()
     {
         base.Start();
         // hoverManager = FindObjectOfType<UIHoverManager>();

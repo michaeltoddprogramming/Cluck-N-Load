@@ -844,7 +844,6 @@ MonoBehaviour:
   moveButton: {fileID: 1435934692730273216}
   healthBarSlider: {fileID: 7976977629050559911}
   healthBarFill: {fileID: 7151115148585472057}
-  hoverManager: {fileID: 0}
 --- !u!1 &4247440578749724663
 GameObject:
   m_ObjectHideFlags: 0
@@ -1117,7 +1116,7 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 21300000, guid: c6f3ddfa43da4ad4cad2375c9d4df858, type: 3}
+    m_HighlightedSprite: {fileID: 21300000, guid: 9fd91ce55000ad24aafbabb06303626f, type: 3}
     m_PressedSprite: {fileID: 21300000, guid: e7730705a7903654b9e0054dd77a9969, type: 3}
     m_SelectedSprite: {fileID: 0}
     m_DisabledSprite: {fileID: 21300000, guid: aeff76cbdfea64b4cbdfd366557cc0b8, type: 3}

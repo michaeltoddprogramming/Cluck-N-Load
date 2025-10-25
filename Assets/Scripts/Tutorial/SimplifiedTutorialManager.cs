@@ -30,6 +30,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
     public Button nextStepButton;
     public Button skipTutorialButton;
     
+    [Header("Game UI Control")]
+    public GameObject gameUICanvas;            // Main game UI canvas to hide during tutorial
+    
     [Header("Key Indicator System")]
     public GameObject keyIndicatorPrefab;
     public RectTransform keyIndicatorContainer;
@@ -100,6 +103,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
         public bool movePanelRight = false;         // Move content container to right side of screen
         public float panelAlpha = 1.0f;             // Background panel opacity (0-1, fade the background)
         public bool disablePanelRaycast = false;    // Disable panel blocking clicks (for UI interaction steps)
+        
+        [Header("Game UI Control")]
+        public bool showGameUI = false;             // Show the main game UI for this step (hidden by default during tutorial)
     }
     
     [Header("Tutorial Steps")]
@@ -245,6 +251,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             waitForTrigger = "shop_opened",
             disablePanelRaycast = true,  // Allow clicks through the panel to reach the shop button
             panelAlpha = 0f,
+            showGameUI = true            // Show game UI so player can see shop button
         });
         
         // Build farmhouse - move dialogue to right, invisible panel, allow clicks
@@ -259,7 +266,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
             waitForTrigger = "farmhouse_built",
             movePanelRight = true,       // Move dialogue to right side
             panelAlpha = 0f,             // Fully transparent panel
-            disablePanelRaycast = true   // Allow clicks to place building
+            disablePanelRaycast = true,  // Allow clicks to place building
+            showGameUI = true            // Keep game UI visible for building interaction
         });
         
         // Tutorial complete - back to normal
@@ -269,7 +277,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
             title = "Great Job!",
             message = "You're ready to farm! Good luck out there!",
             peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Celebrating
+            peteEmotion = PeteEmotion.Celebrating,
+            showGameUI = true            // Ensure game UI is visible at the end
         });
     }
     
@@ -352,6 +361,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
     public void StartTutorial()
     {
         if (tutorialActive) return;
+        
+        // Hide main game UI at start of tutorial
+        HideGameUI();
         
         tutorialActive = true;
         currentStepIndex = -1;
@@ -596,7 +608,17 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Simple panel control methods
     private void UpdatePanelForStep(SimpleTutorialStep step)
     {
-        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}, movePanelRight: {step.movePanelRight}, disableRaycast: {step.disablePanelRaycast}");
+        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}, movePanelRight: {step.movePanelRight}, disableRaycast: {step.disablePanelRaycast}, showGameUI: {step.showGameUI}");
+        
+        // Control main game UI visibility
+        if (step.showGameUI)
+        {
+            ShowGameUI();
+        }
+        else
+        {
+            HideGameUI();
+        }
         
         // Control panel raycast blocking
         if (panelCanvasGroup != null)
@@ -634,7 +656,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
         }
         else if (step.movePanelRight)
         {
-            targetPosition = new Vector2(originalContentPosition.x + 400f, originalContentPosition.y);
+            targetPosition = new Vector2(originalContentPosition.x + 500f, originalContentPosition.y);
         }
         
         // Smooth tween animation
@@ -757,6 +779,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
         // Reset panel to original state
         ResetPanel();
         
+        // Show main game UI when tutorial ends
+        ShowGameUI();
+        
         // Hide Pete first
         if (usePete3D && pete3DGuide != null)
         {
@@ -776,6 +801,33 @@ public class SimplifiedTutorialManager : MonoBehaviour
         if (usePete3D && pete3DGuide != null)
         {
             pete3DGuide.HidePete();
+        }
+    }
+    
+    // Game UI control methods
+    private void HideGameUI()
+    {
+        if (gameUICanvas != null)
+        {
+            gameUICanvas.SetActive(false);
+            Debug.Log("[HideGameUI] Main game UI hidden for tutorial focus");
+        }
+        else
+        {
+            Debug.LogWarning("[HideGameUI] gameUICanvas is null - assign the main UI canvas in inspector");
+        }
+    }
+    
+    private void ShowGameUI()
+    {
+        if (gameUICanvas != null)
+        {
+            gameUICanvas.SetActive(true);
+            Debug.Log("[ShowGameUI] Main game UI restored");
+        }
+        else
+        {
+            Debug.LogWarning("[ShowGameUI] gameUICanvas is null - assign the main UI canvas in inspector");
         }
     }
     

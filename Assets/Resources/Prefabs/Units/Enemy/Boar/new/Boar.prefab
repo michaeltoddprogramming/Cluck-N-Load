@@ -103,12 +103,17 @@ MonoBehaviour:
   soundEffectSource: {fileID: 4091621140661601379}
   backgroundAudioSource: {fileID: 3832592494626174131}
   animator: {fileID: 7320890906309224937}
+  minDelay: 1
+  maxDelay: 3
+  minVolume: 0.8
+  maxVolume: 1
+  minPitch: 0.95
+  maxPitch: 1.05
   data: {fileID: 11400000, guid: aa8c850b7eca6b2468f489a333cc415a, type: 2}
   healthBarPrefab: {fileID: 4122911237217708408, guid: 5901a419293af0a41829f449f21dc8a0, type: 3}
   currentMaxSpawn: 0
   currentMinSpawn: 0
   retreating: 0
-  jumpCheckDistance: 1.5
   jumpHeight: 20
   jumpDuration: 0.5
 --- !u!114 &4503364508919630077
@@ -190,7 +195,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -305,7 +310,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0

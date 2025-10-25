@@ -40,7 +40,7 @@ public class DamageAnimation : MonoBehaviour
             damageAudioSource.volume = existingAudioSource.volume;
             damageAudioSource.pitch = existingAudioSource.pitch;
             damageAudioSource.panStereo = existingAudioSource.panStereo;
-            damageAudioSource.spatialBlend = existingAudioSource.spatialBlend;
+            damageAudioSource.spatialBlend = 1f;
             damageAudioSource.reverbZoneMix = existingAudioSource.reverbZoneMix;
             damageAudioSource.dopplerLevel = existingAudioSource.dopplerLevel;
             damageAudioSource.spread = existingAudioSource.spread;
@@ -58,7 +58,7 @@ public class DamageAnimation : MonoBehaviour
             damageAudioSource.spatialBlend = 1f;
             damageAudioSource.rolloffMode = AudioRolloffMode.Linear;
             damageAudioSource.minDistance = 2f;
-            damageAudioSource.maxDistance = 10f;
+            damageAudioSource.maxDistance = 125f;
             damageAudioSource.dopplerLevel = 0f;
             damageAudioSource.spread = 0f;
             damageAudioSource.reverbZoneMix = 1f;

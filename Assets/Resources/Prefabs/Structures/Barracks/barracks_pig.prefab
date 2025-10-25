@@ -121,6 +121,8 @@ MonoBehaviour:
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
   healthBarPrefab: {fileID: 4122911237217708408, guid: 23bbe51596d340c4387e655f58390f62, type: 3}
+  cropHealthBarExtraHeight: 5.5
+  defaultHealthBarExtraHeight: 1.5
   targetAnimalType: Pig
   armyAnimalPrefabs:
   - {fileID: 4898585818345014531, guid: 179d2a93b04af634ba533e40b1492b2a, type: 3}
@@ -224,7 +226,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -339,7 +341,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -454,7 +456,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -569,7 +571,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0

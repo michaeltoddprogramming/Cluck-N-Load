@@ -70,7 +70,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: MaxDistance
-    value: 60
+    value: 125
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: Pan2D

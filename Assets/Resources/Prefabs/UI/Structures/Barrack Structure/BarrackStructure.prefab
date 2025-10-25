@@ -4110,13 +4110,11 @@ MonoBehaviour:
   moveButton: {fileID: 7187152402759942526}
   healthBarSlider: {fileID: 9032342705502018393}
   healthBarFill: {fileID: 2108091619259164905}
-  hoverManager: {fileID: 0}
   statusText: {fileID: 7640425539373355090}
   armyCountText: {fileID: 651393596630771197}
   recruitButton: {fileID: 5766103617999440168}
   placeFlagButton: {fileID: 7337811719556055845}
   setFlagColorButton: {fileID: 4692270027481148527}
-  recruitAmount: 1
   flagPlacementIndicator: {fileID: 5376228158244136262, guid: 089d4c09765852c4abdfcf73ef012e6c, type: 3}
   flagGhostPrefab: {fileID: 5376228158244136262, guid: 089d4c09765852c4abdfcf73ef012e6c, type: 3}
   flagGhostMaterial: {fileID: 2100000, guid: 63c0360517167154bad02130899a3243, type: 2}
@@ -4206,6 +4204,8 @@ MonoBehaviour:
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
   healthBarPrefab: {fileID: 0}
+  cropHealthBarExtraHeight: 5.5
+  defaultHealthBarExtraHeight: 1.5
   targetAnimalType: Chicken
   armyAnimalPrefabs: []
   flagPrefab: {fileID: 0}

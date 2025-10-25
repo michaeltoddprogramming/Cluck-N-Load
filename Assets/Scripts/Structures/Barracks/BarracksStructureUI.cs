@@ -204,13 +204,13 @@ public class BarracksStructureUI : BaseStructureUI
 
     protected override void Update()
     {
+        base.Update();
         // OPTIMIZATION: Skip Update() if UI is not visible (hidden barracks don't need updates)
         // EXCEPTION: Keep running if placing flags, managing sheep flags, or moving sheep flags (need input handling)
         if (!isUIVisible && !isPlacingFlag && !isMovingSheepFlag && !isManagingSheepFlags)
             return;
         
         // Call base update to handle move button logic
-        base.Update();
         
         // Check for pause state changes and update UI immediately
         NightManager nightManager = NightManager.Instance;
@@ -1815,6 +1815,8 @@ public class BarracksStructureUI : BaseStructureUI
         if (sheepFlagManagementPanel != null)
         {
             sheepFlagManagementPanel.SetActive(false);
+            HideUI();
+            // StructureUIManager.Instance?.HideStructureUI();
         }
         
         // Show flag ghost for the specific sheep flag being moved
@@ -1958,6 +1960,8 @@ public class BarracksStructureUI : BaseStructureUI
         {
             Debug.Log("[SHEEP FLAG] Reopening sheep flag management panel");
             sheepFlagManagementPanel.SetActive(true);
+            ShowUI();
+
             RefreshSheepFlagList(); // Always refresh when reopening
         }
         

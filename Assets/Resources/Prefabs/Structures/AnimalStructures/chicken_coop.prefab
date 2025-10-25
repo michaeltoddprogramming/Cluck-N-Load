@@ -811,6 +811,8 @@ MonoBehaviour:
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
   healthBarPrefab: {fileID: 4122911237217708408, guid: 23bbe51596d340c4387e655f58390f62, type: 3}
+  cropHealthBarExtraHeight: 5.5
+  defaultHealthBarExtraHeight: 1.5
   animalType: 0
   isProducing: 0
   productReady: 0
@@ -849,8 +851,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: e06cafbdbeaa7a74aa0b62f79346cae9, type: 3}
+  m_Resource: {fileID: 8300000, guid: e06cafbdbeaa7a74aa0b62f79346cae9, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -861,7 +863,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -914,7 +916,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

@@ -30,7 +30,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     public void Start()
     {
-    hoverManager = FindFirstObjectByType<UIHoverManager>();
+        hoverManager = FindFirstObjectByType<UIHoverManager>();
     }
 
     public virtual void Initialize(Structure structure)
@@ -85,12 +85,15 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     protected virtual void Update()
     {
+        // Debug.Log("Move button update called ++++++++++++++++++++++++");
         // OPTIMIZATION: Only update move button when state actually changes
         // Avoids 300 property accesses/second with 5 barracks (5 × 60 FPS)
-        if (moveButton != null && nightManager != null)
+        if (moveButton != null)
         {
-            bool currentIsDay = nightManager.IsDay;
-            bool currentIsPaused = nightManager.getIsPaused();
+            bool currentIsDay = NightManager.Instance.IsDay;
+            bool currentIsPaused = NightManager.Instance.getIsPaused();
+            // bool currentIsDay = nightManager.IsDay;
+            // bool currentIsPaused = nightManager.getIsPaused();
             
             // Only update if state changed (change detection pattern)
             if (currentIsDay != lastIsDayState || currentIsPaused != lastPauseState)
@@ -100,6 +103,7 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
                 
                 bool canMove = currentIsDay && !currentIsPaused;
                 moveButton.interactable = canMove;
+                // Debug.Log("The move button should be disabled ----------------");
             }
             
             // Let Unity's Button component handle the visual disabled state

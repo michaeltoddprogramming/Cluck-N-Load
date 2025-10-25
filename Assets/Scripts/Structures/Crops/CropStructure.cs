@@ -146,11 +146,37 @@ public class CropStructure : Structure
     {
         if (!cropReady) return "ready";
 
-        int totalCrops = Mathf.RoundToInt(baseCropHarvestAmount * cropHarvestMultiplier);
+        // Calculate base and bonus amounts based on actual game systems
+        int baseAmount = Mathf.RoundToInt(baseCropHarvestAmount);
+        
+        // Calculate total with multipliers applied
+        int totalCrops = Mathf.RoundToInt(baseAmount * cropHarvestMultiplier);
+        
+        // Calculate synergy bonus for display
+        int synergyBonus = 0;
+        if (isSynergyActive() && cropHarvestMultiplier > 1f)
+        {
+            synergyBonus = totalCrops - baseAmount;
+        }
+        
+        // Debug logging for bonus calculation
+        Debug.Log($"[CropStructure] Bonus Debug: baseAmount={baseAmount}, cropHarvestMultiplier={cropHarvestMultiplier}, synergyActive={isSynergyActive()}");
+        Debug.Log($"[CropStructure] Bonus Debug: synergyBonus={synergyBonus}, totalCrops={totalCrops}");
+        
         string cropName = currentCropType.ToString();
 
         // Crops give inventory items only - money comes from selling products
         InventoryManager.Instance.AddItem(cropName, totalCrops);
+        
+        // Show floating harvest amount text with synergy bonus
+        if (synergyBonus > 0)
+        {
+            ReadyIndicator.ShowFloatingNumberWithBonus(transform.position, baseAmount, synergyBonus, Color.green);
+        }
+        else
+        {
+            ReadyIndicator.ShowFloatingNumber(transform.position, totalCrops, Color.green);
+        }
 
         switch (currentCropType)
         {
@@ -202,6 +228,13 @@ public class CropStructure : Structure
         // Apply farm efficiency bonus if nearby farm house
         float efficiencyMultiplier = GetNearbyFarmEfficiency();
         return Mathf.RoundToInt(amount * baseValue * efficiencyMultiplier);
+    }
+
+    private int GetHarvestAmount()
+    {
+        int baseCrops = Mathf.RoundToInt(baseCropHarvestAmount);
+        float efficiencyMultiplier = GetNearbyFarmEfficiency();
+        return Mathf.RoundToInt(baseCrops * efficiencyMultiplier);
     }
 
     private float GetNearbyFarmEfficiency()

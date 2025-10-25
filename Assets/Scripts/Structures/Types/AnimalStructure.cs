@@ -316,19 +316,48 @@ public class AnimalStructure : Structure
             }
         }
 
-        // Calculate production based on CURRENT animal count (not when fed)
-        int productPerAnimal = (int)(productPrice * boostedAmount);
-        int totalMoneyEarned = productPerAnimal * animalCount;
+        // Calculate production based on CURRENT animal count with accurate bonus breakdown
+        int baseProductPerAnimal = productPrice; // Base amount without any boosts
+        int baseMoneyEarned = baseProductPerAnimal * animalCount;
+        
+        // Calculate production boost bonus (from ProductionBoosts system)
+        int productionBonus = 0;
+        if (boostedAmount > 1f)
+        {
+            int boostedProductPerAnimal = (int)(productPrice * boostedAmount);
+            int boostedMoneyEarned = boostedProductPerAnimal * animalCount;
+            productionBonus = boostedMoneyEarned - baseMoneyEarned;
+        }
+        
+        // Note: Synergy affects food consumption (20% less food needed), not money collection
+        // Note: Seasonal bonuses would come from the ProductionBoosts system as boostedAmount
+        
+        // Total calculation
+        int totalMoneyEarned = baseMoneyEarned + productionBonus;
+
+        // Debug logging for bonus calculation
+        Debug.Log($"[AnimalStructure] Bonus Debug: productPrice={productPrice}, boostedAmount={boostedAmount}, animalCount={animalCount}, animalType={animalType}");
+        Debug.Log($"[AnimalStructure] Bonus Debug: baseMoneyEarned={baseMoneyEarned}, productionBonus={productionBonus}, totalMoneyEarned={totalMoneyEarned}");
 
         // Enhanced logging for production collection
         if (originalAnimalCountWhenFed != animalCount)
         {
-            int lostProduction = productPerAnimal * (originalAnimalCountWhenFed - animalCount);
+            int lostProduction = (int)(productPrice * boostedAmount) * (originalAnimalCountWhenFed - animalCount);
         }
 
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(totalMoneyEarned, transform.position);
+            
+            // Show floating money text with production bonus only (synergy affects food, not money)
+            if (productionBonus > 0)
+            {
+                ReadyIndicator.ShowFloatingNumberWithBonus(transform.position, baseMoneyEarned, productionBonus, Color.yellow);
+            }
+            else
+            {
+                ReadyIndicator.ShowFloatingNumber(transform.position, totalMoneyEarned, Color.yellow);
+            }
             
             // NEW: Show notification for animal collection with boost info
             if (NotificationManager.Instance != null)
@@ -447,6 +476,32 @@ public class AnimalStructure : Structure
         {
             ResetInstantProductionState();
         }
+    }
+    
+    private int GetCollectAmount()
+    {
+        // Calculate the money that would be earned from collection
+        // This mirrors the logic in Collect() method
+        ProductionBoosts productionBoosts = FindFirstObjectByType<ProductionBoosts>();
+        int productPrice = baseMoneyPerProduct;
+        float boostedAmount = 1f;
+
+        // Check if ProductionBoosts is found and get the appropriate boost
+        if (productionBoosts != null)
+        {
+            int[] prices = productionBoosts.GetProductPrices();
+            float[] boosts = productionBoosts.GetBoostedProducts();
+            
+            int animalIndex = (int)animalType;
+            if (prices != null && prices.Length > animalIndex)
+                productPrice = prices[animalIndex];
+            
+            if (boosts != null && boosts.Length > animalIndex)
+                boostedAmount = boosts[animalIndex];
+        }
+
+        int productPerAnimal = (int)(productPrice * boostedAmount);
+        return productPerAnimal * animalCount;
     }
 
     public bool CanRecruit(int amount)
@@ -747,6 +802,10 @@ public class AnimalStructure : Structure
         productReady = true;
         productionProgress = 1f;
         OnAnimalCountChanged?.Invoke();
+        
+        // Show ready indicator when production is complete
+        if (readyIndicator != null)
+            readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
     }
 
     // Separate method for cheat manager that bypasses tutorial checks
@@ -758,6 +817,10 @@ public class AnimalStructure : Structure
         productReady = true;
         productionProgress = 1f;
         OnAnimalCountChanged?.Invoke();
+        
+        // Show ready indicator when production is complete
+        if (readyIndicator != null)
+            readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
     }
 
     // Method to reset any inappropriate instant production states after tutorial ends
@@ -866,6 +929,10 @@ public class AnimalStructure : Structure
             productReady = true;
             isProducing = false;
             cropGrowthProgress = 1f;
+            
+            // Show ready indicator when production is complete
+            if (readyIndicator != null)
+                readyIndicator.ShowIndicator(ReadyIndicator.IndicatorType.Collect);
         }
     }
 

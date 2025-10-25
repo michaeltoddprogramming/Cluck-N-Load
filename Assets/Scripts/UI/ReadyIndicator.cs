@@ -11,10 +11,10 @@ public class ReadyIndicator : MonoBehaviour
     
     [Header("Visual Settings")]
     [SerializeField] private Vector3 hoverOffset = new Vector3(0, 2f, 0);
-    [SerializeField] private float bobAmount = 0.3f;
-    [SerializeField] private float bobSpeed = 2f;
-    [SerializeField] private float pulseAmount = 0.2f;
-    [SerializeField] private float pulseSpeed = 1.5f;
+    [SerializeField] private float bobAmount = 0.1f; // Reduced from 0.3f
+    [SerializeField] private float bobSpeed = 1f; // Reduced from 2f
+    [SerializeField] private float pulseAmount = 0.05f; // Reduced from 0.2f
+    [SerializeField] private float pulseSpeed = 1f; // Reduced from 1.5f
     
     [Header("Click Settings")]
     [SerializeField] private float clickScaleEffect = 1.2f;
@@ -48,6 +48,11 @@ public class ReadyIndicator : MonoBehaviour
     
     public void ShowIndicator(IndicatorType type = IndicatorType.Default)
     {
+        ShowIndicator(type, null);
+    }
+    
+    public void ShowIndicator(IndicatorType type, int? amount)
+    {
         if (currentIndicator != null) return; // Already showing
         
         currentType = type;
@@ -72,17 +77,16 @@ public class ReadyIndicator : MonoBehaviour
         // Add click functionality
         SetupClickable(currentIndicator, type);
         
-        // Position above structure
-        // Calculate height of the structure to position indicator above it
+        // Store the relative offset from the structure center
         float structureHeight = GetStructureHeight();
-        
-        // Add extra height for crop structures since they're typically low to the ground
         bool isCropStructure = GetComponent<CropStructure>() != null;
         float extraHeight = isCropStructure ? 2.0f : 0.5f; // Much higher for crops
         
-        Vector3 dynamicHoverOffset = new Vector3(0, structureHeight + extraHeight, 0);
-        basePosition = transform.position + dynamicHoverOffset;
-        currentIndicator.transform.position = basePosition;
+        // Store the offset that will be applied to the structure's position
+        hoverOffset = new Vector3(0, structureHeight + extraHeight, 0);
+        
+        // Set initial position
+        UpdateIndicatorPosition();
         
         // Make sure it faces camera
         if (mainCamera != null)
@@ -92,6 +96,12 @@ public class ReadyIndicator : MonoBehaviour
         }
         
         Debug.Log($"[ReadyIndicator] Showing {type} indicator for {gameObject.name}");
+    }
+    
+    void OnDestroy()
+    {
+        // Clean up indicator when structure is destroyed
+        HideIndicator();
     }
     
     public void HideIndicator()
@@ -127,6 +137,9 @@ public class ReadyIndicator : MonoBehaviour
     {
         if (currentIndicator == null) return;
         
+        // Update indicator position to follow the structure
+        UpdateIndicatorPosition();
+        
         // Animate the indicator
         float time = Time.time + timeOffset;
         
@@ -136,7 +149,7 @@ public class ReadyIndicator : MonoBehaviour
         // Pulsing scale
         float pulseScale = 1f + (Mathf.Sin(time * pulseSpeed) * pulseAmount);
         
-        // Apply animations
+        // Apply animations relative to base position
         currentIndicator.transform.position = basePosition + bobOffset;
         currentIndicator.transform.localScale = Vector3.one * pulseScale;
         
@@ -146,6 +159,14 @@ public class ReadyIndicator : MonoBehaviour
             currentIndicator.transform.LookAt(mainCamera.transform);
             currentIndicator.transform.Rotate(0, 180, 0);
         }
+    }
+    
+    private void UpdateIndicatorPosition()
+    {
+        if (currentIndicator == null) return;
+        
+        // Calculate the base position based on current structure position
+        basePosition = transform.position + hoverOffset;
     }
     
     private void CreateWorldCanvas()
@@ -310,6 +331,166 @@ public class ReadyIndicator : MonoBehaviour
         isClickable = true;
     }
     
+    public static void ShowFloatingNumber(Vector3 worldPosition, int amount, Color textColor)
+    {
+        ShowFloatingNumberWithBonus(worldPosition, amount, 0, textColor);
+    }
+    
+    public static void ShowFloatingNumberWithBonus(Vector3 worldPosition, int baseAmount, int bonusAmount, Color textColor)
+    {
+        Debug.Log($"[ReadyIndicator] ShowFloatingNumberWithBonus: baseAmount={baseAmount}, bonusAmount={bonusAmount}");
+        
+        // Show main amount
+        CreateFloatingText(worldPosition, baseAmount.ToString(), textColor, 0f);
+        
+        // Show bonus amount if there is one
+        if (bonusAmount > 0)
+        {
+            Debug.Log($"[ReadyIndicator] Creating synergy bonus text: +{bonusAmount} SYNERGY");
+            CreateFloatingText(worldPosition, $"+{bonusAmount} SYNERGY", Color.cyan, 1.5f); // Increased from 0.7f to 1.5f for much better spacing
+        }
+        else
+        {
+            Debug.Log($"[ReadyIndicator] No bonus to show (bonusAmount={bonusAmount})");
+        }
+    }
+    
+    public static void ShowFloatingNumberWithMultipleBonuses(Vector3 worldPosition, int baseAmount, int productionBonus, int synergyBonus, int seasonalBonus, Color textColor)
+    {
+        Debug.Log($"[ReadyIndicator] ShowFloatingNumberWithMultipleBonuses: baseAmount={baseAmount}, productionBonus={productionBonus}, synergyBonus={synergyBonus}, seasonalBonus={seasonalBonus}");
+        
+        // Show main amount
+        CreateFloatingText(worldPosition, baseAmount.ToString(), textColor, 0f);
+        
+        float verticalOffset = 2f; // Increased initial spacing from 0.7f to 1.5f
+        
+        // Show production bonus if there is one
+        if (productionBonus > 0)
+        {
+            Debug.Log($"[ReadyIndicator] Creating production bonus text: +{productionBonus} BONUS");
+            CreateFloatingText(worldPosition, $"+{productionBonus} BONUS", Color.yellow, verticalOffset);
+            verticalOffset += 2f; // Increased spacing between bonuses from 0.6f to 1.2f
+        }
+        
+        // Show synergy bonus if there is one
+        if (synergyBonus > 0)
+        {
+            Debug.Log($"[ReadyIndicator] Creating synergy bonus text: +{synergyBonus} SYNERGY");
+            CreateFloatingText(worldPosition, $"+{synergyBonus} SYNERGY", Color.cyan, verticalOffset);
+            verticalOffset += 2f; // Increased spacing between bonuses from 0.6f to 1.2f
+        }
+        
+        // Show seasonal bonus if there is one
+        if (seasonalBonus > 0)
+        {
+            Debug.Log($"[ReadyIndicator] Creating seasonal bonus text: +{seasonalBonus} SEASONAL");
+            CreateFloatingText(worldPosition, $"+{seasonalBonus} SEASONAL", Color.green, verticalOffset);
+        }
+        
+        if (productionBonus == 0 && synergyBonus == 0 && seasonalBonus == 0)
+        {
+            Debug.Log($"[ReadyIndicator] No bonuses to show");
+        }
+    }
+    
+    public static void CreateFloatingText(Vector3 worldPosition, string text, Color textColor, float verticalOffset)
+    {
+        // Find or create world space canvas
+        Canvas canvas = worldCanvas;
+        if (canvas == null)
+        {
+            canvas = FindFirstObjectByType<Canvas>();
+            if (canvas == null || canvas.renderMode != RenderMode.WorldSpace)
+            {
+                // Create temporary canvas for this floating text
+                GameObject canvasObj = new GameObject("FloatingTextCanvas");
+                canvas = canvasObj.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.WorldSpace;
+                canvas.scaleFactor = 0.01f;
+                canvas.sortingOrder = 100;
+            }
+        }
+        
+        // Create floating text object
+        GameObject floatingTextObj = new GameObject("FloatingNumber");
+        floatingTextObj.transform.SetParent(canvas.transform, false);
+        
+        // Add RectTransform
+        RectTransform textRect = floatingTextObj.AddComponent<RectTransform>();
+        textRect.sizeDelta = new Vector2(150, 50); // Wider for bonus text
+        
+        // Position in world space (slightly above the structure, with offset for bonus)
+        Vector3 basePosition = worldPosition + Vector3.up * 3f;
+        Vector3 offsetPosition = basePosition + Vector3.down * verticalOffset; // Changed back to Vector3.down so bonuses appear below base amount
+        floatingTextObj.transform.position = offsetPosition;
+        floatingTextObj.transform.LookAt(Camera.main.transform);
+        floatingTextObj.transform.Rotate(0, 180, 0);
+        
+        // Add Text component
+        var textComponent = floatingTextObj.AddComponent<TMPro.TextMeshProUGUI>();
+        
+        // Format text based on whether it's bonus or not
+        if (text.Contains("BONUS") || text.Contains("SYNERGY") || text.Contains("SEASONAL"))
+        {
+            textComponent.text = text;
+            textComponent.fontSize = 18; // Smaller for bonus
+            textComponent.fontStyle = TMPro.FontStyles.Bold | TMPro.FontStyles.Italic;
+        }
+        else
+        {
+            textComponent.text = "+" + text;
+            textComponent.fontSize = 24; // Normal size for main amount
+            textComponent.fontStyle = TMPro.FontStyles.Bold;
+        }
+        
+        textComponent.color = textColor;
+        textComponent.alignment = TMPro.TextAlignmentOptions.Center;
+        
+        // Add background for better readability
+        GameObject bgObj = new GameObject("FloatingNumberBG");
+        bgObj.transform.SetParent(floatingTextObj.transform, false);
+        bgObj.transform.SetAsFirstSibling();
+        
+        RectTransform bgRect = bgObj.AddComponent<RectTransform>();
+        bgRect.sizeDelta = new Vector2(text.Contains("BONUS") || text.Contains("SYNERGY") || text.Contains("SEASONAL") ? 140 : 80, 40);
+        bgRect.anchoredPosition = Vector2.zero;
+        
+        var bgImage = bgObj.AddComponent<UnityEngine.UI.Image>();
+        bgImage.color = new Color(0f, 0f, 0f, 0.6f);
+        
+        // Animate the floating text with slight delay for bonus
+        float delay = (text.Contains("BONUS") || text.Contains("SYNERGY") || text.Contains("SEASONAL")) ? 0.1f + (verticalOffset * 0.3f) : 0f;
+        StartFloatingAnimationWithDelay(floatingTextObj, delay);
+    }
+    
+    private static void StartFloatingAnimationWithDelay(GameObject floatingText, float delay)
+    {
+        if (delay > 0f)
+        {
+            // For bonus text, start animation after a small delay
+            FloatingTextAnimator animator = floatingText.AddComponent<FloatingTextAnimator>();
+            Vector3 startPos = floatingText.transform.position;
+            Vector3 endPos = startPos + Vector3.up * 2f;
+            animator.InitializeWithDelay(startPos, endPos, 2f, delay);
+        }
+        else
+        {
+            // For main text, start immediately
+            StartFloatingAnimation(floatingText);
+        }
+    }
+    
+    private static void StartFloatingAnimation(GameObject floatingText)
+    {
+        // Simple animation: move up and fade out over 2 seconds
+        Vector3 startPos = floatingText.transform.position;
+        Vector3 endPos = startPos + Vector3.up * 2f;
+        
+        // Create a component to handle the animation
+        FloatingTextAnimator animator = floatingText.AddComponent<FloatingTextAnimator>();
+        animator.Initialize(startPos, endPos, 2f);
+    }
+    
     private GameObject CreateDefaultIndicator(Color color, string label)
     {
         GameObject indicator = new GameObject($"Default{label}Indicator");
@@ -318,9 +499,27 @@ public class ReadyIndicator : MonoBehaviour
         RectTransform rect = indicator.AddComponent<RectTransform>();
         rect.sizeDelta = new Vector2(60, 60);
         
-        // Add Image for icon
-        Image img = indicator.AddComponent<Image>();
-        img.color = color;
+        // Create background element
+        GameObject background = new GameObject("Background");
+        background.transform.SetParent(indicator.transform, false);
+        RectTransform bgRect = background.AddComponent<RectTransform>();
+        bgRect.sizeDelta = new Vector2(70, 70); // Slightly larger than main icon
+        bgRect.anchoredPosition = Vector2.zero;
+        
+        // Add background image with semi-transparent dark color
+        Image bgImg = background.AddComponent<Image>();
+        bgImg.color = new Color(0.1f, 0.1f, 0.1f, 0.7f); // Dark semi-transparent background
+        
+        // Create main icon element
+        GameObject icon = new GameObject("Icon");
+        icon.transform.SetParent(indicator.transform, false);
+        RectTransform iconRect = icon.AddComponent<RectTransform>();
+        iconRect.sizeDelta = new Vector2(60, 60);
+        iconRect.anchoredPosition = Vector2.zero;
+        
+        // Add Image for main icon
+        Image iconImg = icon.AddComponent<Image>();
+        iconImg.color = color;
         
         // Simple circle shape (you can replace with actual sprites)
         

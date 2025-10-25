@@ -2312,7 +2312,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &145195100
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11133,7 +11133,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &600213253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31699,7 +31699,6 @@ MonoBehaviour:
   pulseDuration: 0.5
   moneyUI: {fileID: 2084042127}
   duration: 0.5
-  delay: 0
 --- !u!82 &1632256057
 AudioSource:
   m_ObjectHideFlags: 0
@@ -34945,7 +34944,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1753231147
 MonoBehaviour:
   m_ObjectHideFlags: 0

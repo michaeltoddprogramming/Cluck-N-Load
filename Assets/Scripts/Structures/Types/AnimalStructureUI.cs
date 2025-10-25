@@ -66,8 +66,6 @@ public class AnimalStructureUI : BaseStructureUI
     [SerializeField] private Sprite carrotSynergyGood;
     [SerializeField] private Sprite carrotSynergyBad;
 
-    // public UIHoverManager hoverManager;
-
 
 
 
@@ -98,7 +96,6 @@ public class AnimalStructureUI : BaseStructureUI
     private new void Start()
     {
         base.Start();
-        // hoverManager = FindObjectOfType<UIHoverManager>();
     }
 
     protected override void Update()

@@ -897,6 +897,9 @@ private void OnDayChange(int value)
             animalStructure.resetAnimalProductionAmount();
         }
 
+        // Hide previous season's bonus indicators
+        AnimalProductionIndicator.HideAllBonuses();
+
         //bonus falls on the same product
         if (sameProduct <= 0.05f)
         {
@@ -955,7 +958,7 @@ private void OnDayChange(int value)
                 NotificationManager.ShowAchievement("Double Production!", $"{fullAnimalName} earning 100% more! (Lasts entire season)");
             }
 
-            AnimalProductionIndicator.Instance.oneProductionBonus(animal);
+            AnimalProductionIndicator.ShowOneProductionBonus(animal);
         }
         //bonus falls different products
         else
@@ -1041,7 +1044,8 @@ private void OnDayChange(int value)
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
                 StartProductionNotification(message, 5);
-                AnimalProductionIndicator.Instance.twoProductionBonuses(animal1, animal2);
+                
+                AnimalProductionIndicator.ShowTwoProductionBonuses(animal1, animal2);
 
                 // if (doubleProductionSource != null)
                 // {
@@ -1124,6 +1128,8 @@ private void OnDayChange(int value)
 
                 productionBoosts.SetBoosted(boostedProducts);
 
+                // Update the visual indicator even during tutorial
+                AnimalProductionIndicator.ShowTwoProductionBonuses(animal1, animal2);
 
                 // Block production notifications during tutorial
                 if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
@@ -1140,7 +1146,6 @@ private void OnDayChange(int value)
                 {
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
-                AnimalProductionIndicator.Instance.twoProductionBonuses(animal1, animal2);
                 
                 StartProductionNotification(message, 5);
 

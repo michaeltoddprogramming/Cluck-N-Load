@@ -25,7 +25,8 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
     private Color midColor = new Color(1f, 0.9f, 0.2f);
     private Color dangerColor = new Color(1f, 0.2f, 0.2f);
 
-    public UIHoverManager hoverManager; 
+    [System.NonSerialized]
+    protected UIHoverManager hoverManager; 
 
     public void Start()
     {
@@ -108,8 +109,21 @@ public class BaseStructureUI : MonoBehaviour, IStructureUI
 
     protected virtual void UpdateHealthDisplay()
     {
-        if (structure != null && healthText != null)
+        if (structure == null) return;
+
+        if (healthText != null)
             healthText.text = $"{structure.GetCurrentHealth()}/{structure.GetMaxHealth()}";
+
+        if (healthBarSlider != null)
+        {
+            float pct = Mathf.Clamp01((float)structure.GetCurrentHealth() / structure.GetMaxHealth());
+            healthBarSlider.value = pct;
+            if (healthBarFill != null)
+            {
+                healthBarFill.color =
+                    pct > 0.6f ? healthyColor : pct > 0.3f ? midColor : dangerColor;
+            }
+        }
     }
 
     // protected virtual void DisplayDescription()

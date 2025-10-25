@@ -32,6 +32,14 @@ public class SimplifiedTutorialManager : MonoBehaviour
     
     [Header("Game UI Control")]
     public GameObject gameUICanvas;            // Main game UI canvas to hide during tutorial
+    public Button shopButton;                  // Reference to shop button for highlighting
+    
+    [Header("UI Highlighting")]
+    [Range(0.5f, 3.0f)]
+    public float highlightPulseSpeed = 1.5f;  // Speed of the pulsing animation
+    [Range(0.3f, 1.0f)] 
+    public float highlightMinAlpha = 0.4f;    // Minimum alpha during pulse
+    public Color highlightColor = new Color(1f, 0.8f, 0.2f, 0.8f); // Golden glow color
     
     [Header("Key Indicator System")]
     public GameObject keyIndicatorPrefab;
@@ -106,6 +114,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
         
         [Header("Game UI Control")]
         public bool showGameUI = false;             // Show the main game UI for this step (hidden by default during tutorial)
+        public GameObject highlightUIElement;       // UI element to highlight for this step (e.g., shop button)
     }
     
     [Header("Tutorial Steps")]
@@ -128,6 +137,10 @@ public class SimplifiedTutorialManager : MonoBehaviour
     private HashSet<KeyCode> detectedInputs = new HashSet<KeyCode>();
     private List<GameObject> keyIndicators = new List<GameObject>();
     private Dictionary<KeyCode, GameObject> keyIndicatorMap = new Dictionary<KeyCode, GameObject>();
+    
+    // UI highlighting system
+    private GameObject currentHighlightEffect;
+    private float stepStartTime; // Track when current step started
     
     // Singleton
     public static SimplifiedTutorialManager Instance { get; private set; }
@@ -240,7 +253,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
         });
         
         // Shop introduction - normal position, full opacity, allow clicks through panel
-        tutorialSteps.Add(new SimpleTutorialStep
+        var openShopStep = new SimpleTutorialStep
         {
             stepId = "open_shop",
             title = "Let's Build!",
@@ -252,7 +265,15 @@ public class SimplifiedTutorialManager : MonoBehaviour
             disablePanelRaycast = true,  // Allow clicks through the panel to reach the shop button
             panelAlpha = 0f,
             showGameUI = true            // Show game UI so player can see shop button
-        });
+        };
+        
+        // Set shop button as highlight target if available
+        if (shopButton != null)
+        {
+            openShopStep.highlightUIElement = shopButton.gameObject;
+        }
+        
+        tutorialSteps.Add(openShopStep);
         
         // Build farmhouse - move dialogue to right, invisible panel, allow clicks
         tutorialSteps.Add(new SimpleTutorialStep
@@ -399,6 +420,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
     private void ShowCurrentStep()
     {
         var step = tutorialSteps[currentStepIndex];
+        
+        // Track when this step started
+        stepStartTime = Time.time;
         
         Debug.Log($"Showing tutorial step {currentStepIndex}: {step.title}");
         
@@ -620,6 +644,13 @@ public class SimplifiedTutorialManager : MonoBehaviour
             HideGameUI();
         }
         
+        // Handle UI highlighting - delay to ensure UI is active
+        ClearUIHighlight();
+        if (step.highlightUIElement != null)
+        {
+            StartCoroutine(DelayedHighlight(step.highlightUIElement, 0.1f));
+        }
+        
         // Control panel raycast blocking
         if (panelCanvasGroup != null)
         {
@@ -776,6 +807,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
         // Clear key indicators
         ClearKeyIndicators();
         
+        // Clear any UI highlights
+        ClearUIHighlight();
+        
         // Reset panel to original state
         ResetPanel();
         
@@ -828,6 +862,212 @@ public class SimplifiedTutorialManager : MonoBehaviour
         else
         {
             Debug.LogWarning("[ShowGameUI] gameUICanvas is null - assign the main UI canvas in inspector");
+        }
+    }
+    
+    // UI highlighting methods
+    private void HighlightUIElement(GameObject targetElement)
+    {
+        if (targetElement == null)
+        {
+            Debug.LogWarning("[HighlightUIElement] Target element is null");
+            return;
+        }
+        
+        // Debug the target element's state
+        Debug.Log($"[HighlightUIElement] Target: {targetElement.name}, Active: {targetElement.activeInHierarchy}, Enabled: {targetElement.activeSelf}");
+        
+        // Check if target has a parent that might be disabled
+        Transform parent = targetElement.transform.parent;
+        while (parent != null)
+        {
+            Debug.Log($"[HighlightUIElement] Parent: {parent.name}, Active: {parent.gameObject.activeInHierarchy}");
+            parent = parent.parent;
+        }
+        
+        // Clear any existing highlight
+        ClearUIHighlight();
+        
+        // Create a beautiful glow effect programmatically
+        CreateGlowEffect(targetElement);
+        
+        Debug.Log($"[HighlightUIElement] Highlighting {targetElement.name} with procedural glow");
+    }
+    
+    private void CreateGlowEffect(GameObject target)
+    {
+        // Create container for the effect
+        GameObject effectContainer = new GameObject("TutorialHighlight");
+        effectContainer.transform.SetParent(target.transform, false);
+        currentHighlightEffect = effectContainer;
+        
+        // Get target's RectTransform
+        RectTransform targetRect = target.GetComponent<RectTransform>();
+        if (targetRect == null) return;
+        
+        // Add Canvas component to ensure proper sorting
+        Canvas highlightCanvas = effectContainer.AddComponent<Canvas>();
+        highlightCanvas.overrideSorting = true;
+        highlightCanvas.sortingOrder = 32767; // Very high sorting order to ensure visibility
+        
+        // Add GraphicRaycaster but disable it
+        GraphicRaycaster raycaster = effectContainer.AddComponent<GraphicRaycaster>();
+        raycaster.enabled = false;
+        
+        // Create outer glow ring
+        GameObject outerGlow = CreateGlowRing(effectContainer, "OuterGlow", 1.6f, 0.4f);
+        GameObject middleGlow = CreateGlowRing(effectContainer, "MiddleGlow", 1.3f, 0.6f);
+        GameObject innerGlow = CreateGlowRing(effectContainer, "InnerGlow", 1.1f, 0.8f);
+        
+        // Start pulsing animations
+        StartCoroutine(PulseGlow(outerGlow.GetComponent<Image>(), 0f));
+        StartCoroutine(PulseGlow(middleGlow.GetComponent<Image>(), 0.3f));
+        StartCoroutine(PulseGlow(innerGlow.GetComponent<Image>(), 0.6f));
+        
+        // Add more visible scale pulse to target
+        StartCoroutine(PulseScale(target.transform));
+        
+        Debug.Log($"[CreateGlowEffect] Created highlight with Canvas sortingOrder: {highlightCanvas.sortingOrder}");
+    }
+    
+    private GameObject CreateGlowRing(GameObject parent, string name, float scale, float alphaMultiplier)
+    {
+        GameObject glow = new GameObject(name);
+        glow.transform.SetParent(parent.transform, false);
+        
+        // Add Image component for the glow
+        Image glowImage = glow.AddComponent<Image>();
+        
+        // Create a simple circle sprite programmatically
+        glowImage.sprite = CreateCircleSprite();
+        glowImage.color = new Color(highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a * alphaMultiplier);
+        glowImage.raycastTarget = false; // Don't block clicks
+        
+        // Setup RectTransform to scale around target
+        RectTransform glowRect = glow.GetComponent<RectTransform>();
+        glowRect.anchorMin = Vector2.zero;
+        glowRect.anchorMax = Vector2.one;
+        glowRect.offsetMin = Vector2.zero;
+        glowRect.offsetMax = Vector2.zero;
+        glowRect.localScale = Vector3.one * scale;
+        
+        return glow;
+    }
+    
+    private Sprite CreateCircleSprite()
+    {
+        // Create a simple circle texture
+        int size = 64;
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        Color[] pixels = new Color[size * size];
+        
+        Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+        float radius = size * 0.4f;
+        
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), center);
+                float alpha = Mathf.SmoothStep(1f, 0f, distance / radius);
+                pixels[y * size + x] = new Color(1f, 1f, 1f, alpha);
+            }
+        }
+        
+        texture.SetPixels(pixels);
+        texture.Apply();
+        
+        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+    }
+    
+    private IEnumerator PulseGlow(Image glowImage, float timeOffset)
+    {
+        Color originalColor = glowImage.color;
+        
+        while (currentHighlightEffect != null && glowImage != null)
+        {
+            float time = Time.time * highlightPulseSpeed + timeOffset;
+            float pulse = (Mathf.Sin(time) + 1f) * 0.5f; // 0 to 1
+            float alpha = Mathf.Lerp(highlightMinAlpha, 1f, pulse);
+            
+            glowImage.color = new Color(originalColor.r, originalColor.g, originalColor.b, originalColor.a * alpha);
+            
+            yield return null;
+        }
+    }
+    
+    private IEnumerator PulseScale(Transform target)
+    {
+        Vector3 originalScale = target.localScale;
+        
+        // Also add outline effect like old tutorial
+        Outline outline = target.GetComponent<Outline>();
+        bool addedOutline = false;
+        if (outline == null)
+        {
+            outline = target.gameObject.AddComponent<Outline>();
+            addedOutline = true;
+        }
+        
+        outline.enabled = true;
+        outline.effectColor = new Color(0f, 1f, 0.4f, 1f); // Bright green like old tutorial
+        outline.effectDistance = new Vector2(4, 4);
+        
+        while (currentHighlightEffect != null && target != null)
+        {
+            float time = Time.time * highlightPulseSpeed * 0.7f; // Scale pulse speed
+            float pulse = (Mathf.Sin(time) + 1f) * 0.5f;
+            float scaleMultiplier = Mathf.Lerp(1f, 1.15f, pulse); // More visible 15% scale increase
+            
+            target.localScale = originalScale * scaleMultiplier;
+            
+            // Pulse outline thickness too
+            if (outline != null)
+            {
+                float outlineSize = Mathf.Lerp(3f, 8f, pulse);
+                outline.effectDistance = new Vector2(outlineSize, outlineSize);
+            }
+            
+            yield return null;
+        }
+        
+        // Restore original scale and remove outline when done
+        if (target != null)
+        {
+            target.localScale = originalScale;
+            if (outline != null && addedOutline)
+            {
+                DestroyImmediate(outline);
+            }
+            else if (outline != null)
+            {
+                outline.enabled = false;
+            }
+        }
+    }
+    
+    private void ClearUIHighlight()
+    {
+        if (currentHighlightEffect != null)
+        {
+            Destroy(currentHighlightEffect);
+            currentHighlightEffect = null;
+            Debug.Log("[ClearUIHighlight] Cleared procedural UI highlight");
+        }
+    }
+    
+    private IEnumerator DelayedHighlight(GameObject targetElement, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Double-check that the target is still valid and active
+        if (targetElement != null && targetElement.activeInHierarchy)
+        {
+            HighlightUIElement(targetElement);
+        }
+        else
+        {
+            Debug.LogWarning($"[DelayedHighlight] Target element {targetElement?.name ?? "null"} is not active, skipping highlight");
         }
     }
     

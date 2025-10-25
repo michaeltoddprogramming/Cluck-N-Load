@@ -23470,6 +23470,10 @@ PrefabInstance:
       value: 0.02
       objectReference: {fileID: 0}
     - target: {fileID: 5001224824830007327, guid: aa8848489856f744480911a129677ec9, type: 3}
+      propertyPath: shopButton
+      value: 
+      objectReference: {fileID: 760890653}
+    - target: {fileID: 5001224824830007327, guid: aa8848489856f744480911a129677ec9, type: 3}
       propertyPath: mmbDownIcon
       value: 
       objectReference: {fileID: 21300000, guid: 6e8eb736edcc9eb4b8aa2821b2b3cce5, type: 3}
@@ -23497,6 +23501,10 @@ PrefabInstance:
       propertyPath: mumbleAudioSource
       value: 
       objectReference: {fileID: 1647617208}
+    - target: {fileID: 5001224824830007327, guid: aa8848489856f744480911a129677ec9, type: 3}
+      propertyPath: highlightPulseSpeed
+      value: 2.5
+      objectReference: {fileID: 0}
     - target: {fileID: 5001224824830007327, guid: aa8848489856f744480911a129677ec9, type: 3}
       propertyPath: mumbleClips.Array.size
       value: 2

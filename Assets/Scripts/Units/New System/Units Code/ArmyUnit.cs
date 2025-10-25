@@ -174,12 +174,13 @@ public class ArmyUnit : BaseUnit
             return;
         }
 
-        var enemies = GetNearbyEnemies();
-        if (currentTarget == null || !enemies.Contains(currentTarget) || currentTarget.IsDead())
+        // var enemies = GetNearbyEnemies();
+        GetNearbyEnemies();
+        if (currentTarget == null || !cachedNearbyEnemies.Contains(currentTarget) || currentTarget.IsDead())
         {
-            if (enemies.Count > 0)
+            if (cachedNearbyEnemies.Count > 0)
             {
-                currentTarget = enemies[0];
+                currentTarget = cachedNearbyEnemies[0];
 
                 if (roamingRoutine != null)
                 {
@@ -581,7 +582,29 @@ public class ArmyUnit : BaseUnit
         nearbyCheckInterval = Mathf.Max(0.2f, 0.05f * (data.AttackRange / 5f));
     }
 
-    public List<EnemyUnit> GetNearbyEnemies()
+    public void GetNearbyEnemies()
+    {
+        // if (Time.time - lastNearbyCheckTime > nearbyCheckInterval)
+        // {
+            // OPTIMIZATION: Scale check interval based on whether enemies exist nearby
+            // If no enemies found, increase interval to reduce unnecessary checks
+            cachedNearbyEnemies = GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
+            
+            // Adaptive throttling: if no enemies found, wait longer before next check
+            if (cachedNearbyEnemies.Count == 0)
+            {
+                // No enemies: wait 3x longer before checking again
+                lastNearbyCheckTime = Time.time + (nearbyCheckInterval * 2f);
+            }
+            else
+            {
+                lastNearbyCheckTime = Time.time;
+            }
+        // }
+        // return cachedNearbyEnemies;
+    }
+
+    public List<EnemyUnit> GetCurrentEnemies()
     {
         if (Time.time - lastNearbyCheckTime > nearbyCheckInterval)
         {

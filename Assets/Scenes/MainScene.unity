@@ -8832,6 +8832,10 @@ PrefabInstance:
       propertyPath: m_SpriteState.m_HighlightedSprite
       value: 
       objectReference: {fileID: 21300000, guid: 9fd91ce55000ad24aafbabb06303626f, type: 3}
+    - target: {fileID: 5669890228418774677, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 8400000, guid: 914b7306f8615c845a3393d38544c21a, type: 2}
     - target: {fileID: 6587779568675299298, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -12211,7 +12215,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: 352b0f984494291428b71b0229355826, type: 2}
+  m_TargetTexture: {fileID: 8400000, guid: 914b7306f8615c845a3393d38544c21a, type: 2}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1

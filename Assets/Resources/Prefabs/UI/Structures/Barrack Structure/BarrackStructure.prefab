@@ -3423,7 +3423,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -344.40002, y: 9.984838}
+  m_AnchoredPosition: {x: 348.59998, y: 9.984833}
   m_SizeDelta: {x: -166.49991, y: -19.970324}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2564377928463239005
@@ -4139,6 +4139,8 @@ MonoBehaviour:
   sheepFlagListParent: {fileID: 631093279278229599}
   sheepFlagItemPrefab: {fileID: 6382581239176846530, guid: 16bf37a988fa6b343b6f93be404e1504, type: 3}
   closeSheepFlagPanelButton: {fileID: 1170201358964499129}
+  buttonClick: {fileID: 8225135668343744304}
+  closeClicked: {fileID: 1580245612872803593}
   armyBarSlider: {fileID: 7449112819115301119}
   armyBarFill: {fileID: 6117739415020300467}
   animalIcon3: {fileID: 6038883989228771173}
@@ -4333,7 +4335,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 21a85df303b094b428497b6b4a5ca424, type: 3}
   m_Resource: {fileID: 8300000, guid: 21a85df303b094b428497b6b4a5ca424, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0

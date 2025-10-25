@@ -56,6 +56,8 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Transform sheepFlagListParent;
     [SerializeField] private GameObject sheepFlagItemPrefab;
     [SerializeField] private Button closeSheepFlagPanelButton;
+    [SerializeField] private AudioSource buttonClick;
+    [SerializeField] private AudioSource closeClicked;
     
     private bool isManagingSheepFlags = false;
     private int selectedSheepFlagIndex = -1;
@@ -1508,6 +1510,7 @@ public class BarracksStructureUI : BaseStructureUI
         if (sheepFlagManagementPanel != null)
         {
             sheepFlagManagementPanel.SetActive(false);
+            closeClicked.Play();
         }
     }
 
@@ -1679,14 +1682,14 @@ public class BarracksStructureUI : BaseStructureUI
                 if (moveButton != null)
                 {
                     moveButton.onClick.RemoveAllListeners();
-                    moveButton.onClick.AddListener(() => StartMovingSheepFlag(index));
+                    moveButton.onClick.AddListener(() => {buttonClick.Play(); StartMovingSheepFlag(index);});
                     Debug.Log($"[SHEEP FLAG] Connected move button for item {index}");
                 }
                 
                 if (deleteButton != null)
                 {
                     deleteButton.onClick.RemoveAllListeners();
-                    deleteButton.onClick.AddListener(() => DeleteSheepFlag(index));
+                    deleteButton.onClick.AddListener(() => {closeClicked.Play(); DeleteSheepFlag(index);});
                     Debug.Log($"[SHEEP FLAG] Connected delete button for item {index}");
                 }
             }

@@ -188,14 +188,13 @@ public class ShopUIManager : MonoBehaviour
 
     public void ToggleShop()
     {
-        // Prevent rapid clicking/double clicks
-        // if (Time.time - lastClickTime < clickCooldown)
-        if (Time.unscaledTime  - lastClickTime < clickCooldown)
+        // Prevent rapid clicking/double clicks (but allow first click when lastClickTime is 0)
+        if (lastClickTime > 0 && Time.unscaledTime - lastClickTime < clickCooldown)
         {
-            Debug.Log("it is the time thing!!!!!");
+            Debug.Log("ShopUIManager: Click debounced - too soon after last click");
             return;
         }
-        lastClickTime = Time.unscaledTime ;
+        lastClickTime = Time.unscaledTime;
 
         // NEW: Check if it's night time
         if (NightManager.Instance != null && !NightManager.Instance.IsDay)
@@ -279,8 +278,13 @@ public class ShopUIManager : MonoBehaviour
             Debug.LogError("ShopPanelUI is null!");
         }
 
-        if (TutorialManager.Instance != null)
-            TutorialManager.Instance.Trigger(TutorialTrigger.ShopOpened);
+        // Trigger old tutorial system
+        //if (TutorialManager.Instance != null)
+          //  TutorialManager.Instance.Trigger(TutorialTrigger.ShopOpened);
+        
+        // Trigger new simplified tutorial system
+        if (SimplifiedTutorialManager.Instance != null)
+            SimplifiedTutorialManager.Instance.OnShopOpened();
     }
 
     public void CloseShop()

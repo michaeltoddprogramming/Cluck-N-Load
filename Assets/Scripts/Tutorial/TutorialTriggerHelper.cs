@@ -24,17 +24,42 @@ public class TutorialTriggerHelper : MonoBehaviour
         }
     }
     
-    public static void TriggerCameraMoved()
+    // Camera movement triggers - updated for new tutorial steps
+    public static void TriggerCameraMovedWASD()
     {
         if (SimplifiedTutorialManager.Instance != null)
         {
-            SimplifiedTutorialManager.Instance.OnCameraMoved();
+            SimplifiedTutorialManager.Instance.OnCameraMovedWASD();
+        }
+    }
+    
+    public static void TriggerCameraRotated()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnCameraRotated();
+        }
+    }
+    
+    public static void TriggerCameraZoomed()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnCameraZoomed();
+        }
+    }
+    
+    public static void TriggerCameraDragged()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnCameraDragged();
         }
     }
 }
 
 /// <summary>
-/// Add this to your camera controller to detect movement
+/// Add this to your camera controller to detect WASD movement
 /// </summary>
 public class CameraMovementDetector : MonoBehaviour
 {
@@ -51,7 +76,7 @@ public class CameraMovementDetector : MonoBehaviour
         if (!hasMovedThisSession && Vector3.Distance(transform.position, lastPosition) > 0.1f)
         {
             hasMovedThisSession = true;
-            TutorialTriggerHelper.TriggerCameraMoved();
+            TutorialTriggerHelper.TriggerCameraMovedWASD();
         }
         
         lastPosition = transform.position;

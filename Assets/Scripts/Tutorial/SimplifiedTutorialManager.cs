@@ -97,7 +97,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
         
         [Header("Simple Panel Control")]
         public bool movePanelDown = false;          // Move content container to bottom of screen
+        public bool movePanelRight = false;         // Move content container to right side of screen
         public float panelAlpha = 1.0f;             // Background panel opacity (0-1, fade the background)
+        public bool disablePanelRaycast = false;    // Disable panel blocking clicks (for UI interaction steps)
     }
     
     [Header("Tutorial Steps")]
@@ -231,7 +233,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f
         });
         
-        // Shop introduction - normal position, full opacity
+        // Shop introduction - normal position, full opacity, allow clicks through panel
         tutorialSteps.Add(new SimpleTutorialStep
         {
             stepId = "open_shop",
@@ -240,10 +242,12 @@ public class SimplifiedTutorialManager : MonoBehaviour
             peteContext = PeteContext.UIHelper,
             peteEmotion = PeteEmotion.Excited,
             waitForAction = true,
-            waitForTrigger = "shop_opened"
+            waitForTrigger = "shop_opened",
+            disablePanelRaycast = true,  // Allow clicks through the panel to reach the shop button
+            panelAlpha = 0f,
         });
         
-        // Build farmhouse - fade background, move content down for world focus
+        // Build farmhouse - move dialogue to right, invisible panel, allow clicks
         tutorialSteps.Add(new SimpleTutorialStep
         {
             stepId = "build_farmhouse",
@@ -253,8 +257,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             peteEmotion = PeteEmotion.Worried,
             waitForAction = true,
             waitForTrigger = "farmhouse_built",
-            movePanelDown = true,    // Move content to bottom
-            panelAlpha = 0.3f        // Fade background to 30% so world is visible
+            movePanelRight = true,       // Move dialogue to right side
+            panelAlpha = 0f,             // Fully transparent panel
+            disablePanelRaycast = true   // Allow clicks to place building
         });
         
         // Tutorial complete - back to normal
@@ -357,6 +362,14 @@ public class SimplifiedTutorialManager : MonoBehaviour
     {
         if (!tutorialActive) return;
         
+        // Stop any ongoing typing and mumbling from previous step
+        if (typingCoroutine != null)
+        {
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+        }
+        StopMumbling();
+        
         // Clear key indicators from previous step
         ClearKeyIndicators();
         
@@ -447,7 +460,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             waitingForPlayerAction = true;
             if (nextStepButton != null)
             {
-                nextStepButton.interactable = false;
+                nextStepButton.gameObject.SetActive(false); // Hide button entirely for required actions
             }
             Debug.Log($"Waiting for action: {step.waitForTrigger}");
             
@@ -468,6 +481,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             waitingForPlayerAction = false;
             if (nextStepButton != null)
             {
+                nextStepButton.gameObject.SetActive(true); // Show button for optional steps
                 nextStepButton.interactable = true;
             }
             Debug.Log("Next button enabled - ready for manual progression");
@@ -480,6 +494,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
     private IEnumerator TypeText(string text)
     {
         if (dialogueText == null) yield break;
+        
+        // Stop any existing mumbling before starting new text
+        StopMumbling();
         
         dialogueText.text = "";
         
@@ -506,16 +523,16 @@ public class SimplifiedTutorialManager : MonoBehaviour
             yield return new WaitForSeconds(typeSpeed);
         }
         
-        // Stop mumbling when typing is done
+        // ALWAYS stop mumbling when typing is done (regardless of mumbleCoroutine reference)
+        StopMumbling();
+        
         if (mumbleCoroutine != null)
         {
             StopCoroutine(mumbleCoroutine);
-            if (mumbleAudioSource != null && mumbleAudioSource.isPlaying)
-            {
-                mumbleAudioSource.Stop();
-            }
-            Debug.Log("[TypeText] Stopped Pete's mumbling");
+            Debug.Log("[TypeText] Stopped Pete's mumbling coroutine");
         }
+        
+        typingCoroutine = null; // Clear the typing coroutine reference
     }
     
     private IEnumerator PlayMumbleDuringTyping()
@@ -579,7 +596,13 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Simple panel control methods
     private void UpdatePanelForStep(SimpleTutorialStep step)
     {
-        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}");
+        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}, movePanelRight: {step.movePanelRight}, disableRaycast: {step.disablePanelRaycast}");
+        
+        // Control panel raycast blocking
+        if (panelCanvasGroup != null)
+        {
+            panelCanvasGroup.blocksRaycasts = !step.disablePanelRaycast;
+        }
         
         // Stop any existing tween animation
         if (panelTweenCoroutine != null)
@@ -602,9 +625,17 @@ public class SimplifiedTutorialManager : MonoBehaviour
         
         // Determine target values
         float targetAlpha = step.panelAlpha;
-        Vector2 targetPosition = step.movePanelDown 
-            ? new Vector2(originalContentPosition.x, originalContentPosition.y - 280f)
-            : originalContentPosition;
+        Vector2 targetPosition = originalContentPosition;
+        
+        // Handle different panel positioning
+        if (step.movePanelDown)
+        {
+            targetPosition = new Vector2(originalContentPosition.x, originalContentPosition.y - 280f);
+        }
+        else if (step.movePanelRight)
+        {
+            targetPosition = new Vector2(originalContentPosition.x + 400f, originalContentPosition.y);
+        }
         
         // Smooth tween animation
         while (elapsed < duration)
@@ -658,6 +689,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
         if (panelCanvasGroup != null)
         {
             panelCanvasGroup.alpha = 1.0f;
+            panelCanvasGroup.blocksRaycasts = true; // Re-enable raycast blocking
         }
         
         if (contentContainerRect != null)
@@ -681,17 +713,23 @@ public class SimplifiedTutorialManager : MonoBehaviour
             // Clear key indicators when action is completed
             ClearKeyIndicators();
             
-            if (nextStepButton != null)
-            {
-                nextStepButton.interactable = true;
-            }
-            
             // Pete celebrates
             if (usePete3D && pete3DGuide != null)
             {
                 pete3DGuide.OnStepComplete();
             }
+            
+            Debug.Log($"Trigger '{triggerName}' matched! Auto-advancing to next step.");
+            
+            // Auto-advance to next step after a short delay
+            StartCoroutine(DelayedNextStep(0.2f));
         }
+    }
+    
+    private IEnumerator DelayedNextStep(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        NextStep();
     }
     
     public void SkipTutorial()
@@ -744,7 +782,12 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Public methods for other systems to call
     public void OnShopOpened() => TriggerAction("shop_opened");
     public void OnFarmhouseBuilt() => TriggerAction("farmhouse_built");
-    public void OnCameraMoved() => TriggerAction("camera_moved");
+    
+    // Camera control triggers
+    public void OnCameraMovedWASD() => TriggerAction("camera_moved_wasd");
+    public void OnCameraRotated() => TriggerAction("camera_rotated");
+    public void OnCameraZoomed() => TriggerAction("camera_zoomed");
+    public void OnCameraDragged() => TriggerAction("camera_dragged");
     
     public bool IsTutorialActive() => tutorialActive;
     public bool IsWaitingForAction() => waitingForPlayerAction;

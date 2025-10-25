@@ -21,6 +21,8 @@ public class ShopUIManager : MonoBehaviour
     private float lastClickTime = 0f;
     private float clickCooldown = 0.1f; // 100ms cooldown
 
+    private PauseManager pauseManager;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -35,6 +37,7 @@ public class ShopUIManager : MonoBehaviour
 
     private void Start()
     {
+        pauseManager = FindFirstObjectByType<PauseManager>();
         // Check if shopPanel is assigned
         if (shopPanel == null)
         {
@@ -186,11 +189,13 @@ public class ShopUIManager : MonoBehaviour
     public void ToggleShop()
     {
         // Prevent rapid clicking/double clicks
-        if (Time.time - lastClickTime < clickCooldown)
+        // if (Time.time - lastClickTime < clickCooldown)
+        if (Time.unscaledTime  - lastClickTime < clickCooldown)
         {
+            Debug.Log("it is the time thing!!!!!");
             return;
         }
-        lastClickTime = Time.time;
+        lastClickTime = Time.unscaledTime ;
 
         // NEW: Check if it's night time
         if (NightManager.Instance != null && !NightManager.Instance.IsDay)

@@ -1671,6 +1671,10 @@ MonoBehaviour:
   filteredText: {fileID: 937588965}
   shopTab: {fileID: 1663116382}
   repairTab: {fileID: 896195556}
+  coopTabButton: {fileID: 1420257126}
+  armyTabButton: {fileID: 458064981}
+  plantTabButton: {fileID: 630448055}
+  defenseTabButton: {fileID: 612084252}
   pulseScale: 1.2
   pulseDuration: 0.5
 --- !u!1 &110259852
@@ -2320,16 +2324,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 145195099}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 713383478}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 960, y: 540}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &145195101
@@ -8808,7 +8812,9 @@ PrefabInstance:
       propertyPath: shopButton
       value: 
       objectReference: {fileID: 760890651}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7462987418697100228, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
+    - {fileID: 8370659335145486513, guid: d51dee481d0de6245ad808d5b8252ea5, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -12984,7 +12990,6 @@ RectTransform:
   - {fileID: 757938435}
   - {fileID: 1370584684}
   - {fileID: 402048542}
-  - {fileID: 145195100}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -41987,6 +41992,7 @@ SceneRoots:
   - {fileID: 138242649}
   - {fileID: 369685984}
   - {fileID: 713383478}
+  - {fileID: 145195100}
   - {fileID: 1288401793}
   - {fileID: 539507487}
   - {fileID: 1854279157}

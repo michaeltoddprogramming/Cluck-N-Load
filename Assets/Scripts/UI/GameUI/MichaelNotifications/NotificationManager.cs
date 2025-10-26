@@ -204,6 +204,7 @@ public class NotificationManager : MonoBehaviour
     public static void ShowSeasonalBlocking(int season, string unlocksText = null)
     {
         if (Instance == null) return;
+        EnsureActive();
 
         SeasonInfo info = null;
         foreach (var s in Instance.seasonalInfos)
@@ -272,9 +273,25 @@ public class NotificationManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Ensures the NotificationManager GameObject is active before showing notifications
+    /// </summary>
+    private static void EnsureActive()
+    {
+        if (Instance == null) return;
+
+        // Only activate THIS GameObject, not the entire hierarchy
+        // This allows coroutines to run without keeping parent UI containers visible
+        if (!Instance.gameObject.activeSelf)
+        {
+            Instance.gameObject.SetActive(true);
+        }
+    }
+
     public static void ShowNotification(string title, string message, string theme = "Info", float duration = 2f, System.Action onComplete = null)
     {
         if (Instance == null) return;
+        EnsureActive();
 
         NotificationData data = new NotificationData
         {
@@ -293,6 +310,7 @@ public class NotificationManager : MonoBehaviour
     public static void ShowBlockingNotification(string title, string message, string theme = "Blocking", System.Action onComplete = null)
     {
         if (Instance == null) return;
+        EnsureActive();
 
         string finalTheme = theme ?? "Blocking";
         if (Instance.useSeasonThemeForBlocking && (string.IsNullOrEmpty(theme) || theme.Equals("Blocking", System.StringComparison.OrdinalIgnoreCase)))
@@ -400,6 +418,22 @@ public class NotificationManager : MonoBehaviour
     private void ProcessQueue()
     {
         if (isShowingNotification || notificationQueue.Count == 0) return;
+
+        // Safety check: ensure THIS GameObject is active before starting coroutine
+        // We don't activate the entire hierarchy to avoid keeping parent UI containers visible
+        if (!gameObject.activeSelf)
+        {
+            Debug.LogWarning("NotificationManager: ProcessQueue called while inactive. Activating NotificationManager GameObject...");
+            gameObject.SetActive(true);
+        }
+
+        // If parent hierarchy is inactive, we can't run coroutines
+        // In this case, the NotificationManager should be moved to an always-active hierarchy
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.LogError("NotificationManager: Parent hierarchy is inactive! Cannot start coroutines. Please ensure NotificationManager is in an active hierarchy.");
+            return;
+        }
 
         NotificationData data = notificationQueue.Dequeue();
         StartCoroutine(ShowNotificationCoroutine(data));

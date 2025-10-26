@@ -52,6 +52,12 @@ public class CropStructure : Structure
     StructureData data;
 
     private bool synergyActive = false;
+    
+    // Tutorial highlighting
+    private Material originalMaterial;
+    private Material highlightMaterial;
+    private Renderer[] renderers;
+    private bool isHighlighted = false;
 
     protected override void Start()
     {
@@ -80,6 +86,80 @@ public class CropStructure : Structure
         readyIndicator = GetComponent<ReadyIndicator>();
         if (readyIndicator == null)
             readyIndicator = gameObject.AddComponent<ReadyIndicator>();
+            
+        // Setup tutorial highlighting materials
+        InitializeTutorialHighlighting();
+    }
+    
+    private void Update()
+    {
+        // Tutorial structure highlighting
+        UpdateTutorialHighlighting();
+    }
+    
+    private void InitializeTutorialHighlighting()
+    {
+        renderers = GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0 && renderers[0].material != null)
+        {
+            originalMaterial = renderers[0].sharedMaterial;
+            
+            // Create a highlight material with emission
+            highlightMaterial = new Material(originalMaterial);
+            highlightMaterial.EnableKeyword("_EMISSION");
+            highlightMaterial.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.2f, 1f) * 0.5f); // Golden glow
+        }
+    }
+    
+    private void UpdateTutorialHighlighting()
+    {
+        if (SimplifiedTutorialManager.Instance == null || renderers == null || renderers.Length == 0)
+            return;
+            
+        bool shouldHighlight = SimplifiedTutorialManager.Instance.ShouldHighlightStructure("crop plot");
+        
+        if (shouldHighlight && !isHighlighted)
+        {
+            EnableHighlight();
+        }
+        else if (!shouldHighlight && isHighlighted)
+        {
+            DisableHighlight();
+        }
+        
+        // Pulse effect when highlighted
+        if (isHighlighted && highlightMaterial != null)
+        {
+            float pulse = (Mathf.Sin(Time.time * 2f) + 1f) * 0.5f; // 0 to 1
+            Color emissionColor = new Color(1f, 0.8f, 0.2f, 1f) * Mathf.Lerp(0.3f, 0.8f, pulse);
+            highlightMaterial.SetColor("_EmissionColor", emissionColor);
+        }
+    }
+    
+    private void EnableHighlight()
+    {
+        if (renderers == null || highlightMaterial == null) return;
+        
+        foreach (Renderer rend in renderers)
+        {
+            if (rend != null)
+                rend.material = highlightMaterial;
+        }
+        
+        isHighlighted = true;
+    }
+    
+    private void DisableHighlight()
+    {
+        if (renderers == null || originalMaterial == null) return;
+        
+        foreach (Renderer rend in renderers)
+        {
+            if (rend != null)
+                rend.sharedMaterial = originalMaterial;
+        }
+        
+        isHighlighted = false;
     }
 
     public void Plant(CropType cropType)

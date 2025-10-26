@@ -33,6 +33,7 @@ public class CropStructureUI : BaseStructureUI
     private CropStructure cropStructure;
     private bool isCropStructure;
     private char currCrop = 'N';
+    private string lastHighlightedButton = null; // Track which button we're currently highlighting
 
     // public UIHoverManager hoverManager;
     // private float displayedGrowth = 0f; // Unused field
@@ -78,11 +79,46 @@ public class CropStructureUI : BaseStructureUI
 
     private void SetupButtonListeners()
     {
-        plantButton?.onClick.AddListener(() => { if (CanPlantCrops()) ShowSelectCropPanel(); else PlayErrorSound(); });
-        plantSunflowerButton?.onClick.AddListener(() => TryPlantCrop(0));
-        plantWheatButton?.onClick.AddListener(() => TryPlantCrop(1));
-        plantCarrotsButton?.onClick.AddListener(() => TryPlantCrop(2));
-        harvestButton?.onClick.AddListener(() => { if (CanHarvestCrops()) harvestCrops(); else PlayErrorSound(); });
+        plantButton?.onClick.AddListener(() => {
+            if (CanPlantCrops())
+            {
+                // Notify tutorial system
+                if (SimplifiedTutorialManager.Instance != null)
+                    SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("plantButton");
+                ShowSelectCropPanel();
+            }
+            else PlayErrorSound();
+        });
+        
+        plantSunflowerButton?.onClick.AddListener(() => {
+            if (SimplifiedTutorialManager.Instance != null)
+                SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("plantSunflowerButton");
+            TryPlantCrop(0);
+        });
+        
+        plantWheatButton?.onClick.AddListener(() => {
+            if (SimplifiedTutorialManager.Instance != null)
+                SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("plantWheatButton");
+            TryPlantCrop(1);
+        });
+        
+        plantCarrotsButton?.onClick.AddListener(() => {
+            if (SimplifiedTutorialManager.Instance != null)
+                SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("plantCarrotsButton");
+            TryPlantCrop(2);
+        });
+        
+        harvestButton?.onClick.AddListener(() => {
+            if (CanHarvestCrops())
+            {
+                // Notify tutorial system
+                if (SimplifiedTutorialManager.Instance != null)
+                    SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("harvestButton");
+                harvestCrops();
+            }
+            else PlayErrorSound();
+        });
+        
         plantingClose?.GetComponent<Button>()?.onClick.AddListener(closeSelectCropPanel);
     }
 
@@ -262,6 +298,9 @@ public class CropStructureUI : BaseStructureUI
         // Call base update to handle move button logic
         base.Update();
         
+        // Tutorial button highlighting
+        HighlightTutorialButton();
+        
         // Regular UI updates at intervals
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
         {
@@ -367,6 +406,53 @@ public class CropStructureUI : BaseStructureUI
         selectCropPanel?.SetActive(false);
         statusText.text = "No crop structure";
         statusText.color = Color.yellow;
+    }
+    
+    // ===== TUTORIAL HIGHLIGHTING INTEGRATION =====
+    
+    private void HighlightTutorialButton()
+    {
+        if (SimplifiedTutorialManager.Instance == null) return;
+        
+        string buttonToHighlight = SimplifiedTutorialManager.Instance.GetNextUIButtonToHighlight();
+        
+        // Only update highlighting if the button has changed
+        if (buttonToHighlight == lastHighlightedButton) return;
+        
+        lastHighlightedButton = buttonToHighlight;
+        
+        if (string.IsNullOrEmpty(buttonToHighlight)) return;
+        
+        // Find and highlight the button based on name
+        GameObject buttonObj = null;
+        
+        string lowerButtonName = buttonToHighlight.ToLower();
+        
+        if (lowerButtonName.Contains("plant") && lowerButtonName.Contains("sunflower"))
+        {
+            buttonObj = plantSunflowerButton?.gameObject;
+        }
+        else if (lowerButtonName.Contains("plant") && lowerButtonName.Contains("wheat"))
+        {
+            buttonObj = plantWheatButton?.gameObject;
+        }
+        else if (lowerButtonName.Contains("plant") && lowerButtonName.Contains("carrot"))
+        {
+            buttonObj = plantCarrotsButton?.gameObject;
+        }
+        else if (lowerButtonName.Contains("plant"))
+        {
+            buttonObj = plantButton?.gameObject;
+        }
+        else if (lowerButtonName.Contains("harvest"))
+        {
+            buttonObj = harvestButton?.gameObject;
+        }
+        
+        if (buttonObj != null)
+        {
+            SimplifiedTutorialManager.Instance.HighlightStructureUIButton(buttonObj);
+        }
     }
 
     private void PlayErrorSound()

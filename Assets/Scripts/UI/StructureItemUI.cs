@@ -30,6 +30,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     // Track if item is locked due to day requirement
     private bool isLockedByDay = false;
+    private bool isLockedByTutorial = false;  // NEW: Track tutorial lock state
     private bool previousLockedState = false;
     private bool isFirstUpdate = true;
 
@@ -43,28 +44,47 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void Update()
     {
         // UpdateAffordability();
-        // Dynamically update lock state in case cheat is toggled
+        // Dynamically update lock state in case cheat is toggled or tutorial state changes
         if (data != null)
         {
             int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
             bool unlockAllBuildsActive = CheatManager.Instance != null && CheatManager.Instance.IsUnlockAllBuildsActive();
             isLockedByDay = !unlockAllBuildsActive && (data.unlockDay > currentDay);
+            
+            // Update tutorial lock state dynamically
+            isLockedByTutorial = false;
+            if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
+            {
+                if (SimplifiedTutorialManager.Instance.ShouldRestrictShopBuildings())
+                {
+                    isLockedByTutorial = !SimplifiedTutorialManager.Instance.IsBuildingAllowed(data.structureName);
+                }
+            }
         }
 
+        bool isLocked = isLockedByDay || isLockedByTutorial;
+
         // Update locked overlay on first frame or when state changes
-        if (lockedOverlay != null && (isFirstUpdate || previousLockedState != isLockedByDay))
+        if (lockedOverlay != null && (isFirstUpdate || previousLockedState != isLocked))
         {
-            lockedOverlay.SetActive(isLockedByDay);
-            // Update the overlay text for day lock
-            if (isLockedByDay)
+            lockedOverlay.SetActive(isLocked);
+            // Update the overlay text based on lock type
+            if (isLocked)
             {
                 var overlayText = lockedOverlay.GetComponentInChildren<TextMeshProUGUI>();
                 if (overlayText != null)
                 {
-                    overlayText.text = $"Unlocks on Day {data?.unlockDay ?? 0}";
+                    if (isLockedByTutorial)
+                    {
+                        overlayText.text = "Complete Tutorial Step";
+                    }
+                    else
+                    {
+                        overlayText.text = $"Unlocks on Day {data?.unlockDay ?? 0}";
+                    }
                 }
             }
-            previousLockedState = isLockedByDay;
+            previousLockedState = isLocked;
             isFirstUpdate = false;
         }
 
@@ -81,7 +101,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 grayscaleOverlay.gameObject.SetActive(false);
             }
         }
-        else if (nightManager != null && !isLockedByDay)
+        else if (nightManager != null && !isLocked)
         {
             // For unlocked items without grayOverlay, apply pause effect directly to icon
             bool isPaused = nightManager.getIsPaused();
@@ -98,11 +118,11 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                  // This will set the correct color based on affordability
         }
 
-        // Button interactability considers day lock, affordability, and pause state
+        // Button interactability considers day lock, tutorial lock, affordability, and pause state
         // if (selectButton != null)
         // {
         //     bool isPaused = nightManager != null && nightManager.getIsPaused();
-        //     selectButton.interactable = !isLockedByDay && !isPaused &&
+        //     selectButton.interactable = !isLockedByDay && !isLockedByTutorial && !isPaused &&
         //         (MoneyManager.Instance?.CanAfford(data?.cost ?? 0) ?? false);
         // }
     }
@@ -148,16 +168,29 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         isLockedByDay = !unlockAllBuildsActive && (structure.unlockDay > currentDay); // Store the day lock state, but cheat overrides
         
+        // NEW: Check if building is locked by tutorial restrictions
+        isLockedByTutorial = false;
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
+        {
+            if (SimplifiedTutorialManager.Instance.ShouldRestrictShopBuildings())
+            {
+                isLockedByTutorial = !SimplifiedTutorialManager.Instance.IsBuildingAllowed(structure.structureName);
+                Debug.Log($"[StructureItemUI] {structure.structureName} tutorial locked: {isLockedByTutorial}");
+            }
+        }
+        
+        bool isLocked = isLockedByDay || isLockedByTutorial;
+        
         // Set the locked overlay immediately in Setup
         if (lockedOverlay != null)
         {
-            lockedOverlay.SetActive(isLockedByDay);
+            lockedOverlay.SetActive(isLocked);
         }
         
-        previousLockedState = isLockedByDay; // Initialize the previous state
+        previousLockedState = isLocked; // Initialize the previous state
         isFirstUpdate = false; // Mark that we've already set the initial state
 
-        if (isLockedByDay)
+        if (isLocked)
         {
             // if (selectButton != null)
             //     selectButton.interactable = false;
@@ -168,7 +201,16 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             {
                 var unlockText = lockedOverlay.GetComponentInChildren<TextMeshProUGUI>();
                 if (unlockText != null)
-                    unlockText.text = $"Unlocks on Day {structure.unlockDay}";
+                {
+                    if (isLockedByTutorial)
+                    {
+                        unlockText.text = "Complete Tutorial Step";
+                    }
+                    else
+                    {
+                        unlockText.text = $"Unlocks on Day {structure.unlockDay}";
+                    }
+                }
             }
             return;
         }
@@ -187,8 +229,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void SelectStructure()
     {
-        // Check if item is locked by day requirement
-        if (isLockedByDay)
+        // Check if item is locked by day requirement or tutorial
+        if (isLockedByDay || isLockedByTutorial)
         {
             PlayErrorSound();
             return;
@@ -257,9 +299,10 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         bool canAfford = MoneyManager.Instance.CanAfford(data.cost);
         bool isPaused = nightManager != null && nightManager.getIsPaused();
+        bool isLocked = isLockedByDay || isLockedByTutorial;
 
-        // Button interactability considers affordability, day lock, and pause state
-        // selectButton.interactable = canAfford && !isLockedByDay && !isPaused;
+        // Button interactability considers affordability, day lock, tutorial lock, and pause state
+        // selectButton.interactable = canAfford && !isLockedByDay && !isLockedByTutorial && !isPaused;
 
         if (costText != null)
         {
@@ -267,8 +310,8 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             costText.text = $"{data.cost}";
         }
 
-        // Only update icon color if not paused (pause effects are handled in Update)
-        if (icon != null && !isPaused && !isLockedByDay)
+        // Only update icon color if not paused and not locked (pause effects are handled in Update)
+        if (icon != null && !isPaused && !isLocked)
             icon.color = canAfford ? Color.white : new Color(0.7f, 0.7f, 0.7f, 0.8f);
 
         // Notify BuildController to update ghost if affordability changed

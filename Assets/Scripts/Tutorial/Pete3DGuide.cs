@@ -269,11 +269,56 @@ public class Pete3DGuide : MonoBehaviour
         
         currentActivePete = uiPete;
         
-        // Just show/hide the existing RawImage - don't touch camera or Pete model
+        // Animate the existing RawImage sliding up
         if (peteUIDisplay != null)
         {
             peteUIDisplay.gameObject.SetActive(true);
-            Debug.Log("Activated existing Pete RawImage in tutorial panel");
+            
+            // Get RectTransform for animation
+            RectTransform peteRect = peteUIDisplay.GetComponent<RectTransform>();
+            if (peteRect != null)
+            {
+                // Store the target position
+                Vector2 targetPos = peteRect.anchoredPosition;
+                
+                // Start Pete below the visible area (slide up from bottom)
+                float slideDistance = peteRect.rect.height + 50f; // Slide from below
+                peteRect.anchoredPosition = new Vector2(targetPos.x, targetPos.y - slideDistance);
+                
+                // Animate Pete sliding up with easing and bounce
+                float elapsed = 0f;
+                float duration = 0.5f; // Half second slide-up animation
+                
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = elapsed / duration;
+                    
+                    // Cubic ease-out for smooth deceleration with overshoot
+                    float easedT = 1f - Mathf.Pow(1f - t, 3f);
+                    
+                    // Add slight overshoot for bounce effect
+                    float overshoot = 1.1f;
+                    if (t > 0.8f) // Only apply bounce near the end
+                    {
+                        float bounceT = (t - 0.8f) / 0.2f;
+                        easedT = easedT + (Mathf.Sin(bounceT * Mathf.PI) * 0.05f);
+                    }
+                    
+                    peteRect.anchoredPosition = Vector2.Lerp(
+                        new Vector2(targetPos.x, targetPos.y - slideDistance),
+                        targetPos,
+                        easedT
+                    );
+                    
+                    yield return null;
+                }
+                
+                // Ensure final position is exact
+                peteRect.anchoredPosition = targetPos;
+            }
+            
+            Debug.Log("Animated Pete RawImage sliding up in tutorial panel with bounce");
         }
         else
         {
@@ -552,20 +597,72 @@ public class Pete3DGuide : MonoBehaviour
     
     private void HideAllPeteVariants()
     {
+        HideAllPeteVariants(false); // Default to instant hide
+    }
+    
+    private void HideAllPeteVariants(bool animated)
+    {
         if (worldPete != null) worldPete.SetActive(false);
         if (uiPete != null) uiPete.SetActive(false);
         if (cornerPete != null) cornerPete.SetActive(false);
         
-        // Hide UI display 
+        // Animate Pete sliding down before hiding (only if animated is true)
         if (peteUIDisplay != null) 
         {
-            peteUIDisplay.gameObject.SetActive(false);
+            if (animated && peteUIDisplay.gameObject.activeSelf)
+            {
+                StartCoroutine(HidePeteWithAnimation());
+            }
+            else
+            {
+                // Instant hide without animation
+                peteUIDisplay.gameObject.SetActive(false);
+            }
         }
         
         currentActivePete = null;
         currentContext = PeteContext.Hidden;
         
         HideSpeechBubble();
+    }
+    
+    private IEnumerator HidePeteWithAnimation()
+    {
+        if (peteUIDisplay == null || !peteUIDisplay.gameObject.activeSelf)
+        {
+            yield break;
+        }
+        
+        RectTransform peteRect = peteUIDisplay.GetComponent<RectTransform>();
+        if (peteRect != null)
+        {
+            // Store the current position
+            Vector2 startPos = peteRect.anchoredPosition;
+            
+            // Calculate slide-down target (below visible area)
+            float slideDistance = peteRect.rect.height + 50f;
+            Vector2 targetPos = new Vector2(startPos.x, startPos.y - slideDistance);
+            
+            // Animate Pete sliding down
+            float elapsed = 0f;
+            float duration = 0.3f; // Faster slide-down
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                
+                // Cubic ease-in for smooth acceleration
+                float easedT = t * t * t;
+                
+                peteRect.anchoredPosition = Vector2.Lerp(startPos, targetPos, easedT);
+                
+                yield return null;
+            }
+        }
+        
+        // Hide after animation completes
+        peteUIDisplay.gameObject.SetActive(false);
     }
     
     /// <summary>
@@ -579,7 +676,7 @@ public class Pete3DGuide : MonoBehaviour
             currentAnimation = null;
         }
         
-        HideAllPeteVariants();
+        HideAllPeteVariants(true); // Use animated hide when explicitly hiding Pete
         StopAllParticles();
     }
     

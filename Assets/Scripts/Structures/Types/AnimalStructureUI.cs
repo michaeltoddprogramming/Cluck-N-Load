@@ -33,6 +33,7 @@ public class AnimalStructureUI : BaseStructureUI
     private AnimalStructure animalStructure;
     private bool isAnimalStructure;
     private new NightManager nightManager;
+    private string lastHighlightedButton = null; // Track which button we're currently highlighting
     // Note: lastPauseState is inherited from BaseStructureUI
 
     private float lastUIUpdate;
@@ -102,6 +103,9 @@ public class AnimalStructureUI : BaseStructureUI
     {
         // Call base update to handle move button logic
         base.Update();
+        
+        // Tutorial button highlighting
+        HighlightTutorialButton();
         
         // Check for pause state changes and update UI immediately
         if (nightManager != null)
@@ -189,11 +193,29 @@ public class AnimalStructureUI : BaseStructureUI
 
     private void SetupButtonListeners()
     {
-        feedButton?.onClick.AddListener(() => { animalStructure.Feed(); UpdateUI(); });
-        collectButton?.onClick.AddListener(() => { animalStructure.Collect(); UpdateUI(); });
+        feedButton?.onClick.AddListener(() => { 
+            if (SimplifiedTutorialManager.Instance != null)
+                SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("feedButton");
+            animalStructure.Feed(); 
+            UpdateUI(); 
+        });
+        
+        collectButton?.onClick.AddListener(() => { 
+            if (SimplifiedTutorialManager.Instance != null)
+                SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("collectButton");
+            animalStructure.Collect(); 
+            UpdateUI(); 
+        });
+        
         addAnimal?.onClick.AddListener(() => { animalChange(0); UpdateUI(); });
         removeAnimal?.onClick.AddListener(() => { animalChange(1); UpdateUI(); });
-        buyAnimal?.onClick.AddListener(() => { BuyAnimalsWithWarningCheck(); UpdateUI(); });
+        
+        buyAnimal?.onClick.AddListener(() => { 
+            if (SimplifiedTutorialManager.Instance != null)
+                SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("buyAnimal");
+            BuyAnimalsWithWarningCheck(); 
+            UpdateUI(); 
+        });
     }
 
     private void UpdateUI()
@@ -638,6 +660,42 @@ public class AnimalStructureUI : BaseStructureUI
             }
             // Hide the indicator if no synergy is active
             // synergyIndicator.gameObject.SetActive(false);
+        }
+    }
+
+    private void HighlightTutorialButton()
+    {
+        if (SimplifiedTutorialManager.Instance == null) return;
+
+        string nextButtonName = SimplifiedTutorialManager.Instance.GetNextUIButtonToHighlight();
+        
+        // Only update highlighting if the button has changed
+        if (nextButtonName == lastHighlightedButton) return;
+        
+        lastHighlightedButton = nextButtonName;
+        
+        if (string.IsNullOrEmpty(nextButtonName)) return;
+
+        GameObject buttonToHighlight = null;
+        string lowerButtonName = nextButtonName.ToLower();
+
+        // Match button names
+        if (lowerButtonName.Contains("buyanimal") || lowerButtonName.Contains("buy"))
+        {
+            buttonToHighlight = buyAnimal?.gameObject;
+        }
+        else if (lowerButtonName.Contains("feed"))
+        {
+            buttonToHighlight = feedButton?.gameObject;
+        }
+        else if (lowerButtonName.Contains("collect"))
+        {
+            buttonToHighlight = collectButton?.gameObject;
+        }
+
+        if (buttonToHighlight != null)
+        {
+            SimplifiedTutorialManager.Instance.HighlightStructureUIButton(buttonToHighlight);
         }
     }
 }

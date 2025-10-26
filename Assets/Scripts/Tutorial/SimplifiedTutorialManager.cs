@@ -102,6 +102,17 @@ public class SimplifiedTutorialManager : MonoBehaviour
         public bool showGameUI = false;             // Show the main game UI for this step (hidden by default during tutorial)
         public GameObject highlightUIElement;       // UI element to highlight for this step (e.g., shop button)
         public string highlightUIByName = "";       // UI element name to find and highlight (alternative to highlightUIElement)
+        
+        [Header("Shop Tutorial Control")]
+        public bool highlightShopButton = false;    // Highlight the shop button to prompt opening
+        public bool restrictShopBuildings = false;  // Restrict shop to only allow specific buildings
+        public List<string> allowedBuildingNames = new List<string>(); // Building names that can be purchased (e.g., "FarmHouse")
+        public string requiredShopTab = "";         // Which shop tab should be active (e.g., "C" for Coops, "P" for Plants, "A" for Army, "S" for Defense)
+        public string shopTabButtonName = "";       // Name of the tab button to highlight (e.g., "Plant Button", "Coop Button")
+        
+        [Header("World Structure Interaction")]
+        public string highlightStructureType = "";  // Type of structure to highlight in world (e.g., "crop plot", "chicken coop")
+        public List<string> highlightStructureUIButtons = new List<string>(); // Button names to highlight in sequence on structure UI panel
     }
     
     [Header("Tutorial Steps")]
@@ -128,6 +139,11 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // UI highlighting system
     private GameObject currentHighlightEffect;
     private float stepStartTime; // Track when current step started
+    
+    // World structure highlighting system
+    private GameObject currentHighlightedStructure;
+    private int currentUIButtonIndex = 0; // Track which button in the sequence we're highlighting
+    private List<string> currentUIButtonSequence = new List<string>();
     
     // Singleton
     public static SimplifiedTutorialManager Instance { get; private set; }
@@ -251,7 +267,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
             waitForTrigger = "shop_opened",
             disablePanelRaycast = true,  // Allow clicks through the panel to reach the shop button
             panelAlpha = 0f,
-            showGameUI = true            // Show game UI so player can see shop button
+            showGameUI = true,           // Show game UI so player can see shop button
+            highlightShopButton = true   // NEW: Highlight the shop button to guide player
         };
         
         // Set shop button as highlight target if available
@@ -275,7 +292,11 @@ public class SimplifiedTutorialManager : MonoBehaviour
             movePanelRight = true,       // Move dialogue to right side
             panelAlpha = 0f,             // Fully transparent panel
             disablePanelRaycast = true,  // Allow clicks to place building
-            showGameUI = true            // Keep game UI visible for building interaction
+            showGameUI = true,           // Keep game UI visible for building interaction
+            restrictShopBuildings = true,  // Only allow specific buildings
+            allowedBuildingNames = new List<string> { "FarmHouse", "Farmhouse", "Farm House" },
+            requiredShopTab = "C",       // Coops/Buildings tab
+            shopTabButtonName = "Coop Button"
         });
         
         // UI Explanation Steps - after farmhouse is placed
@@ -364,6 +385,18 @@ public class SimplifiedTutorialManager : MonoBehaviour
             waitForAction = false
         });
 
+        // Congratulate for learning UI
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "ui_learning_complete",
+            title = "UI Master!",
+            message = "Excellent! You've learned all the important UI elements: money, time controls, day/night cycle, enemy indicators, production bonuses, and crop amounts. Now you're ready to start building and farming!",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Celebrating,
+            showGameUI = true,
+            waitForAction = false
+        });
+
         // Build: Crop Plot
         tutorialSteps.Add(new SimpleTutorialStep
         {
@@ -378,6 +411,10 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
+            restrictShopBuildings = true,
+            allowedBuildingNames = new List<string> { "CropPlot", "Crop Plot" },
+            requiredShopTab = "P",       // Plants tab
+            shopTabButtonName = "Plant Button"
         });
 
         // Build: Silo
@@ -393,7 +430,11 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            restrictShopBuildings = true,
+            allowedBuildingNames = new List<string> { "Silo" },
+            requiredShopTab = "P",       // Plants tab
+            shopTabButtonName = "Plant Button"
         });
 
         // Build: Chicken Coop
@@ -409,7 +450,11 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            restrictShopBuildings = true,
+            allowedBuildingNames = new List<string> { "ChickenCoop", "Chicken Coop" },
+            requiredShopTab = "C",       // Coops/Buildings tab
+            shopTabButtonName = "Coop Button"
         });
 
         // Build: Chicken Barracks
@@ -425,15 +470,19 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            restrictShopBuildings = true,
+            allowedBuildingNames = new List<string> { "ChickenBarracks", "Chicken Barracks" },
+            requiredShopTab = "A",       // Army tab
+            shopTabButtonName = "Army Button"
         });
 
         // Explanation step - now that structures are built
         tutorialSteps.Add(new SimpleTutorialStep
         {
             stepId = "structures_built_intro",
-            title = "Great Work!",
-            message = "You've built the basic structures! Now let's learn how to use them. Time to grow some crops!",
+            title = "Excellent Work!",
+            message = "You've built the basic structures and learned how to navigate the UI! You've mastered the shop, time controls, day/night cycle, and building placement. Now let's learn how to use them. Time to grow some crops!",
             peteContext = PeteContext.UIHelper,
             peteEmotion = PeteEmotion.Celebrating,
             showGameUI = true,
@@ -453,7 +502,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            highlightStructureType = "crop plot",
+            highlightStructureUIButtons = new List<string> { "plantButton", "plantSunflowerButton" }
         });
 
         // Harvest crop step
@@ -469,7 +520,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            highlightStructureType = "crop plot",
+            highlightStructureUIButtons = new List<string> { "harvestButton" }
         });
 
         // Buy chickens step
@@ -485,7 +538,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            highlightStructureType = "chicken coop",
+            highlightStructureUIButtons = new List<string> { "buyAnimal" }
         });
 
         // Feed chickens step
@@ -501,7 +556,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            highlightStructureType = "chicken coop",
+            highlightStructureUIButtons = new List<string> { "feedButton" }
         });
 
         // Collect eggs step
@@ -517,7 +574,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            highlightStructureType = "chicken coop",
+            highlightStructureUIButtons = new List<string> { "collectButton" }
         });
 
         // Recruit soldiers step
@@ -533,7 +592,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            highlightStructureType = "chicken barrack",
+            highlightStructureUIButtons = new List<string> { "recruitButton" }
         });
 
         // Place flag step
@@ -549,7 +610,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true
+            movePanelRight = true,
+            highlightStructureType = "chicken barrack",
+            highlightStructureUIButtons = new List<string> { "placeFlagButton" }
         });
 
         // Final complete step
@@ -582,6 +645,227 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Public helpers for army/defense actions
     public void OnSoldiersRecruited() => TriggerAction("soldiers_recruited");
     public void OnFlagPlaced() => TriggerAction("flag_placed");
+    
+    // Public API for shop tutorial restrictions
+    public bool ShouldRestrictShopBuildings()
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return false;
+            
+        return tutorialSteps[currentStepIndex].restrictShopBuildings;
+    }
+    
+    public List<string> GetAllowedBuildingNames()
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return new List<string>();
+            
+        return tutorialSteps[currentStepIndex].allowedBuildingNames ?? new List<string>();
+    }
+    
+    public bool IsBuildingAllowed(string buildingName)
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return true; // No restrictions when tutorial isn't active
+            
+        SimpleTutorialStep currentStep = tutorialSteps[currentStepIndex];
+        
+        if (!currentStep.restrictShopBuildings)
+            return true; // No restrictions for this step
+            
+        if (currentStep.allowedBuildingNames == null || currentStep.allowedBuildingNames.Count == 0)
+            return false; // Restrict all if list is empty but restriction is enabled
+            
+        // Check if building name matches any allowed names (case-insensitive, flexible matching)
+        foreach (string allowed in currentStep.allowedBuildingNames)
+        {
+            if (string.IsNullOrEmpty(allowed)) continue;
+            
+            // Exact match (case-insensitive)
+            if (buildingName.Equals(allowed, System.StringComparison.OrdinalIgnoreCase))
+                return true;
+                
+            // Partial match (contains)
+            if (buildingName.IndexOf(allowed, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                allowed.IndexOf(buildingName, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+                
+            // Remove spaces and check again
+            string buildingNoSpaces = buildingName.Replace(" ", "");
+            string allowedNoSpaces = allowed.Replace(" ", "");
+            
+            if (buildingNoSpaces.Equals(allowedNoSpaces, System.StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        
+        return false; // Building not in allowed list
+    }
+    
+    public bool ShouldHighlightShopButton()
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return false;
+            
+        return tutorialSteps[currentStepIndex].highlightShopButton;
+    }
+    
+    // ===== WORLD STRUCTURE HIGHLIGHTING API =====
+    
+    // Check if a specific structure type should be highlighted in the current step
+    public bool ShouldHighlightStructure(string structureType)
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return false;
+            
+        SimpleTutorialStep currentStep = tutorialSteps[currentStepIndex];
+        
+        if (string.IsNullOrEmpty(currentStep.highlightStructureType))
+            return false;
+            
+        // Flexible matching (case-insensitive, partial match)
+        return structureType.IndexOf(currentStep.highlightStructureType, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+               currentStep.highlightStructureType.IndexOf(structureType, System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+    
+    // Get the next UI button that should be highlighted in the current step
+    // Returns null if no more buttons to highlight
+    public string GetNextUIButtonToHighlight()
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return null;
+            
+        SimpleTutorialStep currentStep = tutorialSteps[currentStepIndex];
+        
+        if (currentStep.highlightStructureUIButtons == null || currentStep.highlightStructureUIButtons.Count == 0)
+            return null;
+            
+        if (currentUIButtonIndex >= currentStep.highlightStructureUIButtons.Count)
+            return null; // All buttons have been highlighted
+            
+        return currentStep.highlightStructureUIButtons[currentUIButtonIndex];
+    }
+    
+    // Called by structure UI when a button is clicked - advances to next button in sequence
+    public void OnStructureUIButtonClicked(string buttonName)
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return;
+            
+        SimpleTutorialStep currentStep = tutorialSteps[currentStepIndex];
+        
+        if (currentStep.highlightStructureUIButtons == null || currentUIButtonIndex >= currentStep.highlightStructureUIButtons.Count)
+            return;
+            
+        string expectedButton = currentStep.highlightStructureUIButtons[currentUIButtonIndex];
+        
+        // Check if this is the button we're expecting
+        if (buttonName.Equals(expectedButton, System.StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.Log($"[SimplifiedTutorialManager] Button '{buttonName}' clicked, advancing to next button in sequence");
+            currentUIButtonIndex++;
+            
+            // Clear current highlight
+            ClearUIHighlight();
+            
+            // If there's another button to highlight, wait a moment then highlight it
+            if (currentUIButtonIndex < currentStep.highlightStructureUIButtons.Count)
+            {
+                string nextButton = currentStep.highlightStructureUIButtons[currentUIButtonIndex];
+                Debug.Log($"[SimplifiedTutorialManager] Next button to highlight: {nextButton}");
+                // The structure UI will call HighlightUIButton on its next update
+            }
+            else
+            {
+                Debug.Log($"[SimplifiedTutorialManager] All UI buttons highlighted for this step");
+            }
+        }
+    }
+    
+    // Called by structure UI panels when they open to highlight the appropriate button
+    public void HighlightStructureUIButton(GameObject buttonObject)
+    {
+        if (buttonObject == null)
+        {
+            Debug.LogWarning("[SimplifiedTutorialManager] Cannot highlight null button");
+            return;
+        }
+        
+        Debug.Log($"[SimplifiedTutorialManager] Highlighting structure UI button: {buttonObject.name}");
+        StartCoroutine(DelayedHighlight(buttonObject, 0.2f));
+    }
+    
+    // Helper method to handle shop tab guidance when tutorial restrictions change
+    private void RefreshShopIfOpen()
+    {
+        if (currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return;
+            
+        SimpleTutorialStep currentStep = tutorialSteps[currentStepIndex];
+        
+        // Check if shop is currently open
+        if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen())
+        {
+            Debug.Log("[RefreshShopIfOpen] Shop is open");
+            
+            // Check if we need to highlight a tab button
+            if (!string.IsNullOrEmpty(currentStep.requiredShopTab) && ShopPanelUI.Instance != null)
+            {
+                char requiredTab = currentStep.requiredShopTab[0]; // Get first character ('C', 'P', 'A', 'S')
+                
+                // Check if player is already on the correct tab
+                if (ShopPanelUI.Instance.GetCurrentTab() == requiredTab)
+                {
+                    Debug.Log($"[RefreshShopIfOpen] Player already on correct tab '{requiredTab}', forcing shop repopulate");
+                    // Already on correct tab, just force repopulate
+                    ShopPanelUI.Instance.PopulateShop(requiredTab);
+                }
+                else
+                {
+                    Debug.Log($"[RefreshShopIfOpen] Player on wrong tab, need to guide to tab '{requiredTab}'");
+                    // Player is on wrong tab - find and highlight the button that switches to required tab
+                    GameObject tabButton = FindShopTabButton(requiredTab);
+                    if (tabButton != null)
+                    {
+                        Debug.Log($"[RefreshShopIfOpen] Found tab button, highlighting it");
+                        StartCoroutine(DelayedHighlight(tabButton, 0.1f));
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[RefreshShopIfOpen] Could not find button for tab: {requiredTab}");
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("[RefreshShopIfOpen] Shop is not open, no refresh needed");
+        }
+    }
+    
+    // Find the shop tab button that switches to the specified tab
+    private GameObject FindShopTabButton(char targetTab)
+    {
+        // Use ShopPanelUI's API to get the correct button
+        if (ShopPanelUI.Instance != null)
+        {
+            GameObject tabButton = ShopPanelUI.Instance.GetTabButton(targetTab);
+            if (tabButton != null)
+            {
+                Debug.Log($"[FindShopTabButton] Found button for tab '{targetTab}': {tabButton.name}");
+                return tabButton;
+            }
+            else
+            {
+                Debug.LogWarning($"[FindShopTabButton] ShopPanelUI.GetTabButton returned null for tab '{targetTab}'. Make sure the button is assigned in the inspector.");
+            }
+        }
+        else
+        {
+            Debug.LogError("[FindShopTabButton] ShopPanelUI.Instance is null!");
+        }
+        
+        return null;
+    }
     
     private void SetupUI()
     {
@@ -704,6 +988,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
         // Track when this step started
         stepStartTime = Time.time;
         
+        // Reset structure UI button highlighting sequence for new step
+        currentUIButtonIndex = 0;
+        
         Debug.Log($"Showing tutorial step {currentStepIndex}: {step.title}");
         
         // Show dialogue
@@ -801,6 +1088,12 @@ public class SimplifiedTutorialManager : MonoBehaviour
                 nextStepButton.interactable = true;
             }
             Debug.Log("Next button enabled - ready for manual progression");
+        }
+        
+        // NEW: Refresh shop if it's open and this step has building restrictions
+        if (step.restrictShopBuildings)
+        {
+            RefreshShopIfOpen();
         }
         
         // Play audio
@@ -1386,6 +1679,37 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Public methods for other systems to call
     public void OnShopOpened() => TriggerAction("shop_opened");
     public void OnFarmhouseBuilt() => TriggerAction("farmhouse_built");
+    
+    // Called when player clicks a shop tab button
+    public void OnShopTabChanged(char newTab)
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return;
+            
+        SimpleTutorialStep currentStep = tutorialSteps[currentStepIndex];
+        
+        // Check if this step requires a specific shop tab
+        if (!string.IsNullOrEmpty(currentStep.requiredShopTab))
+        {
+            // Convert char to string for comparison
+            string newTabStr = newTab.ToString();
+            
+            Debug.Log($"[OnShopTabChanged] Player switched to tab '{newTab}', required: '{currentStep.requiredShopTab}'");
+            
+            // If player switched to the correct tab, clear the tab button highlight
+            if (newTabStr == currentStep.requiredShopTab)
+            {
+                Debug.Log("[OnShopTabChanged] Correct tab selected! Clearing highlight.");
+                ClearUIHighlight();
+                
+                // Force shop to repopulate with tutorial restrictions
+                if (ShopPanelUI.Instance != null)
+                {
+                    ShopPanelUI.Instance.PopulateShop(newTab);
+                }
+            }
+        }
+    }
     
     // Camera control triggers
     public void OnCameraMovedWASD() => TriggerAction("camera_moved_wasd");

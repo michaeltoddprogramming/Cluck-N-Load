@@ -32,6 +32,27 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private char currNav = 'C'; // current nav bar selection
 
     [SerializeField] private GameObject comingSoonPanel; // Panel for upcoming features 
+    
+    // Public getter for current tab (for tutorial system)
+    public char GetCurrentTab()
+    {
+        return currNav;
+    }
+    
+    // Get the button GameObject for a specific tab (for tutorial highlighting)
+    public GameObject GetTabButton(char tab)
+    {
+        switch (tab)
+        {
+            case 'C': return coopTabButton != null ? coopTabButton.gameObject : null;
+            case 'A': return armyTabButton != null ? armyTabButton.gameObject : null;
+            case 'P': return plantTabButton != null ? plantTabButton.gameObject : null;
+            case 'S': return defenseTabButton != null ? defenseTabButton.gameObject : null;
+            default:
+                Debug.LogWarning($"[ShopPanelUI] Unknown tab character: {tab}");
+                return null;
+        }
+    } 
 
     [Header("Repair things")]
     public GameObject repairItemPrefab;  
@@ -48,6 +69,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [Header("Tab buttons")]
     [SerializeField] private RectTransform  shopTab;
     [SerializeField] private RectTransform  repairTab;
+    
+    [Header("Shop Navigation Buttons")]
+    [SerializeField] private Button coopTabButton;      // Button for 'C' tab (index 0)
+    [SerializeField] private Button armyTabButton;      // Button for 'A' tab (index 1)
+    [SerializeField] private Button plantTabButton;     // Button for 'P' tab (index 2)
+    [SerializeField] private Button defenseTabButton;   // Button for 'S' tab (index 3)
 
     [Header("Pulse Highlight Settings")]
     [SerializeField] private float pulseScale = 1.2f;
@@ -136,6 +163,12 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (tempNav != currNav)
         {
+            // Notify tutorial that tab changed
+            if (SimplifiedTutorialManager.Instance != null)
+            {
+                SimplifiedTutorialManager.Instance.OnShopTabChanged(currNav);
+            }
+            
             if(onShop)
             {
                 PopulateShop(currNav);
@@ -226,10 +259,13 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         
         // After populating, highlight the tutorial target building if tutorial is active
         // Only start coroutine if GameObject is active and enabled
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive() && 
-            gameObject != null && gameObject.activeInHierarchy && enabled)
+        if ((SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive()) ||
+            (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive()))
         {
-            StartCoroutine(HighlightTutorialTargetBuilding());
+            if (gameObject != null && gameObject.activeInHierarchy && enabled)
+            {
+                StartCoroutine(HighlightTutorialTargetBuilding());
+            }
         }
     }
     
@@ -238,6 +274,37 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         // Wait a frame for items to be instantiated
         yield return null;
         
+        // Check SimplifiedTutorialManager first
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
+        {
+            // Get allowed buildings from SimplifiedTutorialManager
+            List<string> allowedBuildings = SimplifiedTutorialManager.Instance.GetAllowedBuildingNames();
+            
+            if (allowedBuildings == null || allowedBuildings.Count == 0)
+                yield break;
+                
+            Debug.Log($"[SimplifiedTutorial] Highlighting allowed buildings: {string.Join(", ", allowedBuildings)}");
+            
+            // Find and highlight allowed building items
+            foreach (Transform child in contentParent)
+            {
+                StructureItemUI itemUI = child.GetComponent<StructureItemUI>();
+                if (itemUI != null && itemUI.Data != null)
+                {
+                    // Check if this building is in the allowed list
+                    bool isAllowed = SimplifiedTutorialManager.Instance.IsBuildingAllowed(itemUI.Data.structureName);
+                    
+                    if (isAllowed)
+                    {
+                        Debug.Log($"[SimplifiedTutorial] Highlighting allowed building: {itemUI.Data.structureName}");
+                        HighlightBuildingItem(child.gameObject);
+                    }
+                }
+            }
+            yield break;
+        }
+        
+        // Fallback to old TutorialManager
         if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
             yield break;
             
@@ -754,6 +821,16 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return true; // Cheat overrides all restrictions
         }
         
+        // NEW: Use SimplifiedTutorialManager for shop restrictions
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
+        {
+            // Use the new API to check if building is allowed
+            bool allowed = SimplifiedTutorialManager.Instance.IsBuildingAllowed(data.structureName);
+            Debug.Log($"[SimplifiedTutorial] Structure '{data.structureName}' allowed: {allowed}");
+            return allowed;
+        }
+        
+        // OLD: Fallback to TutorialManager if SimplifiedTutorialManager not available
         if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive()) 
         {
             return true; // Allow all if tutorial not active

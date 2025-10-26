@@ -63,6 +63,12 @@ public class BarracksStructure : Structure
     private bool synergyActive = false;
     private bool isToFar = false;
 
+    // Tutorial highlighting fields
+    private Material originalMaterial;
+    private Material highlightMaterial;
+    private Renderer[] renderers;
+    private bool isHighlighted = false;
+
     protected override void Start()
     {
         base.Start();
@@ -90,6 +96,9 @@ public class BarracksStructure : Structure
         // Delay initial search to allow other structures to initialize
         StartCoroutine(DelayedInitialSearch(1f));  // Wait 1 second before first search
         nextStructureCheckTime = Time.time + structureCheckInterval;
+        
+        // Initialize tutorial highlighting
+        InitializeTutorialHighlighting();
     }
 
     private IEnumerator DelayedInitialSearch(float delay)
@@ -100,6 +109,9 @@ public class BarracksStructure : Structure
 
     private void Update()
     {
+        // Tutorial highlighting update
+        UpdateTutorialHighlighting();
+        
         if (targetAnimalStructure == null && Time.time >= nextStructureCheckTime)
         {
             FindTargetAnimalStructure();
@@ -1023,6 +1035,81 @@ public class BarracksStructure : Structure
     {
         return targetAnimalType == "Sheep" && sheepFlags.Count < sheepUnits.Count;
     }
+
+    // Tutorial highlighting methods
+    private void InitializeTutorialHighlighting()
+    {
+        renderers = GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0 && renderers[0].material != null)
+        {
+            originalMaterial = renderers[0].sharedMaterial;
+            highlightMaterial = new Material(originalMaterial);
+            highlightMaterial.EnableKeyword("_EMISSION");
+        }
+    }
+
+    private void UpdateTutorialHighlighting()
+    {
+        if (SimplifiedTutorialManager.Instance == null || highlightMaterial == null) return;
+
+        bool shouldHighlight = SimplifiedTutorialManager.Instance.ShouldHighlightStructure("chicken barrack");
+        
+        if (shouldHighlight && !isHighlighted)
+        {
+            EnableHighlight();
+        }
+        else if (!shouldHighlight && isHighlighted)
+        {
+            DisableHighlight();
+        }
+
+        // Pulse effect when highlighted
+        if (isHighlighted)
+        {
+            float pulseValue = (Mathf.Sin(Time.time * 2f) + 1f) * 0.5f;
+            float emission = Mathf.Lerp(0.3f, 0.8f, pulseValue);
+            Color emissionColor = new Color(1f, 0.8f, 0.2f) * emission;
+            highlightMaterial.SetColor("_EmissionColor", emissionColor);
+        }
+    }
+
+    private void EnableHighlight()
+    {
+        if (renderers == null || highlightMaterial == null) return;
+        
+        foreach (var renderer in renderers)
+        {
+            if (renderer != null)
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    materials[i] = highlightMaterial;
+                }
+                renderer.materials = materials;
+            }
+        }
+        isHighlighted = true;
+    }
+
+    private void DisableHighlight()
+    {
+        if (renderers == null || originalMaterial == null) return;
+        
+        foreach (var renderer in renderers)
+        {
+            if (renderer != null)
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    materials[i] = originalMaterial;
+                }
+                renderer.materials = materials;
+            }
+        }
+        isHighlighted = false;
+    }
 }
 
 /// <summary>
@@ -1037,3 +1124,4 @@ public struct SheepFlagInfo
     public Vector3 flagPosition;
     public string sheepName;
 }
+

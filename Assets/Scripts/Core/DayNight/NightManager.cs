@@ -1052,7 +1052,7 @@ private void OnDayChange(int value)
                 {
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
-                StartProductionNotification(message, 5);
+                // StartProductionNotification(message, 5);
                 
                 AnimalProductionIndicator.ShowTwoProductionBonuses(animal1, animal2);
 
@@ -1156,7 +1156,7 @@ private void OnDayChange(int value)
                     NotificationManager.ShowSuccess("Production Boost!", $"{fullAnimalName1} & {fullAnimalName2} +50% output! (Lasts entire season)", 2.5f);
                 }
                 
-                StartProductionNotification(message, 5);
+                // StartProductionNotification(message, 5);
 
                 // if (doubleProductionSource != null)
                 // {
@@ -1197,7 +1197,7 @@ private void OnDayChange(int value)
             triggerToWaitFor = TutorialTrigger.None
         };
 
-        TutorialManager.Instance.ShowPeteSeasonNotification(seasonStep);
+        // TutorialManager.Instance.ShowPeteSeasonNotification(seasonStep);
     }
 
     private string GetSeasonName(int season)

@@ -69,6 +69,12 @@ public class AnimalStructure : Structure
     [SerializeField] public int baseProductMultiplier = 1;
     private bool activeSynergy = false;
 
+    // Tutorial highlighting fields
+    private Material originalMaterial;
+    private Material highlightMaterial;
+    private Renderer[] renderers;
+    private bool isHighlighted = false;
+
     StructureData data;
 
     public int foodRequired;
@@ -111,6 +117,9 @@ public class AnimalStructure : Structure
         readyIndicator = GetComponent<ReadyIndicator>();
         if (readyIndicator == null)
             readyIndicator = gameObject.AddComponent<ReadyIndicator>();
+        
+        // Initialize tutorial highlighting
+        InitializeTutorialHighlighting();
     }
 
     private void OnDisable()
@@ -121,6 +130,9 @@ public class AnimalStructure : Structure
 
     private void Update()
     {
+        // Tutorial highlighting update
+        UpdateTutorialHighlighting();
+        
         if (nightManager == null || !isProducing || productReady) return;
         float currentHour = nightManager.Hours + (nightManager.Minutes / 60f);
         float hourDelta = currentHour >= lastCheckedHour ? currentHour - lastCheckedHour : (24f - lastCheckedHour) + currentHour;
@@ -944,5 +956,80 @@ public class AnimalStructure : Structure
     }
 
     public float GetGrowthProgress() => cropGrowthProgress; // 0..1
+
+    // Tutorial highlighting methods
+    private void InitializeTutorialHighlighting()
+    {
+        renderers = GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0 && renderers[0].material != null)
+        {
+            originalMaterial = renderers[0].sharedMaterial;
+            highlightMaterial = new Material(originalMaterial);
+            highlightMaterial.EnableKeyword("_EMISSION");
+        }
+    }
+
+    private void UpdateTutorialHighlighting()
+    {
+        if (SimplifiedTutorialManager.Instance == null || highlightMaterial == null) return;
+
+        bool shouldHighlight = SimplifiedTutorialManager.Instance.ShouldHighlightStructure("chicken coop");
+        
+        if (shouldHighlight && !isHighlighted)
+        {
+            EnableHighlight();
+        }
+        else if (!shouldHighlight && isHighlighted)
+        {
+            DisableHighlight();
+        }
+
+        // Pulse effect when highlighted
+        if (isHighlighted)
+        {
+            float pulseValue = (Mathf.Sin(Time.time * 2f) + 1f) * 0.5f;
+            float emission = Mathf.Lerp(0.3f, 0.8f, pulseValue);
+            Color emissionColor = new Color(1f, 0.8f, 0.2f) * emission;
+            highlightMaterial.SetColor("_EmissionColor", emissionColor);
+        }
+    }
+
+    private void EnableHighlight()
+    {
+        if (renderers == null || highlightMaterial == null) return;
+        
+        foreach (var renderer in renderers)
+        {
+            if (renderer != null)
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    materials[i] = highlightMaterial;
+                }
+                renderer.materials = materials;
+            }
+        }
+        isHighlighted = true;
+    }
+
+    private void DisableHighlight()
+    {
+        if (renderers == null || originalMaterial == null) return;
+        
+        foreach (var renderer in renderers)
+        {
+            if (renderer != null)
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    materials[i] = originalMaterial;
+                }
+                renderer.materials = materials;
+            }
+        }
+        isHighlighted = false;
+    }
 
 }

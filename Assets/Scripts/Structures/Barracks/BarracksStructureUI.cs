@@ -37,6 +37,7 @@ public class BarracksStructureUI : BaseStructureUI
     private int animalCount = 0;
     private int maxAnimalCount = 0;
     private System.Action pendingRecruitAction;
+    private string lastHighlightedButton = null; // Track which button we're currently highlighting
     // Note: lastPauseState is inherited from BaseStructureUI
 
     // Public property to check if this barracks is currently placing a flag
@@ -144,6 +145,8 @@ public class BarracksStructureUI : BaseStructureUI
             recruitButton.onClick.RemoveAllListeners();
             recruitButton.onClick.AddListener(() =>
             {
+                if (SimplifiedTutorialManager.Instance != null)
+                    SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("recruitButton");
                 RecruitAnimalsWithWarningCheck();
                 UpdateUI();
             });
@@ -156,7 +159,12 @@ public class BarracksStructureUI : BaseStructureUI
         if (placeFlagButton != null)
         {
             placeFlagButton.onClick.RemoveAllListeners();
-            placeFlagButton.onClick.AddListener(StartFlagPlacement);
+            placeFlagButton.onClick.AddListener(() =>
+            {
+                if (SimplifiedTutorialManager.Instance != null)
+                    SimplifiedTutorialManager.Instance.OnStructureUIButtonClicked("placeFlagButton");
+                StartFlagPlacement();
+            });
         }
 
         if (setFlagColorButton != null)
@@ -207,6 +215,10 @@ public class BarracksStructureUI : BaseStructureUI
     protected override void Update()
     {
         base.Update();
+        
+        // Tutorial button highlighting
+        HighlightTutorialButton();
+        
         // OPTIMIZATION: Skip Update() if UI is not visible (hidden barracks don't need updates)
         // EXCEPTION: Keep running if placing flags, managing sheep flags, or moving sheep flags (need input handling)
         if (!isUIVisible && !isPlacingFlag && !isMovingSheepFlag && !isManagingSheepFlags)
@@ -2160,6 +2172,38 @@ public class BarracksStructureUI : BaseStructureUI
             }
             // Hide the indicator if no synergy is active
             // synergyIndicator.gameObject.SetActive(false);
+        }
+    }
+
+    private void HighlightTutorialButton()
+    {
+        if (SimplifiedTutorialManager.Instance == null) return;
+
+        string nextButtonName = SimplifiedTutorialManager.Instance.GetNextUIButtonToHighlight();
+        
+        // Only update highlighting if the button has changed
+        if (nextButtonName == lastHighlightedButton) return;
+        
+        lastHighlightedButton = nextButtonName;
+        
+        if (string.IsNullOrEmpty(nextButtonName)) return;
+
+        GameObject buttonToHighlight = null;
+        string lowerButtonName = nextButtonName.ToLower();
+
+        // Match button names
+        if (lowerButtonName.Contains("recruit"))
+        {
+            buttonToHighlight = recruitButton?.gameObject;
+        }
+        else if (lowerButtonName.Contains("flag") && lowerButtonName.Contains("place"))
+        {
+            buttonToHighlight = placeFlagButton?.gameObject;
+        }
+
+        if (buttonToHighlight != null)
+        {
+            SimplifiedTutorialManager.Instance.HighlightStructureUIButton(buttonToHighlight);
         }
     }
 }

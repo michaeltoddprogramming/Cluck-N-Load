@@ -208,6 +208,19 @@ public class NightManager : MonoBehaviour
             return;
         }
 
+        // Freeze time at 12:00 noon during SimplifiedTutorial
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
+        {
+            // Keep time frozen at 12:00 (noon)
+            if (hours != 12 || minutes != 0)
+            {
+                hours = 12;
+                minutes = 0;
+            }
+            rotateDayNightIcon();
+            return; // Don't advance time during tutorial
+        }
+
         tempSecond += Time.deltaTime * speedUp;
         // tempSecond += Time.deltaTime * inGameMinVSSec * speedUp;
         // Debug.Log("here is the time: " + tempSecond);

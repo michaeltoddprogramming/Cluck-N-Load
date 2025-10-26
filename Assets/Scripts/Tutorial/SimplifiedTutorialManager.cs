@@ -105,6 +105,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
         
         [Header("Shop Tutorial Control")]
         public bool highlightShopButton = false;    // Highlight the shop button to prompt opening
+        public bool openShopAutomatically = false;  // Automatically open the shop when this step starts
         public bool restrictShopBuildings = false;  // Restrict shop to only allow specific buildings
         public List<string> allowedBuildingNames = new List<string>(); // Building names that can be purchased (e.g., "FarmHouse")
         public string requiredShopTab = "";         // Which shop tab should be active (e.g., "C" for Coops, "P" for Plants, "A" for Army, "S" for Defense)
@@ -411,6 +412,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
+            openShopAutomatically = true,  // Auto-open shop since it was closed after UI explanation
+            highlightShopButton = true,     // Highlight shop button initially
             restrictShopBuildings = true,
             allowedBuildingNames = new List<string> { "CropPlot", "Crop Plot" },
             requiredShopTab = "P",       // Plants tab
@@ -992,6 +995,20 @@ public class SimplifiedTutorialManager : MonoBehaviour
         currentUIButtonIndex = 0;
         
         Debug.Log($"Showing tutorial step {currentStepIndex}: {step.title}");
+        
+        // Close shop when Pete starts explaining the UI (after farmhouse is built)
+        if (step.stepId == "explain_money" && ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.CloseShop();
+            Debug.Log("Closed shop automatically for UI explanation");
+        }
+        
+        // Auto-open shop if this step requires it (e.g., crop plot step after UI explanation)
+        if (step.openShopAutomatically && ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.OpenShop();
+            Debug.Log("Opened shop automatically for tutorial step");
+        }
         
         // Show dialogue
         if (tutorialDialoguePanel != null)

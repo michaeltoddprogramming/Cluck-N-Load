@@ -378,11 +378,11 @@ public class BarracksStructureUI : BaseStructureUI
                     }
                     updateStatusText("Cannot afford more animals!");
                     // NEW: Show notification for insufficient funds
-                    if (NotificationManager.Instance != null)
-                    {
-                        int cost = (newAnimalCount + 1) * barracksStructure.GetAnimalRecruitPrice();
-                        NotificationManager.ShowError("Can't Recruit!", $"Need ${cost} to recruit more animals");
-                    }
+                    // if (NotificationManager.Instance != null)
+                    // {
+                    //     int cost = (newAnimalCount + 1) * barracksStructure.GetAnimalRecruitPrice();
+                    //     NotificationManager.ShowError("Can't Recruit!", $"Need ${cost} to recruit more animals");
+                    // }
                     return;
                 }
                 
@@ -1071,11 +1071,11 @@ public class BarracksStructureUI : BaseStructureUI
             }
             updateStatusText("Cannot afford recruitment!");
             // NEW: Show notification for insufficient funds
-            if (NotificationManager.Instance != null)
-            {
-                int cost = newAnimalCount * barracksStructure.GetAnimalRecruitPrice();
-                NotificationManager.ShowError("Can't Recruit Army!", $"Need ${cost} for recruitment");
-            }
+            // if (NotificationManager.Instance != null)
+            // {
+            //     int cost = newAnimalCount * barracksStructure.GetAnimalRecruitPrice();
+            //     NotificationManager.ShowError("Can't Recruit Army!", $"Need ${cost} for recruitment");
+            // }
             return;
         }
         

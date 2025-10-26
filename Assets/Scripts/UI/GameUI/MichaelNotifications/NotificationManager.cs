@@ -473,10 +473,17 @@ public class NotificationManager : MonoBehaviour
         NotificationTheme theme = GetTheme(data.theme);
         AudioSource playSource = uiAudioSource != null ? uiAudioSource : audioSource;
 
-        // Suppress notification audio when the simplified tutorial is active
-        bool suppressNotificationAudio = SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive();
+        // Check if tutorial is active
+        bool isTutorialActive = SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive();
+        
+        // Only suppress production boost and unlock notification open sounds during tutorial, not UI click sounds
+        // Suppress: Info (season changes), Achievement (unlocks), Badge (structure unlocks), Animal (animal events),
+        // Success (production boosts), Warning (season warnings)
+        bool isProductionOrUnlockNotification = data.theme == "Info" || data.theme == "Achievement" || data.theme == "Badge" || 
+                                                 data.theme == "Animal" || data.theme == "Success" || data.theme == "Warning";
+        bool suppressNotificationOpenSound = isTutorialActive && isProductionOrUnlockNotification;
 
-        if (!suppressNotificationAudio && theme?.soundEffect != null && playSource != null)
+        if (!suppressNotificationOpenSound && theme?.soundEffect != null && playSource != null)
         {
             playSource.PlayOneShot(theme.soundEffect, theme.soundVolume);
         }
@@ -486,7 +493,8 @@ public class NotificationManager : MonoBehaviour
             continueButton.onClick.AddListener(() =>
             {
                 AudioSource clickSource = uiAudioSource != null ? uiAudioSource : audioSource;
-                if (clickSource != null && !suppressNotificationAudio)
+                // UI click sounds are ALWAYS allowed, even during tutorial
+                if (clickSource != null)
                 {
                     if (theme?.clickSound != null)
                     {

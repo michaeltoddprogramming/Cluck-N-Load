@@ -218,10 +218,10 @@ public class CropStructureUI : BaseStructureUI
                 statusText.text = "Harvest unsuccessful: No space in silo";
                 PlayErrorSound();
                 // NEW: Show notification for silo space error
-                if (NotificationManager.Instance != null)
-                {
-                    NotificationManager.ShowError("Silo Full!", "Build more silos or sell existing crops");
-                }
+                // if (NotificationManager.Instance != null)
+                // {
+                //     NotificationManager.ShowError("Silo Full!", "Build more silos or sell existing crops");
+                // }
                 break;
             case "yes":
                 statusText.color = Color.green;
@@ -270,10 +270,10 @@ public class CropStructureUI : BaseStructureUI
                 statusText.text = "Harvest unsuccessful: Unknown issue";
                 PlayErrorSound();
                 // NEW: Show error for unknown issues
-                if (NotificationManager.Instance != null)
-                {
-                    NotificationManager.ShowError("Harvest Failed!", "Something went wrong");
-                }
+                // if (NotificationManager.Instance != null)
+                // {
+                //     NotificationManager.ShowError("Harvest Failed!", "Something went wrong");
+                // }
                 break;
         }
         plantButton.interactable = true;

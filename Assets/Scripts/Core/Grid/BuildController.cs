@@ -56,6 +56,7 @@ public class BuildController : MonoBehaviour
     private List<LineRenderer> synergyLines = new List<LineRenderer>();
     private List<GameObject> activeSynergyLines = new List<GameObject>();
     private bool isHousePlaced;
+    private bool hasTriggeredWallTutorial = false; // Cache to prevent repeated expensive checks
 
     private GameObject currentGhost;
     private GameObject currentBuildTargetPrefab;
@@ -1829,10 +1830,10 @@ private void ShowCropSynergyPreview()
                 AudioManager.Instance.PlayInsufficientFundsSound();
             }
             // NEW: Show notification for insufficient funds
-            if (NotificationManager.Instance != null && currentStructureData != null)
-            {
-                NotificationManager.ShowError("Not Enough Money!", $"Need ${currentStructureData.cost} to build {currentStructureData.structureName}");
-            }
+            // if (NotificationManager.Instance != null && currentStructureData != null)
+            // {
+            //     NotificationManager.ShowError("Not Enough Money!", $"Need ${currentStructureData.cost} to build {currentStructureData.structureName}");
+            // }
             return;
         }
 
@@ -2267,16 +2268,37 @@ private void ShowCropSynergyPreview()
 
     private void HandleChainTutorialTrigger(int placedCount, bool wasCanceled)
     {
-        if (TutorialManager.Instance == null) return;
-        
         // Only handle hay bale tutorial triggers
         if (currentStructureData == null || !currentStructureData.structureName.ToLower().Contains("hay")) return;
         
         Debug.Log($"HandleChainTutorialTrigger: placedCount={placedCount}, wasCanceled={wasCanceled}");
         
-        var completedSteps = TutorialManager.Instance.GetCompletedStepIds();
-        int totalHayBales = CountHayBales();
+        // Handle SimplifiedTutorialManager (new tutorial system)
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
+        {
+            // Performance optimization: Skip expensive CountHayBales if already triggered
+            if (hasTriggeredWallTutorial) return;
+            
+            // Only count hay bales if we haven't triggered yet
+            int totalHayBales = CountHayBales();
+            Debug.Log($"Total hay bales in scene: {totalHayBales}");
+            
+            // Only trigger if we just reached exactly 3 walls (prevents multiple triggers)
+            // This ensures it fires once when the player builds their 3rd wall
+            if (totalHayBales == 4 && placedCount > 0)
+            {
+                Debug.Log($"Triggering walls_built for SimplifiedTutorialManager (total: {totalHayBales})");
+                TutorialTriggerHelper.TriggerWallsBuilt();
+                hasTriggeredWallTutorial = true; // Cache to prevent repeated checks
+            }
+            return; // Exit early if using new tutorial system
+        }
         
+        // Handle old TutorialManager (legacy tutorial system)
+        if (TutorialManager.Instance == null) return;
+        
+        int totalBales = CountHayBales(); // Use different variable name to avoid scope conflict
+        var completedSteps = TutorialManager.Instance.GetCompletedStepIds();
         
         // First hay bale trigger (when user places their first hay bale(s))
         // With click-and-drag, they'll likely place multiple at once
@@ -2285,13 +2307,13 @@ private void ShowCropSynergyPreview()
             TutorialManager.Instance.Trigger(TutorialTrigger.BuiltFirstHayBale);
         }
         // Chain building completion (need 10+ total hay bales)
-        if (totalHayBales >= 10 && !completedSteps.Contains("build_wall_chain"))
+        if (totalBales >= 10 && !completedSteps.Contains("build_wall_chain"))
         {
             TutorialManager.Instance.Trigger(TutorialTrigger.Built10HayBales);
         }
         else if (!completedSteps.Contains("build_wall_chain"))
         {
-            int needed = 10 - totalHayBales;
+            int needed = 10 - totalBales;
         }
     }
 

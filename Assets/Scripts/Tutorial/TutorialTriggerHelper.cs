@@ -90,6 +90,14 @@ public class TutorialTriggerHelper : MonoBehaviour
         }
     }
 
+    public static void TriggerWallsBuilt()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnWallsBuilt();
+        }
+    }
+
     // Crop action triggers
     public static void TriggerCropPlanted()
     {
@@ -146,6 +154,15 @@ public class TutorialTriggerHelper : MonoBehaviour
         if (SimplifiedTutorialManager.Instance != null)
         {
             SimplifiedTutorialManager.Instance.OnFlagPlaced();
+        }
+    }
+
+    // Repair action trigger
+    public static void TriggerAllBuildingsRepaired()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnAllBuildingsRepaired();
         }
     }
 }

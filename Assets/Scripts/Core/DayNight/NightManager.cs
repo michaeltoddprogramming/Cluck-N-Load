@@ -665,7 +665,7 @@ private void OnDayChange(int value)
                     enemyIndicator.MakeWolfVisible();
                     if (isNewEnemy)
                     {
-                        NotificationManager.ShowBadge("New Enemy!", "Wolves are now active at night!", 3f);
+                        // NotificationManager.ShowBadge("New Enemy!", "Wolves are now active at night!", 3f);
                         announcedEnemySeasons.Add(season);
                     }
                     break;

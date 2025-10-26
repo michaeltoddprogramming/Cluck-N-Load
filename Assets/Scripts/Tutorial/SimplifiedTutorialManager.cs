@@ -175,6 +175,16 @@ public class SimplifiedTutorialManager : MonoBehaviour
     
     private void Start()
     {
+        // In editor, always start tutorial for testing
+        // In builds, check if tutorial was already completed
+        #if !UNITY_EDITOR
+        if (PlayerPrefs.GetInt("SimplifiedTutorialCompleted", 0) == 1)
+        {
+            Debug.Log("[SimplifiedTutorialManager] Tutorial already completed, skipping");
+            return;
+        }
+        #endif
+        
         StartTutorial();
     }
     
@@ -1642,6 +1652,11 @@ private void SetupTutorialSteps()
     {
         tutorialActive = false;
         waitingForPlayerAction = false;
+        
+        // Save tutorial completion to PlayerPrefs so it doesn't restart on game load
+        PlayerPrefs.SetInt("SimplifiedTutorialCompleted", 1);
+        PlayerPrefs.Save();
+        Debug.Log("[SimplifiedTutorialManager] Tutorial completed and saved to PlayerPrefs");
         
         // Stop any ongoing typing and mumbling
         if (typingCoroutine != null)

@@ -173,7 +173,8 @@ public class AnimalStructureUI : BaseStructureUI
         // Calculate button states
         bool canFeed = isDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
         bool canCollect = productReady && isDay && !isPaused;
-        bool canBuy = isDay && animalCount < maxAnimalCount && !isProducing && !isPaused;
+        // Allow buying even when producing (new chickens won't produce until next feeding cycle)
+        bool canBuy = isDay && animalCount < maxAnimalCount && !isPaused;
         
         // Tutorial restrictions
         bool tutorialBuyRestriction = false;
@@ -323,8 +324,8 @@ public class AnimalStructureUI : BaseStructureUI
         bool isPaused = nightManager.getIsPaused();
         bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
         bool canCollect = productReady && nightManager.IsDay && !isPaused;
-        // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")
-        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isProducing && !isPaused;  // Added !isProducing and !isPaused checks
+        // Allow buying even when producing (new chickens won't produce until next feeding cycle)
+        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isPaused;
 
         animalAmountText.text = $"{animalCount}/{maxAnimalCount}";
         newAnimalAmount.text = $"{newAnimalCount}";

@@ -141,6 +141,7 @@ public class Structure : MonoBehaviour
             {
                 lastIsDayState = currentIsDayState;
                 hasInitialized = true;
+                UpdateHealthBarVisibility(); // Use separate method for visibility updates
                 return;
             }
             
@@ -149,7 +150,12 @@ public class Structure : MonoBehaviour
             {
                 lastIsDayState = currentIsDayState;
                 UpdateHealthBarVisibility(); // Use separate method for visibility updates
+                Debug.Log("it did the check it was ment to do +++++++++++++++++++++++++++");
             }
+        }
+        else
+        {
+            Debug.Log("soimething is nuklll -------------------------------------");
         }
     }
 
@@ -242,7 +248,15 @@ public class Structure : MonoBehaviour
                 // During day: hide health bar if health is above 50%
                 // During night: always show health bar if not at full health (for danger awareness)
                 bool shouldShow = GetCurrentHealth() < GetMaxHealth() && 
-                                 (!isDaytime || healthPercent <= 0.5f);
+                                 (!isDaytime || healthPercent <= 0.3f);
+
+                                 // Immediately hide if daytime + health > 30%
+                if (isDaytime && healthPercent > 0.3f)
+                {
+                    healthBarCanvasGroup.alpha = 0f;
+                    healthBarInstance.SetActive(false);
+                    return;
+                }
                 
                 // Smoothly fade health bar in/out
                 FadeHealthBar(shouldShow);
@@ -532,7 +546,15 @@ public class Structure : MonoBehaviour
             // During day: hide health bar if health is above 50%
             // During night: always show health bar if not at full health (for danger awareness)
             bool shouldShow = GetCurrentHealth() < GetMaxHealth() && 
-                             (!isDaytime || healthPercent <= 0.5f);
+                             (!isDaytime || healthPercent <= 0.3f);
+
+                             // Immediately enforce hidden for daytime + high health
+            if (isDaytime && healthPercent > 0.3f)
+            {
+                healthBarCanvasGroup.alpha = 0f;
+                healthBarInstance.SetActive(false);
+                return;
+            }
             
             // Smoothly fade health bar in/out
             FadeHealthBar(shouldShow);
@@ -542,6 +564,18 @@ public class Structure : MonoBehaviour
     private void FadeHealthBar(bool shouldShow)
     {
         if (healthBarCanvasGroup == null || healthBarInstance == null) return;
+
+        if (NightManager.Instance != null && NightManager.Instance.IsDay)
+        {
+            float healthPercent = (float)GetCurrentHealth() / GetMaxHealth();
+            if (healthPercent > 0.3f)
+            {
+                shouldShow = false;
+                healthBarCanvasGroup.alpha = 0f;
+                healthBarInstance.SetActive(false);
+                return; // skip LeanTween fade
+            }
+        }
 
         // Cancel any existing fade animations
         LeanTween.cancel(healthBarInstance);

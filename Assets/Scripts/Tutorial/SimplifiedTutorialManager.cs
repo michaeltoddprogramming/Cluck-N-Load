@@ -1255,6 +1255,15 @@ private void SetupTutorialSteps()
         // Handle step requirements
         if (step.waitForAction && !string.IsNullOrEmpty(step.waitForTrigger))
         {
+            // Check if this trigger was already completed before this step
+            if (completedTriggers.Contains(step.waitForTrigger))
+            {
+                Debug.Log($"[ShowCurrentStep] Trigger '{step.waitForTrigger}' was already completed! Auto-advancing step.");
+                // Trigger was already done, auto-advance after a short delay
+                StartCoroutine(DelayedNextStep(0.5f));
+                return;
+            }
+            
             waitingForPlayerAction = true;
             if (nextStepButton != null)
             {
@@ -1562,16 +1571,24 @@ private void SetupTutorialSteps()
     {
         Debug.Log($"[TriggerAction] Called with trigger: '{triggerName}', tutorialActive: {tutorialActive}, currentStepIndex: {currentStepIndex}");
         
+        // Always add to completed triggers, even if tutorial isn't active or waiting for it
+        // This prevents getting stuck if player performs action before tutorial asks for it
+        if (!completedTriggers.Contains(triggerName))
+        {
+            completedTriggers.Add(triggerName);
+            Debug.Log($"[TriggerAction] Added '{triggerName}' to completed triggers");
+        }
+        
         // Allow triggers to be processed even if waitingForPlayerAction wasn't explicitly set.
         if (!tutorialActive)
         {
-            Debug.Log($"[TriggerAction] Tutorial not active, ignoring trigger '{triggerName}'");
+            Debug.Log($"[TriggerAction] Tutorial not active, but trigger '{triggerName}' recorded for later");
             return;
         }
         
         if (currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
         {
-            Debug.Log($"[TriggerAction] Invalid step index {currentStepIndex} (count: {tutorialSteps.Count}), ignoring trigger '{triggerName}'");
+            Debug.Log($"[TriggerAction] Invalid step index {currentStepIndex} (count: {tutorialSteps.Count}), but trigger '{triggerName}' recorded");
             return;
         }
 
@@ -1589,8 +1606,7 @@ private void SetupTutorialSteps()
                 Debug.Log("Skip tutorial button now visible after farmhouse placed");
             }
             
-            // Mark trigger completed and clear any input UI
-            if (!completedTriggers.Contains(triggerName)) completedTriggers.Add(triggerName);
+            // Mark trigger completed (already done above) and clear any input UI
             waitingForPlayerAction = false;
 
             // Clear key indicators when action is completed

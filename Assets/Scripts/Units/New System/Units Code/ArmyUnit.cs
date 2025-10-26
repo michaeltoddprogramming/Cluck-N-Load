@@ -719,6 +719,11 @@ public class ArmyUnit : BaseUnit
 
     }
 
+    public Vector3 GetGuardPosition()
+    {
+        return barracks.GetFlagPosition;
+    }
+
     public void SetTimeOfDay(bool isNight)
     {
         isNightTime = isNight;

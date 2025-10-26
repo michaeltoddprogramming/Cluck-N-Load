@@ -382,6 +382,10 @@ public class ShopUIManager : MonoBehaviour
         IsFarmHousePlaced = true;
         if (shopPanelUI != null)
             shopPanelUI.PopulateShop();
+            
+        // Trigger simplified tutorial system
+        if (SimplifiedTutorialManager.Instance != null)
+            SimplifiedTutorialManager.Instance.OnFarmhouseBuilt();
     }
 
     public void OnFarmHouseRemoved()

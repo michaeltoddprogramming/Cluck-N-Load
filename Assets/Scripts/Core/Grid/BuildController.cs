@@ -2203,117 +2203,65 @@ private void ShowCropSynergyPreview()
 
     private void HandleTutorialTriggers(Structure structure)
     {
-        if (TutorialManager.Instance == null) 
-        {
-            Debug.Log("TutorialManager.Instance is null!");
-            return;
-        }
         string name = structure.GetStructureName().ToLower();
+        Debug.Log($"[HandleTutorialTriggers] Structure placed: {name}");
 
+        // Handle barracks structures
         if (structure is BarracksStructure barracks)
         {
             string targetAnimalType = barracks.TargetAnimalType.ToLower();
-            TutorialTrigger barracksType = targetAnimalType switch
+            
+            // Notify simplified tutorial directly
+            if (targetAnimalType == "chicken")
             {
-                "chicken" => TutorialTrigger.BuiltChickenBarracks,
-                "cow" => TutorialTrigger.BuiltCowBarracks,
-                "sheep" => TutorialTrigger.BuiltSheepBarracks,
-                "goat" => TutorialTrigger.BuiltGoatBarracks,
-                "pig" => TutorialTrigger.BuiltPigBarracks,
-                _ => TutorialTrigger.None
-            };
-            // Only trigger if the step isn't already completed (prevents reset on movement)
-            if (barracksType != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{targetAnimalType}_barracks"))
-            {
-                StartCoroutine(DelayedTutorialTrigger(barracksType, $"build_{targetAnimalType}_barracks", 0.1f));
+                TutorialTriggerHelper.TriggerChickenBarracksBuilt();
             }
+            
             // Trigger re-search for all barracks when a new barracks is built
             BarracksStructure.UpdateAllNearbyChickenCoops();
             return;
         }
+        
+        // Handle animal structures (coops)
         if (structure is AnimalStructure animal)
         {
-            // Add trigger for animal structures like chicken coop
             string animalType = animal.GetAnimalType.ToString().ToLower();
-            TutorialTrigger animalTrigger = animalType switch
+            
+            // Notify simplified tutorial directly
+            if (animalType == "chicken")
             {
-                "chicken" => TutorialTrigger.BuiltChickenCoop,
-                "cow" => TutorialTrigger.BuiltCowPen,
-                "sheep" => TutorialTrigger.BuiltSheepPen,
-                "goat" => TutorialTrigger.BuiltGoatPen,
-                "pig" => TutorialTrigger.BuiltPigPen,
-                _ => TutorialTrigger.None
-            };
-            if (animalTrigger != TutorialTrigger.None && !TutorialManager.Instance.GetCompletedStepIds().Contains($"build_{animalType}_coop"))
-            {
-                
-                StartCoroutine(DelayedTutorialTrigger(animalTrigger, $"build_{animalType}_coop", 0.1f));
+                TutorialTriggerHelper.TriggerChickenCoopBuilt();
             }
+            
             // Trigger re-search for all barracks when a new animal structure is built
             BarracksStructure.UpdateAllNearbyChickenCoops();
             return;
         }
+        
         // Check if this is a DefenseStructure (wall/fence)
         if (structure is DefenseStructure)
         {
-            // Note: Hay bale tutorial triggers are now handled by HandleChainTutorialTrigger
+            // Hay bale tutorial triggers are handled by HandleChainTutorialTrigger
             // in CancelDefenceChain and FinalizeDefenceChain methods
-            
-            if (name.Contains("hay") || name.Contains("bale"))
-            {
-                // No longer fire tutorial triggers here - chain methods handle this
-            }
-            else
-            {
-                // For other defense structures, just trigger first wall
-                TutorialManager.Instance.Trigger(TutorialTrigger.BuiltFirstWall);
-            }
             return;
         }
         
-        TutorialTrigger trigger = name switch
+        // Handle other structures (farmhouse, crop plot, silo)
+        if (name.Contains("farm house") || name.Contains("farmhouse"))
         {
-            var n when n.Contains("silo") || n.Contains("storage") => TutorialTrigger.BuiltSilo,
-            var n when n.Contains("farm house") || n.Contains("farmhouse") => TutorialTrigger.BuiltFarmHouse,
-            var n when n.Contains("crop") || n.Contains("plot") => TutorialTrigger.BuiltCropPlot,
-            _ => TutorialTrigger.None
-        };
-        
-        // Map triggers to their correct step IDs
-        string stepId = trigger switch
-        {
-            TutorialTrigger.BuiltSilo => "build_silo",
-            TutorialTrigger.BuiltFarmHouse => "build_farmhouse", 
-            TutorialTrigger.BuiltCropPlot => "build_crop_plot",
-            _ => null
-        };
-        
-        // Only trigger if the step isn't already completed (prevents reset on movement)
-        if (trigger != TutorialTrigger.None && stepId != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
-        {
-            // Use a small delay to ensure proper processing when building quickly
-            StartCoroutine(DelayedTutorialTrigger(trigger, stepId, 0.1f));
+            Debug.Log($"[HandleTutorialTriggers] Farmhouse placed - triggering helper");
+            TutorialTriggerHelper.TriggerFarmhouseBuilt();
+            isHousePlaced = true;
         }
-        else if (trigger != TutorialTrigger.None && stepId != null)
+        else if (name.Contains("crop") || name.Contains("plot"))
         {
-            Debug.Log($"Tutorial step {stepId} already completed for structure: {name}");
+            Debug.Log($"[HandleTutorialTriggers] Crop plot placed - triggering helper");
+            TutorialTriggerHelper.TriggerCropPlotBuilt();
         }
-        if (name.Contains("farm house") || name.Contains("farmhouse")) isHousePlaced = true;
-    }
-
-    // Coroutine to handle delayed tutorial triggers when building quickly
-    private System.Collections.IEnumerator DelayedTutorialTrigger(TutorialTrigger trigger, string stepId, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        
-        // Double-check that the step hasn't been completed while we were waiting
-        if (TutorialManager.Instance != null && !TutorialManager.Instance.GetCompletedStepIds().Contains(stepId))
+        else if (name.Contains("silo") || name.Contains("storage"))
         {
-            TutorialManager.Instance.Trigger(trigger);
-        }
-        else
-        {
-            Debug.Log($"Delayed tutorial trigger cancelled - step {stepId} already completed");
+            Debug.Log($"[HandleTutorialTriggers] Silo placed - triggering helper");
+            TutorialTriggerHelper.TriggerSiloBuilt();
         }
     }
 

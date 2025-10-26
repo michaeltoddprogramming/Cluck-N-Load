@@ -56,6 +56,98 @@ public class TutorialTriggerHelper : MonoBehaviour
             SimplifiedTutorialManager.Instance.OnCameraDragged();
         }
     }
+
+    // Building triggers
+    public static void TriggerCropPlotBuilt()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnCropPlotBuilt();
+        }
+    }
+
+    public static void TriggerSiloBuilt()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnSiloBuilt();
+        }
+    }
+
+    public static void TriggerChickenCoopBuilt()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnChickenCoopBuilt();
+        }
+    }
+
+    public static void TriggerChickenBarracksBuilt()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnChickenBarracksBuilt();
+        }
+    }
+
+    // Crop action triggers
+    public static void TriggerCropPlanted()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnCropPlanted();
+        }
+    }
+
+    public static void TriggerCropHarvested()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnCropHarvested();
+        }
+    }
+
+    // Chicken action triggers
+    public static void TriggerChickensBought()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnChickensBought();
+        }
+    }
+
+    public static void TriggerChickensFed()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnChickensFed();
+        }
+    }
+
+    public static void TriggerEggsCollected()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnEggsCollected();
+        }
+    }
+
+    // Army/Defense action triggers
+    public static void TriggerSoldiersRecruited()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnSoldiersRecruited();
+        }
+    }
+
+    public static void TriggerFlagPlaced()
+    {
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnFlagPlaced();
+        }
+    }
 }
 
 /// <summary>

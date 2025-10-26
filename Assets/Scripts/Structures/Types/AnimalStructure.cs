@@ -157,9 +157,10 @@ public class AnimalStructure : Structure
             if (readyIndicator != null)
                 readyIndicator.HideIndicator();
 
-            if (TutorialManager.Instance != null && 
-                TutorialManager.Instance.IsTutorialActive() && 
-                animalCount >= 1) // Changed from >= 3 to >= 1 for better tutorial experience
+            // Check simplified tutorial for instant production
+            if (SimplifiedTutorialManager.Instance != null && 
+                SimplifiedTutorialManager.Instance.IsTutorialActive() && 
+                animalCount >= 1) // Instant production during tutorial
             {
                 StartCoroutine(DelayedInstantCompleteForTutorial());
             }
@@ -186,17 +187,17 @@ public class AnimalStructure : Structure
     {
         yield return new WaitForSeconds(1f);
         
-        // Only allow instant complete if tutorial is active and feed_chickens step is not completed
-        if (TutorialManager.Instance != null && 
-            TutorialManager.Instance.IsTutorialActive() && 
-            !TutorialManager.Instance.GetCompletedStepIds().Contains("feed_chickens"))
+        // Check simplified tutorial instead of old tutorial
+        if (SimplifiedTutorialManager.Instance != null && 
+            SimplifiedTutorialManager.Instance.IsTutorialActive())
         {
             InstantCompleteProductionForTutorial();
             
             // Brief wait for production completion visual feedback
             yield return new WaitForSeconds(1f);
             
-            TutorialManager.Instance.Trigger(TutorialTrigger.FedFirstAnimals);
+            // Call simplified tutorial helper
+            TutorialTriggerHelper.TriggerChickensFed();
         }
     }
 
@@ -395,13 +396,11 @@ public class AnimalStructure : Structure
                 }
             }
             
-            // Simple, robust tutorial trigger - always fire if tutorial is active and step not completed
-            if (TutorialManager.Instance != null && 
-                TutorialManager.Instance.IsTutorialActive() && 
-                !TutorialManager.Instance.GetCompletedStepIds().Contains("collect_eggs"))
+            // Trigger simplified tutorial for egg collection
+            if (SimplifiedTutorialManager.Instance != null && 
+                SimplifiedTutorialManager.Instance.IsTutorialActive())
             {
-                // Use immediate trigger since the step's onStepStart now handles early collection
-                TutorialManager.Instance.Trigger(TutorialTrigger.CollectedFirstProducts);
+                TutorialTriggerHelper.TriggerEggsCollected();
             }
         }
         else
@@ -426,12 +425,13 @@ public class AnimalStructure : Structure
         if (nightManager.getIsPaused()) return;
         
         // Tutorial restriction: prevent buying more than 5 animals during buy_chickens step
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
         {
-            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("buy_chickens"))
+            // During buy_chickens step, limit to 5 animals max
+            if (animalCount + amount > 5)
             {
-                // Only allow buying if we won't exceed 5 animals
-                if (animalCount + amount > 5)
+                amount = 5 - animalCount;
+                if (amount <= 0)
                 {
                     return;
                 }
@@ -443,8 +443,14 @@ public class AnimalStructure : Structure
         if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(totalCost))
         {
             AddAnimals(animalsToBuy);
-            if (TutorialManager.Instance != null && animalCount >= 3) TutorialManager.Instance.Trigger(TutorialTrigger.BoughtFirstAnimals);
-            if (TutorialManager.Instance != null && animalCount == 5) TutorialManager.Instance.Trigger(TutorialTrigger.Bought5CivilianAnimals);
+            
+            // Trigger simplified tutorial when 5 chickens bought
+            if (SimplifiedTutorialManager.Instance != null && 
+                SimplifiedTutorialManager.Instance.IsTutorialActive() && 
+                animalCount >= 5)
+            {
+                TutorialTriggerHelper.TriggerChickensBought();
+            }
         }
     }
 
@@ -472,7 +478,7 @@ public class AnimalStructure : Structure
         
         // Safety check: Reset any inappropriate instant production states on new day
         // if tutorial is not active (prevents persistence across days)
-        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+        if (SimplifiedTutorialManager.Instance == null || !SimplifiedTutorialManager.Instance.IsTutorialActive())
         {
             ResetInstantProductionState();
         }
@@ -796,7 +802,7 @@ public class AnimalStructure : Structure
     public void InstantCompleteProductionForTutorial()
     {
         // Only allow instant production during active tutorial
-        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive() || !isProducing || animalCount <= 0) return;
+        if (SimplifiedTutorialManager.Instance == null || !SimplifiedTutorialManager.Instance.IsTutorialActive() || !isProducing || animalCount <= 0) return;
         
         isProducing = false;
         productReady = true;
@@ -826,7 +832,7 @@ public class AnimalStructure : Structure
     // Method to reset any inappropriate instant production states after tutorial ends
     public void ResetInstantProductionState()
     {
-        if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
+        if (SimplifiedTutorialManager.Instance == null || !SimplifiedTutorialManager.Instance.IsTutorialActive())
         {
             // If tutorial is not active, ensure no instant production persists
             // Keep normal production but reset any inappropriate ready states

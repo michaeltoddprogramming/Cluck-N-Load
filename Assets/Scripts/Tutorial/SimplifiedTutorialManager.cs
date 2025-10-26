@@ -4,20 +4,6 @@ using TMPro;
 using System.Collections;
 using System.Collections.Generic;
 
-/// <summary>
-/// Simplified Tutorial Manager focused on Pete3D integration
-/// Removes old complex systems and focuses on clean Pete-driven tutorials
-/// 
-/// Pete Display Integration:
-/// - UIHelper context: Pete appears as RawImage in tutorial dialogue panel (using render texture)
-/// - WorldGuide context: Pete appears in 3D world space 
-/// - CornerBuddy context: Pete appears in UI corner
-/// 
-/// Setup Requirements:
-/// - Assign Pete3DGuide with render texture components configured
-/// - Pete RawImage should be child of tutorialDialoguePanel
-/// - Tutorial dialogue panel contains title, message, next button, and Pete display
-/// </summary>
 public class SimplifiedTutorialManager : MonoBehaviour
 {
     [Header("Essential UI References")]
@@ -115,6 +101,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
         [Header("Game UI Control")]
         public bool showGameUI = false;             // Show the main game UI for this step (hidden by default during tutorial)
         public GameObject highlightUIElement;       // UI element to highlight for this step (e.g., shop button)
+        public string highlightUIByName = "";       // UI element name to find and highlight (alternative to highlightUIElement)
     }
     
     [Header("Tutorial Steps")]
@@ -226,7 +213,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             title = "Zoom Camera",
             message = "Use the scroll wheel AND the 1 and 2 keys to zoom in and out.",
             peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Pointing,
+                
             waitForAction = true,
             waitForTrigger = "camera_zoomed",
             // Require Alpha1, Alpha2 (number keys) plus mouse scroll up/down (Mouse3/Mouse4)
@@ -291,17 +278,310 @@ public class SimplifiedTutorialManager : MonoBehaviour
             showGameUI = true            // Keep game UI visible for building interaction
         });
         
-        // Tutorial complete - back to normal
+        // UI Explanation Steps - after farmhouse is placed
+        
+        // Explain money panel
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "explain_money",
+            title = "Your Farm's Treasury",
+            message = "This shows your money! You'll earn coins by selling crops and animal products.",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Pointing,
+            highlightUIByName = "GoldPanel",
+            showGameUI = true,
+            panelAlpha = 0f,  // Fully transparent panel
+            waitForAction = false  // Manual progression - player clicks Next
+        });
+        
+        // Explain time controls
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "explain_time",
+            title = "Time Management",
+            message = "Control the flow of time! Pause, play normal speed, or fast-forward to speed up your farm.",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Thinking,
+            highlightUIByName = "PAUSE BG",
+            showGameUI = true,
+            panelAlpha = 0f,  // Fully transparent panel
+            waitForAction = false  // Manual progression - player clicks Next
+        });
+        
+        // Explain day/night cycle
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "explain_daytime",
+            title = "Day & Night Cycle",
+            message = "Watch the clock! Daytime is for farming, nighttime brings danger. Prepare wisely!",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Worried,
+            highlightUIByName = "DayNightPanel",
+            showGameUI = true,
+            panelAlpha = 0f,  // Fully transparent panel
+            waitForAction = false  // Manual progression - player clicks Next
+        });
+        
+        // Explain enemy indicator
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "explain_enemy_indicator",
+            title = "Enemy Indicator",
+            message = "This shows which enemy types may attack at night. Big or red icons mean higher threat — prepare defenses or avoid danger.",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Worried,
+            highlightUIByName = "Enemy Indicator",
+            showGameUI = true,
+            panelAlpha = 0f, // Fully transparent panel
+            waitForAction = false
+        });
+
+        // Explain seasonal / production bonus indicator
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "explain_production_bonus",
+            title = "Production Bonus",
+            message = "This indicator shows seasonal production bonuses for animals/crops. Use these bonuses to plan what to grow or buy for higher yields.",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Thinking,
+            highlightUIByName = "Animal production bonus indicator",
+            showGameUI = true,
+            panelAlpha = 0f, // Fully transparent panel
+            waitForAction = false
+        });
+
+        // Explain crop amounts / silo/inventory counts
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "explain_crop_amounts",
+            title = "Crop Amounts",
+            message = "This shows how many crops you currently have (and silo capacity). Keep an eye on feed stocks and capacity when planning animals or sales.",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Pointing,
+            highlightUIByName = "CropPanel",
+            showGameUI = true,
+            panelAlpha = 0f, // Fully transparent panel
+            waitForAction = false
+        });
+
+        // Build: Crop Plot
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "build_crop_plot",
+            title = "Build a Crop Plot",
+            message = "Let's build a crop plot so you can plant seeds. Open the shop, choose Crop Plot and place it near your farmhouse.",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Excited,
+            waitForAction = true,
+            waitForTrigger = "build_crop_plot",
+            movePanelRight = true,
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+        });
+
+        // Build: Silo
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "build_silo",
+            title = "Build a Silo",
+            message = "Silos store your crops and expand capacity. Build one now to store your harvest.",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Thinking,
+            waitForAction = true,
+            waitForTrigger = "build_silo",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Build: Chicken Coop
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "build_chicken_coop",
+            title = "Build a Chicken Coop",
+            message = "Chickens need a coop. Build one to start producing eggs and animal products.",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Excited,
+            waitForAction = true,
+            waitForTrigger = "build_chicken_coop",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Build: Chicken Barracks
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "build_chicken_barracks",
+            title = "Build Chicken Barracks",
+            message = "Barracks let you recruit guard animals. Build chicken barracks to train farm defenders.",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Thinking,
+            waitForAction = true,
+            waitForTrigger = "build_chicken_barracks",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Explanation step - now that structures are built
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "structures_built_intro",
+            title = "Great Work!",
+            message = "You've built the basic structures! Now let's learn how to use them. Time to grow some crops!",
+            peteContext = PeteContext.UIHelper,
+            peteEmotion = PeteEmotion.Celebrating,
+            showGameUI = true,
+            waitForAction = false
+        });
+
+        // Plant crop step
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "plant_first_crop",
+            title = "Plant Your First Crop",
+            message = "Click on your Crop Plot and plant sunflowers. They're free chicken food and will grow your profit!",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Pointing,
+            waitForAction = true,
+            waitForTrigger = "crop_planted",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Harvest crop step
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "harvest_first_crop",
+            title = "Harvest Time!",
+            message = "Your sunflowers are ready! Click the Crop Plot and harvest them. Free chicken feed means bigger profits!",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Excited,
+            waitForAction = true,
+            waitForTrigger = "crop_harvested",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Buy chickens step
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "buy_chickens",
+            title = "Buy Chickens",
+            message = "Time to populate your coop! Click your Chicken Coop and buy 5 chickens. They'll turn your crops into profit!",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Pointing,
+            waitForAction = true,
+            waitForTrigger = "chickens_bought",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Feed chickens step
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "feed_chickens",
+            title = "Feed Your Chickens",
+            message = "Feed your chickens those sunflowers you just harvested! Click the Chicken Coop and hit Feed. Well-fed chickens = ready to produce eggs!",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Excited,
+            waitForAction = true,
+            waitForTrigger = "chickens_fed",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Collect eggs step
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "collect_eggs",
+            title = "Collect Eggs",
+            message = "Eggs ready! Click the Chicken Coop and collect them. Eggs automatically sell for coins — this is how you make money!",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Celebrating,
+            waitForAction = true,
+            waitForTrigger = "eggs_collected",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Recruit soldiers step
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "recruit_soldiers",
+            title = "Train Your Army",
+            message = "Time to build defenses! Click the Chicken Barracks and recruit 3 soldiers. Your civilian chickens become trained warriors!",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Excited,
+            waitForAction = true,
+            waitForTrigger = "soldiers_recruited",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Place flag step
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "place_flag",
+            title = "Set Rally Point",
+            message = "Give your soldiers a defense position! Click the Barracks, hit 'Place Flag', then click where you want them to guard.",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Pointing,
+            waitForAction = true,
+            waitForTrigger = "flag_placed",
+            panelAlpha = 0f,
+            disablePanelRaycast = true,
+            showGameUI = true,
+            movePanelRight = true
+        });
+
+        // Final complete step
         tutorialSteps.Add(new SimpleTutorialStep
         {
             stepId = "complete",
-            title = "Great Job!",
-            message = "You're ready to farm! Good luck out there!",
+            title = "Tutorial Complete!",
+            message = "Excellent! You now understand the basics: money, time controls, day/night cycle, and the shop. Build, farm, and defend your land!",
             peteContext = PeteContext.UIHelper,
             peteEmotion = PeteEmotion.Celebrating,
             showGameUI = true            // Ensure game UI is visible at the end
         });
     }
+
+    // Public helpers so other systems can notify the simplified tutorial about built structures
+    public void OnCropPlotBuilt() => TriggerAction("build_crop_plot");
+    public void OnSiloBuilt() => TriggerAction("build_silo");
+    public void OnChickenCoopBuilt() => TriggerAction("build_chicken_coop");
+    public void OnChickenBarracksBuilt() => TriggerAction("build_chicken_barracks");
+    
+    // Public helpers for crop actions
+    public void OnCropPlanted() => TriggerAction("crop_planted");
+    public void OnCropHarvested() => TriggerAction("crop_harvested");
+    
+    // Public helpers for chicken actions
+    public void OnChickensBought() => TriggerAction("chickens_bought");
+    public void OnChickensFed() => TriggerAction("chickens_fed");
+    public void OnEggsCollected() => TriggerAction("eggs_collected");
+    
+    // Public helpers for army/defense actions
+    public void OnSoldiersRecruited() => TriggerAction("soldiers_recruited");
+    public void OnFlagPlaced() => TriggerAction("flag_placed");
     
     private void SetupUI()
     {
@@ -650,6 +930,18 @@ public class SimplifiedTutorialManager : MonoBehaviour
         {
             StartCoroutine(DelayedHighlight(step.highlightUIElement, 0.1f));
         }
+        else if (!string.IsNullOrEmpty(step.highlightUIByName))
+        {
+            GameObject targetByName = GameObject.Find(step.highlightUIByName);
+            if (targetByName != null)
+            {
+                StartCoroutine(DelayedHighlight(targetByName, 0.1f));
+            }
+            else
+            {
+                Debug.LogWarning($"[SimplifiedTutorialManager] Could not find UI element by name: {step.highlightUIByName}");
+            }
+        }
         
         // Control panel raycast blocking
         if (panelCanvasGroup != null)
@@ -753,29 +1045,49 @@ public class SimplifiedTutorialManager : MonoBehaviour
     
     public void TriggerAction(string triggerName)
     {
-        if (!tutorialActive || !waitingForPlayerAction) return;
-        if (currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count) return;
+        Debug.Log($"[TriggerAction] Called with trigger: '{triggerName}', tutorialActive: {tutorialActive}, currentStepIndex: {currentStepIndex}");
         
+        // Allow triggers to be processed even if waitingForPlayerAction wasn't explicitly set.
+        if (!tutorialActive)
+        {
+            Debug.Log($"[TriggerAction] Tutorial not active, ignoring trigger '{triggerName}'");
+            return;
+        }
+        
+        if (currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+        {
+            Debug.Log($"[TriggerAction] Invalid step index {currentStepIndex} (count: {tutorialSteps.Count}), ignoring trigger '{triggerName}'");
+            return;
+        }
+
         var currentStep = tutorialSteps[currentStepIndex];
-        
+        Debug.Log($"[TriggerAction] Current step: '{currentStep.stepId}', waiting for: '{currentStep.waitForTrigger}'");
+
         if (currentStep.waitForTrigger == triggerName)
         {
-            completedTriggers.Add(triggerName);
-            waitingForPlayerAction = false;
+            Debug.Log($"[TriggerAction] Trigger '{triggerName}' MATCHED! Advancing step.");
             
+            // Mark trigger completed and clear any input UI
+            if (!completedTriggers.Contains(triggerName)) completedTriggers.Add(triggerName);
+            waitingForPlayerAction = false;
+
             // Clear key indicators when action is completed
             ClearKeyIndicators();
-            
+
             // Pete celebrates
             if (usePete3D && pete3DGuide != null)
             {
                 pete3DGuide.OnStepComplete();
             }
-            
+
             Debug.Log($"Trigger '{triggerName}' matched! Auto-advancing to next step.");
-            
+
             // Auto-advance to next step after a short delay
             StartCoroutine(DelayedNextStep(0.2f));
+        }
+        else
+        {
+            Debug.Log($"[TriggerAction] Trigger '{triggerName}' does NOT match current step's waitForTrigger '{currentStep.waitForTrigger}'. Ignoring.");
         }
     }
     

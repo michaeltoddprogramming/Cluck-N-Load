@@ -335,15 +335,16 @@ public class BarracksStructure : Structure
         if (!CanRecruitWithLogging(amount) || !MoneyManager.Instance.SpendMoney(amount * recruitmentCostPerAnimal)) return;
         if (nightManager != null && nightManager.getIsPaused()) return;
 
-        // Tutorial restriction: prevent recruiting more than 3 army animals during recruit_soldiers step
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        // Tutorial restriction: prevent recruiting more than 3 army animals during tutorial
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
         {
-            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("recruit_soldiers"))
+            // During recruit_soldiers step, limit to 3 soldiers max
+            if (armyAnimals.Count + amount > 3)
             {
-                // Only allow recruiting if we won't exceed 3 army animals
-                if (armyAnimals.Count + amount > 3)
+                amount = 3 - armyAnimals.Count;
+                if (amount <= 0)
                 {
-                    Debug.Log("Tutorial: Cannot recruit more than 3 army animals total. You need exactly 3!");
+                    Debug.Log("Tutorial: You need exactly 3 soldiers!");
                     return;
                 }
             }
@@ -445,8 +446,14 @@ public class BarracksStructure : Structure
         OnArmyChanged?.Invoke();
         // UpdateRecruitmentCostByDistance();
         playRecruitSound();
-        if (armyAnimals.Count >= 1) TutorialManager.Instance?.Trigger(TutorialTrigger.RecruitedFirstSoldiers);
-        if (armyAnimals.Count == 3) TutorialManager.Instance?.Trigger(TutorialTrigger.Recruited3ArmyAnimals);
+        
+        // Trigger simplified tutorial when soldiers recruited
+        if (SimplifiedTutorialManager.Instance != null && 
+            SimplifiedTutorialManager.Instance.IsTutorialActive() && 
+            armyAnimals.Count >= 3)
+        {
+            TutorialTriggerHelper.TriggerSoldiersRecruited();
+        }
     }
 
     public void PlaceFlag(Vector3 position)
@@ -522,7 +529,14 @@ public class BarracksStructure : Structure
             guardPosition = flagPosition;
             UpdateArmyAnimalPositions();
         }
-        if (armyAnimals.Count >= 1) TutorialManager.Instance?.Trigger(TutorialTrigger.PlacedFirstFlag);
+        
+        // Trigger simplified tutorial when flag placed
+        if (SimplifiedTutorialManager.Instance != null && 
+            SimplifiedTutorialManager.Instance.IsTutorialActive() && 
+            armyAnimals.Count >= 1)
+        {
+            TutorialTriggerHelper.TriggerFlagPlaced();
+        }
     }
 
     private void UpdateArmyAnimalPositions()

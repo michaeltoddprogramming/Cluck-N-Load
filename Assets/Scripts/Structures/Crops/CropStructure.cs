@@ -95,22 +95,16 @@ public class CropStructure : Structure
 
         UpdateCropVisual(cropType, 0);
         
-        // Check for instant growth BEFORE triggering (so step isn't completed yet)
+        // Check for instant growth for simplified tutorial
         bool shouldInstantGrow = false;
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
         {
-            // Check if we haven't completed the plant step yet
-            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("plant_first_crop"))
-            {
-                shouldInstantGrow = true;
-            }
+            // Instantly grow crops during tutorial plant step
+            shouldInstantGrow = true;
         }
         
-        // Trigger tutorial event
-        if (TutorialManager.Instance != null)
-        {
-            TutorialManager.Instance.Trigger(TutorialTrigger.PlantedCrop);
-        }
+        // Trigger simplified tutorial event
+        TutorialTriggerHelper.TriggerCropPlanted();
         
         // Apply instant growth if needed
         if (shouldInstantGrow)
@@ -185,21 +179,8 @@ public class CropStructure : Structure
             case CropType.Carrots: carrotTotal += totalCrops; break;
         }
 
-        if (TutorialManager.Instance != null)
-        {
-            // For tutorial instant mechanics, trigger immediately. Otherwise add small delay.
-            if (TutorialManager.Instance.IsTutorialActive() &&
-                !TutorialManager.Instance.GetCompletedStepIds().Contains("plant_first_crop"))
-            {
-                // Instant tutorial mechanics - trigger immediately
-                TutorialManager.Instance.Trigger(TutorialTrigger.HarvestedCrop);
-            }
-            else
-            {
-                // Normal harvest - add small delay to ensure animation completes
-                StartCoroutine(DelayedTutorialTrigger(TutorialTrigger.HarvestedCrop, 0.1f));
-            }
-        }
+        // Trigger simplified tutorial event
+        TutorialTriggerHelper.TriggerCropHarvested();
 
         OnCropHarvested?.Invoke(currentCropType, totalCrops);
         currentCropType = CropType.None;

@@ -32,8 +32,8 @@
 | Middle Click + Drag    | Rotate camera                 |
 | Scroll Wheel           | Zoom in/out                   |
 
-##Game Guide:
-###Strucutres:
+## Game Guide:
+### Strucutres:
 Animal Pens:
 - Where your civilian animals live
 - This is where you feed them your crops
@@ -63,19 +63,19 @@ Synergies & Bonuses:
 - Placing an animal pen close to a silo -> Animals need less food
 - Placing a Barrack not too far and not too close to an animal pen -> reduced price to recruit army animals
 
-##Game progression:
-###Army Animals
+## Game progression:
+### Army Animals
 - Chickens -> Fast, low health, low damage
 - Pigs -> Medium speed, Medium health, Medium Damage
 - Cow -> Medium speed, High Health, Medium Damage
 - Goat -> Low speed, medium Health, High Damage
 
-###Seasons
+### Seasons
 - Every 5 in-game days is a new season (Spring, Summer, Fall, Autumn)
 - Every season brings its own enemies
 - 4 Seasons = 1 year
 
-###Enemies
+### Enemies
 - Wolf -> Season 1(Spring), Target: Animals
 - Raccoon -> Season 2(Summer), Target: Resources
 - Boar -> Season 3(Fall), Target: Walls

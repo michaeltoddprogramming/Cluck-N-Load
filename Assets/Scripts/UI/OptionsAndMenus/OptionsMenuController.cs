@@ -107,10 +107,12 @@ public class OptionsMenuController : MonoBehaviour
 
     private void InitializeAudioSettings()
     {
-        // Master volume
+        // Master volume - FIXED: Load from PlayerPrefs
         if (volumeSlider != null)
         {
-            volumeSlider.value = AudioListener.volume;
+            float savedMasterVolume = PlayerPrefs.GetFloat("MasterVolume", 1f);
+            volumeSlider.value = savedMasterVolume;
+            AudioListener.volume = savedMasterVolume; // Apply immediately
         }
         
         // Music volume (if you have separate music control)
@@ -278,6 +280,7 @@ public class OptionsMenuController : MonoBehaviour
     public void SetVolume(float value)
     {
         AudioListener.volume = value;
+        PlayerPrefs.SetFloat("MasterVolume", value); // FIXED: Save master volume to PlayerPrefs
     }
 
     public void SetMusicVolume(float value)
@@ -291,14 +294,34 @@ public class OptionsMenuController : MonoBehaviour
             mainMenu.backgroundMusic.volume = value;
         }
         
-        // Apply to all audio sources tagged as "Music"
-        GameObject[] musicObjects = GameObject.FindGameObjectsWithTag("Music");
-        foreach (GameObject obj in musicObjects)
+        // FIXED: Try to find music objects by tag, but handle missing tag gracefully
+        try
         {
-            AudioSource audioSource = obj.GetComponent<AudioSource>();
-            if (audioSource != null)
+            GameObject[] musicObjects = GameObject.FindGameObjectsWithTag("Music");
+            foreach (GameObject obj in musicObjects)
             {
-                audioSource.volume = value;
+                AudioSource audioSource = obj.GetComponent<AudioSource>();
+                if (audioSource != null)
+                {
+                    audioSource.volume = value;
+                }
+            }
+        }
+        catch (UnityException)
+        {
+            // Tag doesn't exist - find music by alternative methods
+            Debug.LogWarning("[OptionsMenu] 'Music' tag not found. Add it in Project Settings → Tags, or tag your music AudioSources.");
+        }
+        
+        // FALLBACK: Apply to common music source names (BackgroundMusic, BGM, Music, etc.)
+        AudioSource[] allSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+        foreach (AudioSource source in allSources)
+        {
+            string objName = source.gameObject.name.ToLower();
+            // Check if this looks like a music source by name
+            if (objName.Contains("music") || objName.Contains("bgm") || objName.Contains("background"))
+            {
+                source.volume = value;
             }
         }
     }
@@ -317,15 +340,41 @@ public class OptionsMenuController : MonoBehaviour
             }
         }
         
-        // Apply to all audio sources tagged as "SFX"
-        GameObject[] sfxObjects = GameObject.FindGameObjectsWithTag("SFX");
-        foreach (GameObject obj in sfxObjects)
+        // FIXED: Try to find SFX objects by tag, but handle missing tag gracefully
+        try
         {
-            AudioSource audioSource = obj.GetComponent<AudioSource>();
-            if (audioSource != null)
+            GameObject[] sfxObjects = GameObject.FindGameObjectsWithTag("SFX");
+            foreach (GameObject obj in sfxObjects)
             {
-                audioSource.volume = value;
+                AudioSource audioSource = obj.GetComponent<AudioSource>();
+                if (audioSource != null)
+                {
+                    audioSource.volume = value;
+                }
             }
+        }
+        catch (UnityException)
+        {
+            // Tag doesn't exist - find SFX by alternative methods
+            Debug.LogWarning("[OptionsMenu] 'SFX' tag not found. Add it in Project Settings → Tags, or tag your SFX AudioSources.");
+        }
+        
+        // FALLBACK: Apply to all non-music audio sources (excluding music/bgm sources)
+        // This applies SFX volume to all "other" audio sources that aren't clearly music
+        AudioSource[] allSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+        foreach (AudioSource source in allSources)
+        {
+            string objName = source.gameObject.name.ToLower();
+            // Skip sources that are clearly music
+            if (objName.Contains("music") || objName.Contains("bgm") || objName.Contains("background"))
+                continue;
+                
+            // Skip if it's in MainMenuController (that's music)
+            if (source.GetComponent<MainMenuController>() != null)
+                continue;
+            
+            // Apply SFX volume to everything else (UI sounds, game sounds, etc.)
+            source.volume = value;
         }
     }
 

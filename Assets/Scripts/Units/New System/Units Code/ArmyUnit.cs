@@ -770,6 +770,7 @@ public class ArmyUnit : BaseUnit
         // if (isNightTime) return;
         if (barracks == null)
         {
+            Debug.Log("alsikjhrdkfbaeiorujfbj");
             return;
         }
 
@@ -784,6 +785,7 @@ public class ArmyUnit : BaseUnit
 
     private void MoveToTargetPosition()
     {
+        Debug.Log("Started moving back to the barracks");
         // ADDED: Check if unit is valid before proceeding
         if (agent == null || !agent.isActiveAndEnabled || IsDead())
         {
@@ -801,6 +803,7 @@ public class ArmyUnit : BaseUnit
 
         if(targetPosition == barracks.transform.position)
         {
+            // Debug.Log("I am moving to the barrack");
             if (distance < agent.stoppingDistance + 3f)
             {
                 if (agent.isActiveAndEnabled && agent.isOnNavMesh)
@@ -811,6 +814,7 @@ public class ArmyUnit : BaseUnit
                 SetFloat("speed", 0f);
                 if (!isNightTime)
                 {
+                    // Debug.Log("I have been set to invisible");
                     barracks.AfterBackToBarracks();
                     gameObject.SetActive(false);
                 }
@@ -820,6 +824,7 @@ public class ArmyUnit : BaseUnit
         }
         else
         {
+            // Debug.Log("I am not going to the barrack");
             if (distance < agent.stoppingDistance + 1.5f)
             {
                 if (agent.isActiveAndEnabled && agent.isOnNavMesh)
@@ -830,6 +835,7 @@ public class ArmyUnit : BaseUnit
                 SetFloat("speed", 0f);
                 if (!isNightTime)
                 {
+                    // Debug.Log("I am being deactivated");
                     barracks.AfterBackToBarracks();
                     gameObject.SetActive(false);
                 }
@@ -904,6 +910,22 @@ public class ArmyUnit : BaseUnit
         {
             Gizmos.color = Color.white;
             Gizmos.DrawWireSphere(agent.transform.position, agent.stoppingDistance + 1f);
+        }
+
+        if (barracks != null)
+        {
+            // Draw a blue line from the sheep to the barracks
+            Gizmos.color = Color.black;
+            Gizmos.DrawLine(transform.position, barracks.transform.position);
+
+            // Draw the stopping distance + 3f radius around the barracks
+            Gizmos.color = Color.yellow;
+            float radius = agent != null ? agent.stoppingDistance + 3f : 3f;
+            Gizmos.DrawWireSphere(barracks.transform.position, radius);
+
+            // Draw a small red sphere where the sheep currently is
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(transform.position, 0.3f);
         }
 
 #endif

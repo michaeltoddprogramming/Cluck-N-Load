@@ -16669,8 +16669,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 1.7999878, y: 241.855}
-  m_SizeDelta: {x: 750.4, y: 600}
+  m_AnchoredPosition: {x: 1.7999878, y: 274.37997}
+  m_SizeDelta: {x: 750.4, y: 534.95}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &886798434
 MonoBehaviour:
@@ -23459,6 +23459,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TutorialCanvas (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 7916744919626796292, guid: aa8848489856f744480911a129677ec9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -25733,8 +25737,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxIntensity: 0.5
   duration: 0.4
-  maxDistance: 55
-  cutoffDistance: 55
+  maxDistance: 120
+  cutoffDistance: 120
 --- !u!1 &1297526209
 GameObject:
   m_ObjectHideFlags: 0
@@ -34786,7 +34790,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1753231147
 MonoBehaviour:
   m_ObjectHideFlags: 0

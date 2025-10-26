@@ -9,15 +9,20 @@
 | `S`           | Move camera backward                 |
 | `A`           | Move camera left                     |
 | `D`           | Move camera right                    |
+| `Hold Right click + move mouse`           | Move Camera              |
 | `Q`           | Rotate camera counterclockwise       |
 | `E`           | Rotate camera clockwise              |
-| `Left Shift`  | Increase movement speed (fast mode)  |
+| `Hold Middle mouse button + move mouse`           | Rotate Camera              |
 | `1`           | Zoom in                              |
 | `2`           | Zoom out                             |
+| `Mouse Scroll Wheel`           | Zoom /out                             |
 | `ESC`         | Pause Game                           |
+| `Space`         | Pause/Play In-game Time                           |
+| `Right Mouse Click` (While Shop open)         | Deselect Current Building                            |
 | `CTRL + Right Mouse Click` (While Shop open)         | Remove places buildings                            |
+| `R` (While Shop open)         | Rotate current building                            |
+| `Left Click + Drag` (While placing wall         | Place multiplle walls at once                            |
 | `↓ ↓ ← → ↑`         | Open Cheats panel                            |
-| `BackSpace`         | Skips tutorial                           |
 
 
 #### **Mouse Controls**
@@ -27,8 +32,53 @@
 | Middle Click + Drag    | Rotate camera                 |
 | Scroll Wheel           | Zoom in/out                   |
 
-Final Comments:
-- Day-night speed has been slowed down in the tutorial for easier learning and less time pressure.
-- Seasons will last 5 days each, but for this deliverable, it has been changed so that every day is a new season, also for easier understanding of this mechanic.
-- More grid spaces can be bought when the shop is open. If you click on the dark grid boxes, you will be able to buy them, and they will be added to your overall buildable space.
-- Tutorial steps now only advance when you actually PLACE buildings, not when you just select them from the shop.
+##Game Guide:
+###Strucutres:
+Animal Pens:
+- Where your civilian animals live
+- This is where you feed them your crops
+- After feeding and waiting an in-game day you can collect coins from them
+
+Barracks:
+- This is where you recruit civilian animals from pens to Army animals
+- Click on the flag icon to send your defensive animals where you want
+
+Crop Plot:
+- Where you plant and harvest crops to feed to animals
+- Sunflower Seeds -> Chickens
+- Wheat -> Cows, Sheep
+- Carrots -> Pigs, Goats
+
+Walls:
+- Used to temporaraly stop enemies
+- Haybale
+- Wood Fence
+- Stone Fence
+
+Silo:
+- Where your crops are stored
+
+Synergies & Bonuses:
+- Placing a Crop Plot close to a silo -> Crop harvest boost 
+- Placing an animal pen close to a silo -> Animals need less food
+- Placing a Barrack not too far and not too close to an animal pen -> reduced price to recruit army animals
+
+##Game progression:
+###Army Animals
+- Chickens -> Fast, low health, low damage
+- Pigs -> Medium speed, Medium health, Medium Damage
+- Cow -> Medium speed, High Health, Medium Damage
+- Goat -> Low speed, medium Health, High Damage
+
+###Seasons
+- Every 5 in-game days is a new season (Spring, Summer, Fall, Autumn)
+- Every season brings its own enemies
+- 4 Seasons = 1 year
+
+###Enemies
+- Wolf -> Season 1(Spring), Target: Animals
+- Raccoon -> Season 2(Summer), Target: Resources
+- Boar -> Season 3(Fall), Target: Walls
+- Bear -> Season 4(Winter), Target Buildings
+  
+

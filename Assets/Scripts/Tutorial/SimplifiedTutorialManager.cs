@@ -175,13 +175,23 @@ public class SimplifiedTutorialManager : MonoBehaviour
     
     private void Start()
     {
-        // In editor, always start tutorial for testing
-        // In builds, check if tutorial was already completed
+        // Check if tutorial was already completed AND this is a loaded game
+        // Only skip tutorial if both conditions are true
         #if !UNITY_EDITOR
-        if (PlayerPrefs.GetInt("SimplifiedTutorialCompleted", 0) == 1)
+        bool tutorialCompleted = PlayerPrefs.GetInt("SimplifiedTutorialCompleted", 0) == 1;
+        bool isLoadedGame = PlayerPrefs.HasKey("SelectedSaveSlot");
+        
+        if (tutorialCompleted && isLoadedGame)
         {
-            Debug.Log("[SimplifiedTutorialManager] Tutorial already completed, skipping");
+            Debug.Log("[SimplifiedTutorialManager] Tutorial already completed and game loaded, skipping");
             return;
+        }
+        
+        // If it's a new game, clear the tutorial completed flag to allow it to run
+        if (!isLoadedGame)
+        {
+            Debug.Log("[SimplifiedTutorialManager] New game detected, starting tutorial");
+            PlayerPrefs.SetInt("SimplifiedTutorialCompleted", 0);
         }
         #endif
         

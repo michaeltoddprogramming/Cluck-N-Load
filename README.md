@@ -1,84 +1,72 @@
-# Cluck N Load
+# Cluck N Load – Exam Cheat Sheet
 
-### Controls
+## Controls
 
-#### **Keyboard Controls**
-| Key           | Action                               |
-|---------------|--------------------------------------|
-| `W`           | Move camera forward                  |
-| `S`           | Move camera backward                 |
-| `A`           | Move camera left                     |
-| `D`           | Move camera right                    |
-| `Hold Right click + move mouse`           | Move Camera              |
-| `Q`           | Rotate camera counterclockwise       |
-| `E`           | Rotate camera clockwise              |
-| `Hold Middle mouse button + move mouse`           | Rotate Camera              |
-| `1`           | Zoom in                              |
-| `2`           | Zoom out                             |
-| `Mouse Scroll Wheel`           | Zoom /out                             |
-| `ESC`         | Pause Game                           |
-| `Space`         | Pause/Play In-game Time                           |
-| `Right Mouse Click` (While Shop open)         | Deselect Current Building                            |
-| `CTRL + Right Mouse Click` (While Shop open)         | Remove places buildings                            |
-| `R` (While Shop open)         | Rotate current building                            |
-| `Left Click + Drag` (While placing wall         | Place multiplle walls at once                            |
-| `↓ ↓ ← → ↑`         | Open Cheats panel                            |
+### Keyboard
+| Key / Shortcut                     | Action                                      |
+|-----------------------------------|--------------------------------------------|
+| `W` / `S` / `A` / `D`             | Move camera forward/back/left/right        |
+| Hold `Right Click` + Move Mouse    | Move camera                                 |
+| `Q` / `E`                          | Rotate camera counterclockwise / clockwise |
+| Hold `Middle Click` + Move Mouse   | Rotate camera                               |
+| `1` / `2`                           | Zoom in / Zoom out                          |
+| Mouse Scroll Wheel                  | Zoom in/out                                 |
+| `ESC`                               | Pause Game                                  |
+| `Space`                             | Pause / Play in-game time                   |
+| Right Click (Shop Open)             | Deselect current building                   |
+| `CTRL + Right Click` (Shop Open)   | Remove placed building                      |
+| `R` (Shop Open)                     | Rotate current building                     |
+| Left Click + Drag (Wall)            | Place multiple walls                        |
+| `↓ ↓ ← → ↑`                         | Open Cheats panel                            |
 
+### Mouse
+| Action                  | Function                   |
+|-------------------------|---------------------------|
+| Right Click + Drag       | Move camera               |
+| Middle Click + Drag      | Rotate camera             |
+| Scroll Wheel             | Zoom in/out               |
 
-#### **Mouse Controls**
-| Mouse Action           | Action                        |
-|------------------------|-------------------------------|
-| Right Click + Drag     | Move camera (dragging)        |
-| Middle Click + Drag    | Rotate camera                 |
-| Scroll Wheel           | Zoom in/out                   |
+---
 
-## Game Guide:
-### Strucutres:
-Animal Pens:
-- Where your civilian animals live
-- This is where you feed them your crops
-- After feeding and waiting an in-game day you can collect coins from them
+## Game Guide
 
-Barracks:
-- This is where you recruit civilian animals from pens to Army animals
-- Click on the flag icon to send your defensive animals where you want
+### Structures
+- **Animal Pens:** Feed crops → collect coins after 1 in-game day  
+- **Barracks:** Recruit army animals from pens; click flag to send defenders  
+- **Crop Plots:** Plant crops for animals  
+  - Sunflower → Chickens  
+  - Wheat → Cows, Sheep  
+  - Carrots → Pigs, Goats  
+- **Walls:** Temporarily stop enemies  
+  - Hay Bale, Wood Fence, Stone Fence  
+- **Silo:** Stores all crops  
 
-Crop Plot:
-- Where you plant and harvest crops to feed to animals
-- Sunflower Seeds -> Chickens
-- Wheat -> Cows, Sheep
-- Carrots -> Pigs, Goats
+### Synergies & Bonuses
+- Crop Plot near Silo → Harvest boost  
+- Animal Pen near Silo → Animals need less food  
+- Barrack placed near Pen → Reduced recruit cost  
 
-Walls:
-- Used to temporaraly stop enemies
-- Haybale
-- Wood Fence
-- Stone Fence
+---
 
-Silo:
-- Where your crops are stored
+## Game Progression
 
-Synergies & Bonuses:
-- Placing a Crop Plot close to a silo -> Crop harvest boost 
-- Placing an animal pen close to a silo -> Animals need less food
-- Placing a Barrack not too far and not too close to an animal pen -> reduced price to recruit army animals
-
-## Game progression:
 ### Army Animals
-- Chickens -> Fast, low health, low damage
-- Pigs -> Medium speed, Medium health, Medium Damage
-- Cow -> Medium speed, High Health, Medium Damage
-- Goat -> Low speed, medium Health, High Damage
+| Animal  | Speed   | Health | Damage |
+|---------|--------|--------|--------|
+| Chicken | Fast   | Low    | Low    |
+| Pig     | Medium | Medium | Medium |
+| Cow     | Medium | High   | Medium |
+| Goat    | Low    | Medium | High   |
 
 ### Seasons
-- Every 5 in-game days is a new season (Spring, Summer, Fall, Autumn)
-- Every season brings its own enemies
-- 4 Seasons = 1 year
+- Every 5 in-game days = New season (Spring → Summer → Fall → Winter)  
+- Each season brings new enemies  
+- 4 seasons = 1 year  
 
 ### Enemies
-- Wolf -> Season 1(Spring), Target: Animals
-- Raccoon -> Season 2(Summer), Target: Resources
-- Boar -> Season 3(Fall), Target: Walls
-- Bear -> Season 4(Winter), Target Buildings
-  
-
+| Enemy   | Season | Target        |
+|---------|--------|---------------|
+| Wolf    | 1 (Spring) | Animals   |
+| Raccoon | 2 (Summer) | Resources |
+| Boar    | 3 (Fall)   | Walls     |
+| Bear    | 4 (Winter) | Buildings |

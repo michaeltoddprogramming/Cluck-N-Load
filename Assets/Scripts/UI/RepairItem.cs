@@ -9,6 +9,8 @@ public class RepairItem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI structureNameText;
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private Button repairButton;
+    [SerializeField] private Image cantAffordOverlay;
+
     private CanvasGroup canvasGroup; 
 
     private GameObject thisBuilding;
@@ -24,6 +26,8 @@ public class RepairItem : MonoBehaviour
 
     private UIHover uiHover;
 
+    public UIHoverManager hoverManager;
+
 
     private void Awake()
     {
@@ -36,6 +40,8 @@ public class RepairItem : MonoBehaviour
         uiHover = FindFirstObjectByType<UIHover>();
         if (uiHover == null)
             Debug.LogWarning("No UIHover found in the scene!");
+
+        hoverManager = FindFirstObjectByType<UIHoverManager>();
     }
 
     public void Initialize(GameObject building, string structureName, int cost)
@@ -122,8 +128,42 @@ public class RepairItem : MonoBehaviour
     {
         if(repairButton.interactable == false)
         {
-            AudioManager.Instance?.PlayInsufficientFundsSound();  
+            // Debug.Log("I am gonna play it");
+            PlayCantAffordOverlay();            
+            // AudioManager.Instance?.PlayInsufficientFundsSound();  
+            hoverManager.PlayErrorFeedbackForGameObject(true, this.gameObject);
             return;      
         }        
+        // else if(repairAllButton.interactable == false)
+        // {
+        //     // Debug.Log("I am gonna play it");
+        //     PlayCantAffordOverlay();            
+        //     // AudioManager.Instance?.PlayInsufficientFundsSound();  
+        //     hoverManager.PlayErrorFeedbackForGameObject(true, this.gameObject);
+        //     return;      
+        // }        
+        // Debug.Log("I didnt play it");
+    }
+
+    private void PlayCantAffordOverlay()
+    {
+        if (cantAffordOverlay != null)
+        {
+            cantAffordOverlay.gameObject.SetActive(true);
+            cantAffordOverlay.canvasRenderer.SetAlpha(0f); // start invisible
+            cantAffordOverlay.CrossFadeAlpha(1f, 0.25f, false); // fade in
+            LeanTween.delayedCall(0.5f, () =>
+            {
+                cantAffordOverlay.CrossFadeAlpha(0f, 0.25f, false); // fade out
+                LeanTween.delayedCall(0.25f, () =>
+                {
+                    cantAffordOverlay.gameObject.SetActive(false);
+                });
+            });
+        }
+        else
+        {
+            Debug.Log("It is null for some reason");
+        }
     }
 }

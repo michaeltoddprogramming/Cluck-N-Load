@@ -32,6 +32,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private char currNav = 'C'; // current nav bar selection
 
     [SerializeField] private GameObject comingSoonPanel; // Panel for upcoming features 
+
+    public UIHoverManager hoverManager;
     
     // Public getter for current tab (for tutorial system)
     public char GetCurrentTab()
@@ -107,6 +109,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             Debug.LogWarning("No UIHover found in the scene!");
 
         Instance = this;
+
+        hoverManager = FindFirstObjectByType<UIHoverManager>();
     }
 
     void Start()
@@ -1150,17 +1154,18 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnRepairButtonClick()
     {
-        if(repairAllButton.interactable == false)
+        if(repairAllButton.interactable == false && totalRepairCost == 0)
         {
-            if(totalRepairCost == 0)
-            {
+            // if(totalRepairCost == 0)
+            // {
                 AudioManager.Instance?.PlayErrorSound();  
-            }
+            // }
             return;      
         }
         else if(repairAllButton.interactable == false)
         {
-            AudioManager.Instance?.PlayInsufficientFundsSound();  
+            hoverManager.PlayErrorFeedbackForGameObject(true, repairAllButton.gameObject);
+            // AudioManager.Instance?.PlayInsufficientFundsSound();  
             return;      
         }        
     }
@@ -1301,7 +1306,7 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if(scrollViewParent != null)
         {
             Vector2 size1 = scrollViewParent.sizeDelta;
-            size1.y = 600f; 
+            size1.y = 534f; 
             scrollViewParent.sizeDelta = size1;
         }
 

@@ -1662,6 +1662,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   comingSoonPanel: {fileID: 1004186576}
+  hoverManager: {fileID: 0}
   repairItemPrefab: {fileID: 4265318633475862390, guid: 2fccf14272298754fbe1f24b0cf0d9f9, type: 3}
   repairNotification: {fileID: 793466564}
   topSection: {fileID: 454810824}
@@ -16669,9 +16670,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 1.7999878, y: 274.37997}
+  m_AnchoredPosition: {x: 1.7999878, y: 6.9049683}
   m_SizeDelta: {x: 750.4, y: 534.95}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &886798434
 MonoBehaviour:
   m_ObjectHideFlags: 0

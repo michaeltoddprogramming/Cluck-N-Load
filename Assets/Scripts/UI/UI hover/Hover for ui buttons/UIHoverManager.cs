@@ -19,7 +19,11 @@ public class UIHoverManager : MonoBehaviour
     [SerializeField] private RectTransform moneyUI;
     [SerializeField] float duration = 0.5f;
 
+    public float magnatude = 7.5f;
+
     private bool isPulsing = false;
+
+    private bool isMoneyAnimating = false;
 
     private void Awake()
     {
@@ -224,11 +228,15 @@ public class UIHoverManager : MonoBehaviour
 
     public void FlyMoney(RectTransform targetButton)
     {
-        if (moneyUI == null || targetButton == null)
+        if (moneyUI == null || targetButton == null || isMoneyAnimating == true)
         {
-            Debug.LogWarning("FlyMoney: moneyUI or targetButton is null");
-            return;
+            Debug.LogWarning("FlyMoney: moneyUI or targetButton is null or animation is playing");
+            return; 
         }
+
+        ShakeCamera(magnatude, 0.2f);
+
+        isMoneyAnimating = true;
 
         // Ensure the money UI is in a top-level overlay Canvas to be on top of everything
         Canvas canvas = moneyUI.GetComponentInParent<Canvas>();
@@ -266,7 +274,29 @@ public class UIHoverManager : MonoBehaviour
                     .setOnComplete(() =>
                     {
                         moneyUI.anchoredPosition = moneyOriginalPos;
+                        isMoneyAnimating = false;
                     });
+            });
+    }
+
+    public void ShakeCamera(float magnitude = 0.1f, float duration = 0.2f)
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        Vector3 originalPos = cam.transform.position;
+
+        LeanTween.value(cam.gameObject, 0f, 1f, duration)
+            .setEase(LeanTweenType.easeShake)
+            .setOnUpdate((float val) =>
+            {
+                float x = Random.Range(-magnitude, magnitude) * val;
+                float y = Random.Range(-magnitude, magnitude) * val;
+                cam.transform.position = originalPos + new Vector3(x, y, 0);
+            })
+            .setOnComplete(() =>
+            {
+                cam.transform.position = originalPos; // restore
             });
     }
 }

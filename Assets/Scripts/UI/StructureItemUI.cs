@@ -250,7 +250,7 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if(!MoneyManager.Instance.CanAfford(data.cost))
         {
-            ShakeCamera(magnatude, 0.2f);
+            // ShakeCamera(magnatude, 0.2f);
 
             // Fade the money overlay in and out
             if (moneyOverlay != null)
@@ -376,26 +376,26 @@ public class StructureItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     //     cam.transform.position = originalPos; // restore
     // }
 
-    public void ShakeCamera(float magnitude = 0.1f, float duration = 0.2f)
-    {
-        Camera cam = Camera.main;
-        if (cam == null) return;
+    // public void ShakeCamera(float magnitude = 0.1f, float duration = 0.2f)
+    // {
+    //     Camera cam = Camera.main;
+    //     if (cam == null) return;
 
-        Vector3 originalPos = cam.transform.position;
+    //     Vector3 originalPos = cam.transform.position;
 
-        LeanTween.value(cam.gameObject, 0f, 1f, duration)
-            .setEase(LeanTweenType.easeShake)
-            .setOnUpdate((float val) =>
-            {
-                float x = Random.Range(-magnitude, magnitude) * val;
-                float y = Random.Range(-magnitude, magnitude) * val;
-                cam.transform.position = originalPos + new Vector3(x, y, 0);
-            })
-            .setOnComplete(() =>
-            {
-                cam.transform.position = originalPos; // restore
-            });
-    }
+    //     LeanTween.value(cam.gameObject, 0f, 1f, duration)
+    //         .setEase(LeanTweenType.easeShake)
+    //         .setOnUpdate((float val) =>
+    //         {
+    //             float x = Random.Range(-magnitude, magnitude) * val;
+    //             float y = Random.Range(-magnitude, magnitude) * val;
+    //             cam.transform.position = originalPos + new Vector3(x, y, 0);
+    //         })
+    //         .setOnComplete(() =>
+    //         {
+    //             cam.transform.position = originalPos; // restore
+    //         });
+    // }
 
     public void onHover()
     {

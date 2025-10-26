@@ -1491,7 +1491,10 @@ private void OnDayChange(int value)
         
         if (MoneyManager.Instance != null)
         {
-            MoneyManager.Instance.AddMoney(SURVIVAL_BONUS, transform.position);
+            // MoneyManager.Instance.AddMoney(SURVIVAL_BONUS, transform.position);
+            Vector3 screenCenter = new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
+            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(screenCenter);
+            MoneyManager.Instance.AddMoney(SURVIVAL_BONUS, worldPosition);
         }
     }
 }

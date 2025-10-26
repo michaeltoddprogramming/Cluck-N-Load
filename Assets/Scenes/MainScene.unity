@@ -31540,6 +31540,7 @@ MonoBehaviour:
   pulseDuration: 0.5
   moneyUI: {fileID: 2084042127}
   duration: 0.5
+  magnatude: 0.5
 --- !u!82 &1632256057
 AudioSource:
   m_ObjectHideFlags: 0

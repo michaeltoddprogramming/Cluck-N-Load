@@ -430,20 +430,30 @@ public void OnDayChanged(int newDay)
 private void CheckForNewlyUnlockedStructures(int newDay)
 {
     if (structureDatabase == null || structureDatabase.allStructures == null)
+    {
+        Debug.LogWarning("[GameLoopManager] Cannot check unlocks - structureDatabase or allStructures is null");
         return;
+    }
+    
+    Debug.Log($"[GameLoopManager] CheckForNewlyUnlockedStructures called for day {newDay}. Total structures in database: {structureDatabase.allStructures.Count}");
+    
+    int unlockCount = 0;
     foreach (StructureData structure in structureDatabase.allStructures)
     {
+        Debug.Log($"[GameLoopManager] Checking {structure.structureName}: unlockDay={structure.unlockDay}, newDay={newDay}, already announced={announcedUnlockedStructures.Contains(structure.structureName)}");
+        
         if (structure.unlockDay == newDay && !announcedUnlockedStructures.Contains(structure.structureName))
         {
             
             // Mark this structure as announced
             announcedUnlockedStructures.Add(structure.structureName);
             
+            Debug.Log($"[GameLoopManager] ✓ Showing unlock notification for: {structure.structureName}");
+            
             // Show badge notification for newly unlocked structure - more dramatic!
-            if (NotificationManager.Instance != null)
-            {
-                NotificationManager.ShowBadge("New Structure Unlocked!", $"{structure.structureName} is now available!", 1f);
-            }
+            NotificationManager.ShowBadge("New Structure Unlocked!", $"{structure.structureName} is now available!", 3f);
+            
+            unlockCount++;
             
             // Also trigger the feature unlocked event
             if (GameEventManager.Instance != null)
@@ -452,11 +462,14 @@ private void CheckForNewlyUnlockedStructures(int newDay)
             }
         }
     }
+    
+    Debug.Log($"[GameLoopManager] Finished checking unlocks for day {newDay}. Showed {unlockCount} notifications.");
 }
 
 public void CheckForNewlyUnlockedStructuresMorning()
 {
     int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
+    Debug.Log($"[GameLoopManager] CheckForNewlyUnlockedStructuresMorning called for day {currentDay}");
     CheckForNewlyUnlockedStructures(currentDay);
 }
 

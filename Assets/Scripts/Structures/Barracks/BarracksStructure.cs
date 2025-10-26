@@ -1067,7 +1067,8 @@ public class BarracksStructure : Structure
         if (isHighlighted)
         {
             float pulseValue = (Mathf.Sin(Time.time * 2f) + 1f) * 0.5f;
-            float emission = Mathf.Lerp(0.3f, 0.8f, pulseValue);
+            // Reduced brightness - was too bright (looked like missing texture)
+            float emission = Mathf.Lerp(0.15f, 0.4f, pulseValue);
             Color emissionColor = new Color(1f, 0.8f, 0.2f) * emission;
             highlightMaterial.SetColor("_EmissionColor", emissionColor);
         }

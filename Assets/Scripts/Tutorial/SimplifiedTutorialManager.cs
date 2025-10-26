@@ -95,7 +95,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
         [Header("Simple Panel Control")]
         public bool movePanelDown = false;          // Move content container to bottom of screen
         public bool movePanelRight = false;         // Move content container to right side of screen
-        public float panelAlpha = 1.0f;             // Background panel opacity (0-1, fade the background)
+    public bool movePanelDownRight = false;     // Move down and slightly to the right (used when shop is open)
+    public float panelAlpha = 1.0f;             // Background panel opacity (0-1, fade the background)
         public bool disablePanelRaycast = false;    // Disable panel blocking clicks (for UI interaction steps)
         
         [Header("Game UI Control")]
@@ -106,6 +107,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
         [Header("Shop Tutorial Control")]
         public bool highlightShopButton = false;    // Highlight the shop button to prompt opening
         public bool openShopAutomatically = false;  // Automatically open the shop when this step starts
+        public bool enableShopButton = true;        // Enable/disable shop button for this step (disabled by default for non-shop steps)
         public bool restrictShopBuildings = false;  // Restrict shop to only allow specific buildings
         public List<string> allowedBuildingNames = new List<string>(); // Building names that can be purchased (e.g., "FarmHouse")
         public string requiredShopTab = "";         // Which shop tab should be active (e.g., "C" for Coops, "P" for Plants, "A" for Army, "S" for Defense)
@@ -256,6 +258,19 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f
         });
         
+        // Spacebar pause/freeze time
+        tutorialSteps.Add(new SimpleTutorialStep
+        {
+            stepId = "spacebar_pause",
+            title = "Pause Time",
+            message = "Press SPACE BAR to pause (freeze) time. Press it again to unpause. This is useful when you need to think or plan!",
+            peteContext = PeteContext.CornerBuddy,
+            peteEmotion = PeteEmotion.Thinking,
+            waitForAction = false,  // Don't require them to actually pause - just inform them
+            movePanelDown = true,
+            panelAlpha = 0f
+        });
+        
         // Shop introduction - normal position, full opacity, allow clicks through panel
         var openShopStep = new SimpleTutorialStep
         {
@@ -269,7 +284,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
             disablePanelRaycast = true,  // Allow clicks through the panel to reach the shop button
             panelAlpha = 0f,
             showGameUI = true,           // Show game UI so player can see shop button
-            highlightShopButton = true   // NEW: Highlight the shop button to guide player
+            highlightShopButton = true,  // NEW: Highlight the shop button to guide player
+            enableShopButton = true      // Enable shop button for this step
         };
         
         // Set shop button as highlight target if available
@@ -294,6 +310,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,             // Fully transparent panel
             disablePanelRaycast = true,  // Allow clicks to place building
             showGameUI = true,           // Keep game UI visible for building interaction
+            enableShopButton = true,     // Enable shop button for building step
             restrictShopBuildings = true,  // Only allow specific buildings
             allowedBuildingNames = new List<string> { "FarmHouse", "Farmhouse", "Farm House" },
             requiredShopTab = "C",       // Coops/Buildings tab
@@ -412,6 +429,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
+            enableShopButton = true,        // Enable shop button for building step
             openShopAutomatically = true,  // Auto-open shop since it was closed after UI explanation
             highlightShopButton = true,     // Highlight shop button initially
             restrictShopBuildings = true,
@@ -433,6 +451,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
+            enableShopButton = true,     // Enable shop button for building step
             movePanelRight = true,
             restrictShopBuildings = true,
             allowedBuildingNames = new List<string> { "Silo" },
@@ -453,6 +472,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
+            enableShopButton = true,     // Enable shop button for building step
             movePanelRight = true,
             restrictShopBuildings = true,
             allowedBuildingNames = new List<string> { "ChickenCoop", "Chicken Coop" },
@@ -473,6 +493,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
+            enableShopButton = true,     // Enable shop button for building step
             movePanelRight = true,
             restrictShopBuildings = true,
             allowedBuildingNames = new List<string> { "ChickenBarracks", "Chicken Barracks" },
@@ -505,7 +526,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
-            movePanelRight = true,
+            movePanelDown = true,  // Changed from movePanelRight to movePanelDown
             highlightStructureType = "crop plot",
             highlightStructureUIButtons = new List<string> { "plantButton", "plantSunflowerButton" }
         });
@@ -880,6 +901,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
         if (skipTutorialButton != null)
         {
             skipTutorialButton.onClick.AddListener(SkipTutorial);
+            // Hide skip button until farmhouse is placed
+            skipTutorialButton.gameObject.SetActive(false);
         }
         
         if (tutorialDialoguePanel != null)
@@ -996,11 +1019,25 @@ public class SimplifiedTutorialManager : MonoBehaviour
         
         Debug.Log($"Showing tutorial step {currentStepIndex}: {step.title}");
         
+        // Control shop button enabled/disabled state
+        if (shopButton != null)
+        {
+            shopButton.interactable = step.enableShopButton;
+            Debug.Log($"Shop button interactable set to: {step.enableShopButton}");
+        }
+        
         // Close shop when Pete starts explaining the UI (after farmhouse is built)
         if (step.stepId == "explain_money" && ShopUIManager.Instance != null)
         {
             ShopUIManager.Instance.CloseShop();
             Debug.Log("Closed shop automatically for UI explanation");
+        }
+        
+        // Close shop before planting first crop to declutter UI
+        if (step.stepId == "plant_first_crop" && ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.CloseShop();
+            Debug.Log("Closed shop automatically before planting first crop");
         }
         
         // Auto-open shop if this step requires it (e.g., crop plot step after UI explanation)
@@ -1183,7 +1220,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
     {
         if (progressText != null)
         {
-            progressText.text = $"Step {currentStepIndex + 1} of {tutorialSteps.Count}";
+            progressText.text = $"Step {currentStepIndex + 1} / {tutorialSteps.Count}";
         }
     }
     
@@ -1222,7 +1259,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Simple panel control methods
     private void UpdatePanelForStep(SimpleTutorialStep step)
     {
-        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}, movePanelRight: {step.movePanelRight}, disableRaycast: {step.disablePanelRaycast}, showGameUI: {step.showGameUI}");
+        bool shopOpen = ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen();
+        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}, movePanelRight: {step.movePanelRight}, movePanelDownRight: {step.movePanelDownRight}, disableRaycast: {step.disablePanelRaycast}, showGameUI: {step.showGameUI}, shopOpen: {shopOpen}");
         
         // Control main game UI visibility
         if (step.showGameUI)
@@ -1283,13 +1321,24 @@ public class SimplifiedTutorialManager : MonoBehaviour
         Vector2 targetPosition = originalContentPosition;
         
         // Handle different panel positioning
-        if (step.movePanelDown)
+        bool shopIsOpenNow = ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen();
+
+        // Down+slight-right move takes priority when the step explicitly requests it
+        // or when the shop is (or will be) open for this step (openShopAutomatically).
+        bool shouldApplyDownRight = step.movePanelDownRight || step.openShopAutomatically || (shopIsOpenNow && step.showGameUI && step.enableShopButton);
+
+        if (shouldApplyDownRight)
         {
-            targetPosition = new Vector2(originalContentPosition.x, originalContentPosition.y - 280f);
+            // Slight right and down offset suitable when shop UI is visible
+            targetPosition = new Vector2(originalContentPosition.x + 360f, originalContentPosition.y - 335f);
+        }
+        else if (step.movePanelDown)
+        {
+            targetPosition = new Vector2(originalContentPosition.x, originalContentPosition.y - 335f);
         }
         else if (step.movePanelRight)
         {
-            targetPosition = new Vector2(originalContentPosition.x + 500f, originalContentPosition.y);
+            targetPosition = new Vector2(originalContentPosition.x + 520f, originalContentPosition.y + 260);
         }
         
         // Smooth tween animation
@@ -1376,6 +1425,13 @@ public class SimplifiedTutorialManager : MonoBehaviour
         if (currentStep.waitForTrigger == triggerName)
         {
             Debug.Log($"[TriggerAction] Trigger '{triggerName}' MATCHED! Advancing step.");
+            
+            // Show skip button after farmhouse is built
+            if (triggerName == "farmhouse_built" && skipTutorialButton != null)
+            {
+                skipTutorialButton.gameObject.SetActive(true);
+                Debug.Log("Skip tutorial button now visible after farmhouse placed");
+            }
             
             // Mark trigger completed and clear any input UI
             if (!completedTriggers.Contains(triggerName)) completedTriggers.Add(triggerName);

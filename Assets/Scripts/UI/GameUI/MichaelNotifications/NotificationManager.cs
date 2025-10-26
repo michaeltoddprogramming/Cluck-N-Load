@@ -369,6 +369,13 @@ public class NotificationManager : MonoBehaviour
         ShowNotification(title, message, "Badge", duration);
     }
 
+    // Test method to trigger unlock notifications manually
+    public static void TestUnlockNotification()
+    {
+        ShowBadge("New Structure Unlocked!", "Test Building is now available!", 3f);
+        Debug.Log("[NotificationManager] Test unlock notification triggered!");
+    }
+
     public static void ShowAnimalUnlock(string animalName, string message = "", float duration = 1.5f)
     {
         string title = $"New Animal: {animalName}";

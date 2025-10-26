@@ -140,6 +140,7 @@ public class NightManager : MonoBehaviour
     private EnemyIndicator enemyIndicator;
     private TimeIndicator timeIndicator;
     private TimeSpeedEffect timeSpeedEffect;
+    private HashSet<int> announcedEnemySeasons = new HashSet<int>();
 
     private void Awake()
     {
@@ -188,7 +189,7 @@ public class NightManager : MonoBehaviour
             source2.Stop();
         }
 
-        Hours = 5;
+    Hours = 5;  // Start at 5:00 AM (morning), tutorial will freeze at 12:00 noon
         Minutes = 0;
 
         if (Years == 0) Years = 1;
@@ -208,17 +209,18 @@ public class NightManager : MonoBehaviour
             return;
         }
 
-        // Freeze time at 12:00 noon during SimplifiedTutorial
+        // Freeze time at 12:00 noon during SimplifiedTutorial (but allow it to reach 12:00 first)
         if (SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive())
         {
-            // Keep time frozen at 12:00 (noon)
-            if (hours != 12 || minutes != 0)
+            // If time has reached 12:00 (noon) or beyond, freeze it at 12:00
+            if (hours >= 12)
             {
                 hours = 12;
                 minutes = 0;
+                rotateDayNightIcon();
+                return; // Don't advance time during tutorial once we've reached noon
             }
-            rotateDayNightIcon();
-            return; // Don't advance time during tutorial
+            // Otherwise, allow time to progress normally until it reaches noon
         }
 
         tempSecond += Time.deltaTime * speedUp;
@@ -654,19 +656,42 @@ private void OnDayChange(int value)
         }
         if (enemyIndicator != null)
         {
+            // Check if this is the first time seeing this enemy type
+            bool isNewEnemy = !announcedEnemySeasons.Contains(season);
+            
             switch (season)
             {
                 case 1:
                     enemyIndicator.MakeWolfVisible();
+                    if (isNewEnemy)
+                    {
+                        NotificationManager.ShowBadge("New Enemy!", "Wolves are now active at night!", 3f);
+                        announcedEnemySeasons.Add(season);
+                    }
                     break;
                 case 2:
                     enemyIndicator.MakeRacoonVisible();
+                    if (isNewEnemy)
+                    {
+                        NotificationManager.ShowRaccoon("Raccoons are now active at night!", 3f);
+                        announcedEnemySeasons.Add(season);
+                    }
                     break;
                 case 3:
                     enemyIndicator.MakeBoarVisible();
+                    if (isNewEnemy)
+                    {
+                        NotificationManager.ShowBoar("Boars are now active at night!", 3f);
+                        announcedEnemySeasons.Add(season);
+                    }
                     break;
                 case 4:
                     enemyIndicator.MakeBearVisible();
+                    if (isNewEnemy)
+                    {
+                        NotificationManager.ShowBear("Bears are now active at night!", 3f);
+                        announcedEnemySeasons.Add(season);
+                    }
                     break;
             }
         }
@@ -755,33 +780,9 @@ private void OnDayChange(int value)
 
         UpdateEnemyIndicatorForSeason(season);
 
-        if (!isFirstDay)
-        {
-            if (TutorialManager.Instance == null || !TutorialManager.Instance.IsTutorialActive())
-            {
-                if (NotificationManager.Instance != null)
-                {
-                    string unlocksText = null;
-                    if (GameLoopManager.Instance != null)
-                    {
-                        string[] newStructs = GameLoopManager.Instance.GetAndMarkNewlyUnlockedStructures(Days);
-                        if (newStructs != null && newStructs.Length > 0)
-                        {
-                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                            sb.AppendLine("New Structures Unlocked:");
-                            foreach (var sname in newStructs)
-                            {
-                                sb.AppendLine($"• {sname}");
-                            }
-                            unlocksText = sb.ToString();
-                        }
-                    }
-
-                    // DISABLED: Blocking seasonal notifications
-                    // NotificationManager.ShowSeasonalBlocking(season, unlocksText);
-                }
-            }
-        }
+        // NOTE: Structure unlock notifications are handled in the morning transition (hour 5)
+        // via GameLoopManager.Instance.CheckForNewlyUnlockedStructuresMorning()
+        // Don't check for unlocks here to avoid marking them as announced before the notification shows
 
 
     }

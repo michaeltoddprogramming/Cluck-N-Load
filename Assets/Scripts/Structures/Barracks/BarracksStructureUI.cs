@@ -56,6 +56,8 @@ public class BarracksStructureUI : BaseStructureUI
     [SerializeField] private Transform sheepFlagListParent;
     [SerializeField] private GameObject sheepFlagItemPrefab;
     [SerializeField] private Button closeSheepFlagPanelButton;
+    [SerializeField] private AudioSource buttonClick;
+    [SerializeField] private AudioSource closeClicked;
     
     private bool isManagingSheepFlags = false;
     private int selectedSheepFlagIndex = -1;
@@ -204,13 +206,13 @@ public class BarracksStructureUI : BaseStructureUI
 
     protected override void Update()
     {
+        base.Update();
         // OPTIMIZATION: Skip Update() if UI is not visible (hidden barracks don't need updates)
         // EXCEPTION: Keep running if placing flags, managing sheep flags, or moving sheep flags (need input handling)
         if (!isUIVisible && !isPlacingFlag && !isMovingSheepFlag && !isManagingSheepFlags)
             return;
         
         // Call base update to handle move button logic
-        base.Update();
         
         // Check for pause state changes and update UI immediately
         NightManager nightManager = NightManager.Instance;
@@ -1508,6 +1510,7 @@ public class BarracksStructureUI : BaseStructureUI
         if (sheepFlagManagementPanel != null)
         {
             sheepFlagManagementPanel.SetActive(false);
+            closeClicked.Play();
         }
     }
 
@@ -1679,14 +1682,14 @@ public class BarracksStructureUI : BaseStructureUI
                 if (moveButton != null)
                 {
                     moveButton.onClick.RemoveAllListeners();
-                    moveButton.onClick.AddListener(() => StartMovingSheepFlag(index));
+                    moveButton.onClick.AddListener(() => {buttonClick.Play(); StartMovingSheepFlag(index);});
                     Debug.Log($"[SHEEP FLAG] Connected move button for item {index}");
                 }
                 
                 if (deleteButton != null)
                 {
                     deleteButton.onClick.RemoveAllListeners();
-                    deleteButton.onClick.AddListener(() => DeleteSheepFlag(index));
+                    deleteButton.onClick.AddListener(() => {closeClicked.Play(); DeleteSheepFlag(index);});
                     Debug.Log($"[SHEEP FLAG] Connected delete button for item {index}");
                 }
             }
@@ -1815,6 +1818,8 @@ public class BarracksStructureUI : BaseStructureUI
         if (sheepFlagManagementPanel != null)
         {
             sheepFlagManagementPanel.SetActive(false);
+            HideUI();
+            // StructureUIManager.Instance?.HideStructureUI();
         }
         
         // Show flag ghost for the specific sheep flag being moved
@@ -1958,6 +1963,8 @@ public class BarracksStructureUI : BaseStructureUI
         {
             Debug.Log("[SHEEP FLAG] Reopening sheep flag management panel");
             sheepFlagManagementPanel.SetActive(true);
+            ShowUI();
+
             RefreshSheepFlagList(); // Always refresh when reopening
         }
         

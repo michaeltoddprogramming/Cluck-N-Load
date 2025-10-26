@@ -174,12 +174,13 @@ public class ArmyUnit : BaseUnit
             return;
         }
 
-        var enemies = GetNearbyEnemies();
-        if (currentTarget == null || !enemies.Contains(currentTarget) || currentTarget.IsDead())
+        // var enemies = GetNearbyEnemies();
+        GetNearbyEnemies();
+        if (currentTarget == null || !cachedNearbyEnemies.Contains(currentTarget) || currentTarget.IsDead())
         {
-            if (enemies.Count > 0)
+            if (cachedNearbyEnemies.Count > 0)
             {
-                currentTarget = enemies[0];
+                currentTarget = cachedNearbyEnemies[0];
 
                 if (roamingRoutine != null)
                 {
@@ -581,7 +582,29 @@ public class ArmyUnit : BaseUnit
         nearbyCheckInterval = Mathf.Max(0.2f, 0.05f * (data.AttackRange / 5f));
     }
 
-    public List<EnemyUnit> GetNearbyEnemies()
+    public void GetNearbyEnemies()
+    {
+        // if (Time.time - lastNearbyCheckTime > nearbyCheckInterval)
+        // {
+            // OPTIMIZATION: Scale check interval based on whether enemies exist nearby
+            // If no enemies found, increase interval to reduce unnecessary checks
+            cachedNearbyEnemies = GridController.Instance.GetEnemiesInRange(transform.position, data.AttackRange);
+            
+            // Adaptive throttling: if no enemies found, wait longer before next check
+            if (cachedNearbyEnemies.Count == 0)
+            {
+                // No enemies: wait 3x longer before checking again
+                lastNearbyCheckTime = Time.time + (nearbyCheckInterval * 2f);
+            }
+            else
+            {
+                lastNearbyCheckTime = Time.time;
+            }
+        // }
+        // return cachedNearbyEnemies;
+    }
+
+    public List<EnemyUnit> GetCurrentEnemies()
     {
         if (Time.time - lastNearbyCheckTime > nearbyCheckInterval)
         {
@@ -771,21 +794,44 @@ public class ArmyUnit : BaseUnit
 
         float distance = Vector3.Distance(transform.position, targetPosition);
 
-        if (distance < agent.stoppingDistance + 1.5f)
+        if(targetPosition == barracks.transform.position)
         {
-            if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            if (distance < agent.stoppingDistance + 3f)
             {
-                agent.ResetPath();
+                if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                }
+                isMoving = false;
+                SetFloat("speed", 0f);
+                if (!isNightTime)
+                {
+                    barracks.AfterBackToBarracks();
+                    gameObject.SetActive(false);
+                }
+                return;
             }
-            isMoving = false;
-            SetFloat("speed", 0f);
-            if (!isNightTime)
-            {
-                barracks.AfterBackToBarracks();
-                gameObject.SetActive(false);
-            }
-            return;
+
         }
+        else
+        {
+            if (distance < agent.stoppingDistance + 1.5f)
+            {
+                if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                }
+                isMoving = false;
+                SetFloat("speed", 0f);
+                if (!isNightTime)
+                {
+                    barracks.AfterBackToBarracks();
+                    gameObject.SetActive(false);
+                }
+                return;
+            }
+        }
+
 
         if (!agent.hasPath || Vector3.Distance(agent.destination, targetPosition) > 0.2f)
         {
@@ -849,8 +895,12 @@ public class ArmyUnit : BaseUnit
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(guardPosition, roamRadius);
 
-        Gizmos.color = Color.white;
-        Gizmos.DrawWireSphere(agent.transform.position, agent.stoppingDistance + 1f);
+        if(agent != null)
+        {
+            Gizmos.color = Color.white;
+            Gizmos.DrawWireSphere(agent.transform.position, agent.stoppingDistance + 1f);
+        }
+
 #endif
     }
 

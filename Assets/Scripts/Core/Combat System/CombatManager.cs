@@ -108,7 +108,7 @@ public class CombatManager : MonoBehaviour
             if (armyUnit == null || armyUnit.IsDead())
                 continue;
 
-            List<EnemyUnit> nearbyEnemies = armyUnit.GetNearbyEnemies();
+            List<EnemyUnit> nearbyEnemies = armyUnit.GetCurrentEnemies();
 
             if (nearbyEnemies.Count > 0 && isNight)
             {

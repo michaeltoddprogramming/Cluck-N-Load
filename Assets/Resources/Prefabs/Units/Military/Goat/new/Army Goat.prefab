@@ -147,12 +147,11 @@ MonoBehaviour:
   minPitch: 0.95
   maxPitch: 1.05
   data: {fileID: 11400000, guid: 64d248b50a5082d4c9cf6091c53ea449, type: 2}
-  recoilForce: 20
-  Recoil: 0
   healthBarPrefab: {fileID: 4122911237217708408, guid: 5901a419293af0a41829f449f21dc8a0, type: 3}
   shoot: 0
   recoilDistance: 2
   recoilTime: 0.2
+  attackNow: 0
 --- !u!114 &4398187224086620104
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,7 +206,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -322,7 +321,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0

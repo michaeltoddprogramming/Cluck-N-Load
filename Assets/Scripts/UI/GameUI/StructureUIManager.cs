@@ -4,6 +4,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System.Diagnostics;
 
 public class StructureUIManager : MonoBehaviour
 {
@@ -126,16 +127,20 @@ public class StructureUIManager : MonoBehaviour
 
     public void ShowStructureUI(Structure structure)
     {
+         StackTrace stackTrace = new StackTrace();
+        StackFrame callerFrame = stackTrace.GetFrame(1); // 0 = current method, 1 = caller
+        var method = callerFrame.GetMethod();
+        UnityEngine.Debug.Log("Called by: " + method.Name);
         BuildController buildController = FindFirstObjectByType<BuildController>();
         if (buildController != null && buildController.IsDeleteModeActive())
         {
-            Debug.Log("UI not shown because delete mode is active.");
+            UnityEngine.Debug.Log("UI not shown because delete mode is active.");
             return;
         }
 
         if (structure == null)
         {
-            Debug.LogWarning("Cannot show UI: Structure is null");
+            UnityEngine.Debug.LogWarning("Cannot show UI: Structure is null");
             return;
         }
 
@@ -173,7 +178,7 @@ public class StructureUIManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("UI prefab does not have a RectTransform!");
+            UnityEngine.Debug.LogWarning("UI prefab does not have a RectTransform!");
         }
 
         IStructureUI structureUI = activeUI.GetComponent<IStructureUI>();
@@ -183,7 +188,7 @@ public class StructureUIManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"UI prefab for {structure.GetStructureName()} doesn't implement IStructureUI interface");
+            UnityEngine.Debug.LogWarning($"UI prefab for {structure.GetStructureName()} doesn't implement IStructureUI interface");
         }
 
         playOpenSFX();

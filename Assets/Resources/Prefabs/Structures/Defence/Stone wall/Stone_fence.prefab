@@ -114,7 +114,9 @@ MonoBehaviour:
   destroyDelay: 0.5
   destructionEffectPrefab: {fileID: 0}
   showDebugInfo: 0
-  healthBarPrefab: {fileID: 0}
+  healthBarPrefab: {fileID: 4122911237217708408, guid: 23bbe51596d340c4387e655f58390f62, type: 3}
+  cropHealthBarExtraHeight: 5.5
+  defaultHealthBarExtraHeight: 1.5
   connectorPrefab: {fileID: 8451025749333199282, guid: 1469b386d18fbc443b2c232e038da48d, type: 3}
   connectorOffset: 0
   connectorHeight: 0
@@ -202,7 +204,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 10
-  MaxDistance: 60
+  MaxDistance: 125
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0

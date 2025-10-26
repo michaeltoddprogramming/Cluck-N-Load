@@ -136,9 +136,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ec2f58ce727d504194440fff679a83b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flickerIntensity: 0.114
+  flickerIntensity: 0.183
   flickerRange: 0.268
-  flickerSpeed: 2.35
+  flickerEmission: 0.6
+  flickerSpeed: 1.86
+  emissionIntensityMultiplier: 0.014
 --- !u!1001 &67773665
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -347,7 +349,7 @@ Transform:
   m_GameObject: {fileID: 195921408}
   serializedVersion: 2
   m_LocalRotation: {x: 0.97276247, y: -0, z: -0, w: 0.23180443}
-  m_LocalPosition: {x: -21.099981, y: -60, z: 20}
+  m_LocalPosition: {x: -21.099981, y: -60.1, z: 19.8}
   m_LocalScale: {x: 124.92549, y: 432.6997, z: 552.6878}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -868,7 +870,7 @@ Transform:
   m_GameObject: {fileID: 472807989}
   serializedVersion: 2
   m_LocalRotation: {x: 0.95603776, y: -0, z: -0, w: 0.29324356}
-  m_LocalPosition: {x: -21.099981, y: -186.00006, z: 109.99994}
+  m_LocalPosition: {x: -21.099981, y: -181, z: 108.4}
   m_LocalScale: {x: 124.92549, y: 432.6997, z: 552.6878}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1505,7 +1507,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 746996715}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
   m_Name: 
@@ -3065,7 +3067,7 @@ Transform:
   m_GameObject: {fileID: 1383140403}
   serializedVersion: 2
   m_LocalRotation: {x: 0.96323735, y: -0, z: -0, w: 0.26865193}
-  m_LocalPosition: {x: -21.099981, y: -190, z: 102}
+  m_LocalPosition: {x: -21.099981, y: -197, z: 105.1}
   m_LocalScale: {x: 124.92549, y: 432.6997, z: 552.6878}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3288,7 +3290,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1546006160}
   - component: {fileID: 1546006159}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: TikTokFilter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3344,9 +3346,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ec2f58ce727d504194440fff679a83b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flickerIntensity: 0.1
+  flickerIntensity: 0.183
   flickerRange: 0.05
-  flickerSpeed: 3
+  flickerEmission: 0.35
+  flickerSpeed: 1.5
+  emissionIntensityMultiplier: 0.015
 --- !u!1 &1686028917
 GameObject:
   m_ObjectHideFlags: 0
@@ -4196,9 +4200,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ec2f58ce727d504194440fff679a83b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flickerIntensity: 0.1
+  flickerIntensity: 0.183
   flickerRange: 0.05
-  flickerSpeed: 3
+  flickerEmission: 0.35
+  flickerSpeed: 1.5
+  emissionIntensityMultiplier: 0.015
 --- !u!1 &2144846670
 GameObject:
   m_ObjectHideFlags: 0
@@ -4316,7 +4322,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -4344,7 +4350,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2144846670}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
   m_Name: 
@@ -4352,7 +4358,7 @@ MonoBehaviour:
   volumeTrigger: {fileID: 2144846673}
   volumeLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 513
   stopNaNPropagation: 1
   finalBlitToCameraTarget: 0
   antialiasingMode: 0
@@ -4403,19 +4409,19 @@ SceneRoots:
   m_Roots:
   - {fileID: 2144846673}
   - {fileID: 746996719}
+  - {fileID: 1546006160}
   - {fileID: 1096008857}
   - {fileID: 1124964022}
   - {fileID: 258745658}
   - {fileID: 1985382572}
   - {fileID: 961392876}
+  - {fileID: 67773665}
+  - {fileID: 802343416}
   - {fileID: 1358934328}
   - {fileID: 2109007834}
   - {fileID: 676127510}
   - {fileID: 392151189}
   - {fileID: 1717139454}
-  - {fileID: 67773665}
-  - {fileID: 1546006160}
-  - {fileID: 802343416}
   - {fileID: 1965576041}
   - {fileID: 1166194720}
   - {fileID: 1069295506}

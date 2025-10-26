@@ -200,22 +200,23 @@ public class CropStructureUI : BaseStructureUI
                     
                     Debug.Log($"[Crop Harvest] cropName: {cropName}, cropAmount: {cropAmount}, cropDisplayName: {cropDisplayName}, baseMessage: {baseMessage}");
                     
+                    // DISABLED: Per-harvest notifications - only show production boosts now
                     // Check if harvest multiplier is active
-                    if (cropStructure.CropHarvestMultiplier > 1f)
-                    {
-                        int bonusPercent = Mathf.RoundToInt((cropStructure.CropHarvestMultiplier - 1f) * 100f);
-                        baseMessage += $" • +{bonusPercent}% silo bonus!";
-                        NotificationManager.ShowAchievement($"{cropName} Boosted!", baseMessage, 2f);
-                    }
-                    else
-                    {
-                        // NEW: Show error when no harvest boost is active - show harvest and missed potential
-                        // Calculate what they could have earned with silo bonus (assuming 50% bonus)
-                        int potentialCropAmount = Mathf.RoundToInt(cropAmount * 1.5f);
-                        int missedCrops = potentialCropAmount - cropAmount;
-                        string missedDisplayName = missedCrops == 1 ? GetCropNameSingular(cropType) : cropName;
-                        NotificationManager.ShowError($"{cropName} No Boost!", $"{cropAmount} {cropDisplayName} harvested • Missing +{missedCrops} {missedDisplayName}!", 2f);
-                    }
+                    // if (cropStructure.CropHarvestMultiplier > 1f)
+                    // {
+                    //     int bonusPercent = Mathf.RoundToInt((cropStructure.CropHarvestMultiplier - 1f) * 100f);
+                    //     baseMessage += $" • +{bonusPercent}% silo bonus!";
+                    //     NotificationManager.ShowAchievement($"{cropName} Boosted!", baseMessage, 2f);
+                    // }
+                    // else
+                    // {
+                    //     // NEW: Show error when no harvest boost is active - show harvest and missed potential
+                    //     // Calculate what they could have earned with silo bonus (assuming 50% bonus)
+                    //     int potentialCropAmount = Mathf.RoundToInt(cropAmount * 1.5f);
+                    //     int missedCrops = potentialCropAmount - cropAmount;
+                    //     string missedDisplayName = missedCrops == 1 ? GetCropNameSingular(cropType) : cropName;
+                    //     NotificationManager.ShowError($"{cropName} No Boost!", $"{cropAmount} {cropDisplayName} harvested • Missing +{missedCrops} {missedDisplayName}!", 2f);
+                    // }
                 }
                 break;
             case "ready":

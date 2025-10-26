@@ -764,7 +764,8 @@ private void OnDayChange(int value)
                         }
                     }
 
-                    NotificationManager.ShowSeasonalBlocking(season, unlocksText);
+                    // DISABLED: Blocking seasonal notifications
+                    // NotificationManager.ShowSeasonalBlocking(season, unlocksText);
                 }
             }
         }

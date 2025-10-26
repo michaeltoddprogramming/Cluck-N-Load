@@ -373,27 +373,28 @@ public class AnimalStructure : Structure
                 string displayName = animalCount == 1 ? animalName : animalName + "s";
                 string baseMessage = $"${totalMoneyEarned} from {animalCount} {displayName}";
                 
+                // DISABLED: Per-collection notifications - keeping production boosts only in NightManager
                 // Check for production boost
-                if (boostedAmount > 1f)
-                {
-                    int bonusPercent = Mathf.RoundToInt((boostedAmount - 1f) * 100f);
-                    baseMessage += $" • +{bonusPercent}% season bonus!";
-                    NotificationManager.ShowAchievement($"{displayName} Boosted!", baseMessage);
-                }
-                // Check for silo synergy (reduced food cost)
-                else if (foodMultiplier < normalFoodRequired)
-                {
-                    int savings = Mathf.RoundToInt((1f - (foodMultiplier / normalFoodRequired)) * 100f);
-                    baseMessage += $" • {savings}% less feed used!";
-                    // Shorter duration for routine successes
-                    NotificationManager.ShowSuccess($"{displayName} Collected!", baseMessage, 2.5f);
-                }
-                else
-                {
-                    // NEW: Show error when no boosts are active - show earnings and missed potential
-                    int missedSavings = Mathf.RoundToInt((1f - (synergyFoodRequired / normalFoodRequired)) * 100f);
-                    NotificationManager.ShowError($"{displayName} No Boosts!", $"${totalMoneyEarned} earned • Missing {missedSavings}% feed savings!");
-                }
+                // if (boostedAmount > 1f)
+                // {
+                //     int bonusPercent = Mathf.RoundToInt((boostedAmount - 1f) * 100f);
+                //     baseMessage += $" • +{bonusPercent}% season bonus!";
+                //     NotificationManager.ShowAchievement($"{displayName} Boosted!", baseMessage);
+                // }
+                // // Check for silo synergy (reduced food cost)
+                // else if (foodMultiplier < normalFoodRequired)
+                // {
+                //     int savings = Mathf.RoundToInt((1f - (foodMultiplier / normalFoodRequired)) * 100f);
+                //     baseMessage += $" • {savings}% less feed used!";
+                //     // Shorter duration for routine successes
+                //     NotificationManager.ShowSuccess($"{displayName} Collected!", baseMessage, 2.5f);
+                // }
+                // else
+                // {
+                //     // NEW: Show error when no boosts are active - show earnings and missed potential
+                //     int missedSavings = Mathf.RoundToInt((1f - (synergyFoodRequired / normalFoodRequired)) * 100f);
+                //     NotificationManager.ShowError($"{displayName} No Boosts!", $"${totalMoneyEarned} earned • Missing {missedSavings}% feed savings!");
+                // }
             }
             
             // Trigger simplified tutorial for egg collection

@@ -186,6 +186,8 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void PopulateShop(char display = 'C')
     {
+        if (!onShop) return;
+        
         int currentDay = NightManager.Instance != null ? NightManager.Instance.Days : 0;
 
         // Check if shop should be completely empty during current tutorial step

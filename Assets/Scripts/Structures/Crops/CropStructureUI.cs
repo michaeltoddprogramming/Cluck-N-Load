@@ -74,6 +74,15 @@ public class CropStructureUI : BaseStructureUI
         plantButton.interactable = true;
         nightManager = nightManager ?? NightManager.Instance ?? FindFirstObjectByType<NightManager>();
         SetupButtonListeners();
+        
+        // Initialize pause state to current value to prevent false "change" detection
+        if (nightManager != null)
+        {
+            lastPauseState = nightManager.getIsPaused();
+            // Ensure button states match pause state on initialization
+            UpdateButtonStates(lastPauseState);
+        }
+        
         UpdateUI();
     }
 
@@ -295,6 +304,19 @@ public class CropStructureUI : BaseStructureUI
 
     protected override void Update()
     {
+        // CHANGE DETECTION: Update button states immediately when pause state changes (like move button)
+        // CRITICAL: Check BEFORE base.Update() to detect changes, but DON'T update lastPauseState yet!
+        if (nightManager != null)
+        {
+            bool currentPauseState = nightManager.getIsPaused();
+            if (currentPauseState != lastPauseState)
+            {
+                // Detected a pause state change - update our buttons immediately
+                UpdateButtonStates(currentPauseState); // Immediate button state update (lightweight)
+                // DON'T update lastPauseState here - let base.Update() handle it for move button
+            }
+        }
+        
         // Call base update to handle move button logic
         base.Update();
         
@@ -337,6 +359,33 @@ public class CropStructureUI : BaseStructureUI
         {
             cropGrowthBar.value = 0f;
             cropGrowthBar.gameObject.SetActive(false);
+        }
+    }
+
+    // OPTIMIZATION: Lightweight button state update (like move button pattern)
+    // Called immediately when pause state changes, without doing full UpdateUI()
+    private void UpdateButtonStates(bool isPaused)
+    {
+        if (cropStructure == null || nightManager == null) return;
+
+        bool isDay = nightManager.IsDay;
+        bool isGrowing = cropStructure.IsGrowing;
+        bool cropReady = cropStructure.CropReady;
+        
+        // Calculate button states (same logic as UpdateUI)
+        bool canPlant = CanPlantCrops() && !isPaused;
+        bool canHarvest = cropReady && isDay && !isPaused;
+
+        // Update plant button
+        if (plantButton != null)
+        {
+            plantButton.interactable = canPlant;
+        }
+
+        // Update harvest button
+        if (harvestButton != null)
+        {
+            harvestButton.interactable = canHarvest;
         }
     }
 

@@ -199,6 +199,14 @@ public class BarracksStructureUI : BaseStructureUI
             flagPlacementIndicator.SetActive(false);
         }
 
+        // Initialize pause state to current value to prevent false "change" detection
+        if (nightManager != null)
+        {
+            lastPauseState = nightManager.getIsPaused();
+            // Ensure button states match pause state on initialization
+            UpdateButtonStates(lastPauseState);
+        }
+
         UpdateUI();
 
         barracksStructure.playBackgroundSound();
@@ -214,7 +222,21 @@ public class BarracksStructureUI : BaseStructureUI
 
     protected override void Update()
     {
-        base.Update();
+        // CHANGE DETECTION: Update button states immediately when pause state changes (like move button)
+        // CRITICAL: Check BEFORE base.Update() to detect changes, but DON'T update lastPauseState yet!
+        NightManager nightManager = NightManager.Instance;
+        if (nightManager != null)
+        {
+            bool currentPauseState = nightManager.getIsPaused();
+            if (currentPauseState != lastPauseState)
+            {
+                // Detected a pause state change - update our buttons immediately
+                UpdateButtonStates(currentPauseState); // Immediate button state update (lightweight)
+                // DON'T update lastPauseState here - let base.Update() handle it for move button
+            }
+        }
+        
+        base.Update(); // This handles move button AND updates lastPauseState
         
         // Tutorial button highlighting
         HighlightTutorialButton();
@@ -223,20 +245,6 @@ public class BarracksStructureUI : BaseStructureUI
         // EXCEPTION: Keep running if placing flags, managing sheep flags, or moving sheep flags (need input handling)
         if (!isUIVisible && !isPlacingFlag && !isMovingSheepFlag && !isManagingSheepFlags)
             return;
-        
-        // Call base update to handle move button logic
-        
-        // Check for pause state changes and update UI immediately
-        NightManager nightManager = NightManager.Instance;
-        if (nightManager != null)
-        {
-            bool currentPauseState = nightManager.getIsPaused();
-            if (currentPauseState != lastPauseState)
-            {
-                lastPauseState = currentPauseState;
-                UpdateUI(); // Update immediately when pause state changes
-            }
-        }
         
         if (Time.time - lastUIUpdate > UI_UPDATE_INTERVAL)
         {
@@ -272,6 +280,71 @@ public class BarracksStructureUI : BaseStructureUI
                 placeFlagButton.interactable = false;
                 Debug.LogWarning("[Sheep Barracks UI] Force-disabled placeFlagButton at night");
             }
+        }
+    }
+
+    // OPTIMIZATION: Lightweight button state update (like move button pattern)
+    // Called immediately when pause state changes, without doing full UpdateUI()
+    private void UpdateButtonStates(bool isPaused)
+    {
+        if (barracksStructure == null) return;
+
+        // Get current state needed for button logic
+        bool hasArmy = barracksStructure.ArmyAnimalCount > 0;
+        bool canRecruit = barracksStructure.CanRecruit(newAnimalCount);
+        int currentArmyCount = barracksStructure.ArmyAnimalCount;
+        
+        // Tutorial restrictions
+        bool tutorialRecruitRestriction = false;
+        bool tutorialAddRestriction = false;
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("recruit_soldiers"))
+            {
+                if (currentArmyCount >= 3)
+                {
+                    tutorialRecruitRestriction = true;
+                }
+                int maxCanRecruit = 3 - currentArmyCount;
+                if (newAnimalCount >= maxCanRecruit)
+                {
+                    tutorialAddRestriction = true;
+                }
+            }
+        }
+
+        // Update recruit button (matches move button pattern)
+        if (recruitButton != null && !isPlacingFlag)
+        {
+            bool canClickRecruit = newAnimalCount > 0 && 
+                                   MoneyManager.Instance.CanAfford(newAnimalCount * barracksStructure.GetAnimalRecruitPrice()) && 
+                                   !isPaused && 
+                                   !tutorialRecruitRestriction;
+            recruitButton.interactable = canClickRecruit;
+        }
+
+        // Update add animal button
+        if (addAnimal != null)
+        {
+            bool canAdd = (newAnimalCount + animalCount) < maxAnimalCount && 
+                          MoneyManager.Instance.CanAfford((newAnimalCount + 1) * barracksStructure.GetAnimalRecruitPrice()) && 
+                          barracksStructure.CanRecruit(newAnimalCount + 1) && 
+                          !isPaused && 
+                          !tutorialAddRestriction;
+            addAnimal.interactable = canAdd;
+        }
+
+        // Update minus animal button
+        if (minusAnimal != null)
+        {
+            bool canRemove = newAnimalCount > 0 && !isPaused;
+            minusAnimal.interactable = canRemove;
+        }
+
+        // Update place flag button (not affected by pause, but included for completeness)
+        if (placeFlagButton != null && !isPlacingFlag)
+        {
+            placeFlagButton.interactable = hasArmy && !isPaused;
         }
     }
 

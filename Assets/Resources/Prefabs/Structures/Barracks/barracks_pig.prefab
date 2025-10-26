@@ -43,6 +43,7 @@ Transform:
   - {fileID: 1027174784358972213}
   - {fileID: 245052788561064056}
   - {fileID: 655010464877359873}
+  - {fileID: 370033510635472089}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5670356046103853700
@@ -712,6 +713,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 0299795590378da428afe702f28fc5bf, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0299795590378da428afe702f28fc5bf, type: 3}
       propertyPath: m_Name
       value: pig_barrack_inside
@@ -729,6 +734,68 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 0299795590378da428afe702f28fc5bf, type: 3}
   m_PrefabInstance: {fileID: 1053184741996549354}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5087136751361531515
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6159013035558100040}
+    m_Modifications:
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.153
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.012
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.894
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -3.7493994e-33
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 6.123234e-17
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -6.123234e-17
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5255820357472239640, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+      propertyPath: m_Name
+      value: Flag_pig
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+--- !u!4 &370033510635472089 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4880701777539111586, guid: 14a86d9c4e7df1348836a2b1a07ffb29, type: 3}
+  m_PrefabInstance: {fileID: 5087136751361531515}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8470877286061725940
 PrefabInstance:
@@ -967,10 +1034,35 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8107614748547643771, guid: ca0f6cca753093b4aaf92e6d25838bc8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8576052002025992209}
   m_SourcePrefab: {fileID: 100100000, guid: ca0f6cca753093b4aaf92e6d25838bc8, type: 3}
 --- !u!4 &245052788561064056 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8921586902769214401, guid: ca0f6cca753093b4aaf92e6d25838bc8, type: 3}
   m_PrefabInstance: {fileID: 8694553340298695609}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &589209155430443714 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8107614748547643771, guid: ca0f6cca753093b4aaf92e6d25838bc8, type: 3}
+  m_PrefabInstance: {fileID: 8694553340298695609}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8576052002025992209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 589209155430443714}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ec2f58ce727d504194440fff679a83b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flickerIntensity: 1
+  flickerRange: 1
+  flickerEmission: 1
+  flickerSpeed: 3
+  emissionIntensityMultiplier: 5

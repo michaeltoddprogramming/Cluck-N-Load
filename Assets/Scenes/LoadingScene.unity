@@ -149,6 +149,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1873911086541698989, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
+      propertyPath: m_Range
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1873911086541698989, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
+      propertyPath: m_Intensity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1873911086541698989, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
+      propertyPath: m_Shadows.m_Type
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2101515704163305632, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
       propertyPath: m_Name
       value: FarmHouse
@@ -223,7 +235,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7525407641587904219, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
       propertyPath: m_Range
-      value: 2
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7525407641587904219, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
       propertyPath: m_Intensity
@@ -242,9 +254,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1654401300813820147, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1680268910}
-    - targetCorrespondingSourceObject: {fileID: 4785102253875770829, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2135082454}
   m_SourcePrefab: {fileID: 100100000, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
 --- !u!1 &144601066
 GameObject:
@@ -4314,28 +4323,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2135082449 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4785102253875770829, guid: 58145431f43785f47ab9da18c8c35a21, type: 3}
-  m_PrefabInstance: {fileID: 67773665}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2135082454
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2135082449}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ec2f58ce727d504194440fff679a83b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  flickerIntensity: 0.183
-  flickerRange: 0.05
-  flickerEmission: 0.35
-  flickerSpeed: 1.5
-  emissionIntensityMultiplier: 0.015
 --- !u!1 &2144846670
 GameObject:
   m_ObjectHideFlags: 0

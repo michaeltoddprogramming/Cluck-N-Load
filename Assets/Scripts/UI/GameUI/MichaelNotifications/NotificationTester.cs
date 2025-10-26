@@ -36,7 +36,7 @@ public class NotificationTester : MonoBehaviour
         if (testError)
         {
             testError = false;
-            NotificationManager.ShowError("Error!", "Something went wrong!");
+            // NotificationManager.ShowError("Error!", "Something went wrong!");
         }
         
         if (testInfo)

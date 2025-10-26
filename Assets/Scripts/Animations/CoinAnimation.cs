@@ -20,6 +20,7 @@ public class CoinAnimation : MonoBehaviour
     private bool isPulsing = false; // Track if UI is currently pulsing
 
     private int amountOfMoney = 0;
+    private int activeCoins = 0; // Track how many coins are still animating
     
     private Camera mainCamera;
     private Sprite cachedCoinSprite;
@@ -72,6 +73,8 @@ public class CoinAnimation : MonoBehaviour
         
         // Spawn coins
         int numCoins = Mathf.Min(coinsToSpawn, Mathf.Max(1, amount / 20));
+        activeCoins = numCoins; // Track how many coins we're spawning
+        
         for (int i = 0; i < numCoins; i++)
         {
             StartCoroutine(AnimateCoin(screenPos, i * 0.1f));
@@ -128,7 +131,9 @@ public class CoinAnimation : MonoBehaviour
         
         StartCoroutine(PulseUI());
 
-        if (MoneyManager.Instance != null)
+        // Only add money when the LAST coin finishes animating
+        activeCoins--;
+        if (activeCoins <= 0 && MoneyManager.Instance != null)
         {
             MoneyManager.Instance.addMoneyAfterCoinAnimation(amountOfMoney);
         }

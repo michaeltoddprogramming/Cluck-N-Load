@@ -54,7 +54,13 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 Debug.LogWarning($"[ShopPanelUI] Unknown tab character: {tab}");
                 return null;
         }
-    } 
+    }
+    
+    // Get the repair all button for tutorial highlighting
+    public GameObject GetRepairButton()
+    {
+        return repairAllButton != null ? repairAllButton.gameObject : null;
+    }
 
     [Header("Repair things")]
     public GameObject repairItemPrefab;  
@@ -1338,6 +1344,13 @@ public class ShopPanelUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         showCurrentFilter();
 
         onShop = false;
+        
+        // Notify tutorial that repair view was opened
+        if (SimplifiedTutorialManager.Instance != null)
+        {
+            SimplifiedTutorialManager.Instance.OnRepairViewOpened();
+        }
+        
         if(scrollViewParent != null)
         {
             Vector2 size1 = scrollViewParent.sizeDelta;

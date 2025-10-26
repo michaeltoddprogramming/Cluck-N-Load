@@ -95,7 +95,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
         [Header("Simple Panel Control")]
         public bool movePanelDown = false;          // Move content container to bottom of screen
         public bool movePanelRight = false;         // Move content container to right side of screen
-        public float panelAlpha = 1.0f;             // Background panel opacity (0-1, fade the background)
+    public bool movePanelDownRight = false;     // Move down and slightly to the right (used when shop is open)
+    public float panelAlpha = 1.0f;             // Background panel opacity (0-1, fade the background)
         public bool disablePanelRaycast = false;    // Disable panel blocking clicks (for UI interaction steps)
         
         [Header("Game UI Control")]
@@ -106,14 +107,19 @@ public class SimplifiedTutorialManager : MonoBehaviour
         [Header("Shop Tutorial Control")]
         public bool highlightShopButton = false;    // Highlight the shop button to prompt opening
         public bool openShopAutomatically = false;  // Automatically open the shop when this step starts
+        public bool enableShopButton = true;        // Enable/disable shop button for this step (disabled by default for non-shop steps)
         public bool restrictShopBuildings = false;  // Restrict shop to only allow specific buildings
         public List<string> allowedBuildingNames = new List<string>(); // Building names that can be purchased (e.g., "FarmHouse")
         public string requiredShopTab = "";         // Which shop tab should be active (e.g., "C" for Coops, "P" for Plants, "A" for Army, "S" for Defense)
         public string shopTabButtonName = "";       // Name of the tab button to highlight (e.g., "Plant Button", "Coop Button")
+        public bool highlightRepairButton = false;  // Highlight the repair all button in shop
         
         [Header("World Structure Interaction")]
         public string highlightStructureType = "";  // Type of structure to highlight in world (e.g., "crop plot", "chicken coop")
         public List<string> highlightStructureUIButtons = new List<string>(); // Button names to highlight in sequence on structure UI panel
+        
+        [Header("Building Damage Control")]
+        public bool damageAllBuildingsOnStart = false; // Damage all buildings when this step starts (for repair tutorial)
     }
     
     [Header("Tutorial Steps")]
@@ -140,6 +146,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // UI highlighting system
     private GameObject currentHighlightEffect;
     private float stepStartTime; // Track when current step started
+    private Coroutine delayedHighlightCoroutine; // Track pending delayed highlight coroutine so we can cancel it
+    private Coroutine delayedNextStepCoroutine; // Track pending auto-advance coroutine so we can cancel it
     
     // World structure highlighting system
     private GameObject currentHighlightedStructure;
@@ -167,6 +175,16 @@ public class SimplifiedTutorialManager : MonoBehaviour
     
     private void Start()
     {
+        // In editor, always start tutorial for testing
+        // In builds, check if tutorial was already completed
+        #if !UNITY_EDITOR
+        if (PlayerPrefs.GetInt("SimplifiedTutorialCompleted", 0) == 1)
+        {
+            Debug.Log("[SimplifiedTutorialManager] Tutorial already completed, skipping");
+            return;
+        }
+        #endif
+        
         StartTutorial();
     }
     
@@ -176,465 +194,551 @@ public class SimplifiedTutorialManager : MonoBehaviour
         HandleRequiredInputDetection();
     }
     
-    private void SetupTutorialSteps()
+private void SetupTutorialSteps()
+{
+    tutorialSteps.Clear();
+    
+    // Welcome step
+    tutorialSteps.Add(new SimpleTutorialStep
     {
-        tutorialSteps.Clear();
-        
-        // Welcome step - normal position, full opacity
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "welcome",
-            title = "Theres a new guy in town",
-            message = "I don't know why I am here, but someone told theres a new idiot in town!",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Excited,
-            waitForAction = false
-        });
-        
-        // Camera movement - show WASD key indicators
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "camera_movement_wasd",
-            title = "Move Camera",
-            message = "Use WASD to move the camera around. Try it!",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Pointing,
-            waitForAction = true,
-            waitForTrigger = "camera_moved_wasd",
-            requiredInputs = new List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D },
-            waitForAllInputs = true,
-            movePanelDown = true,
-            panelAlpha = 0f
-        });
-        
-        // Camera rotation - show QE and mouse key indicators
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "camera_rotation",
-            title = "Rotate Camera",
-            message = "Use Q and E, or hold middle mouse button and drag to rotate the camera.",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Pointing,
-            waitForAction = true,
-            waitForTrigger = "camera_rotated",
-            requiredInputs = new List<KeyCode> { KeyCode.Q, KeyCode.E, KeyCode.Mouse2 }, // Mouse2 = MMB
-            waitForAllInputs = true, // MUST do all inputs
-            movePanelDown = true,
-            panelAlpha = 0f
-        });
-        
-        // Camera zoom - require keys 1 & 2 AND scroll wheel up/down
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "camera_zoom",
-            title = "Zoom Camera",
-            message = "Use the scroll wheel AND the 1 and 2 keys to zoom in and out.",
-            peteContext = PeteContext.CornerBuddy,
-                
-            waitForAction = true,
-            waitForTrigger = "camera_zoomed",
-            // Require Alpha1, Alpha2 (number keys) plus mouse scroll up/down (Mouse3/Mouse4)
-            requiredInputs = new List<KeyCode> { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Mouse3, KeyCode.Mouse4 },
-            waitForAllInputs = true,
-            movePanelDown = true,
-            panelAlpha = 0f
-        });
-        
-        // Camera drag - show click + hold + drag
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "camera_drag",
-            title = "Drag Camera",
-            message = "Hold left mouse button and drag to rotate the camera view.",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Pointing,
-            waitForAction = true,
-            waitForTrigger = "camera_dragged",
-            requiredInputs = new List<KeyCode> { KeyCode.Mouse0 }, // Mouse0 = LMB
-            waitForAllInputs = true,
-            movePanelDown = true,
-            panelAlpha = 0f
-        });
-        
-        // Shop introduction - normal position, full opacity, allow clicks through panel
-        var openShopStep = new SimpleTutorialStep
-        {
-            stepId = "open_shop",
-            title = "Let's Build!",
-            message = "Click the shop button to start building structures!",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Excited,
-            waitForAction = true,
-            waitForTrigger = "shop_opened",
-            disablePanelRaycast = true,  // Allow clicks through the panel to reach the shop button
-            panelAlpha = 0f,
-            showGameUI = true,           // Show game UI so player can see shop button
-            highlightShopButton = true   // NEW: Highlight the shop button to guide player
-        };
-        
-        // Set shop button as highlight target if available
-        if (shopButton != null)
-        {
-            openShopStep.highlightUIElement = shopButton.gameObject;
-        }
-        
-        tutorialSteps.Add(openShopStep);
-        
-        // Build farmhouse - move dialogue to right, invisible panel, allow clicks
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "build_farmhouse",
-            title = "Build Your Home",
-            message = "Every farm needs a farmhouse! Build yours first.",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Worried,
-            waitForAction = true,
-            waitForTrigger = "farmhouse_built",
-            movePanelRight = true,       // Move dialogue to right side
-            panelAlpha = 0f,             // Fully transparent panel
-            disablePanelRaycast = true,  // Allow clicks to place building
-            showGameUI = true,           // Keep game UI visible for building interaction
-            restrictShopBuildings = true,  // Only allow specific buildings
-            allowedBuildingNames = new List<string> { "FarmHouse", "Farmhouse", "Farm House" },
-            requiredShopTab = "C",       // Coops/Buildings tab
-            shopTabButtonName = "Coop Button"
-        });
-        
-        // UI Explanation Steps - after farmhouse is placed
-        
-        // Explain money panel
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "explain_money",
-            title = "Your Farm's Treasury",
-            message = "This shows your money! You'll earn coins by selling crops and animal products.",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Pointing,
-            highlightUIByName = "GoldPanel",
-            showGameUI = true,
-            panelAlpha = 0f,  // Fully transparent panel
-            waitForAction = false  // Manual progression - player clicks Next
-        });
-        
-        // Explain time controls
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "explain_time",
-            title = "Time Management",
-            message = "Control the flow of time! Pause, play normal speed, or fast-forward to speed up your farm.",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Thinking,
-            highlightUIByName = "PAUSE BG",
-            showGameUI = true,
-            panelAlpha = 0f,  // Fully transparent panel
-            waitForAction = false  // Manual progression - player clicks Next
-        });
-        
-        // Explain day/night cycle
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "explain_daytime",
-            title = "Day & Night Cycle",
-            message = "Watch the clock! Daytime is for farming, nighttime brings danger. Prepare wisely!",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Worried,
-            highlightUIByName = "DayNightPanel",
-            showGameUI = true,
-            panelAlpha = 0f,  // Fully transparent panel
-            waitForAction = false  // Manual progression - player clicks Next
-        });
-        
-        // Explain enemy indicator
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "explain_enemy_indicator",
-            title = "Enemy Indicator",
-            message = "This shows which enemy types may attack at night. Big or red icons mean higher threat — prepare defenses or avoid danger.",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Worried,
-            highlightUIByName = "Enemy Indicator",
-            showGameUI = true,
-            panelAlpha = 0f, // Fully transparent panel
-            waitForAction = false
-        });
+        stepId = "welcome",
+        title = "New Guy in Town",
+        message = "Hey! Someone said there's a new farmer here. Let's get started!",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Excited,
+        waitForAction = false,
+        enableShopButton = false
+    });
+    
+    // Camera movement - show WASD key indicators
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "camera_movement_wasd",
+        title = "Move Camera",
+        message = "Use WASD to look around!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Pointing,
+        waitForAction = true,
+        waitForTrigger = "camera_moved_wasd",
+        requiredInputs = new List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D },
+        waitForAllInputs = true,
+        movePanelDown = true,
+        panelAlpha = 0f,
+        enableShopButton = false
+    });
+    
+    // Camera rotation
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "camera_rotation",
+        title = "Rotate Camera",
+        message = "Q and E rotate, or middle mouse + drag!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Pointing,
+        waitForAction = true,
+        waitForTrigger = "camera_rotated",
+        requiredInputs = new List<KeyCode> { KeyCode.Q, KeyCode.E, KeyCode.Mouse2 },
+        waitForAllInputs = true,
+        movePanelDown = true,
+        panelAlpha = 0f,
+        enableShopButton = false
+    });
+    
+    // Camera zoom
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "camera_zoom",
+        title = "Zoom Camera",
+        message = "Scroll wheel OR keys 1 and 2 to zoom!",
+        peteContext = PeteContext.CornerBuddy,
+        waitForAction = true,
+        waitForTrigger = "camera_zoomed",
+        requiredInputs = new List<KeyCode> { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Mouse3, KeyCode.Mouse4 },
+        waitForAllInputs = true,
+        movePanelDown = true,
+        panelAlpha = 0f,
+        enableShopButton = false
+    });
+    
+    // Camera drag
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "camera_drag",
+        title = "Drag Camera",
+        message = "Right mouse + drag to rotate view!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Pointing,
+        waitForAction = true,
+        waitForTrigger = "camera_dragged",
+        requiredInputs = new List<KeyCode> { KeyCode.Mouse1 },
+        waitForAllInputs = true,
+        movePanelDown = true,
+        panelAlpha = 0f,
+        enableShopButton = false
+    });
+    
+    // Spacebar pause
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "spacebar_pause",
+        title = "Pause Time",
+        message = "SPACEBAR pauses time. Useful for thinking!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Thinking,
+        waitForAction = false,
+        movePanelDown = true,
+        panelAlpha = 0f,
+        enableShopButton = false
+    });
+    
+    // Shop introduction
+    var openShopStep = new SimpleTutorialStep
+    {
+        stepId = "open_shop",
+        title = "Let's Build!",
+        message = "Click the shop button!",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Excited,
+        waitForAction = true,
+        waitForTrigger = "shop_opened",
+        disablePanelRaycast = true,
+        panelAlpha = 0f,
+        showGameUI = true,
+        highlightShopButton = true,
+        enableShopButton = true
+    };
+    
+    if (shopButton != null)
+    {
+        openShopStep.highlightUIElement = shopButton.gameObject;
+    }
+    
+    tutorialSteps.Add(openShopStep);
+    
+    // Build farmhouse
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "build_farmhouse",
+        title = "Build Your Home",
+        message = "Every farm needs a farmhouse! Even you...",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Worried,
+        waitForAction = true,
+        waitForTrigger = "farmhouse_built",
+        movePanelRight = true,
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        enableShopButton = true,
+        restrictShopBuildings = true,
+        allowedBuildingNames = new List<string> { "FarmHouse", "Farmhouse", "Farm House" },
+        requiredShopTab = "C",
+        shopTabButtonName = "Coop Button"
+    });
+    
+    // UI Explanation Steps
+    
+    // Explain money panel
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "explain_money",
+        title = "Your Money",
+        message = "This is your CLUCK BUCKS! You earn them by feeding and collecting from your animals.",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Pointing,
+        highlightUIByName = "GoldPanel",
+        showGameUI = true,
+        panelAlpha = 0f,
+        waitForAction = false,
+        enableShopButton = false
+    });
+    
+    // Explain time controls
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "explain_time",
+        title = "Time Controls",
+        message = "Pause, play, or speed up time!",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Thinking,
+        highlightUIByName = "PAUSE BG",
+        showGameUI = true,
+        panelAlpha = 0f,
+        waitForAction = false,
+        enableShopButton = false
+    });
+    
+    // Explain day/night cycle
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "explain_daytime",
+        title = "Day & Night",
+        message = "Watch this closely — at night time, things get weird...",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Worried,
+        highlightUIByName = "DayNightPanel",
+        showGameUI = true,
+        panelAlpha = 0f,
+        waitForAction = false,
+        enableShopButton = false
+    });
+    
+    // Explain enemy indicator
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "explain_enemy_indicator",
+        title = "Enemy Warning",
+        message = "Shows which enemies attack tonight. Keep an eye on it!",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Worried,
+        highlightUIByName = "Enemy Indicator",
+        showGameUI = true,
+        panelAlpha = 0f,
+        waitForAction = false,
+        enableShopButton = false
+    });
 
-        // Explain seasonal / production bonus indicator
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "explain_production_bonus",
-            title = "Production Bonus",
-            message = "This indicator shows seasonal production bonuses for animals/crops. Use these bonuses to plan what to grow or buy for higher yields.",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Thinking,
-            highlightUIByName = "Animal production bonus indicator",
-            showGameUI = true,
-            panelAlpha = 0f, // Fully transparent panel
-            waitForAction = false
-        });
+    // Explain seasonal bonus
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "explain_production_bonus",
+        title = "Production Bonus",
+        message = "Seasonal bonuses! These boost the price your animals' products sell for.",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Thinking,
+        highlightUIByName = "Animal production bonus indicator",
+        showGameUI = true,
+        panelAlpha = 0f,
+        waitForAction = false,
+        enableShopButton = false
+    });
 
-        // Explain crop amounts / silo/inventory counts
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "explain_crop_amounts",
-            title = "Crop Amounts",
-            message = "This shows how many crops you currently have (and silo capacity). Keep an eye on feed stocks and capacity when planning animals or sales.",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Pointing,
-            highlightUIByName = "CropPanel",
-            showGameUI = true,
-            panelAlpha = 0f, // Fully transparent panel
-            waitForAction = false
-        });
+    // Explain crop amounts
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "explain_crop_amounts",
+        title = "Crop Storage",
+        message = "Your crop count — use these seeds to grow food for your animals!",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Pointing,
+        highlightUIByName = "CropPanel",
+        showGameUI = true,
+        panelAlpha = 0f,
+        waitForAction = false,
+        enableShopButton = false
+    });
 
-        // Congratulate for learning UI
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "ui_learning_complete",
-            title = "UI Master!",
-            message = "Excellent! You've learned all the important UI elements: money, time controls, day/night cycle, enemy indicators, production bonuses, and crop amounts. Now you're ready to start building and farming!",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Celebrating,
-            showGameUI = true,
-            waitForAction = false
-        });
+    // UI learning complete
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "ui_learning_complete",
+        title = "Done the Knobs!",
+        message = "Nice! You now know how farming works... hopefully. Let's get to building!",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Celebrating,
+        showGameUI = true,
+        waitForAction = false,
+        enableShopButton = false
+    });
 
-        // Build: Crop Plot
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "build_crop_plot",
-            title = "Build a Crop Plot",
-            message = "Let's build a crop plot so you can plant seeds. Open the shop, choose Crop Plot and place it near your farmhouse.",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Excited,
-            waitForAction = true,
-            waitForTrigger = "build_crop_plot",
-            movePanelRight = true,
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            openShopAutomatically = true,  // Auto-open shop since it was closed after UI explanation
-            highlightShopButton = true,     // Highlight shop button initially
-            restrictShopBuildings = true,
-            allowedBuildingNames = new List<string> { "CropPlot", "Crop Plot" },
-            requiredShopTab = "P",       // Plants tab
-            shopTabButtonName = "Plant Button"
-        });
+    // Build: Crop Plot
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "build_crop_plot",
+        title = "Build Crop Plot",
+        message = "Build a crop plot to plant seeds!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Excited,
+        waitForAction = true,
+        waitForTrigger = "build_crop_plot",
+        movePanelRight = true,
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        enableShopButton = true,
+        openShopAutomatically = true,
+        highlightShopButton = true,
+        restrictShopBuildings = true,
+        allowedBuildingNames = new List<string> { "CropPlot", "Crop Plot" },
+        requiredShopTab = "P",
+        shopTabButtonName = "Plant Button"
+    });
 
-        // Build: Silo
+    // Build: Chicken Coop
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "build_chicken_coop",
+        title = "Build Chicken Coop",
+        message = "Chickens need a coop for space to lay eggs!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Excited,
+        waitForAction = true,
+        waitForTrigger = "build_chicken_coop",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        enableShopButton = true,
+        movePanelRight = true,
+        restrictShopBuildings = true,
+        allowedBuildingNames = new List<string> { "ChickenCoop", "Chicken Coop" },
+        requiredShopTab = "C",
+        shopTabButtonName = "Coop Button"
+    });
+
+    // Build: Chicken Barracks
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "build_chicken_barracks",
+        title = "Build Barracks",
+        message = "Train army versions of your animals here!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Thinking,
+        waitForAction = true,
+        waitForTrigger = "build_chicken_barracks",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        enableShopButton = true,
+        movePanelRight = true,
+        restrictShopBuildings = true,
+        allowedBuildingNames = new List<string> { "ChickenBarracks", "Chicken Barracks" },
+        requiredShopTab = "A",
+        shopTabButtonName = "Army Button"
+    });
+
+    // Build Walls
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "build_walls",
+        title = "Build Defensive Walls",
+        message = "Walls can redirect threats! Click once for a single wall, or click and drag to build a chain. Right-click to cancel. Build at least 3 segments!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Pointing,
+        waitForAction = true,
+        waitForTrigger = "walls_built",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        enableShopButton = true,
+        movePanelRight = true,
+        restrictShopBuildings = true,
+        allowedBuildingNames = new List<string> { "Hay Bale", "HayBale"},
+        requiredShopTab = "S",
+        shopTabButtonName = "Defense Button"
+    });
+
+        // Build Silo
         tutorialSteps.Add(new SimpleTutorialStep
         {
             stepId = "build_silo",
             title = "Build a Silo",
-            message = "Silos store your crops and expand capacity. Build one now to store your harvest.",
+            message = "Place near crops and animal coops — look for the green indicators!",
             peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Thinking,
+            peteEmotion = PeteEmotion.Excited,
             waitForAction = true,
             waitForTrigger = "build_silo",
             panelAlpha = 0f,
             disablePanelRaycast = true,
             showGameUI = true,
+            enableShopButton = true,
             movePanelRight = true,
+            openShopAutomatically = true,  // Auto-open shop for silo building
+            highlightShopButton = true,     // Highlight shop button initially
             restrictShopBuildings = true,
             allowedBuildingNames = new List<string> { "Silo" },
-            requiredShopTab = "P",       // Plants tab
+            requiredShopTab = "P",
             shopTabButtonName = "Plant Button"
         });
 
-        // Build: Chicken Coop
+    
         tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "build_chicken_coop",
-            title = "Build a Chicken Coop",
-            message = "Chickens need a coop. Build one to start producing eggs and animal products.",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Excited,
-            waitForAction = true,
-            waitForTrigger = "build_chicken_coop",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            restrictShopBuildings = true,
-            allowedBuildingNames = new List<string> { "ChickenCoop", "Chicken Coop" },
-            requiredShopTab = "C",       // Coops/Buildings tab
-            shopTabButtonName = "Coop Button"
-        });
+    {
+        stepId = "repair_buildings",
+        title = "Damage Control",
+        message = "Oh no! Your buildings took damage! Click the Repair tab, then repair all your buildings.",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Worried,
+        waitForAction = true,
+        waitForTrigger = "all_buildings_repaired",
+        openShopAutomatically = true,
+        highlightShopButton = false,
+        highlightUIByName = "Repair",
+        highlightRepairButton = true,
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        enableShopButton = true,
+        movePanelDown = true,
+        damageAllBuildingsOnStart = true
+    });
+    // Structures built intro
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "structures_built_intro",
+        title = "Competent Builder!",
+        message = "Buildings done! Now let's use them!",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Celebrating,
+        enableShopButton = false,
+        showGameUI = true,
+        waitForAction = false,
+    });
 
-        // Build: Chicken Barracks
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "build_chicken_barracks",
-            title = "Build Chicken Barracks",
-            message = "Barracks let you recruit guard animals. Build chicken barracks to train farm defenders.",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Thinking,
-            waitForAction = true,
-            waitForTrigger = "build_chicken_barracks",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            restrictShopBuildings = true,
-            allowedBuildingNames = new List<string> { "ChickenBarracks", "Chicken Barracks" },
-            requiredShopTab = "A",       // Army tab
-            shopTabButtonName = "Army Button"
-        });
+    // Repair buildings step
 
-        // Explanation step - now that structures are built
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "structures_built_intro",
-            title = "Excellent Work!",
-            message = "You've built the basic structures and learned how to navigate the UI! You've mastered the shop, time controls, day/night cycle, and building placement. Now let's learn how to use them. Time to grow some crops!",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Celebrating,
-            showGameUI = true,
-            waitForAction = false
-        });
 
-        // Plant crop step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "plant_first_crop",
-            title = "Plant Your First Crop",
-            message = "Click on your Crop Plot and plant sunflowers. They're free chicken food and will grow your profit!",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Pointing,
-            waitForAction = true,
-            waitForTrigger = "crop_planted",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            highlightStructureType = "crop plot",
-            highlightStructureUIButtons = new List<string> { "plantButton", "plantSunflowerButton" }
-        });
+    // Plant crop step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "plant_first_crop",
+        title = "Plant Sunflowers",
+        message = "Click your crop plot and plant sunflowers!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Pointing,
+        waitForAction = true,
+        waitForTrigger = "crop_planted",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        movePanelDown = true,
+        highlightStructureType = "crop plot",
+        highlightStructureUIButtons = new List<string> { "plantButton", "plantSunflowerButton" },
+        enableShopButton = false
+    });
 
-        // Harvest crop step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "harvest_first_crop",
-            title = "Harvest Time!",
-            message = "Your sunflowers are ready! Click the Crop Plot and harvest them. Free chicken feed means bigger profits!",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Excited,
-            waitForAction = true,
-            waitForTrigger = "crop_harvested",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            highlightStructureType = "crop plot",
-            highlightStructureUIButtons = new List<string> { "harvestButton" }
-        });
+    // Harvest crop step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "harvest_first_crop",
+        title = "Harvest Time!",
+        message = "Sunflowers ready! I just sped it up for you... Click and harvest!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Excited,
+        waitForAction = true,
+        waitForTrigger = "crop_harvested",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        movePanelRight = true,
+        highlightStructureType = "crop plot",
+        highlightStructureUIButtons = new List<string> { "harvestButton" },
+        enableShopButton = false
+    });
 
-        // Buy chickens step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "buy_chickens",
-            title = "Buy Chickens",
-            message = "Time to populate your coop! Click your Chicken Coop and buy 5 chickens. They'll turn your crops into profit!",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Pointing,
-            waitForAction = true,
-            waitForTrigger = "chickens_bought",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            highlightStructureType = "chicken coop",
-            highlightStructureUIButtons = new List<string> { "buyAnimal" }
-        });
+    // Buy chickens step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "buy_chickens",
+        title = "Buy Chickens",
+        message = "Click your coop and buy 5 chickens!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Pointing,
+        waitForAction = true,
+        waitForTrigger = "chickens_bought",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        movePanelRight = true,
+        highlightStructureType = "chicken coop",
+        highlightStructureUIButtons = new List<string> { "buyAnimal" },
+        enableShopButton = false
+    });
 
-        // Feed chickens step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "feed_chickens",
-            title = "Feed Your Chickens",
-            message = "Feed your chickens those sunflowers you just harvested! Click the Chicken Coop and hit Feed. Well-fed chickens = ready to produce eggs!",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Excited,
-            waitForAction = true,
-            waitForTrigger = "chickens_fed",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            highlightStructureType = "chicken coop",
-            highlightStructureUIButtons = new List<string> { "feedButton" }
-        });
+    // Feed chickens step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "feed_chickens",
+        title = "Feed Chickens",
+        message = "Feed them those sunflowers! Click coop, hit Feed!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Excited,
+        waitForAction = true,
+        waitForTrigger = "chickens_fed",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        movePanelRight = true,
+        highlightStructureType = "chicken coop",
+        highlightStructureUIButtons = new List<string> { "feedButton" },
+        enableShopButton = false
+    });
 
-        // Collect eggs step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "collect_eggs",
-            title = "Collect Eggs",
-            message = "Eggs ready! Click the Chicken Coop and collect them. Eggs automatically sell for coins — this is how you make money!",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Celebrating,
-            waitForAction = true,
-            waitForTrigger = "eggs_collected",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            highlightStructureType = "chicken coop",
-            highlightStructureUIButtons = new List<string> { "collectButton" }
-        });
+    // Collect eggs step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "collect_eggs",
+        title = "Collect Eggs",
+        message = "Eggs = money! Click coop and collect!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Celebrating,
+        waitForAction = true,
+        waitForTrigger = "eggs_collected",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        movePanelRight = true,
+        highlightStructureType = "chicken coop",
+        highlightStructureUIButtons = new List<string> { "collectButton" },
+        enableShopButton = false
+    });
 
-        // Recruit soldiers step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "recruit_soldiers",
-            title = "Train Your Army",
-            message = "Time to build defenses! Click the Chicken Barracks and recruit 3 soldiers. Your civilian chickens become trained warriors!",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Excited,
-            waitForAction = true,
-            waitForTrigger = "soldiers_recruited",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            highlightStructureType = "chicken barrack",
-            highlightStructureUIButtons = new List<string> { "recruitButton" }
-        });
+    // Recruit soldiers step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "recruit_soldiers",
+        title = "Turn Chickens into Soldiers",
+        message = "Click barracks and recruit 3 shotgun-wielding chickens!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Excited,
+        waitForAction = true,
+        waitForTrigger = "soldiers_recruited",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        movePanelRight = true,
+        highlightStructureType = "chicken barrack",
+        highlightStructureUIButtons = new List<string> { "recruitButton" },
+        enableShopButton = false
+    });
 
-        // Place flag step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "place_flag",
-            title = "Set Rally Point",
-            message = "Give your soldiers a defense position! Click the Barracks, hit 'Place Flag', then click where you want them to guard.",
-            peteContext = PeteContext.CornerBuddy,
-            peteEmotion = PeteEmotion.Pointing,
-            waitForAction = true,
-            waitForTrigger = "flag_placed",
-            panelAlpha = 0f,
-            disablePanelRaycast = true,
-            showGameUI = true,
-            movePanelRight = true,
-            highlightStructureType = "chicken barrack",
-            highlightStructureUIButtons = new List<string> { "placeFlagButton" }
-        });
+    // Place flag step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "place_flag",
+        title = "Set Defense Point",
+        message = "Click barracks, hit 'Place Flag', pick a guard spot!",
+        peteContext = PeteContext.CornerBuddy,
+        peteEmotion = PeteEmotion.Pointing,
+        waitForAction = true,
+        waitForTrigger = "flag_placed",
+        panelAlpha = 0f,
+        disablePanelRaycast = true,
+        showGameUI = true,
+        movePanelRight = true,
+        highlightStructureType = "chicken barrack",
+        highlightStructureUIButtons = new List<string> { "placeFlagButton" },
+        enableShopButton = false
+    });
 
-        // Final complete step
-        tutorialSteps.Add(new SimpleTutorialStep
-        {
-            stepId = "complete",
-            title = "Tutorial Complete!",
-            message = "Excellent! You now understand the basics: money, time controls, day/night cycle, and the shop. Build, farm, and defend your land!",
-            peteContext = PeteContext.UIHelper,
-            peteEmotion = PeteEmotion.Celebrating,
-            showGameUI = true            // Ensure game UI is visible at the end
-        });
-    }
+    // Final complete step
+    tutorialSteps.Add(new SimpleTutorialStep
+    {
+        stepId = "complete",
+        title = "Tutorial Done!",
+        message = "You're ready!... Probably not, but good enough! Remember, at night time weird things happen...",
+        peteContext = PeteContext.UIHelper,
+        peteEmotion = PeteEmotion.Celebrating,
+        showGameUI = true,
+        enableShopButton = true
+    });
+}
 
     // Public helpers so other systems can notify the simplified tutorial about built structures
     public void OnCropPlotBuilt() => TriggerAction("build_crop_plot");
     public void OnSiloBuilt() => TriggerAction("build_silo");
     public void OnChickenCoopBuilt() => TriggerAction("build_chicken_coop");
     public void OnChickenBarracksBuilt() => TriggerAction("build_chicken_barracks");
+    public void OnWallsBuilt() => TriggerAction("walls_built");
     
     // Public helpers for crop actions
     public void OnCropPlanted() => TriggerAction("crop_planted");
@@ -648,6 +752,9 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Public helpers for army/defense actions
     public void OnSoldiersRecruited() => TriggerAction("soldiers_recruited");
     public void OnFlagPlaced() => TriggerAction("flag_placed");
+    
+    // Public helper for repair actions
+    public void OnAllBuildingsRepaired() => TriggerAction("all_buildings_repaired");
     
     // Public API for shop tutorial restrictions
     public bool ShouldRestrictShopBuildings()
@@ -710,6 +817,14 @@ public class SimplifiedTutorialManager : MonoBehaviour
             return false;
             
         return tutorialSteps[currentStepIndex].highlightShopButton;
+    }
+    
+    public bool ShouldHighlightRepairButton()
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return false;
+            
+        return tutorialSteps[currentStepIndex].highlightRepairButton;
     }
     
     // ===== WORLD STRUCTURE HIGHLIGHTING API =====
@@ -793,8 +908,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
             return;
         }
         
-        Debug.Log($"[SimplifiedTutorialManager] Highlighting structure UI button: {buttonObject.name}");
-        StartCoroutine(DelayedHighlight(buttonObject, 0.2f));
+    Debug.Log($"[SimplifiedTutorialManager] Highlighting structure UI button: {buttonObject.name}");
+    StartDelayedHighlight(buttonObject, 0.2f);
     }
     
     // Helper method to handle shop tab guidance when tutorial restrictions change
@@ -810,8 +925,22 @@ public class SimplifiedTutorialManager : MonoBehaviour
         {
             Debug.Log("[RefreshShopIfOpen] Shop is open");
             
+            // Check if we need to highlight the repair button
+            if (currentStep.highlightRepairButton && ShopPanelUI.Instance != null)
+            {
+                GameObject repairButton = ShopPanelUI.Instance.GetRepairButton();
+                if (repairButton != null)
+                {
+                    Debug.Log("[RefreshShopIfOpen] Highlighting repair button");
+                    StartDelayedHighlight(repairButton, 0.3f);
+                }
+                else
+                {
+                    Debug.LogWarning("[RefreshShopIfOpen] Repair button not found!");
+                }
+            }
             // Check if we need to highlight a tab button
-            if (!string.IsNullOrEmpty(currentStep.requiredShopTab) && ShopPanelUI.Instance != null)
+            else if (!string.IsNullOrEmpty(currentStep.requiredShopTab) && ShopPanelUI.Instance != null)
             {
                 char requiredTab = currentStep.requiredShopTab[0]; // Get first character ('C', 'P', 'A', 'S')
                 
@@ -830,7 +959,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
                     if (tabButton != null)
                     {
                         Debug.Log($"[RefreshShopIfOpen] Found tab button, highlighting it");
-                        StartCoroutine(DelayedHighlight(tabButton, 0.1f));
+                        StartDelayedHighlight(tabButton, 0.1f);
                     }
                     else
                     {
@@ -880,6 +1009,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
         if (skipTutorialButton != null)
         {
             skipTutorialButton.onClick.AddListener(SkipTutorial);
+            // Hide skip button until farmhouse is placed
+            skipTutorialButton.gameObject.SetActive(false);
         }
         
         if (tutorialDialoguePanel != null)
@@ -962,6 +1093,15 @@ public class SimplifiedTutorialManager : MonoBehaviour
     {
         if (!tutorialActive) return;
         
+        // Play button click sound
+        
+        // Cancel any pending auto-advance from previous step
+        if (delayedNextStepCoroutine != null)
+        {
+            StopCoroutine(delayedNextStepCoroutine);
+            delayedNextStepCoroutine = null;
+        }
+        
         // Stop any ongoing typing and mumbling from previous step
         if (typingCoroutine != null)
         {
@@ -996,6 +1136,13 @@ public class SimplifiedTutorialManager : MonoBehaviour
         
         Debug.Log($"Showing tutorial step {currentStepIndex}: {step.title}");
         
+        // Control shop button enabled/disabled state
+        if (shopButton != null)
+        {
+            shopButton.interactable = step.enableShopButton;
+            Debug.Log($"Shop button interactable set to: {step.enableShopButton}");
+        }
+        
         // Close shop when Pete starts explaining the UI (after farmhouse is built)
         if (step.stepId == "explain_money" && ShopUIManager.Instance != null)
         {
@@ -1003,11 +1150,32 @@ public class SimplifiedTutorialManager : MonoBehaviour
             Debug.Log("Closed shop automatically for UI explanation");
         }
         
+        // Close shop before planting first crop to declutter UI
+        if (step.stepId == "plant_first_crop" && ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.CloseShop();
+            Debug.Log("Closed shop automatically before planting first crop");
+        }
+        
+        // Close shop before "Excellent Work!" step to declutter background
+        if (step.stepId == "structures_built_intro" && ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.CloseShop();
+            Debug.Log("Closed shop automatically before 'Excellent Work!' step");
+        }
+        
         // Auto-open shop if this step requires it (e.g., crop plot step after UI explanation)
         if (step.openShopAutomatically && ShopUIManager.Instance != null)
         {
             ShopUIManager.Instance.OpenShop();
             Debug.Log("Opened shop automatically for tutorial step");
+        }
+        
+        // Damage all buildings if this step requires it (for repair tutorial)
+        // Use a coroutine with delay to ensure shop is fully open first
+        if (step.damageAllBuildingsOnStart)
+        {
+            StartCoroutine(DamageBuildingsAfterDelay(0.5f));
         }
         
         // Show dialogue
@@ -1183,7 +1351,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
     {
         if (progressText != null)
         {
-            progressText.text = $"Step {currentStepIndex + 1} of {tutorialSteps.Count}";
+            progressText.text = $"{currentStepIndex + 1} / {tutorialSteps.Count}";
         }
     }
     
@@ -1222,7 +1390,8 @@ public class SimplifiedTutorialManager : MonoBehaviour
     // Simple panel control methods
     private void UpdatePanelForStep(SimpleTutorialStep step)
     {
-        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}, movePanelRight: {step.movePanelRight}, disableRaycast: {step.disablePanelRaycast}, showGameUI: {step.showGameUI}");
+        bool shopOpen = ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen();
+        Debug.Log($"[UpdatePanelForStep] Called for step: {step.stepId}, panelAlpha: {step.panelAlpha}, movePanelDown: {step.movePanelDown}, movePanelRight: {step.movePanelRight}, movePanelDownRight: {step.movePanelDownRight}, disableRaycast: {step.disablePanelRaycast}, showGameUI: {step.showGameUI}, shopOpen: {shopOpen}");
         
         // Control main game UI visibility
         if (step.showGameUI)
@@ -1238,14 +1407,29 @@ public class SimplifiedTutorialManager : MonoBehaviour
         ClearUIHighlight();
         if (step.highlightUIElement != null)
         {
-            StartCoroutine(DelayedHighlight(step.highlightUIElement, 0.1f));
+            StartDelayedHighlight(step.highlightUIElement, 0.1f);
         }
         else if (!string.IsNullOrEmpty(step.highlightUIByName))
         {
-            GameObject targetByName = GameObject.Find(step.highlightUIByName);
+            // Prefer searching under the main game UI canvas so nested elements (e.g., Coinb canvas/GoldPanel)
+            // are found reliably. Fall back to global GameObject.Find if canvas is not assigned or search fails.
+            GameObject targetByName = null;
+            if (gameUICanvas != null)
+            {
+                Transform found = FindChildRecursive(gameUICanvas.transform, step.highlightUIByName);
+                if (found != null)
+                    targetByName = found.gameObject;
+            }
+
+            if (targetByName == null)
+            {
+                // Fallback to global search in the scene (may miss inactive objects)
+                targetByName = GameObject.Find(step.highlightUIByName);
+            }
+
             if (targetByName != null)
             {
-                StartCoroutine(DelayedHighlight(targetByName, 0.1f));
+                StartDelayedHighlight(targetByName, 0.1f);
             }
             else
             {
@@ -1283,13 +1467,24 @@ public class SimplifiedTutorialManager : MonoBehaviour
         Vector2 targetPosition = originalContentPosition;
         
         // Handle different panel positioning
-        if (step.movePanelDown)
+        bool shopIsOpenNow = ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen();
+
+        // Down+slight-right move takes priority when the step explicitly requests it
+        // or when the shop is (or will be) open for this step (openShopAutomatically).
+        bool shouldApplyDownRight = step.movePanelDownRight || step.openShopAutomatically || (shopIsOpenNow && step.showGameUI && step.enableShopButton);
+
+        if (shouldApplyDownRight)
         {
-            targetPosition = new Vector2(originalContentPosition.x, originalContentPosition.y - 280f);
+            // Slight right and down offset suitable when shop UI is visible
+            targetPosition = new Vector2(originalContentPosition.x + 360f, originalContentPosition.y - 335f);
+        }
+        else if (step.movePanelDown)
+        {
+            targetPosition = new Vector2(originalContentPosition.x, originalContentPosition.y - 335f);
         }
         else if (step.movePanelRight)
         {
-            targetPosition = new Vector2(originalContentPosition.x + 500f, originalContentPosition.y);
+            targetPosition = new Vector2(originalContentPosition.x + 520f, originalContentPosition.y + 260);
         }
         
         // Smooth tween animation
@@ -1377,6 +1572,13 @@ public class SimplifiedTutorialManager : MonoBehaviour
         {
             Debug.Log($"[TriggerAction] Trigger '{triggerName}' MATCHED! Advancing step.");
             
+            // Show skip button after farmhouse is built
+            if (triggerName == "farmhouse_built" && skipTutorialButton != null)
+            {
+                skipTutorialButton.gameObject.SetActive(true);
+                Debug.Log("Skip tutorial button now visible after farmhouse placed");
+            }
+            
             // Mark trigger completed and clear any input UI
             if (!completedTriggers.Contains(triggerName)) completedTriggers.Add(triggerName);
             waitingForPlayerAction = false;
@@ -1393,7 +1595,7 @@ public class SimplifiedTutorialManager : MonoBehaviour
             Debug.Log($"Trigger '{triggerName}' matched! Auto-advancing to next step.");
 
             // Auto-advance to next step after a short delay
-            StartCoroutine(DelayedNextStep(0.2f));
+            delayedNextStepCoroutine = StartCoroutine(DelayedNextStep(0.2f));
         }
         else
         {
@@ -1407,8 +1609,41 @@ public class SimplifiedTutorialManager : MonoBehaviour
         NextStep();
     }
     
+    private IEnumerator DamageBuildingsAfterDelay(float delay)
+    {
+        Debug.Log($"[DamageBuildingsAfterDelay] Starting coroutine with {delay}s delay");
+        yield return new WaitForSeconds(delay);
+        
+        Debug.Log("[DamageBuildingsAfterDelay] Delay complete, looking for DamageBuildings script");
+        DamageBuildings damageScript = FindFirstObjectByType<DamageBuildings>();
+        if (damageScript != null)
+        {
+            Debug.Log("[DamageBuildingsAfterDelay] Found DamageBuildings script, calling DamageAllBuildings()");
+            damageScript.DamageAllBuildings();
+            Debug.Log("Damaged all buildings for repair tutorial step");
+            
+            // Refresh shop to show repair button after damage
+            if (ShopUIManager.Instance != null && ShopUIManager.Instance.IsShopOpen())
+            {
+                Debug.Log("[DamageBuildingsAfterDelay] Shop is open, waiting 0.2s then refreshing");
+                yield return new WaitForSeconds(0.2f); // Wait a bit for damage to register
+                RefreshShopIfOpen();
+            }
+            else
+            {
+                Debug.LogWarning("[DamageBuildingsAfterDelay] Shop is not open!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("DamageBuildings script not found in scene!");
+        }
+    }
+    
     public void SkipTutorial()
     {
+        // Play button click sound
+        
         StopMumbling(); // Stop Pete's speaking
         EndTutorial();
     }
@@ -1417,6 +1652,11 @@ public class SimplifiedTutorialManager : MonoBehaviour
     {
         tutorialActive = false;
         waitingForPlayerAction = false;
+        
+        // Save tutorial completion to PlayerPrefs so it doesn't restart on game load
+        PlayerPrefs.SetInt("SimplifiedTutorialCompleted", 1);
+        PlayerPrefs.Save();
+        Debug.Log("[SimplifiedTutorialManager] Tutorial completed and saved to PlayerPrefs");
         
         // Stop any ongoing typing and mumbling
         if (typingCoroutine != null)
@@ -1670,6 +1910,13 @@ public class SimplifiedTutorialManager : MonoBehaviour
     
     private void ClearUIHighlight()
     {
+        // Stop any pending delayed highlight so old coroutines don't re-create highlights
+        if (delayedHighlightCoroutine != null)
+        {
+            StopCoroutine(delayedHighlightCoroutine);
+            delayedHighlightCoroutine = null;
+        }
+
         if (currentHighlightEffect != null)
         {
             Destroy(currentHighlightEffect);
@@ -1691,6 +1938,38 @@ public class SimplifiedTutorialManager : MonoBehaviour
         {
             Debug.LogWarning($"[DelayedHighlight] Target element {targetElement?.name ?? "null"} is not active, skipping highlight");
         }
+    }
+
+    // Helper to start a delayed highlight and cancel any previous pending one
+    private void StartDelayedHighlight(GameObject targetElement, float delay)
+    {
+        if (delayedHighlightCoroutine != null)
+        {
+            StopCoroutine(delayedHighlightCoroutine);
+            delayedHighlightCoroutine = null;
+        }
+
+        delayedHighlightCoroutine = StartCoroutine(DelayedHighlight(targetElement, delay));
+    }
+
+    // Recursive search helper to locate a child by name under a given parent transform.
+    // This helps find nested UI elements (for example: "Coinb canvas" -> "GoldPanel").
+    private Transform FindChildRecursive(Transform parent, string targetName)
+    {
+        if (parent == null || string.IsNullOrEmpty(targetName))
+            return null;
+
+        if (parent.name == targetName)
+            return parent;
+
+        foreach (Transform child in parent)
+        {
+            var found = FindChildRecursive(child, targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
     
     // Public methods for other systems to call
@@ -1723,6 +2002,49 @@ public class SimplifiedTutorialManager : MonoBehaviour
                 if (ShopPanelUI.Instance != null)
                 {
                     ShopPanelUI.Instance.PopulateShop(newTab);
+                }
+            }
+        }
+        
+        // Special case: If this is the repair buildings step and player opened Repair tab
+        if (currentStep.stepId == "repair_buildings" && currentStep.highlightRepairButton)
+        {
+            Debug.Log("[OnShopTabChanged] Repair step detected, highlighting repair button");
+            ClearUIHighlight();
+            
+            // Highlight the repair all button after a short delay
+            if (ShopPanelUI.Instance != null)
+            {
+                GameObject repairButton = ShopPanelUI.Instance.GetRepairButton();
+                if (repairButton != null)
+                {
+                    StartDelayedHighlight(repairButton, 0.3f);
+                }
+            }
+        }
+    }
+    
+    // Called when player switches to Repair view in shop
+    public void OnRepairViewOpened()
+    {
+        if (!tutorialActive || currentStepIndex < 0 || currentStepIndex >= tutorialSteps.Count)
+            return;
+            
+        SimpleTutorialStep currentStep = tutorialSteps[currentStepIndex];
+        
+        // If this is the repair buildings step, highlight the repair all button
+        if (currentStep.stepId == "repair_buildings" && currentStep.highlightRepairButton)
+        {
+            Debug.Log("[OnRepairViewOpened] Highlighting repair all button");
+            ClearUIHighlight();
+            
+            // Highlight the repair all button after a short delay
+            if (ShopPanelUI.Instance != null)
+            {
+                GameObject repairButton = ShopPanelUI.Instance.GetRepairButton();
+                if (repairButton != null)
+                {
+                    StartDelayedHighlight(repairButton, 0.5f);
                 }
             }
         }

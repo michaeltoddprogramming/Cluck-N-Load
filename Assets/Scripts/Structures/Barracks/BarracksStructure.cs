@@ -44,10 +44,34 @@ public class BarracksStructure : Structure
     public string TargetAnimalType => targetAnimalType;
     public int ArmyAnimalCount => armyAnimals.Count;
     public int MaxArmyAnimals => maxArmyAnimals;
-    public Vector3 GetFlagPosition => flag != null ? flag.transform.position : transform.position + new Vector3(0, 2, 0);
+    public Vector3 GetFlagPosition => GetMainFlag() != null ? GetMainFlag().transform.position : transform.position + new Vector3(0, 2, 0);
     public float GetProtectionRadius => protectionRadius;
     public Color GetFlagColor => flagColor;
     public AnimalStructure GetTargetStructure => targetAnimalStructure;
+
+    /// <summary>
+    /// Gets the main flag from the child hierarchy (not for sheep flags)
+    /// </summary>
+    private GameObject GetMainFlag()
+    {
+        // Return cached reference if still valid
+        if (flag != null && flag.transform.parent == transform)
+        {
+            return flag;
+        }
+        
+        // Search for flag in children (flag prefabs typically have "Flag" in their name)
+        foreach (Transform child in transform)
+        {
+            if (child.gameObject.name.Contains("Flag") || child.gameObject.CompareTag("Flag"))
+            {
+                flag = child.gameObject; // Update cache
+                return flag;
+            }
+        }
+        
+        return null;
+    }
 
     public System.Action OnArmyChanged;
 
@@ -228,15 +252,33 @@ public class BarracksStructure : Structure
 
     private void InitializeFlag()
     {
-        if (flagPrefab == null) return;
-
-        // Position flag directly on top of this specific structure
-        Vector3 flagPosition = GetTopOfStructure();
-        guardPosition = flagPosition;
-
-        flag = Instantiate(flagPrefab, guardPosition, Quaternion.identity, transform);
-        flagRenderer = flag.GetComponentInChildren<Renderer>();
-        if (flagRenderer != null) flagRenderer.material.color = flagColor;
+        // FIND the existing flag child instead of instantiating a new one
+        GameObject existingFlag = GetMainFlag();
+        
+        if (existingFlag != null)
+        {
+            // Use the existing flag from the prefab - leave it at its prefab position
+            flag = existingFlag;
+            flagRenderer = flag.GetComponentInChildren<Renderer>();
+            if (flagRenderer != null) 
+                flagRenderer.material.color = flagColor;
+            
+            // Use the flag's current position as the guard position (set manually in prefab)
+            guardPosition = flag.transform.position;
+        }
+        else
+        {
+            // Fallback: only create new flag if none exists in prefab
+            if (flagPrefab == null) return;
+            
+            Debug.LogWarning($"[BarracksStructure] No flag found in prefab children for {gameObject.name}, creating new one");
+            Vector3 flagPosition = GetTopOfStructure();
+            guardPosition = flagPosition;
+            flag = Instantiate(flagPrefab, guardPosition, Quaternion.identity, transform);
+            flagRenderer = flag.GetComponentInChildren<Renderer>();
+            if (flagRenderer != null) 
+                flagRenderer.material.color = flagColor;
+        }
     }
 
     private float GetStructureHeight()
@@ -489,16 +531,19 @@ public class BarracksStructure : Structure
                     flagPosition = new Vector3(transform.position.x, topOfStructure.y, transform.position.z);
                 }
 
+                // FOR SHEEP: Still instantiate new flags (each sheep needs its own)
                 GameObject sheepFlag = Instantiate(flagPrefab, flagPosition, Quaternion.identity, transform);
                 Renderer sheepFlagRenderer = sheepFlag.GetComponentInChildren<Renderer>();
-                if (sheepFlagRenderer != null) sheepFlagRenderer.material.color = flagColor;
+                if (sheepFlagRenderer != null) 
+                    sheepFlagRenderer.material.color = flagColor;
 
                 sheepFlags.Add(sheepFlag);
                 ArmyUnit unit = sheepUnits[sheepFlags.Count - 1].GetComponent<ArmyUnit>();
                 if (unit != null)
                 {
                     unit.SetGuardPosition(flagPosition, protectionRadius);
-                    if (isNightTime) unit.MoveToFlag();
+                    if (isNightTime) 
+                        unit.MoveToFlag();
                 }
             }
 
@@ -519,7 +564,7 @@ public class BarracksStructure : Structure
         }
         else
         {
-            // Check if flag is being placed on the barracks structure itself
+            // FOR NON-SHEEP: Use the existing main flag from prefab, just move it
             Vector3 flagPosition = position;
             float distanceToBarracks = Vector3.Distance(new Vector3(position.x, 0, position.z),
                                                        new Vector3(transform.position.x, 0, transform.position.z));
@@ -531,13 +576,23 @@ public class BarracksStructure : Structure
                 flagPosition = new Vector3(transform.position.x, topOfStructure.y, transform.position.z);
             }
 
-            if (flag != null) flag.transform.position = flagPosition;
+            GameObject mainFlag = GetMainFlag();
+            if (mainFlag != null)
+            {
+                // MOVE the existing flag instead of instantiating
+                mainFlag.transform.position = flagPosition;
+                flag = mainFlag; // Update cached reference
+            }
             else
             {
+                // Fallback: only create if no flag exists
+                Debug.LogWarning($"[BarracksStructure] No main flag found when placing, creating new one");
                 flag = Instantiate(flagPrefab, flagPosition, Quaternion.identity, transform);
                 flagRenderer = flag.GetComponentInChildren<Renderer>();
-                if (flagRenderer != null) flagRenderer.material.color = flagColor;
+                if (flagRenderer != null) 
+                    flagRenderer.material.color = flagColor;
             }
+            
             guardPosition = flagPosition;
             UpdateArmyAnimalPositions();
         }
@@ -607,7 +662,11 @@ public class BarracksStructure : Structure
     {
         nightManager?.UnregisterBarracksStructure(this);
         foreach (GameObject armyAnimal in armyAnimals) if (armyAnimal != null) Destroy(armyAnimal);
-        if (flag != null) Destroy(flag);
+        
+        // Clean up main flag from child hierarchy
+        GameObject mainFlag = GetMainFlag();
+        if (mainFlag != null) Destroy(mainFlag);
+        
         base.OnDestroy();
     }
 
@@ -1067,7 +1126,8 @@ public class BarracksStructure : Structure
         if (isHighlighted)
         {
             float pulseValue = (Mathf.Sin(Time.time * 2f) + 1f) * 0.5f;
-            float emission = Mathf.Lerp(0.3f, 0.8f, pulseValue);
+            // Reduced brightness - was too bright (looked like missing texture)
+            float emission = Mathf.Lerp(0.15f, 0.4f, pulseValue);
             Color emissionColor = new Color(1f, 0.8f, 0.2f) * emission;
             highlightMaterial.SetColor("_EmissionColor", emissionColor);
         }

@@ -101,23 +101,24 @@ public class AnimalStructureUI : BaseStructureUI
 
     protected override void Update()
     {
-        // Call base update to handle move button logic
-        base.Update();
-        
-        // Tutorial button highlighting
-        HighlightTutorialButton();
-        
-        // Check for pause state changes and update UI immediately
+        // CHANGE DETECTION: Update button states immediately when pause state changes (like move button)
+        // CRITICAL: Check BEFORE base.Update() to detect changes, but DON'T update lastPauseState yet!
         if (nightManager != null)
         {
             bool currentPauseState = nightManager.getIsPaused();
             if (currentPauseState != lastPauseState)
             {
-                lastPauseState = currentPauseState;
-                UpdateUI(); // Update immediately when pause state changes
-                return;
+                // Detected a pause state change - update our buttons immediately
+                UpdateButtonStates(currentPauseState); // Immediate button state update (lightweight)
+                // DON'T update lastPauseState here - let base.Update() handle it for move button
             }
         }
+        
+        // Call base update to handle move button logic
+        base.Update();
+        
+        // Tutorial button highlighting
+        HighlightTutorialButton();
 
         if (animalStructure == null || nightManager == null || progressBar == null)
         {
@@ -156,6 +157,80 @@ public class AnimalStructureUI : BaseStructureUI
         }
     }
 
+    // OPTIMIZATION: Lightweight button state update (like move button pattern)
+    // Called immediately when pause state changes, without doing full UpdateUI()
+    private void UpdateButtonStates(bool isPaused)
+    {
+        if (animalStructure == null || nightManager == null) return;
+
+        // Get current state needed for button logic
+        int animalCount = animalStructure.animalCount;
+        int maxAnimalCount = animalStructure.MaxAnimalCount;
+        bool isProducing = animalStructure.IsProducing;
+        bool productReady = animalStructure.ProductReady;
+        bool isDay = nightManager.IsDay;
+        
+        // Calculate button states
+        bool canFeed = isDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
+        bool canCollect = productReady && isDay && !isPaused;
+        // Allow buying even when producing (new chickens won't produce until next feeding cycle)
+        bool canBuy = isDay && animalCount < maxAnimalCount && !isPaused;
+        
+        // Tutorial restrictions
+        bool tutorialBuyRestriction = false;
+        bool tutorialAddRestriction = false;
+        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
+        {
+            if (!TutorialManager.Instance.GetCompletedStepIds().Contains("buy_chickens"))
+            {
+                if (animalCount >= 5)
+                {
+                    tutorialBuyRestriction = true;
+                }
+                int maxCanBuy = 5 - animalCount;
+                if (newAnimalCount >= maxCanBuy)
+                {
+                    tutorialAddRestriction = true;
+                }
+            }
+        }
+
+        // Update feed button (matches move button pattern)
+        if (feedButton != null)
+        {
+            feedButton.interactable = canFeed;
+        }
+
+        // Update collect button
+        if (collectButton != null)
+        {
+            collectButton.interactable = canCollect;
+        }
+
+        // Update buy button
+        if (buyAnimal != null)
+        {
+            buyAnimal.interactable = newAnimalCount > 0 && canBuy && !tutorialBuyRestriction;
+        }
+
+        // Update add animal button
+        if (addAnimal != null)
+        {
+            bool canAdd = (newAnimalCount + animalCount) < maxAnimalCount && 
+                          canBuy && 
+                          MoneyManager.Instance != null && 
+                          MoneyManager.Instance.CanAfford((newAnimalCount + 1) * animalStructure.ProductionSettings.costPerAnimal) && 
+                          !tutorialAddRestriction;
+            addAnimal.interactable = canAdd;
+        }
+
+        // Update remove animal button
+        if (removeAnimal != null)
+        {
+            removeAnimal.interactable = newAnimalCount > 0 && !isPaused;
+        }
+    }
+
     public override void Initialize(Structure structure)
     {
         base.Initialize(structure);
@@ -188,6 +263,15 @@ public class AnimalStructureUI : BaseStructureUI
 
 
         SetupButtonListeners();
+        
+        // Initialize pause state to current value to prevent false "change" detection
+        if (nightManager != null)
+        {
+            lastPauseState = nightManager.getIsPaused();
+            // Ensure button states match pause state on initialization
+            UpdateButtonStates(lastPauseState);
+        }
+        
         UpdateUI();
     }
 
@@ -240,8 +324,8 @@ public class AnimalStructureUI : BaseStructureUI
         bool isPaused = nightManager.getIsPaused();
         bool canFeed = nightManager.IsDay && !isProducing && !productReady && animalCount > 0 && animalStructure.canFeed() && !isPaused;
         bool canCollect = productReady && nightManager.IsDay && !isPaused;
-        // Explicitly prevent buying if already producing (fixes "can't buy if already fed and is producing")
-        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isProducing && !isPaused;  // Added !isProducing and !isPaused checks
+        // Allow buying even when producing (new chickens won't produce until next feeding cycle)
+        bool canBuy = nightManager.IsDay && animalCount < maxAnimalCount && !isPaused;
 
         animalAmountText.text = $"{animalCount}/{maxAnimalCount}";
         newAnimalAmount.text = $"{newAnimalCount}";

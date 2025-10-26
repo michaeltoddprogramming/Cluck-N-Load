@@ -131,7 +131,8 @@ public class CropStructure : Structure
         if (isHighlighted && highlightMaterial != null)
         {
             float pulse = (Mathf.Sin(Time.time * 2f) + 1f) * 0.5f; // 0 to 1
-            Color emissionColor = new Color(1f, 0.8f, 0.2f, 1f) * Mathf.Lerp(0.3f, 0.8f, pulse);
+            // Reduced brightness - was too bright (looked like missing texture)
+            Color emissionColor = new Color(1f, 0.8f, 0.2f, 1f) * Mathf.Lerp(0.15f, 0.4f, pulse);
             highlightMaterial.SetColor("_EmissionColor", emissionColor);
         }
     }

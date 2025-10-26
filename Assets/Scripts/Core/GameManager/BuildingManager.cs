@@ -123,6 +123,13 @@ public class BuildingManager : MonoBehaviour
                 bh.Repair();
             }
         }
+        
+        // Check if all buildings are now repaired (for tutorial)
+        if (getBrokenBuildings('X').Count == 0)
+        {
+            TutorialTriggerHelper.TriggerAllBuildingsRepaired();
+        }
+        
         return true;
     }
 

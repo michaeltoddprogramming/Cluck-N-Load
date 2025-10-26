@@ -2283,9 +2283,9 @@ private void ShowCropSynergyPreview()
             int totalHayBales = CountHayBales();
             Debug.Log($"Total hay bales in scene: {totalHayBales}");
             
-            // Only trigger if we just reached exactly 3 walls (prevents multiple triggers)
-            // This ensures it fires once when the player builds their 3rd wall
-            if (totalHayBales == 4 && placedCount > 0)
+            // Trigger if we have at least 3 walls (message says "Build at least 3 segments")
+            // Changed from == 4 to >= 3 to match the tutorial message and fix stuck players
+            if (totalHayBales >= 4 && placedCount > 0)
             {
                 Debug.Log($"Triggering walls_built for SimplifiedTutorialManager (total: {totalHayBales})");
                 TutorialTriggerHelper.TriggerWallsBuilt();

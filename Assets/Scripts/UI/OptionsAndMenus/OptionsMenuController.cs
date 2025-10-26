@@ -111,28 +111,28 @@ public class OptionsMenuController : MonoBehaviour
         if (volumeSlider != null)
         {
             volumeSlider.value = AudioListener.volume;
-            volumeSlider.onValueChanged.AddListener(SetVolume);
         }
         
         // Music volume (if you have separate music control)
         if (musicVolumeSlider != null)
         {
-            musicVolumeSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
-            musicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
+            float savedMusicVolume = PlayerPrefs.GetFloat("MusicVolume", 1f);
+            musicVolumeSlider.value = savedMusicVolume;
+            SetMusicVolume(savedMusicVolume); // Apply the saved volume immediately
         }
         
         // SFX volume (if you have separate SFX control)
         if (sfxVolumeSlider != null)
         {
-            sfxVolumeSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
-            sfxVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
+            float savedSFXVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            sfxVolumeSlider.value = savedSFXVolume;
+            SetSFXVolume(savedSFXVolume); // Apply the saved volume immediately
         }
         
         // Mute toggle
         if (muteToggle != null)
         {
             muteToggle.isOn = PlayerPrefs.GetInt("AudioMuted", 0) == 1;
-            muteToggle.onValueChanged.AddListener(SetMute);
         }
     }
 
@@ -142,7 +142,6 @@ public class OptionsMenuController : MonoBehaviour
         if (fullscreenToggle != null)
         {
             fullscreenToggle.isOn = Screen.fullScreen;
-            fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
         }
         
         // Resolution
@@ -165,7 +164,6 @@ public class OptionsMenuController : MonoBehaviour
             resolutionDropdown.AddOptions(options);
             resolutionDropdown.value = currentResIndex;
             resolutionDropdown.RefreshShownValue();
-            resolutionDropdown.onValueChanged.AddListener(SetResolution);
         }
         
         // Quality
@@ -176,21 +174,20 @@ public class OptionsMenuController : MonoBehaviour
             qualityDropdown.AddOptions(options);
             qualityDropdown.value = QualitySettings.GetQualityLevel();
             qualityDropdown.RefreshShownValue();
-            qualityDropdown.onValueChanged.AddListener(SetQuality);
         }
         
         // VSync
         if (vsyncToggle != null)
         {
             vsyncToggle.isOn = QualitySettings.vSyncCount > 0;
-            vsyncToggle.onValueChanged.AddListener(SetVSync);
         }
         
         // Brightness
         if (brightnessSlider != null)
         {
-            brightnessSlider.value = PlayerPrefs.GetFloat("Brightness", 1f);
-            brightnessSlider.onValueChanged.AddListener(SetBrightness);
+            float savedBrightness = PlayerPrefs.GetFloat("Brightness", 1f);
+            brightnessSlider.value = savedBrightness;
+            ApplyBrightness(savedBrightness); // Apply the saved brightness immediately
         }
     }
 
@@ -221,21 +218,18 @@ public class OptionsMenuController : MonoBehaviour
         if (autosaveToggle != null)
         {
             autosaveToggle.isOn = PlayerPrefs.GetInt("AutoSave", 1) == 1;
-            autosaveToggle.onValueChanged.AddListener(SetAutosave);
         }
         
         // Difficulty (if implemented)
         if (difficultyDropdown != null)
         {
             difficultyDropdown.value = PlayerPrefs.GetInt("Difficulty", 1); // Default to normal
-            difficultyDropdown.onValueChanged.AddListener(SetDifficulty);
         }
         
         // Tutorials
         if (tutorialsToggle != null)
         {
             tutorialsToggle.isOn = PlayerPrefs.GetInt("ShowTutorials", 1) == 1;
-            tutorialsToggle.onValueChanged.AddListener(SetTutorials);
         }
     }
 
@@ -245,14 +239,12 @@ public class OptionsMenuController : MonoBehaviour
         if (mouseSensitivitySlider != null)
         {
             mouseSensitivitySlider.value = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
-            mouseSensitivitySlider.onValueChanged.AddListener(SetMouseSensitivity);
         }
         
         // Invert mouse
         if (invertMouseToggle != null)
         {
             invertMouseToggle.isOn = PlayerPrefs.GetInt("InvertMouse", 0) == 1;
-            invertMouseToggle.onValueChanged.AddListener(SetInvertMouse);
         }
         
         // Reset keybinds button
@@ -291,13 +283,50 @@ public class OptionsMenuController : MonoBehaviour
     public void SetMusicVolume(float value)
     {
         PlayerPrefs.SetFloat("MusicVolume", value);
-        // TODO: Apply to your music audio source
+        
+        // Apply to background music in MainMenuController
+        MainMenuController mainMenu = FindFirstObjectByType<MainMenuController>();
+        if (mainMenu != null && mainMenu.backgroundMusic != null)
+        {
+            mainMenu.backgroundMusic.volume = value;
+        }
+        
+        // Apply to all audio sources tagged as "Music"
+        GameObject[] musicObjects = GameObject.FindGameObjectsWithTag("Music");
+        foreach (GameObject obj in musicObjects)
+        {
+            AudioSource audioSource = obj.GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.volume = value;
+            }
+        }
     }
 
     public void SetSFXVolume(float value)
     {
         PlayerPrefs.SetFloat("SFXVolume", value);
-        // TODO: Apply to your SFX audio sources
+        
+        // Apply to AudioManager
+        if (AudioManager.Instance != null)
+        {
+            AudioSource audioSource = AudioManager.Instance.GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.volume = value;
+            }
+        }
+        
+        // Apply to all audio sources tagged as "SFX"
+        GameObject[] sfxObjects = GameObject.FindGameObjectsWithTag("SFX");
+        foreach (GameObject obj in sfxObjects)
+        {
+            AudioSource audioSource = obj.GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.volume = value;
+            }
+        }
     }
 
     public void SetMute(bool value)
@@ -331,7 +360,32 @@ public class OptionsMenuController : MonoBehaviour
     public void SetBrightness(float value)
     {
         PlayerPrefs.SetFloat("Brightness", value);
-        // TODO: Apply brightness to your rendering pipeline
+        ApplyBrightness(value);
+    }
+    
+    private void ApplyBrightness(float value)
+    {
+        // Adjust ambient light intensity (affects overall scene brightness)
+        RenderSettings.ambientIntensity = value;
+        
+        // Optionally adjust reflection intensity for more visual impact
+        RenderSettings.reflectionIntensity = value;
+        
+        // If you have a directional light (sun), adjust its intensity as well
+        Light[] lights = FindObjectsByType<Light>(FindObjectsSortMode.None);
+        foreach (Light light in lights)
+        {
+            if (light.type == LightType.Directional)
+            {
+                // Store original intensity if not already stored
+                float originalIntensity = PlayerPrefs.GetFloat($"OriginalLightIntensity_{light.GetInstanceID()}", light.intensity);
+                if (!PlayerPrefs.HasKey($"OriginalLightIntensity_{light.GetInstanceID()}"))
+                {
+                    PlayerPrefs.SetFloat($"OriginalLightIntensity_{light.GetInstanceID()}", light.intensity);
+                }
+                light.intensity = originalIntensity * value;
+            }
+        }
     }
 
     // Game Settings
@@ -698,27 +752,83 @@ public class OptionsMenuController : MonoBehaviour
 
     private void SetupEventListeners()
     {
-        // Audio listeners
-        if (volumeSlider != null) volumeSlider.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (musicVolumeSlider != null) musicVolumeSlider.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (sfxVolumeSlider != null) sfxVolumeSlider.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (muteToggle != null) muteToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        // Audio listeners - add both the action and change tracking
+        if (volumeSlider != null)
+        {
+            volumeSlider.onValueChanged.AddListener(SetVolume);
+            volumeSlider.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (musicVolumeSlider != null)
+        {
+            musicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
+            musicVolumeSlider.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (sfxVolumeSlider != null)
+        {
+            sfxVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
+            sfxVolumeSlider.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (muteToggle != null)
+        {
+            muteToggle.onValueChanged.AddListener(SetMute);
+            muteToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
 
-        // Display listeners
-        if (fullscreenToggle != null) fullscreenToggle.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (resolutionDropdown != null) resolutionDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (qualityDropdown != null) qualityDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (vsyncToggle != null) vsyncToggle.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (brightnessSlider != null) brightnessSlider.onValueChanged.AddListener(_ => OnOptionChanged());
+        // Display listeners - add both the action and change tracking
+        if (fullscreenToggle != null)
+        {
+            fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
+            fullscreenToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (resolutionDropdown != null)
+        {
+            resolutionDropdown.onValueChanged.AddListener(SetResolution);
+            resolutionDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (qualityDropdown != null)
+        {
+            qualityDropdown.onValueChanged.AddListener(SetQuality);
+            qualityDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (vsyncToggle != null)
+        {
+            vsyncToggle.onValueChanged.AddListener(SetVSync);
+            vsyncToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (brightnessSlider != null)
+        {
+            brightnessSlider.onValueChanged.AddListener(SetBrightness);
+            brightnessSlider.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
 
-        // Game listeners
-        if (autosaveToggle != null) autosaveToggle.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (difficultyDropdown != null) difficultyDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (tutorialsToggle != null) tutorialsToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        // Game listeners - add both the action and change tracking
+        if (autosaveToggle != null)
+        {
+            autosaveToggle.onValueChanged.AddListener(SetAutosave);
+            autosaveToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (difficultyDropdown != null)
+        {
+            difficultyDropdown.onValueChanged.AddListener(SetDifficulty);
+            difficultyDropdown.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (tutorialsToggle != null)
+        {
+            tutorialsToggle.onValueChanged.AddListener(SetTutorials);
+            tutorialsToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
 
-        // Control listeners
-        if (mouseSensitivitySlider != null) mouseSensitivitySlider.onValueChanged.AddListener(_ => OnOptionChanged());
-        if (invertMouseToggle != null) invertMouseToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        // Control listeners - add both the action and change tracking
+        if (mouseSensitivitySlider != null)
+        {
+            mouseSensitivitySlider.onValueChanged.AddListener(SetMouseSensitivity);
+            mouseSensitivitySlider.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
+        if (invertMouseToggle != null)
+        {
+            invertMouseToggle.onValueChanged.AddListener(SetInvertMouse);
+            invertMouseToggle.onValueChanged.AddListener(_ => OnOptionChanged());
+        }
     }
 
     private void SetupNavigationButtons()

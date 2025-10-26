@@ -50,6 +50,13 @@ public class AudioManager : MonoBehaviour
                     audioSource = gameObject.AddComponent<AudioSource>();
                 }
             }
+            
+            // Apply saved SFX volume
+            float savedSFXVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            if (audioSource != null)
+            {
+                audioSource.volume = savedSFXVolume * volume;
+            }
         }
         else
         {
@@ -61,7 +68,8 @@ public class AudioManager : MonoBehaviour
     {
         if (buildingPlaceSound != null)
         {
-            audioSource.PlayOneShot(buildingPlaceSound, volume);
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            audioSource.PlayOneShot(buildingPlaceSound, volume * sfxVolume);
         }
     }
 
@@ -69,6 +77,8 @@ public class AudioManager : MonoBehaviour
     {
         if (moneySpendSound != null)
         {
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            moneySpendSound.volume = sfxVolume;
             moneySpendSound.Play();
         }
     }
@@ -77,7 +87,8 @@ public class AudioManager : MonoBehaviour
     {
         if (buildingRemoveSound != null)
         {
-            audioSource.PlayOneShot(buildingRemoveSound, volume);
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            audioSource.PlayOneShot(buildingRemoveSound, volume * sfxVolume);
         }
     }
 
@@ -85,14 +96,16 @@ public class AudioManager : MonoBehaviour
     {
         if (insufficientFundsSound != null)
         {
-            audioSource.PlayOneShot(insufficientFundsSound, volume);
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            audioSource.PlayOneShot(insufficientFundsSound, volume * sfxVolume);
         }
     }
     public void PlaySelectSound()
     {
         if (buildingSelectSound != null && audioSource != null)
         {
-            audioSource.PlayOneShot(buildingSelectSound, volume);
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            audioSource.PlayOneShot(buildingSelectSound, volume * sfxVolume);
         }
     }
 
@@ -100,6 +113,8 @@ public class AudioManager : MonoBehaviour
     {
         if (errorSound != null)
         {
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            errorSound.volume = sfxVolume;
             errorSound.Play();
         }
     }
@@ -131,6 +146,8 @@ public class AudioManager : MonoBehaviour
     {
         if (repairSFX != null)
         {
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            repairSFX.volume = sfxVolume;
             repairSFX.Play();
         }
     }
@@ -140,7 +157,8 @@ public class AudioManager : MonoBehaviour
     {
         if (clip != null && audioSource != null)
         {
-            audioSource.PlayOneShot(clip, vol);
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            audioSource.PlayOneShot(clip, vol * sfxVolume);
         }
     }
 
@@ -149,7 +167,8 @@ public class AudioManager : MonoBehaviour
     {
         if (harvestClip != null && audioSource != null)
         {
-            audioSource.PlayOneShot(harvestClip, volume);
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            audioSource.PlayOneShot(harvestClip, volume * sfxVolume);
             return;
         }
         // Fallback to place sound if no harvest clip assigned
@@ -160,7 +179,8 @@ public class AudioManager : MonoBehaviour
     {
         if (collectClip != null && audioSource != null)
         {
-            audioSource.PlayOneShot(collectClip, volume);
+            float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            audioSource.PlayOneShot(collectClip, volume * sfxVolume);
             return;
         }
         // No explicit collect clip: use select sound if available

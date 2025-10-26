@@ -27,9 +27,17 @@ public class MainMenuController : MonoBehaviour
 
         if (backgroundMusic != null && !backgroundMusic.isPlaying)
         {
+            // Apply saved music volume
+            float savedMusicVolume = PlayerPrefs.GetFloat("MusicVolume", 1f);
+            backgroundMusic.volume = savedMusicVolume;
             backgroundMusic.Play();
             DontDestroyOnLoad(backgroundMusic.gameObject);
         }
+        
+        // Apply saved brightness setting
+        float savedBrightness = PlayerPrefs.GetFloat("Brightness", 1f);
+        RenderSettings.ambientIntensity = savedBrightness;
+        RenderSettings.reflectionIntensity = savedBrightness;
     }
 
     private IEnumerator AnimateSkyboxRotation()

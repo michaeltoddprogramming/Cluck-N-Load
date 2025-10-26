@@ -36,8 +36,9 @@ public class DamageAnimation : MonoBehaviour
             damageAudioSource.bypassEffects = existingAudioSource.bypassEffects;
             damageAudioSource.bypassListenerEffects = existingAudioSource.bypassListenerEffects;
             damageAudioSource.bypassReverbZones = existingAudioSource.bypassReverbZones;
-            damageAudioSource.priority = existingAudioSource.priority;
-            damageAudioSource.volume = existingAudioSource.volume;
+            damageAudioSource.priority = 0;
+            // damageAudioSource.volume = existingAudioSource.volume;
+            damageAudioSource.volume = 200f;
             damageAudioSource.pitch = existingAudioSource.pitch;
             damageAudioSource.panStereo = existingAudioSource.panStereo;
             damageAudioSource.spatialBlend = 1f;
@@ -116,7 +117,9 @@ public class DamageAnimation : MonoBehaviour
 
         if (hitSound != null && damageAudioSource != null)
         {
-            damageAudioSource.PlayOneShot(hitSound);
+            Debug.Log("the damage sound should have played");
+            // damageAudioSource.PlayOneShot(hitSound);
+            damageAudioSource.Play();
         }
 
         // Bounce animation

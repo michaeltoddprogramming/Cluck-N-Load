@@ -2366,12 +2366,13 @@ MonoBehaviour:
   pressKeyText: {fileID: 1095522719}
   chickenIcon: {fileID: 1216936706}
   tipsText: {fileID: 2071287188}
-  minimumDisplayTime: 3
-  barSmoothSpeed: 1
+  minimumDisplayTime: 5
+  barSmoothSpeed: 0.5
+  extraLoadingDelay: 5
   skyboxRotationSpeed: 5
   bobAmount: 3
   bobSpeed: 3
-  tipChangeInterval: 4
+  tipChangeInterval: 3
   tipsList:
   - 'Tip: In case of fire, save your progress before evacuating.'
   - 'Tip: Holding your breath will make the game feel more intense.'
@@ -2380,7 +2381,7 @@ MonoBehaviour:
   - 'Tip: Sneezing while loading may unlock secret achievements.'
   - "Tip: Save often. Or don\u2019t. Who am I to tell you how to live?"
   fadeImage: {fileID: 1090352811}
-  fadeDuration: 2
+  fadeDuration: 3
 --- !u!1 &1110308456
 GameObject:
   m_ObjectHideFlags: 0

@@ -472,7 +472,11 @@ public class NotificationManager : MonoBehaviour
 
         NotificationTheme theme = GetTheme(data.theme);
         AudioSource playSource = uiAudioSource != null ? uiAudioSource : audioSource;
-        if (theme?.soundEffect != null && playSource != null)
+
+        // Suppress notification audio when the simplified tutorial is active
+        bool suppressNotificationAudio = SimplifiedTutorialManager.Instance != null && SimplifiedTutorialManager.Instance.IsTutorialActive();
+
+        if (!suppressNotificationAudio && theme?.soundEffect != null && playSource != null)
         {
             playSource.PlayOneShot(theme.soundEffect, theme.soundVolume);
         }
@@ -482,7 +486,7 @@ public class NotificationManager : MonoBehaviour
             continueButton.onClick.AddListener(() =>
             {
                 AudioSource clickSource = uiAudioSource != null ? uiAudioSource : audioSource;
-                if (clickSource != null)
+                if (clickSource != null && !suppressNotificationAudio)
                 {
                     if (theme?.clickSound != null)
                     {

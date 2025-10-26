@@ -247,12 +247,12 @@ public class SimplifiedTutorialManager : MonoBehaviour
         {
             stepId = "camera_drag",
             title = "Drag Camera",
-            message = "Hold left mouse button and drag to rotate the camera view.",
+            message = "Hold right mouse button and drag to rotate the camera view.",
             peteContext = PeteContext.CornerBuddy,
             peteEmotion = PeteEmotion.Pointing,
             waitForAction = true,
             waitForTrigger = "camera_dragged",
-            requiredInputs = new List<KeyCode> { KeyCode.Mouse0 }, // Mouse0 = LMB
+            requiredInputs = new List<KeyCode> { KeyCode.Mouse1 }, // Mouse1 = RMB (drag)
             waitForAllInputs = true,
             movePanelDown = true,
             panelAlpha = 0f

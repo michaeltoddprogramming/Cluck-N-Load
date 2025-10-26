@@ -17,6 +17,9 @@ public class LoadingScreenController : MonoBehaviour
     [Header("Timing & Smoothness")]
     [SerializeField] private float minimumDisplayTime = 2f;
     [SerializeField] private float barSmoothSpeed = 5f;
+    [Header("Artificial Delay")]
+    [Tooltip("Additional artificial time to add to the loading screen (seconds). Useful for demos or pacing.)")]
+    [SerializeField] private float extraLoadingDelay = 3f;
 
     [Header("Skybox Animation")]
     [SerializeField] private float skyboxRotationSpeed = 0.3f;
@@ -140,7 +143,9 @@ public class LoadingScreenController : MonoBehaviour
             yield return null;
         }
 
-        while (timeElapsed < minimumDisplayTime)
+        // Wait for the minimum display time plus any configured artificial delay
+        float targetWait = minimumDisplayTime + Mathf.Max(0f, extraLoadingDelay);
+        while (timeElapsed < targetWait)
         {
             timeElapsed += Time.deltaTime;
             yield return null;

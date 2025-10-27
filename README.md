@@ -1,4 +1,4 @@
-# Cluck N Load – Exam Cheat Sheet
+# Cluck N Load
 
 ## Controls
 

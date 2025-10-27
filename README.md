@@ -6,25 +6,22 @@
 | Key / Shortcut                     | Action                                      |
 |-----------------------------------|--------------------------------------------|
 | `W` / `S` / `A` / `D`             | Move camera forward/back/left/right        |
-| Hold `Right Click` + Move Mouse    | Move camera                                 |
 | `Q` / `E`                          | Rotate camera counterclockwise / clockwise |
-| Hold `Middle Click` + Move Mouse   | Rotate camera                               |
 | `1` / `2`                           | Zoom in / Zoom out                          |
-| Mouse Scroll Wheel                  | Zoom in/out                                 |
 | `ESC`                               | Pause Game                                  |
 | `Space`                             | Pause / Play in-game time                   |
-| Right Click (Shop Open)             | Deselect current building                   |
-| `CTRL + Right Click` (Shop Open)   | Remove placed building                      |
 | `R` (Shop Open)                     | Rotate current building                     |
-| Left Click + Drag (Wall)            | Place multiple walls                        |
 | `↓ ↓ ← → ↑`                         | Open Cheats panel                            |
 
 ### Mouse
 | Action                  | Function                   |
 |-------------------------|---------------------------|
-| Right Click + Drag       | Move camera               |
-| Middle Click + Drag      | Rotate camera             |
-| Scroll Wheel             | Zoom in/out               |
+| Hold `Right Click` + Move Mouse    | Move camera                                 |
+| Hold `Middle Click` + Move Mouse   | Rotate camera                               |
+| `Scroll Wheel`                  | Zoom in/out                                 |
+| `Right Click` (Shop Open)             | Deselect current building                   |
+| `CTRL` + `Right Click` (Shop Open)   | Destroy placed building                      |
+| `Left Click` + Drag (Wall)            | Place multiple walls                        |
 
 ---
 
@@ -32,7 +29,7 @@
 
 ### Structures
 - **Animal Pens:** Feed crops → collect coins after 1 in-game day  
-- **Barracks:** Recruit army animals from pens; click flag to send defenders  
+- **Barracks:** Recruit army animals from pens; Move flag to move defenders  
 - **Crop Plots:** Plant crops for animals  
   - Sunflower → Chickens  
   - Wheat → Cows, Sheep  
